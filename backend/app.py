@@ -122,22 +122,43 @@ class ChatbotPuerperio:
         return ""
     
     def buscar_resposta_local(self, pergunta):
-        """Busca resposta na base de conhecimento local"""
+        """Busca resposta na base de conhecimento local - MELHORADA"""
         pergunta_lower = pergunta.lower()
         melhor_match = None
         maior_similaridade = 0
         categoria = None
         
+        # Extrai palavras-chave importantes da pergunta
+        palavras_pergunta = set([p for p in pergunta_lower.split() if len(p) > 3])
+        
         for tema, conteudo in self.base.items():
             pergunta_base = conteudo["pergunta"].lower()
-            similaridade = difflib.SequenceMatcher(None, pergunta_lower, pergunta_base).ratio()
+            resposta_base = conteudo["resposta"].lower()
             
-            if similaridade > maior_similaridade:
-                maior_similaridade = similaridade
+            # Combina pergunta + resposta para busca mais abrangente
+            texto_base = f"{pergunta_base} {resposta_base}"
+            palavras_base = set([p for p in texto_base.split() if len(p) > 3])
+            
+            # Calcula similaridade de strings (método original)
+            similaridade_string = difflib.SequenceMatcher(None, pergunta_lower, pergunta_base).ratio()
+            
+            # Calcula similaridade por palavras-chave
+            palavras_comuns = palavras_pergunta.intersection(palavras_base)
+            if palavras_pergunta:
+                similaridade_palavras = len(palavras_comuns) / len(palavras_pergunta)
+            else:
+                similaridade_palavras = 0
+            
+            # Combina os dois tipos de similaridade (peso maior para palavras-chave)
+            similaridade_comb = (similaridade_string * 0.4) + (similaridade_palavras * 0.6)
+            
+            if similaridade_comb > maior_similaridade:
+                maior_similaridade = similaridade_comb
                 melhor_match = conteudo["resposta"]
                 categoria = tema
         
-        if maior_similaridade > 0.5:
+        # Limite mais baixo para capturar mais correspondências
+        if maior_similaridade > 0.35:
             return melhor_match, categoria, maior_similaridade
         
         return None, None, 0
@@ -203,22 +224,26 @@ Seja calorosa, empática e acolhedora SEMPRE."""
         # Busca resposta local primeiro
         resposta_local, categoria, similaridade = self.buscar_resposta_local(pergunta)
         
-        # Se encontrou resposta local com boa similaridade, usa ela
-        if resposta_local and similaridade > 0.7:
+        # Estratégia melhorada: prioriza IA, usa local como fallback
+        resposta_final = None
+        fonte = None
+        
+        # Tenta OpenAI PRIMEIRO se disponível (respostas mais conversacionais)
+        resposta_openai = self.gerar_resposta_openai(pergunta, historico=historico_usuario)
+        if resposta_openai:
+            resposta_final = resposta_openai
+            fonte = "openai"
+        # Se não tiver OpenAI OU local tem match MUITO forte (85%+), usa local
+        elif resposta_local and similaridade > 0.85:
+            resposta_final = resposta_local
+            fonte = "base_conhecimento"
+        # Fallback: local ou mensagem de apoio
+        elif resposta_local:
             resposta_final = resposta_local
             fonte = "base_conhecimento"
         else:
-            # Tenta OpenAI se disponível (com histórico)
-            resposta_openai = self.gerar_resposta_openai(pergunta, historico=historico_usuario)
-            if resposta_openai:
-                resposta_final = resposta_openai
-                fonte = "openai"
-            elif resposta_local:
-                resposta_final = resposta_local
-                fonte = "base_conhecimento"
-            else:
-                resposta_final = random.choice(list(self.apoio.values()))
-                fonte = "mensagem_apoio"
+            resposta_final = random.choice(list(self.apoio.values()))
+            fonte = "mensagem_apoio"
         
         # Adiciona alertas se necessário
         if alertas_encontrados:
