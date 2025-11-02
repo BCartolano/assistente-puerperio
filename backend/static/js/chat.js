@@ -37,6 +37,18 @@ class ChatbotPuerperio {
         this.statusIndicator = document.getElementById('status-indicator');
         this.backToWelcome = document.getElementById('back-to-welcome');
         this.backBtn = document.getElementById('back-btn');
+        
+        // Auth elements
+        this.authModal = document.getElementById('auth-modal');
+        this.closeAuth = document.getElementById('close-auth');
+        this.accountBtn = document.getElementById('account-btn');
+        this.authTabs = document.querySelectorAll('.auth-tab');
+        this.loginForm = document.getElementById('login-form');
+        this.registerForm = document.getElementById('register-form');
+        this.showLogin = document.getElementById('show-login');
+        this.showRegister = document.getElementById('show-register');
+        this.btnLogin = document.getElementById('btn-login');
+        this.btnRegister = document.getElementById('btn-register');
     }
     
     bindEvents() {
@@ -89,6 +101,36 @@ class ChatbotPuerperio {
                 !this.sidebar.contains(e.target) && 
                 !this.menuToggle.contains(e.target)) {
                 this.closeSidebarMenu();
+            }
+        });
+        
+        // Auth modal events
+        this.accountBtn?.addEventListener('click', () => this.showAuthModal());
+        this.closeAuth?.addEventListener('click', () => this.hideAuthModal());
+        
+        // Auth tabs
+        this.authTabs.forEach(tab => {
+            tab.addEventListener('click', () => this.switchAuthTab(tab.dataset.tab));
+        });
+        
+        // Show login/register links
+        this.showLogin?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.switchAuthTab('login');
+        });
+        this.showRegister?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.switchAuthTab('register');
+        });
+        
+        // Submit buttons
+        this.btnLogin?.addEventListener('click', () => this.handleLogin());
+        this.btnRegister?.addEventListener('click', () => this.handleRegister());
+        
+        // Fechar auth modal clicando fora
+        this.authModal?.addEventListener('click', (e) => {
+            if (e.target === this.authModal) {
+                this.hideAuthModal();
             }
         });
     }
@@ -491,6 +533,73 @@ class ChatbotPuerperio {
     optimizeDesktop() {
         // Otimizações para desktop
         this.chatMessages.style.scrollBehavior = 'auto';
+    }
+    
+    // Auth functions
+    showAuthModal() {
+        this.authModal.classList.add('show');
+        this.switchAuthTab('login');
+    }
+    
+    hideAuthModal() {
+        this.authModal.classList.remove('show');
+        if (this.loginForm) {
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+        }
+        if (this.registerForm) {
+            document.getElementById('register-name').value = '';
+            document.getElementById('register-email').value = '';
+            document.getElementById('register-password').value = '';
+            document.getElementById('register-baby').value = '';
+        }
+    }
+    
+    switchAuthTab(tab) {
+        this.authTabs.forEach(t => t.classList.remove('active'));
+        this.loginForm?.classList.remove('active');
+        this.registerForm?.classList.remove('active');
+        
+        if (tab === 'login') {
+            document.querySelector('[data-tab="login"]')?.classList.add('active');
+            this.loginForm?.classList.add('active');
+        } else if (tab === 'register') {
+            document.querySelector('[data-tab="register"]')?.classList.add('active');
+            this.registerForm?.classList.add('active');
+        }
+    }
+    
+    async handleLogin() {
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        
+        if (!email || !password) {
+            alert('Por favor, preencha todos os campos! 💕');
+            return;
+        }
+        
+        alert('Login funcionará em breve! Backend em desenvolvimento...');
+        this.hideAuthModal();
+    }
+    
+    async handleRegister() {
+        const name = document.getElementById('register-name').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value;
+        const babyName = document.getElementById('register-baby').value.trim();
+        
+        if (!name || !email || !password) {
+            alert('Por favor, preencha os campos obrigatórios (Nome, Email e Senha)! 💕');
+            return;
+        }
+        
+        if (password.length < 6) {
+            alert('A senha deve ter no mínimo 6 caracteres! 💕');
+            return;
+        }
+        
+        alert('Cadastro funcionará em breve! Backend em desenvolvimento...');
+        this.hideAuthModal();
     }
 }
 
