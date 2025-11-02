@@ -888,13 +888,7 @@ body {
     }
     
     .back-to-welcome {
-        top: 0.5rem;
-        right: 0.5rem;
-    }
-    
-    .back-to-welcome .btn {
-        font-size: 0.75rem;
-        padding: 0.3rem 0.6rem;
+        display: none !important;
     }
 }
 
@@ -1026,15 +1020,9 @@ body {
         font-size: 0.7rem;
     }
     
+    /* Esconde botão "Voltar ao início" no mobile */
     .back-to-welcome {
-        top: 0.4rem;
-        right: 0.4rem;
-    }
-    
-    .back-to-welcome .btn {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.5rem;
-        border-radius: 15px;
+        display: none !important;
     }
     
     .typing-indicator {
