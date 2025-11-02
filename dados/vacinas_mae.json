@@ -1,0 +1,79 @@
+{
+  "pre_natal": {
+    "nome": "Vacinas no Pré-Natal",
+    "descricao": "Importantes durante a gestação",
+    "importante": "Consulte seu obstetra sobre todas as vacinas antes de tomar!",
+    "vacinas": [
+      {
+        "nome": "Vacina Influenza (Gripe)",
+        "quando": "Antes ou durante a gravidez",
+        "dose": "Dose anual",
+        "protege": "Gripe na gestante e no bebê após nascer",
+        "seguranca": "Segura e recomendada durante a gravidez",
+        "observacao": "Importante especialmente durante a temporada de gripe"
+      },
+      {
+        "nome": "Vacina dTpa (Tríplice bacteriana)",
+        "quando": "Entre 20 e 36 semanas de gestação",
+        "dose": "Uma dose a cada gravidez",
+        "protege": "Difteria, Tétano e Coqueluche (pertussis)",
+        "seguranca": "Segura na gestação",
+        "observacao": "Protege o bebê contra coqueluche nos primeiros meses"
+      },
+      {
+        "nome": "Vacina Hepatite B",
+        "quando": "Se não estiver imunizada",
+        "dose": "3 doses ao longo da gestação",
+        "protege": "Hepatite B",
+        "seguranca": "Segura na gestação",
+        "observacao": "Importante para prevenir transmissão ao bebê"
+      }
+    ],
+    "contraindicadas": [
+      "Varicela (Catapora)",
+      "Sarampo, Caxumba, Rubéola (MMR)",
+      "HPV",
+      "BCG"
+    ],
+    "observacao": "Vacinas com vírus vivo são geralmente evitadas durante a gravidez"
+  },
+  
+  "pos_parto": {
+    "nome": "Vacinas Pós-Parto",
+    "descricao": "Importantes após o nascimento do bebê",
+    "vacinas": [
+      {
+        "nome": "Vacina dTpa (Tríplice bacteriana)",
+        "quando": "Se não tomou durante a gestação",
+        "dose": "Uma dose",
+        "protege": "Difteria, Tétano e Coqueluche",
+        "observacao": "Importante para não transmitir coqueluche ao bebê"
+      },
+      {
+        "nome": "Vacina MMR (Tríplice viral)",
+        "quando": "Após o parto se não estiver imunizada",
+        "dose": "2 doses com intervalo mínimo",
+        "protege": "Sarampo, Caxumba e Rubéola",
+        "observacao": "Pode ser dada durante amamentação"
+      },
+      {
+        "nome": "Vacina Varicela (Catapora)",
+        "quando": "Após o parto se não teve catapora",
+        "dose": "2 doses",
+        "protege": "Varicela (catapora)",
+        "observacao": "Segura durante amamentação"
+      },
+      {
+        "nome": "Vacina Febre Amarela",
+        "quando": "Se for para área de risco",
+        "dose": "Uma dose a cada 10 anos",
+        "protege": "Febre Amarela",
+        "observacao": "Evitar amamentação por 10 dias após vacinação"
+      }
+    ],
+    "observacao": "Muitas vacinas são seguras durante amamentação. Consulte seu médico sobre cada uma."
+  },
+  
+  "importante": "Sempre discuta com seu médico quais vacinas são adequadas para seu caso específico, especialmente durante amamentação."
+}
+

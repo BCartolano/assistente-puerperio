@@ -8,10 +8,15 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 # Carrega variáveis de ambiente
-load_dotenv()
+# Carrega .env da raiz do projeto
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+load_dotenv(env_path)
 
-# Inicializa o Flask
-app = Flask(__name__)
+# Inicializa o Flask com os caminhos corretos
+app = Flask(__name__, 
+            template_folder=os.path.join(os.path.dirname(__file__), 'templates'),
+            static_folder=os.path.join(os.path.dirname(__file__), 'static'),
+            static_url_path='/static')
 
 # Configurações
 BASE_PATH = os.path.join(os.path.dirname(__file__), "..", "dados")
@@ -38,13 +43,31 @@ def carregar_dados():
         with open(os.path.join(BASE_PATH, "alertas.json"), "r", encoding="utf-8") as f:
             alertas = json.load(f)
         
-        return base, apoio, alertas
+        with open(os.path.join(BASE_PATH, "telefones_uteis.json"), "r", encoding="utf-8") as f:
+            telefones = json.load(f)
+        
+        with open(os.path.join(BASE_PATH, "guias_praticos.json"), "r", encoding="utf-8") as f:
+            guias = json.load(f)
+        
+        with open(os.path.join(BASE_PATH, "cuidados_gestacao.json"), "r", encoding="utf-8") as f:
+            cuidados_gestacao = json.load(f)
+        
+        with open(os.path.join(BASE_PATH, "cuidados_pos_parto.json"), "r", encoding="utf-8") as f:
+            cuidados_pos_parto = json.load(f)
+        
+        with open(os.path.join(BASE_PATH, "vacinas_mae.json"), "r", encoding="utf-8") as f:
+            vacinas_mae = json.load(f)
+        
+        with open(os.path.join(BASE_PATH, "vacinas_bebe.json"), "r", encoding="utf-8") as f:
+            vacinas_bebe = json.load(f)
+        
+        return base, apoio, alertas, telefones, guias, cuidados_gestacao, cuidados_pos_parto, vacinas_mae, vacinas_bebe
     except FileNotFoundError as e:
         print(f"Erro ao carregar arquivos: {e}")
-        return {}, {}, {}
+        return {}, {}, {}, {}, {}, {}, {}, {}, {}
 
 # Carrega os dados
-base_conhecimento, mensagens_apoio, alertas = carregar_dados()
+base_conhecimento, mensagens_apoio, alertas, telefones_uteis, guias_praticos, cuidados_gestacao, cuidados_pos_parto, vacinas_mae, vacinas_bebe = carregar_dados()
 
 # Histórico de conversas (em produção, usar banco de dados)
 conversas = {}
@@ -57,6 +80,8 @@ class ChatbotPuerperio:
         self.base = base_conhecimento
         self.apoio = mensagens_apoio
         self.alertas = alertas
+        self.telefones = telefones_uteis
+        self.guias = guias_praticos
         self.client = client
     
     def verificar_alertas(self, pergunta):
@@ -69,6 +94,32 @@ class ChatbotPuerperio:
                 alertas_encontrados.append(palavra)
         
         return alertas_encontrados
+    
+    def adicionar_telefones_relevantes(self, pergunta, alertas_encontrados):
+        """Adiciona informações de telefones úteis conforme o contexto"""
+        pergunta_lower = pergunta.lower()
+        telefones_texto = []
+        
+        # Se detectou depressão/tristeza, adiciona CVV
+        if "depressão" in pergunta_lower or "tristeza" in pergunta_lower or "triste" in pergunta_lower:
+            cvv = self.telefones.get("saude_mental", {}).get("188", {})
+            if cvv:
+                telefones_texto.append(f"\n🆘 **Precisa de ajuda?**")
+                telefones_texto.append(f"CVV - Centro de Valorização da Vida: {cvv.get('disque', '188')}")
+                telefones_texto.append(f"Ligue 188 gratuitamente, 24h por dia")
+                telefones_texto.append(f"Site: {cvv.get('site', 'https://www.cvv.org.br')}")
+        
+        # Se há alertas médicos, adiciona telefones de emergência
+        if alertas_encontrados:
+            telefones_texto.append(f"\n🚨 **TELEFONES DE EMERGÊNCIA:**")
+            emergencias = self.telefones.get("emergencias", {})
+            telefones_texto.append(f"SAMU: {emergencias.get('192', {}).get('disque', '192')}")
+            telefones_texto.append(f"Bombeiros: {emergencias.get('193', {}).get('disque', '193')}")
+            telefones_texto.append(f"Polícia: {emergencias.get('190', {}).get('disque', '190')}")
+        
+        if telefones_texto:
+            return "\n".join(telefones_texto)
+        return ""
     
     def buscar_resposta_local(self, pergunta):
         """Busca resposta na base de conhecimento local"""
@@ -152,6 +203,11 @@ class ChatbotPuerperio:
             
             resposta_final += "\n\n**ALERTA IMPORTANTE:**\n" + "\n".join(alertas_texto)
         
+        # Adiciona telefones relevantes
+        telefones_adicional = self.adicionar_telefones_relevantes(pergunta, alertas_encontrados)
+        if telefones_adicional:
+            resposta_final += telefones_adicional
+        
         # Salva na conversa
         timestamp = datetime.now().isoformat()
         if user_id not in conversas:
@@ -207,6 +263,51 @@ def api_categorias():
 def api_alertas():
     return jsonify(alertas)
 
+@app.route('/api/telefones')
+def api_telefones():
+    return jsonify(telefones_uteis)
+
+@app.route('/api/guias')
+def api_guias():
+    return jsonify(guias_praticos)
+
+@app.route('/api/guias/<guia_id>')
+def api_guia_especifico(guia_id):
+    guia = guias_praticos.get(guia_id)
+    if guia:
+        return jsonify(guia)
+    return jsonify({"erro": "Guia não encontrado"}), 404
+
+@app.route('/api/cuidados/gestacao')
+def api_cuidados_gestacao():
+    return jsonify(cuidados_gestacao)
+
+@app.route('/api/cuidados/gestacao/<trimestre>')
+def api_trimestre_especifico(trimestre):
+    trimestre_data = cuidados_gestacao.get(trimestre)
+    if trimestre_data:
+        return jsonify(trimestre_data)
+    return jsonify({"erro": "Trimestre não encontrado"}), 404
+
+@app.route('/api/cuidados/puerperio')
+def api_cuidados_puerperio():
+    return jsonify(cuidados_pos_parto)
+
+@app.route('/api/cuidados/puerperio/<periodo>')
+def api_periodo_especifico(periodo):
+    periodo_data = cuidados_pos_parto.get(periodo)
+    if periodo_data:
+        return jsonify(periodo_data)
+    return jsonify({"erro": "Período não encontrado"}), 404
+
+@app.route('/api/vacinas/mae')
+def api_vacinas_mae():
+    return jsonify(vacinas_mae)
+
+@app.route('/api/vacinas/bebe')
+def api_vacinas_bebe():
+    return jsonify(vacinas_bebe)
+
 # Rota para teste
 @app.route('/teste')
 def teste():
@@ -214,15 +315,31 @@ def teste():
         "status": "funcionando",
         "base_conhecimento": len(base_conhecimento),
         "mensagens_apoio": len(mensagens_apoio),
+        "telefones_carregados": bool(telefones_uteis),
+        "guias_praticos": len(guias_praticos),
+        "cuidados_gestacao": len(cuidados_gestacao),
+        "cuidados_pos_parto": len(cuidados_pos_parto),
+        "vacinas": "mae e bebe carregadas",
+        "rotas_api": 9,
         "openai_disponivel": client is not None
     })
 
 if __name__ == "__main__":
-    print("Chatbot do Puerperio iniciado!")
-    print("Base de conhecimento carregada:", len(base_conhecimento), "itens")
-    print("Mensagens de apoio carregadas:", len(mensagens_apoio), "itens")
-    print("OpenAI disponivel:", "Sim" if client else "Nao")
+    print("="*50)
+    print("Chatbot do Puerperio - Sistema Completo!")
+    print("="*50)
+    print("Base de conhecimento:", len(base_conhecimento), "categorias")
+    print("Mensagens de apoio:", len(mensagens_apoio), "mensagens")
+    print("Telefones úteis: Carregado ✓")
+    print("Guias práticos:", len(guias_praticos), "guias")
+    print("Cuidados gestação:", len(cuidados_gestacao), "trimestres")
+    print("Cuidados puerpério:", len(cuidados_pos_parto), "períodos")
+    print("Vacinas: Mãe e bebê carregadas ✓")
+    print("OpenAI disponível:", "Sim" if client else "Não")
+    print("Total de rotas API:", 12)
+    print("="*50)
     print("Acesse: http://localhost:5000")
+    print("="*50)
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
 

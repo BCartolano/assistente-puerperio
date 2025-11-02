@@ -1,0 +1,105 @@
+{
+  "1_trimestre": {
+    "semanas": "1-12",
+    "nome": "Primeiro Trimestre",
+    "descricao": "Fase de formação e desenvolvimento inicial",
+    "cuidados": [
+      "Inicie o pré-natal o quanto antes",
+      "Tome ácido fólico diariamente (400mcg)",
+      "Evite completamente álcool e cigarros",
+      "Limite cafeína a 200mg/dia",
+      "Descanse bastante - cansaço é normal",
+      "Alimente-se bem e em pequenas porções",
+      "Evite carnes cruas e peixes com alto mercúrio",
+      "Pratique exercícios leves se liberado",
+      "Hidrate-se bem - beba muita água"
+    ],
+    "desenvolvimento_bebe": "Formação dos principais órgãos, sistema nervoso, coração começando a bater, rosto se formando",
+    "exames": [
+      "Hemograma completo",
+      "Tipagem sanguínea",
+      "Glicemia",
+      "Sorologias (HIV, sífilis, hepatites)",
+      "Ultrassom 1º trimestre",
+      "Teste de Papanicolau"
+    ],
+    "sintomas_comuns": [
+      "Enjoo e náuseas",
+      "Cansaço extremo",
+      "Sensibilidade nos seios",
+      "Vontade frequente de urinar",
+      "Alterações de humor",
+      "Tonturas"
+    ],
+    "alerta": "Sangramento intenso, dor abdominal forte, febre alta ou perda de líquido - procure atendimento imediato!"
+  },
+  
+  "2_trimestre": {
+    "semanas": "13-24",
+    "nome": "Segundo Trimestre",
+    "descricao": "Fase de crescimento e desenvolvimento",
+    "cuidados": [
+      "Continue com os suplementos prescritos",
+      "Aumente a ingestão de ferro e cálcio",
+      "Use roupas confortáveis",
+      "Pratique exercícios moderados",
+      "Cuide da postura",
+      "Durma com travesseiros de apoio",
+      "Hidrate a pele para prevenção de estrias",
+      "Comece a planejar o chá de bebê",
+      "Pense no quartinho do bebê"
+    ],
+    "desenvolvimento_bebe": "Bebê começa a se mover, você pode sentir os chutes, sexo já visível no ultrassom, órgãos se desenvolvendo",
+    "exames": [
+      "Ultrassom morfológico",
+      "Teste de tolerância à glicose",
+      "Hemograma",
+      "Ecocardiografia fetal (se indicado)",
+      "Triagem genética (se solicitada)"
+    ],
+    "sintomas_comuns": [
+      "Movimentos do bebê (após 18-20 semanas)",
+      "Inchaço leve",
+      "Azia",
+      "Constipação",
+      "Dor nas costas",
+      "Varizes"
+    ],
+    "alerta": "Diminuição dos movimentos do bebê, contrações regulares antes de 37 semanas - consulte seu médico!"
+  },
+  
+  "3_trimestre": {
+    "semanas": "25-40",
+    "nome": "Terceiro Trimestre",
+    "descricao": "Preparação para o parto",
+    "cuidados": [
+      "Faça exercícios de Kegel",
+      "Prepare a mala da maternidade",
+      "Converse sobre o plano de parto",
+      "Visite a maternidade",
+      "Organize a rede de apoio",
+      "Descanse bastante",
+      "Alimentação equilibrada continua importante",
+      "Mantenha-se ativa mas sem exageros",
+      "Pratique técnicas de respiração"
+    ],
+    "desenvolvimento_bebe": "Bebê crescendo rapidamente, ganhando peso, pulmões se desenvolvendo, posição para o parto",
+    "exames": [
+      "Ultrassom 3º trimestre",
+      "Hemograma",
+      "Bacteriúria",
+      "Cardiotocografia (CTG)",
+      "Avaliação de peso fetal"
+    ],
+    "sintomas_comuns": [
+      "Falta de ar",
+      "Inchaço nas pernas e pés",
+      "Azia e indigestão",
+      "Insônia",
+      "Contrações de Braxton-Hicks",
+      "Bexiga comprimida"
+    ],
+    "alerta": "Contrações regulares, rompimento da bolsa, sangramento, diminuição dos movimentos - vá para a maternidade!"
+  }
+}
+

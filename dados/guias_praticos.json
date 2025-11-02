@@ -1,0 +1,355 @@
+{
+  "colica": {
+    "titulo": "Como aliviar cólicas do bebê",
+    "descricao": "Guia prático passo a passo para aliviar cólicas em recém-nascidos",
+    "causas": "As cólicas são comuns nos primeiros 3 meses. Podem ser causadas por: imaturidade do sistema digestivo, gases, intolerância a algum alimento (se amamentando) ou necessidade de arroto.",
+    "passos": [
+      {
+        "numero": 1,
+        "titulo": "Verifique o arroto",
+        "descricao": "Segure o bebê na posição vertical por alguns minutos após mamar para eliminar arrotos",
+        "imagem": "arroto.png",
+        "dica": "Bata levemente nas costas enquanto o bebê está vertical"
+      },
+      {
+        "numero": 2,
+        "titulo": "Massagem abdominal",
+        "descricao": "Faça massagens circulares suaves no abdome do bebê, no sentido horário",
+        "imagem": "massagem_colica.png",
+        "dica": "Use um pouco de óleo apropriado para bebês (sem perfumes fortes)"
+      },
+      {
+        "numero": 3,
+        "titulo": "Movimento de bicicleta",
+        "descricao": "Deite o bebê de costas e mova as perninhas como se estivesse pedalando",
+        "imagem": "bicicleta.png",
+        "dica": "Faça movimentos suaves e lentos, respeite sinais de desconforto"
+      },
+      {
+        "numero": 4,
+        "titulo": "Compressa quente",
+        "descricao": "Use uma fralda aquecida ou bolsa térmica MUITO MORNA na barriga do bebê",
+        "imagem": "compressa_quente.png",
+        "dica": "TESTE na parte interna do seu pulso antes! Deve estar morna, nunca quente"
+      },
+      {
+        "numero": 5,
+        "titulo": "Posição de carregar",
+        "descricao": "Carregue o bebê de bruços nos seus braços ou use sling/canguru",
+        "imagem": "carregar_colica.png",
+        "dica": "Sempre mantenha a cabeça e pescoço do bebê bem apoiados"
+      },
+      {
+        "numero": 6,
+        "titulo": "Banho morno",
+        "descricao": "Um banho morno pode relaxar o bebê e aliviar a tensão",
+        "imagem": "banho_morno.png",
+        "dica": "Água na temperatura do corpo (37°C). Banho rápido de 5-10 minutos"
+      },
+      {
+        "numero": 7,
+        "titulo": "Sons calmantes",
+        "descricao": "Use ruído branco, shhhh, música suave ou cante para o bebê",
+        "imagem": "som.png",
+        "dica": "O som pode distrair o bebê da sensação de desconforto"
+      }
+    ],
+    "sinais_medico": "Procure o pediatra se: cólicas muito intensas, choro inconsolável por mais de 3 horas, febre, vômitos, sangue nas fezes ou recusa total de alimentação.",
+    "telefones_uteis": "Em caso de emergência: SAMU 192 ou vá à UPA mais próxima"
+  },
+  
+  "heimlich": {
+    "titulo": "Manobra de Heimlich em bebês",
+    "descricao": "O que fazer quando o bebê está engasgando",
+    "importante": "Se o bebê estiver tossindo, tente tossir sozinho. Apenas intervenha se estiver sem respirar ou não conseguir tossir.",
+    "passos": [
+      {
+        "numero": 1,
+        "titulo": "Posicione o bebê",
+        "descricao": "Deite o bebê de bruços em seu antebraço, com a cabeça mais baixa que o tronco",
+        "imagem": "heimlich_posicao1.png",
+        "dica": "Mantenha firmeza mas cuidado. O pescoço deve estar bem apoiado"
+      },
+      {
+        "numero": 2,
+        "titulo": "Pancadas nas costas",
+        "descricao": "Dê 5 pancadas firmes nas costas do bebê, entre as escápulas",
+        "imagem": "heimlich_pancadas.png",
+        "dica": "Use a palma da mão, com cuidado. O objetivo é deslocar o objeto"
+      },
+      {
+        "numero": 3,
+        "titulo": "Gire o bebê",
+        "descricao": "Vire o bebê de frente nos seus braços, mantendo a cabeça mais baixa",
+        "imagem": "heimlich_girar.png",
+        "dica": "Tenha cuidado ao virar, sempre apoiando o pescoço e cabeça"
+      },
+      {
+        "numero": 4,
+        "titulo": "Compressões no peito",
+        "descricao": "Faça 5 compressões no esterno (osso do peito) com dois dedos",
+        "imagem": "heimlich_compressor.png",
+        "dica": "Use a profundidade de 1/3 do peito. Verifique se o objeto saiu"
+      },
+      {
+        "numero": 5,
+        "titulo": "Repita se necessário",
+        "descricao": "Continue alternando entre pancadas nas costas e compressões até o objeto sair",
+        "imagem": "heimlich_repetir.png",
+        "dica": "NÃO enfie o dedo na boca do bebê para puxar o objeto"
+      }
+    ],
+    "depois": "Depois de remover o objeto, verifique se o bebê está respirando normalmente. Se não estiver, inicie reanimação cardiopulmonar (RCP) e chame imediatamente o SAMU 192.",
+    "emergencia": "🚨 LIGUE IMEDIATAMENTE PARA O SAMU: 192 se o bebê não estiver respirando ou ficar inconsciente!"
+  },
+  
+  "reanimacao_bebe": {
+    "titulo": "RCP (Reanimação) em bebês",
+    "descricao": "Como fazer reanimação cardiopulmonar em bebês menores de 1 ano",
+    "importante": "Só faça RCP se o bebê estiver INCONSCIENTE e SEM RESPIRAR. Chame o SAMU 192 IMEDIATAMENTE antes de iniciar!",
+    "passos": [
+      {
+        "numero": 1,
+        "titulo": "Vire o bebê de costas",
+        "descricao": "Coloque o bebê em superfície firme e plana",
+        "imagem": "rcp_posicao.png",
+        "dica": "Certifique-se que o local é seguro"
+      },
+      {
+        "numero": 2,
+        "titulo": "Posicione as mãos",
+        "descricao": "Use dois dedos no centro do peito, logo abaixo da linha dos mamilos",
+        "imagem": "rcp_maos.png",
+        "dica": "Use os dedos indicador e médio"
+      },
+      {
+        "numero": 3,
+        "titulo": "Compressões",
+        "descricao": "Faça 30 compressões rápidas e firmes",
+        "imagem": "rcp_compressao.png",
+        "dica": "Profundidade: 4cm. Ritmo: 100-120 por minuto"
+      },
+      {
+        "numero": 4,
+        "titulo": "Respiração boca a boca",
+        "descricao": "Faça 2 respirações boca a boca e nariz",
+        "imagem": "rcp_respiracao.png",
+        "dica": "Cubra completamente a boca e nariz do bebê com sua boca"
+      },
+      {
+        "numero": 5,
+        "titulo": "Repita",
+        "descricao": "Continue alternando 30 compressões e 2 respirações",
+        "imagem": "rcp_repetir.png",
+        "dica": "Continue até chegar ajuda médica ou o bebê voltar a respirar"
+      }
+    ],
+    "emergencia": "🚨 SAMU 192 - Ligue IMEDIATAMENTE se o bebê estiver inconsciente e sem respirar!"
+  },
+  
+  "arrotar": {
+    "titulo": "Como ajudar o bebê a arrotar",
+    "descricao": "Técnicas para fazer o bebê eliminar gases após a mamada",
+    "passos": [
+      {
+        "numero": 1,
+        "titulo": "Posição no ombro",
+        "descricao": "Coloque o bebê sobre seu ombro, com a barriga encostada em você",
+        "imagem": "arrotar_ombro.png",
+        "dica": "Use uma fralda no ombro para proteger sua roupa"
+      },
+      {
+        "numero": 2,
+        "titulo": "Pancadinhas suaves",
+        "descricao": "Bata levemente nas costas do bebê",
+        "imagem": "arrotar_pancadas.png",
+        "dica": "Não precisa ser forte. Pancadas suaves são suficientes"
+      },
+      {
+        "numero": 3,
+        "titulo": "Posição sentada",
+        "descricao": "Segure o bebê sentado no seu colo, inclinado um pouco para frente",
+        "imagem": "arrotar_sentado.png",
+        "dica": "Apoie o peito e queixo do bebê com uma mão"
+      },
+      {
+        "numero": 4,
+        "titulo": "Passear com o bebê",
+        "descricao": "Movimentar o bebê suavemente pode ajudar a arrotar",
+        "imagem": "arrotar_andar.png",
+        "dica": "Caminhe devagar pela casa segurando o bebê"
+      },
+      {
+        "numero": 5,
+        "titulo": "Massagem no peito",
+        "descricao": "Esfregue suavemente o peito do bebê de baixo para cima",
+        "imagem": "arrotar_massagem.png",
+        "dica": "Movimentos ascendentes ajudam o ar subir"
+      }
+    ],
+    "tempo": "Tente fazer o bebê arrotar por 5-10 minutos após cada mamada. Se não arrotar nesse tempo, pode não ter comido ar.",
+    "dica": "Nem todos os bebês arrotam toda vez. Não se preocupe se depois de 10 minutos de tentativa não acontecer."
+  },
+  
+  "banho_bebe": {
+    "titulo": "Como dar banho em recém-nascido",
+    "descricao": "Passo a passo seguro para dar banho no bebê",
+    "passos": [
+      {
+        "numero": 1,
+        "titulo": "Prepare tudo antes",
+        "descricao": "Separe: toalha, sabonete/espuma apropriados, fralda limpa, roupa, ambiente aquecido",
+        "imagem": "banho_preparar.png",
+        "dica": "Tenha tudo ao alcance - NUNCA deixe o bebê sozinho na água!"
+      },
+      {
+        "numero": 2,
+        "titulo": "Temperatura da água",
+        "descricao": "A água deve estar morna (37°C). Teste com o cotovelo ou pulso",
+        "imagem": "banho_temperatura.png",
+        "dica": "Mais frio que muito quente. Sua pele é mais sensível que a do bebê"
+      },
+      {
+        "numero": 3,
+        "titulo": "Comece pela cabeça",
+        "descricao": "Lave primeiro a cabecinha (não precisa enxaguar diariamente)",
+        "imagem": "banho_cabeca.png",
+        "dica": "Use pouca água na cabeça. Proteja os olhos e ouvidos"
+      },
+      {
+        "numero": 4,
+        "titulo": "Corpo delicadamente",
+        "descricao": "Lave o tronco, braços, pernas com movimentos suaves",
+        "imagem": "banho_corpo.png",
+        "dica": "Preste atenção nas dobras (pescoço, axilas, virilha)"
+      },
+      {
+        "numero": 5,
+        "titulo": "Área genital por último",
+        "descricao": "Lave delicadamente as genitais (de frente para trás nas meninas)",
+        "imagem": "banho_genital.png",
+        "dica": "NÃO puxe o prepúcio em meninos. Limpeza externa apenas"
+      },
+      {
+        "numero": 6,
+        "titulo": "Seque bem",
+        "descricao": "Envolva o bebê na toalha imediatamente. Seque bem todas as dobras",
+        "imagem": "banho_secar.png",
+        "dica": "Dobras molhadas podem causar assaduras"
+      },
+      {
+        "numero": 7,
+        "titulo": "Finalize",
+        "descricao": "Coloque fralda e roupa limpa. Aqueça o bebê",
+        "imagem": "banho_finalizar.png",
+        "dica": "Pode dar uma mamada após o banho - ajuda a acalmar"
+      }
+    ],
+    "frequencia": "Recém-nascidos não precisam de banho diário. 2-3 vezes por semana é suficiente nos primeiros meses.",
+    "seguranca": "A temperatura do ambiente deve estar agradável. Banho rápido (5-10 minutos). NUNCA deixe o bebê sozinho na água!"
+  },
+  
+  "troca_fralda": {
+    "titulo": "Como trocar a fralda corretamente",
+    "descricao": "Passo a passo para troca de fralda preventiva",
+    "passos": [
+      {
+        "numero": 1,
+        "titulo": "Tenha tudo à mão",
+        "descricao": "Separe: fralda limpa, lenços umedecidos/água, pomada preventiva, lixeira",
+        "imagem": "troca_preparar.png",
+        "dica": "Organização evita acidentes - tenha tudo pronto antes de começar"
+      },
+      {
+        "numero": 2,
+        "titulo": "Posicione o bebê",
+        "descricao": "Deite o bebê em superfície segura (troca) com superfície higiênica",
+        "imagem": "troca_posicao.png",
+        "dica": "NUNCA deixe o bebê sozinho na troca - mesmo por segundos!"
+      },
+      {
+        "numero": 3,
+        "titulo": "Retire a fralda suja",
+        "descricao": "Abra a fralda e segure os pés do bebê pelos tornozelos, levantando suavemente",
+        "imagem": "troca_retirar.png",
+        "dica": "Levantando as pernas facilita a limpeza"
+      },
+      {
+        "numero": 4,
+        "titulo": "Limpe bem",
+        "descricao": "Limpe de frente para trás, especialmente em meninas",
+        "imagem": "troca_limpar.png",
+        "dica": "Use lenço ou água em cada região. Uma vez só para não espalhar bactérias"
+      },
+      {
+        "numero": 5,
+        "titulo": "Deixe arejar",
+        "descricao": "Deixe a área sem fralda por alguns segundos para arejar",
+        "imagem": "troca_arejar.png",
+        "dica": "A prevenção é a melhor forma de evitar assaduras"
+      },
+      {
+        "numero": 6,
+        "titulo": "Pomada preventiva",
+        "descricao": "Passe um pouco de pomada preventiva nas áreas de contato",
+        "imagem": "troca_pomada.png",
+        "dica": "Aplique na dobra da virilha e nas nádegas. Pouca quantidade é suficiente"
+      },
+      {
+        "numero": 7,
+        "titulo": "Coloque fralda limpa",
+        "descricao": "Posicione a fralda limpa e feche adequadamente (nem muito apertada nem muito frouxa)",
+        "imagem": "troca_fechar.png",
+        "dica": "Deve caber um dedo entre a fralda e a cintura do bebê"
+      }
+    ],
+    "frequencia": "Troque a cada 2-3 horas ou sempre que sujar. Bebês recém-nascidos fazem cocô com muita frequência.",
+    "sinais": "Procure o pediatra se: assadura persistente, vermelhidão intensa, bolhas ou feridas na área da fralda."
+  },
+  
+  "posicao_dormir": {
+    "titulo": "Posições seguras para o bebê dormir",
+    "descricao": "Como reduzir o risco de morte súbita infantil",
+    "importante": "O bebê DEVE sempre dormir de BARRIGA PARA CIMA durante o primeiro ano de vida!",
+    "passos": [
+      {
+        "numero": 1,
+        "titulo": "Posição supina (de costas)",
+        "descricao": "SEMPRE coloque o bebê de barriga para cima no berço",
+        "imagem": "dormir_costas.png",
+        "dica": "Esta é a posição MAIS SEGURA comprovadamente"
+      },
+      {
+        "numero": 2,
+        "titulo": "Colchão firme",
+        "descricao": "Use colchão próprio para bebês, firme e nivelado",
+        "imagem": "colchao_firme.png",
+        "dica": "Colchões macios ou acolchoados são perigosos"
+      },
+      {
+        "numero": 3,
+        "titulo": "Berço vazio",
+        "descricao": "SEM travesseiros, bichos de pelúcia, cobertores soltos ou qualquer objeto",
+        "imagem": "berco_vazio.png",
+        "dica": "O berço deve ter apenas o bebê e lençol firme preso"
+      },
+      {
+        "numero": 4,
+        "titulo": "Roupa adequada",
+        "descricao": "Use saco de dormir ou pijama de bebê ao invés de cobertor",
+        "imagem": "roupa_dormir.png",
+        "dica": "Evita cobrir a cabecinha ou ficar solto"
+      },
+      {
+        "numero": 5,
+        "titulo": "Quarto do bebê",
+        "descricao": "Recomenda-se que o bebê durma no mesmo quarto dos pais nos primeiros 6 meses, mas não na mesma cama",
+        "imagem": "quarto_dormir.png",
+        "dica": "Berço ao lado da cama facilita amamentação e vigília"
+      }
+    ],
+    "evitar": "NUNCA coloque o bebê para dormir: de bruços, de lado, com travesseiro, com cobertor solto, na mesma cama que você, em sofá ou poltrona, com bichos de pelúcia ao redor.",
+    "observacao": "Quando o bebê estiver AWAKE e sob sua supervisão, pode deitar de bruços para fortalecer pescoço e costas. Mas NUNCA para dormir!"
+  }
+}
+

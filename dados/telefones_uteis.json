@@ -1,0 +1,83 @@
+{
+  "emergencias": {
+    "192": {
+      "nome": "SAMU - Serviço de Atendimento Móvel de Urgência",
+      "descricao": "Emergências médicas e ambulância",
+      "disque": "192",
+      "gratuito": true
+    },
+    "193": {
+      "nome": "Corpo de Bombeiros",
+      "descricao": "Emergências e incêndios",
+      "disque": "193",
+      "gratuito": true
+    },
+    "190": {
+      "nome": "Polícia Militar",
+      "descricao": "Emergências policiais",
+      "disque": "190",
+      "gratuito": true
+    },
+    "199": {
+      "nome": "Defesa Civil",
+      "descricao": "Emergências ambientais e desastres",
+      "disque": "199",
+      "gratuito": true
+    }
+  },
+  "saude_mental": {
+    "188": {
+      "nome": "CVV - Centro de Valorização da Vida",
+      "descricao": "Prevenção do suicídio e apoio emocional",
+      "disque": "188",
+      "gratuito": true,
+      "horario": "24 horas por dia",
+      "site": "https://www.cvv.org.br",
+      "chat": "Disponível no site"
+    },
+    "136": {
+      "nome": "Disque Saúde",
+      "descricao": "Orientação em saúde e informações gerais",
+      "disque": "136",
+      "gratuito": true,
+      "horario": "Segunda a Sexta, 8h às 18h"
+    }
+  },
+  "saude_materno_infantil": {
+    "cuidado_materno": {
+      "nome": "Disque Mãe",
+      "descricao": "Orientação sobre cuidados na gravidez e pós-parto",
+      "disque": "0800-XXX-XXXX",
+      "gratuito": true,
+      "horario": "Segunda a Sexta, 8h às 17h"
+    },
+    "aleitamento": {
+      "nome": "Disque Amamentação",
+      "descricao": "Suporte e orientação sobre aleitamento materno",
+      "disque": "0800-XXX-XXXX",
+      "gratuito": true,
+      "horario": "Segunda a Domingo, 8h às 20h"
+    }
+  },
+  "unidades_saude": {
+    "upa": {
+      "nome": "UPA - Unidade de Pronto Atendimento",
+      "descricao": "Atendimento de urgência e emergência",
+      "horario": "24 horas por dia",
+      "procure": "UPA mais próxima de sua residência"
+    },
+    "posto": {
+      "nome": "Posto de Saúde",
+      "descricao": "Atendimento básico e consultas agendadas",
+      "horario": "Segunda a Sexta, 7h às 17h",
+      "procure": "Posto de Saúde da sua região"
+    },
+    "maternidade": {
+      "nome": "Maternidade / Hospital de Referência",
+      "descricao": "Acompanhamento gestacional e partos",
+      "horario": "24 horas por dia para partos",
+      "procure": "Maternidade cadastrada no seu pré-natal"
+    }
+  },
+  "importante": "Em caso de emergência obstétrica ou puerpéral, NÃO HESITE em buscar atendimento imediato. Vá direto à maternidade ou ao hospital mais próximo."
+}

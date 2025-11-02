@@ -1,14 +1,318 @@
 {
   "identidade": {
     "pergunta": "Por que me sinto perdida depois do parto?",
-    "resposta": "É normal. O puerpério é uma fase de transição intensa — seu corpo e mente estão se reorganizando. Esse sentimento de 'não ser mais a mesma' é parte do processo de se redescobrir."
+    "resposta": "É normal. O puerpério é uma fase de transição intensa – seu corpo e mente estão se reorganizando. Esse sentimento de 'não ser mais a mesma' é parte do processo de se redescobrir."
   },
   "alimentacao": {
     "pergunta": "O que devo comer no puerpério?",
     "resposta": "Prefira alimentos ricos em ferro, cálcio e líquidos. Sopas, frutas, verduras e grãos ajudam na recuperação e na produção de leite."
   },
-  "babyblues": {
+  "baby_blues": {
     "pergunta": "O que é o baby blues?",
-    "resposta": "O baby blues é uma fase de tristeza leve e passageira que pode surgir nos primeiros 10 dias após o parto. Se os sintomas durarem mais de 15 dias, é importante buscar ajuda profissional."
+    "resposta": "O baby blues é uma tristeza leve e passageira nos primeiros dias após o parto, causada por mudanças hormonais, cansaço e ajustes à maternidade. Normalmente melhora sozinho em até 2 semanas, mas atenção se os sintomas persistirem."
+  },
+  "puerperio": {
+    "pergunta": "O que é o puerpério?",
+    "resposta": "O puerpério é a fase pós-parto em que o corpo e a mente da mulher passam por transformações intensas para se adaptar à nova realidade."
+  },
+  "cesarea_parto_normal": {
+    "pergunta": "Fiz uma cesárea. Se engravidar novamente, o bebê poderá nascer por parto normal?",
+    "resposta": "Sim, muitas mulheres conseguem ter parto normal depois de uma cesárea. Chama-se VBAC (Vaginal Birth After Cesarean). Isso depende de vários fatores como razão da cesárea anterior, tipo de incisão e condições da gestação atual. Converse com seu médico para avaliar seu caso específico."
+  },
+  "pes_inchados_pos_parto": {
+    "pergunta": "É normal os pés continuarem inchados após o parto?",
+    "resposta": "Sim, é normal que o inchaço nos pés persista por algumas semanas após o parto. O corpo leva tempo para eliminar os líquidos acumulados durante a gestação. Elevar os pés, fazer movimentos leves e beber bastante água ajudam. Se o inchaço piorar ou durar muito, consulte seu médico."
+  },
+  "leite_demorar_descer": {
+    "pergunta": "Quanto tempo o leite demora para descer?",
+    "resposta": "O leite começa a 'descer' (descida do leite) geralmente entre 3 a 5 dias após o parto. Antes disso, o bebê mama o colostro, que é super importante para seu sistema imunológico. A descida do leite varia de mulher para mulher."
+  },
+  "febre_leite_descendo": {
+    "pergunta": "É normal ter febre quando o leite desce?",
+    "resposta": "Uma leve elevação da temperatura pode acontecer, mas febre alta (acima de 38°C) NÃO é normal. Pode indicar ingurgitamento mamário, mastite ou infecção. Se tiver febre alta, procure atendimento médico imediatamente."
+  },
+  "leite_empedrar_prevencao": {
+    "pergunta": "O que faço para evitar que o leite empedre?",
+    "resposta": "Para evitar empedramento do leite: amamente com frequência, esvazie bem as mamas, use sutiã de amamentação adequado, massageie suavemente antes de amamentar, evite intervalos muito longos entre as mamadas e, se precisar, faça ordenha manual ou com bomba."
+  },
+  "dor_amamentacao": {
+    "pergunta": "Estou sentindo muita dor quando amamento. Será que estou fazendo algo errado?",
+    "resposta": "Dor excessiva pode indicar pega incorreta do bebê. Verifique: boca bem aberta, lábio inferior voltado para fora, queixo encostado no peito, nariz livre. Outras causas: mamilos rachados, candidíase ou ingurgitamento. Consulte um consultor em amamentação ou seu médico."
+  },
+  "sede_amamentacao": {
+    "pergunta": "Sinto muita sede quando amamento. Isso é normal?",
+    "resposta": "Sim, é completamente normal! A produção de leite consome muita água do seu corpo. Mantenha sempre uma garrafa de água ao lado e beba frequentemente. Recomenda-se 2-3 litros de água por dia durante a amamentação."
+  },
+  "tristeza_maternidade": {
+    "pergunta": "A maternidade é um sonho, mas estou me sentindo triste. Por que isso acontece?",
+    "resposta": "É comum sentir tristeza nos primeiros dias (baby blues). Mudanças hormonais, cansaço e ajustes à nova realidade podem causar isso. Se a tristeza for intensa, durar mais de 2 semanas ou incluir pensamentos negativos sobre o bebê, procure ajuda profissional."
+  },
+  "dieta_emagrecer_amamentando": {
+    "pergunta": "Posso fazer dieta para emagrecer mesmo amamentando?",
+    "resposta": "Sim, mas com cuidado! Dietas muito restritivas podem afetar a produção de leite. O ideal é perder peso gradualmente, mantendo uma alimentação equilibrada e nutritiva. Evite dietas radicais e sempre converse com seu nutricionista sobre suas necessidades durante a amamentação."
+  },
+  "engordar_pos_parto": {
+    "pergunta": "Engordei demais na gestação e agora não consigo voltar ao meu peso anterior. O que eu faço?",
+    "resposta": "Dê tempo ao tempo! Seu corpo levou 9 meses para mudar, precisa de tempo para voltar. Foque em alimentação saudável, hidratação e, quando liberada pelo médico, atividade física moderada. Amamentar também ajuda na perda de peso. Seja paciente e gentil consigo mesma."
+  },
+  "barriga_flacida": {
+    "pergunta": "Minha barriga ficou flácida. Vou ter que fazer uma plástica?",
+    "resposta": "Não necessariamente! A flacidez melhora muito com exercícios específicos para o core (abdominais, prancha) após liberação médica. Creme com vitamina E e massagens podem ajudar. Se após 1-2 anos ainda incomodar muito, aí sim considere avaliar opções cirúrgicas. Mas dê tempo ao corpo se recuperar naturalmente primeiro."
+  },
+  "cirurgia_plastica_pos_parto": {
+    "pergunta": "Quanto tempo após o parto posso fazer uma cirurgia plástica, como lipo ou prótese de silicone?",
+    "resposta": "O ideal é esperar pelo menos 12 meses após o parto, quando o corpo já voltou ao seu novo estado de equilíbrio. Se estiver amamentando, espere terminar a amamentação. Cada caso é único, então consulte um cirurgião plástico para avaliação individual."
+  },
+  "retomar_relacoes_sexuais": {
+    "pergunta": "Quando eu e meu marido podemos voltar a ter relações?",
+    "resposta": "Geralmente, após 40 dias do parto ou quando o médico liberar. Importante aguardar a cicatrização completa (seja parto normal ou cesárea). O mais importante é você se sentir pronta física e emocionalmente. Não tenha pressa!"
+  },
+  "relacoes_resguardo": {
+    "pergunta": "Há algum perigo em ter relações durante o período de resguardo?",
+    "resposta": "Sim! Durante o resguardo (primeiras 6 semanas), há risco de infecção devido à ferida interna (útero se contraindo). Aguarde a liberação médica. Se o sangramento ainda estiver intenso, é um sinal de que ainda não está pronto."
+  },
+  "sem_vontade_sexo": {
+    "pergunta": "O médico liberou a retomada das relações sexuais, mas não sinto vontade. É normal?",
+    "resposta": "Completamente normal! Hormônios, cansaço, mudança de foco, possíveis dores... tudo isso afeta a libido. Converse com seu parceiro sobre os sentimentos e explore juntos uma reconexão gradual. Se não melhorar após alguns meses, considere conversar com seu médico."
+  },
+  "estrias": {
+    "pergunta": "Fiquei com os seios e o abdômen cheio de estrias. O problema tem solução ou vou ficar marcada para sempre?",
+    "resposta": "Estrias podem clarear significativamente com o tempo. Hidratação constante, óleos de rosa mosqueta ou amêndoas, e tratamentos estéticos podem ajudar. Estrias nunca desaparecem completamente, mas ficam bem mais discretas. São marcas da sua jornada como mãe!"
+  },
+  "vagina_frouxa": {
+    "pergunta": "É verdade que quem faz parto normal fica com a vagina frouxa?",
+    "resposta": "Esse é um mito! A vagina tem grande capacidade de elasticidade e volta ao normal após o parto. Exercícios de Kegel ajudam a fortalecer o assoalho pélvico. A flexibilidade é temporária e os músculos se recuperam naturalmente."
+  },
+  "seios_flacidos_amamentacao": {
+    "pergunta": "Meus seios ficaram flácidos depois do tempo de amamentação. Eles vão voltar ao que eram antes?",
+    "resposta": "Os seios podem não voltar exatamente como eram antes, mas a flacidez melhora com o tempo. Exercícios para peitoral, hidratação da pele e usar sutiã adequado ajudam. A mudança faz parte da transformação do corpo materno e é natural."
+  },
+  "tempo_corpo_voltar_normal": {
+    "pergunta": "Quanto tempo o corpo demora a voltar ao normal depois que o bebê nasce?",
+    "resposta": "Varia muito! Mudanças imediatas: poucos dias. Peso: 6-12 meses. Formato do corpo: pode levar 1-2 anos para encontrar um novo normal. Lembre-se: seu corpo não precisa voltar exatamente como era. O importante é saúde e bem-estar."
+  },
+  "atividade_fisica_pos_parto": {
+    "pergunta": "Quando posso voltar a praticar uma atividade física?",
+    "resposta": "Caminhadas leves já podem começar alguns dias após o parto (se parto normal) ou após cicatrização (cesárea). Exercícios mais intensos: aguarde liberação médica (geralmente 6 semanas). Comece devagar e escute seu corpo."
+  },
+  "queda_cabelo_amamentacao": {
+    "pergunta": "É comum os cabelos caírem durante o período de amamentação?",
+    "resposta": "Sim, é muito comum! Durante a gravidez os cabelos param de cair, então no pós-parto há uma queda 'compensatória'. Isso geralmente melhora após 6-12 meses. Mantenha uma boa alimentação, considere suplementos se necessário e seja paciente."
+  },
+  "exercicio_producao_leite": {
+    "pergunta": "A prática de atividade física prejudica a produção do leite?",
+    "resposta": "Não, desde que você mantenha hidratação adequada e não faça exercícios extremos logo no início. Hidrate-se bem, amamente antes ou depois do exercício e comece gradualmente. Exercícios moderados podem inclusive melhorar seu bem-estar geral."
+  },
+  "maes_com_sem_leite": {
+    "pergunta": "Por que algumas mães têm leite e outras não?",
+    "resposta": "A maioria das mulheres produz leite, mas fatores como pega inadequada, estresse, hidratação, alimentação e frequência das mamadas podem afetar a produção. Pequeno percentual tem condições médicas que dificultam. Buscar ajuda especializada é fundamental."
+  },
+  "sangramento_dois_meses": {
+    "pergunta": "É normal sangrar até dois meses depois do parto?",
+    "resposta": "Lóquios (sangramento pós-parto) duram em média 4-6 semanas, mas podem durar até 8 semanas. Se for muito intenso, tiver cheiro forte, coágulos grandes ou vier acompanhado de febre, procure seu médico. Pode indicar infecção ou resíduos retidos."
+  },
+  "sem_menstruacao_amamentando": {
+    "pergunta": "Estou amamentando e ainda não fiquei menstruada. Isso é normal?",
+    "resposta": "Sim, é normal! A amamentação exclusiva pode suprimir a ovulação por meses (amenorreia lactacional). Algumas mulheres ficam sem menstruar por até 1 ano ou mais amamentando. Mas atenção: isso não é método contraceptivo 100% confiável!"
+  },
+  "tingir_cabelo_amamentando": {
+    "pergunta": "Posso tingir o cabelo mesmo amamentando?",
+    "resposta": "Geralmente sim, mas prefira tintas com menos químicos (henna, tonalizantes sem amônia) e faça em ambiente bem ventilado. Pouca absorção sistêmica acontece. Se preferir, pode esperar até 6 meses do bebê. Converse com seu médico se tiver dúvidas."
+  },
+  "cinta_pos_parto": {
+    "pergunta": "O uso da cinta ajuda a barriga a voltar ao normal depois do parto?",
+    "resposta": "Pode ajudar no conforto e suporte, mas não 'modela' a barriga magicamente. Útil nos primeiros dias/se semanas para suporte da musculatura abdominal. O real trabalho é feito por tempo, exercícios e alimentação adequada. Não use cinta muito apertada."
+  },
+  "emagrecer_amamentando": {
+    "pergunta": "É normal emagrecer quando se amamenta?",
+    "resposta": "Sim, muitas mulheres emagrecem amamentando porque queima 300-500 calorias extras por dia. Mas nem todas perdem peso - depende do metabolismo, alimentação e genética. O importante é manter nutrição adequada para você e o bebê."
+  },
+  "cansaço_pos_parto": {
+    "pergunta": "Estou me sentindo muito cansada desde que meu bebê nasceu. Isso é normal?",
+    "resposta": "Sim, é esperado nos primeiros meses! Noites sem dormir, amamentação frequente, ajustes... tudo contribui. Priorize descanso, aceite ajuda, durma quando o bebê dorme. Se o cansaço for extremo ou persistir muito tempo, pode indicar depressão ou anemia - procure ajuda."
+  },
+  "libido_pos_parto": {
+    "pergunta": "E a minha libido/vida sexual após o parto — quando volta a normalidade?",
+    "resposta": "Não há um prazo fixo. Pode levar semanas, meses ou até mais. Fatores: hormônios, cansaço, mudanças físicas, foco no bebê. Comunique-se com seu parceiro, reconectem-se gradualmente e busquem ajuda profissional se for uma preocupação significativa. Cada casal no seu tempo."
+  },
+  "primeira_consulta_prenatal": {
+    "pergunta": "Quando devo fazer a primeira consulta pré-natal?",
+    "resposta": "O ideal é iniciar o pré-natal assim que descobrir a gravidez ou até 12 semanas de gestação. A primeira consulta é importante para avaliar a saúde da mãe, confirmar a gestação, estimar a idade gestacional e orientar sobre os cuidados necessários."
+  },
+  "exames_trimestre": {
+    "pergunta": "Quais exames de rotina são necessários em cada trimestre?",
+    "resposta": "1º trimestre: hemograma, tipagem sanguínea, glicemia, sorologias. 2º trimestre: ultrassom morfológico, teste de tolerância à glicose. 3º trimestre: hemograma, bacteriúria, cardiotocografia. Seu médico indicará os exames específicos para seu caso."
+  },
+  "sexo_bebe": {
+    "pergunta": "Quando poderei saber o sexo do bebê?",
+    "resposta": "Geralmente entre 16-20 semanas de gestação através do ultrassom. Alguns exames mais recentes (genéticos) podem detectar desde 9 semanas, mas com custo maior. A época ideal é no ultrassom morfológico do 2º trimestre."
+  },
+  "significado_ultrasson": {
+    "pergunta": "O que significa cada ultrassom e quais informações eles fornecem?",
+    "resposta": "Ultra 1º trimestre: confirma gestação, idade gestacional, batimentos. Ultra morfológico (20-24 sem): desenvolvimento dos órgãos, sexo, anomalias. Ultra 3º trimestre: crescimento, posição do bebê, placenta, líquido amniótico. Cada um tem objetivos específicos no acompanhamento."
+  },
+  "contracoes_treinamento": {
+    "pergunta": "O que são contrações de treinamento? Quando devo me preocupar com elas?",
+    "resposta": "São contrações irregulares e indolores que preparam o corpo para o parto (Braxton-Hicks). Comuns a partir do 2º trimestre. Preocupe-se se: forem regulares, doerem muito, vierem com sangramento ou rompimento da bolsa. Nesses casos, vá ao hospital."
+  },
+  "sintomas_gravidez": {
+    "pergunta": "Quais são os sintomas iniciais da gravidez, como enjoos e cansaço?",
+    "resposta": "Sintomas comuns: ausência de menstruação, enjoos, cansaço excessivo, sensibilidade mamária, vontade frequente de urinar, alterações no paladar e olfato, tonturas. Variam muito de mulher para mulher e geralmente diminuem após o 1º trimestre."
+  },
+  "ganho_peso_gestacao": {
+    "pergunta": "Quais são os limites para o ganho de peso durante a gestação?",
+    "resposta": "Varia conforme IMC pré-gestacional: IMC normal (18.5-24.9): 11-16kg. Abaixo do peso: 12-18kg. Sobrepeso: 7-11kg. Obesidade: 5-9kg. Ganho saudável é gradual e consistente, não todo de uma vez."
+  },
+  "alimentos_evitar_gravidez": {
+    "pergunta": "Quais alimentos devo evitar? Posso tomar café ou chá?",
+    "resposta": "Evite: carnes cruas/mal passadas, peixes com alto teor de mercúrio, leite não pasteurizado, queijos moles, álcool, excesso de cafeína (max 200mg/dia = 2 xícaras café). Chás: muitos devem ser evitados. Converse com seu médico sobre hábitos alimentares."
+  },
+  "exercicios_gravidez": {
+    "pergunta": "Posso praticar exercícios físicos? Quais são os mais seguros?",
+    "resposta": "Sim! Exercícios moderados são benéficos: caminhada, natação, hidroginástica, ioga pré-natal, pilates adaptado. Evite: esportes de contato, mergulho, exercícios de alto impacto. Sempre com liberação médica e respeitando seus limites."
+  },
+  "sexo_na_gravidez": {
+    "pergunta": "Há algum risco em ter relações sexuais durante a gravidez?",
+    "resposta": "Em gestações normais e sem complicações, relações sexuais são seguras e podem ser prazerosas. Em casos de risco de aborto, placenta prévia ou trabalho de parto prematuro, o médico pode orientar a restrição. Sempre consulte seu obstetra."
+  },
+  "azia_inchaço_costas": {
+    "pergunta": "Como posso aliviar desconfortos como azia, inchaço e dor nas costas?",
+    "resposta": "Azia: refeições menores, evite deitar após comer. Inchaço: eleve pernas, hidrate-se, evite sal. Dores nas costas: postura correta, sapatos confortáveis, alongamentos, compressas quentes. Exercícios de fortalecimento ajudam. Use cinta de apoio se necessário."
+  },
+  "medicamentos_seguros_gravidez": {
+    "pergunta": "Quais medicamentos posso tomar com segurança?",
+    "resposta": "Muitos medicamentos são contraindicados na gravidez. NUNCA tome remédios por conta própria. Medicamentos seguros precisam ser prescritos pelo médico que conhece sua gestação. Até remédios comuns como alguns antigripais podem ser perigosos."
+  },
+  "tingir_cabelo_gravidez": {
+    "pergunta": "Posso tingir o cabelo ou fazer outros procedimentos estéticos?",
+    "resposta": "Tingir cabelo: a partir do 2º trimestre é considerado mais seguro. Prefira tintas sem amônia e ambiente bem ventilado. Outros procedimentos: evite botox, preenchimentos, peelings químicos. Procure por tratamentos seguros para gestantes."
+  },
+  "sinais_alerta_gravidez": {
+    "pergunta": "Quais são os sinais de alerta que indicam que devo ir ao médico?",
+    "resposta": "Sangramento vaginal, dor abdominal intensa, contrações regulares antes de 37 semanas, perda de líquido amniótico, diminuição dos movimentos do bebê, febre, dor de cabeça forte, visão embaçada, inchaço súbito. Em caso de dúvida, procure atendimento."
+  },
+  "plano_parto": {
+    "pergunta": "Como será o meu plano de parto?",
+    "resposta": "Plano de parto documenta suas preferências: posições de parto, uso de analgesia, presença de acompanhante, cortes de luz, música. É uma ferramenta de comunicação com a equipe médica. Converse sobre suas expectativas antecipadamente."
+  },
+  "parto_normal_vs_cesarea": {
+    "pergunta": "Quais são as diferenças entre o parto normal e a cesariana?",
+    "resposta": "Parto normal: recuperação mais rápida, menos riscos cirúrgicos, trabalho de parto natural. Cesárea: cirurgia abdominal, recuperação mais longa, maior risco de complicações, mas pode ser necessária por indicação médica. Converse com seu médico sobre o melhor para seu caso."
+  },
+  "sinais_trabalho_parto": {
+    "pergunta": "Quais são os sinais reais do trabalho de parto?",
+    "resposta": "Contrações regulares e progressivas (intervalo diminuindo), dilatação do colo uterino, rompimento da bolsa amniótica, eliminação do tampão mucoso. Se as contrações estão ficando mais frequentes e dolorosas, é hora de ir ao hospital."
+  },
+  "quando_ir_hospital_parto": {
+    "pergunta": "Quando devo ir para o hospital?",
+    "resposta": "Contrações a cada 5 minutos (1ª gestação) ou a cada 10 min (2ª+), ruptura da bolsa d'água, sangramento vermelho vivo, diminuição dos movimentos do bebê, ou orientação médica específica. Em caso de dúvida, ligue para seu médico ou vá ao hospital."
+  },
+  "acompanhante_parto": {
+    "pergunta": "Quem poderá me acompanhar no parto?",
+    "resposta": "As regras variam conforme a maternidade e protocolos locais. Geralmente 1-2 pessoas: marido/companheiro, mãe, doula. Importante confirmar antecipadamente com a maternidade as políticas de acompanhantes."
+  },
+  "parto_humanizado": {
+    "pergunta": "A maternidade oferece estrutura para parto humanizado?",
+    "resposta": "Maternidades com parto humanizado oferecem: banheiras, opções de posições, luz ambiente, presença de doula, menor intervenção médica desnecessária. Pesquise maternidades da sua região e verifique se se alinham com suas expectativas."
+  },
+  "cuidados_cicatrizacao_parto": {
+    "pergunta": "Quais cuidados devo ter com a cicatrização do parto, seja vaginal ou cesariana?",
+    "resposta": "Parto normal: higiene local, banho de assento mornos, evitar esforço. Cesárea: manter curativo limpo e seco, evitar carregar peso, monitorar sinais de infecção (vermelhidão, secreção, febre). Em ambos, repouso e alimentação adequada são fundamentais."
+  },
+  "queda_cabelo_pos_parto": {
+    "pergunta": "Como posso lidar com a queda de cabelo e o escurecimento da pele, que são comuns no pós-parto?",
+    "resposta": "Queda de cabelo: alimentação rica em ferro e proteínas, shampoos adequados, evite químicas pesadas. Manchas na pele: protetor solar, cremes adequados, geralmente clareiam após alguns meses. Mudanças hormonais causam isso, é temporário na maioria dos casos."
+  },
+  "alimentacao_pos_parto": {
+    "pergunta": "Como posso me alimentar de forma saudável para me recuperar e ajudar na amamentação?",
+    "resposta": "Priorize: proteínas magras, frutas variadas, verduras verde-escuras, grãos integrais, laticínios, muita água. Refeições pequenas e frequentes. Evite dietas restritivas. A alimentação equilibrada ajuda na recuperação e produção de leite de qualidade."
+  },
+  "contracepcao_pos_parto": {
+    "pergunta": "Qual é o melhor método contraceptivo para o pós-parto?",
+    "resposta": "Opções seguras durante amamentação: DIU, implante hormonal, minipílula (apenas progesterona), preservativo. Evite pílulas combinadas enquanto amamenta exclusivamente. Consulte seu ginecologista para escolha do método mais adequado ao seu perfil."
+  },
+  "menstruacao_regular": {
+    "pergunta": "Quando a menstruação voltará a ser regular?",
+    "resposta": "Varia muito! Se não amamenta: volta em 6-8 semanas. Amamentando: pode demorar meses ou até mais de 1 ano. A amenorreia lactacional é comum. Quando voltar, podem ser irregular nos primeiros ciclos. Converse com seu médico."
+  },
+  "consulta_pos_parto": {
+    "pergunta": "Qual a importância da consulta pós-parto (puerpério)?",
+    "resposta": "A consulta pós-parto (geralmente 40-60 dias) avalia recuperação física, cicatrização, contracepção, amamentação, estado emocional, retomada de atividades. É momento importante para tirar dúvidas e garantir sua saúde física e mental."
+  },
+  "pega_bebe_correta": {
+    "pergunta": "Como garantir que o bebê está pegando corretamente o seio?",
+    "resposta": "Boca bem aberta (formato de peixe), lábio inferior voltado para fora, queixo tocando o peito, nariz livre, aréola maior dentro da boca do bebê, audível deglutição, não deve doer. Se estiver dolorido, a pega está incorreta - peça ajuda de um consultor em amamentação."
+  },
+  "frequencia_amamentacao": {
+    "pergunta": "Com qual frequência devo amamentar o recém-nascido?",
+    "resposta": "Nos primeiros dias: a cada 2-3 horas (ou sob demanda quando o bebê mostrar sinais de fome). Bebês recém-nascidos mamam 8-12 vezes ao dia. Não espere choro - oferte quando mostrar sinais de fome (chupar dedos, mover cabeça, abrir boca)."
+  },
+  "bebe_mamando_suficiente": {
+    "pergunta": "Como saber se o bebê está mamando o suficiente?",
+    "resposta": "Sinais: faz cocô diário após 3º dia, faz xixi 6+ vezes/dia, ganha peso adequado, mama ativamente 15-20 min por seio, fica satisfeito após mamar, está alerta e ativo. Número de fraldas molhadas é um ótimo indicador!"
+  },
+  "dor_rachadura_mamilos": {
+    "pergunta": "O que fazer em caso de dor ou rachaduras nos mamilos?",
+    "resposta": "Verificar pega correta primeiro! Lave com água, seque ao ar, colocar leite materno nas rachaduras (tem poder cicatrizante), cremes específicos se necessário, banho de sol 5-10 min/dia, começar pela mama menos dolorida. Se persistir, procure ajuda profissional."
+  },
+  "aumentar_producao_leite": {
+    "pergunta": "Como aumentar a produção de leite?",
+    "resposta": "Amamente com frequência, evite complementos desnecessários, descanso adequado, hidrate-se bem, alimentação equilibrada, aleitamento sob demanda (incluindo à noite), esvazie bem as mamas. Estresse e cansaço podem diminuir a produção."
+  },
+  "acordar_bebe_mamar": {
+    "pergunta": "Preciso acordar o bebê para mamar?",
+    "resposta": "Nos primeiros dias/semanas: SIM, acorde a cada 3 horas se o bebê não acordar sozinho (para garantir alimentação adequada e estabelecer a produção de leite). Após ganho de peso adequado: geralmente pode deixar o bebê acordar naturalmente, mas confirme com seu pediatra."
+  },
+  "alimentos_evitar_amamentacao": {
+    "pergunta": "Existe algum alimento que devo evitar durante a amamentação?",
+    "resposta": "Evite: álcool (ou aguarde 2h após consumir), excesso de cafeína, peixes com alto mercúrio (atum, cação), alimentos muito condimentados (se o bebê reagir). Geralmente, alimentação equilibrada e normal é apropriada. Observe se algum alimento específico causa desconforto no bebê."
+  },
+  "banho_bebe": {
+    "pergunta": "Como dar banho no bebê?",
+    "resposta": "Água morna (teste com cotovelo), temperatura ambiente adequada, duração curta (5-10 min), produtos hipoalergênicos específicos bebês, suporte adequado da cabecinha, seque bem especialmente dobras. Banho diário não é necessário - 2-3x por semana está ok."
+  },
+  "cuidado_coto_umbilical": {
+    "pergunta": "Como cuidar do coto umbilical?",
+    "resposta": "Mantenha limpo e seco, exponha ao ar sempre que possível, limpe delicadamente com álcool 70% quando necessário, dobre fralda para não cobrir o coto, dê banho normalmente mas seque bem após. Geralmente cai em 1-3 semanas. Observe sinais de infecção."
+  },
+  "xixi_coco_bebe": {
+    "pergunta": "Quantas vezes o bebê deve fazer xixi e cocô por dia?",
+    "resposta": "Após os primeiros dias: xixi 6+ vezes/dia, cocô pode variar (há bebês que fazem várias vezes ao dia, outros a cada 2-3 dias). Consistência e cor são importantes. Procure o pediatra se houver ausência prolongada ou mudanças significativas."
+  },
+  "prevenir_assadura": {
+    "pergunta": "Como prevenir assaduras?",
+    "resposta": "Troque fraldas com frequência, limpe bem a cada troca, deixe área arejar alguns minutos, use pomada preventiva adequada, evite fraldas muito apertadas, lave delicadamente a cada troca. Uma boa higiene é fundamental para prevenir."
+  },
+  "colicas_bebe": {
+    "pergunta": "Como lidar com as cólicas do bebê?",
+    "resposta": "Cólicas são comuns nos primeiros 3 meses. Aqueça barriga com mãos quentes ou bolsa térmica, faça massagem circular na barriga, movimento de bicicleta com as pernas, arroto após mamar, banho morno, colo e carinho. Se muito intensa ou persistente, consulte o pediatra."
+  },
+  "posicao_dormir_bebe": {
+    "pergunta": "Qual é a melhor posição para o bebê dormir?",
+    "resposta": "Sempre de BARRIGA PARA CIMA! É a posição mais segura e previne morte súbita. Evite: travesseiros, cobertores soltos, bichos de pelúcia no berço. Colchão firme, sem nada solto ao redor. Compartilhar cama tem contraindicações - informe-se."
+  },
+  "frequencia_pediatra": {
+    "pergunta": "Com qual frequência o bebê precisa ir ao pediatra?",
+    "resposta": "Primeiro ano: consultas nos primeiros dias, 1 mês, 2 meses, 4, 6, 9 e 12 meses, além das vacinas. No primeiro mês: mais frequentemente. Sempre que surgirem preocupações, não hesite em marcar consulta. Prevenção é fundamental."
+  },
+  "sintomas_baby_blues": {
+    "pergunta": "O que é o baby blues e quais são os sintomas? Quando ele costuma passar?",
+    "resposta": "Baby blues: tristeza leve, choro fácil, ansiedade, irritabilidade, mudanças de humor. Começa 3-5 dias após parto, pode durar até 2 semanas. Causado por mudanças hormonais e ajustes. Se persistir além de 2 semanas ou intensificar, pode ser depressão pós-parto - procure ajuda."
+  },
+  "sintomas_depressao_pos_parto": {
+    "pergunta": "Quais os sintomas da depressão pós-parto e como ela é tratada?",
+    "resposta": "Sintomas: tristeza profunda, perda de interesse, dificuldade de vínculo com bebê, pensamentos negativos, alterações de sono/appetite, cansaço extremo. Tratamento: terapia, medicamentos (compatíveis com amamentação), suporte familiar. Não é culpa sua - é uma condição que tem tratamento eficaz."
+  },
+  "procurar_ajuda_mental": {
+    "pergunta": "Quando devo procurar ajuda profissional para a minha saúde mental?",
+    "resposta": "Procure ajuda se: tristeza extrema ou duradoura, ansiedade incapacitante, dificuldade de cuidar de si ou do bebê, pensamentos de autolesão ou sobre o bebê, falta de vínculo com o filho, sentimentos negativos persistentes. Não espere - sua saúde mental importa!"
+  },
+  "ansiedade_estresse_pos_parto": {
+    "pergunta": "Como posso gerenciar a ansiedade e o estresse na nova rotina?",
+    "resposta": "Respiração profunda, pedir ajuda quando necessário, criar rotina flexível mas previsível, tirar pausas para si, dormir quando o bebê dorme, compartilhar sentimentos com parceiro/amigos, evitar comparações, terapia se necessário. Você não precisa fazer tudo sozinha."
+  },
+  "mudancas_relacionamento_parceiro": {
+    "pergunta": "Como lidar com as mudanças na rotina e no relacionamento com o parceiro?",
+    "resposta": "Comunicação é fundamental - conversem sobre necessidades, expectativas, divisão de tarefas. Encontrem momentos juntos mesmo que breves. Relembrem-se de que é fase temporária. Busquem ajuda profissional se conflitos persistirem. Amor por vocês e pelo bebê vai guiar."
   }
 }

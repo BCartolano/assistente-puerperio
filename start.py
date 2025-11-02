@@ -101,7 +101,7 @@ def start_server():
     
     try:
         # Importa e executa o app
-        from app import app
+        from app import app  # type: ignore  # noqa
         print("Assistente Puerperio iniciado com sucesso!")
         print("Acesse: http://localhost:5000")
         print("Interface responsiva disponivel")

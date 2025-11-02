@@ -1,0 +1,130 @@
+{
+  "primeiro_mes": {
+    "semanas": "1-4",
+    "nome": "Primeiro mês - Adaptação",
+    "descricao": "Primeiras semanas após o parto - recuperação e adaptação",
+    "cuidados_fisicos": [
+      "Descanse o máximo possível",
+      "Durma quando o bebê dorme",
+      "Cuide bem da cicatriz (normal ou cesárea)",
+      "Use compressas frias para inchaço",
+      "Troque o absorvente com frequência",
+      "Faça banho de assento se necessário",
+      "Não faça exercícios intensos ainda",
+      "Alimente-se bem e hidrate-se",
+      "Peça ajuda para tarefas domésticas"
+    ],
+    "cuidados_emocionais": [
+      "Compreenda que é normal ter sentimentos variados",
+      "Baby blues é comum - converse sobre seus sentimentos",
+      "Não se culpe por pedir ajuda",
+      "Evite comparações com outras mães",
+      "Converse com outras mães",
+      "Durma e descanse são prioridades",
+      "Procure ajuda profissional se precisar"
+    ],
+    "amamentacao": [
+      "Amamente sob demanda",
+      "Peça ajuda de consultora se necessário",
+      "Verifique a pega correta",
+      "Cuide dos mamilos",
+      "Hidrate-se bem",
+      "Não desista - primeiros dias são os mais difíceis",
+      "Seja paciente com você e o bebê"
+    ],
+    "desenvolvimento_bebe": "Reflexos primitivos, reconhecimento de vozes familiares, desenvolvimento de padrões de sono",
+    "alertas": "Febre alta, sangramento excessivo, depressão intensa, dificuldade de vínculo com bebê - procure ajuda!",
+    "telefones_uteis": "SAMU 192 para emergências. CVV 188 para apoio emocional."
+  },
+  
+  "segundo_mes": {
+    "semanas": "5-8",
+    "nome": "Segundo mês - Estabelecendo rotinas",
+    "descricao": "Rotinas começam a se estabelecer",
+    "cuidados_fisicos": [
+      "Cicatrização deve estar bem avançada",
+      "Inchaços devem diminuir",
+      "Comece caminhadas leves se liberado",
+      "Cuidado com esforços físicos",
+      "Mantenha alimentação equilibrada",
+      "Continue hidratação adequada",
+      "Cuide da pele para prevenir estrias"
+    ],
+    "cuidados_emocionais": [
+      "Baby blues deve melhorar",
+      "Se tristeza persistir, procure ajuda",
+      "Conecte-se com outras mães",
+      "Saia de casa quando possível",
+      "Pequenas pausas são necessárias",
+      "Retome atividades que te dão prazer"
+    ],
+    "amamentacao": [
+      "Rotina de amamentação se estabelece",
+      "Alguns bebês começam a dormir mais",
+      "Continue amamentação sob demanda",
+      "Mantenha hidratação e alimentação adequadas"
+    ],
+    "desenvolvimento_bebe": "Primeiros sorrisos sociais, rastreamento visual melhor, movimentos mais intencionais",
+    "alertas": "Se tristeza profunda persistir, procure psicólogo. Baby blues que dura mais de 2 semanas merece atenção."
+  },
+  
+  "terceiro_mes": {
+    "semanas": "9-12",
+    "nome": "Terceiro mês - Ganhando confiança",
+    "descricao": "Você está se adaptando e ganhando confiança",
+    "cuidados_fisicos": [
+      "Pode começar exercícios mais intensos (se liberado)",
+      "Continue alimentação balanceada",
+      "Foco em exercícios de Kegel",
+      "Fortaleça o abdome gradualmente",
+      "Cuide da postura ao amamentar",
+      "Hidratação continua importante"
+    ],
+    "cuidados_emocionais": [
+      "Você já domina a rotina",
+      "Continue se permitindo descansar",
+      "Conecte-se com sua identidade",
+      "Busque equilíbrio maternidade-pessoal",
+      "Aceite que está tudo bem não ser perfeita",
+      "Comemore suas pequenas vitórias"
+    ],
+    "amamentacao": [
+      "Amamentação geralmente bem estabelecida",
+      "Bebê pode começar a dormir períodos mais longos",
+      "Continue com boa alimentação e hidratação"
+    ],
+    "desenvolvimento_bebe": "Controle de cabeça melhor, vocalizações, primeiro riso, interação social aumentada",
+    "alertas": "Consultas de puerpério são importantes. Tire todas suas dúvidas."
+  },
+  
+  "quarto_sexto_mes": {
+    "semanas": "13-24",
+    "nome": "Meses 4-6 - Novo normal",
+    "descricao": "Encontrando seu novo normal",
+    "cuidados_fisicos": [
+      "Você pode retomar atividades físicas mais intensas",
+      "Foco em fortalecimento do core",
+      "Exercícios específicos para diástase",
+      "Alimentação equilibrada para energia",
+      "Cuidado com carregar bebê pesado",
+      "Postura durante cuidados com bebê"
+    ],
+    "cuidados_emocionais": [
+      "Você e seu corpo estão se adaptando",
+      "Pode ser mais fácil agora",
+      "Conecte-se com sua vida além da maternidade",
+      "Mantenha rede de apoio",
+      "Cuide da relação com seu parceiro",
+      "Seja gentil com você mesma"
+    ],
+    "amamentacao": [
+      "Amamentação bem estabelecida",
+      "Alguns bebês começam introdução alimentar complementar",
+      "Consulte pediatra sobre introdução alimentar",
+      "Continue amamentação quando possível"
+    ],
+    "desenvolvimento_bebe": "Rolando, sentando com apoio, agarrar objetos, desenvolvimento cognitivo acelerado, primeiro dentes",
+    "alertas": "Consultas com ginecologista e pediatra são importantes. Cuide da sua saúde mental continuamente."
+  }
+}
+

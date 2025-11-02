@@ -1,0 +1,178 @@
+{
+  "calendario": {
+    "nome": "Calendário Nacional de Vacinação",
+    "descricao": "Todas as vacinas essenciais para o primeiro ano",
+    "fonte": "PNO - Programa Nacional de Imunizações",
+    "importante": "Mantenha a carteira de vacinação atualizada! Vacine seu bebê na idade certa."
+  },
+  
+  "0_2_meses": {
+    "idade": "Ao nascer",
+    "vacinas": [
+      {
+        "nome": "BCG (ID) - Dose única",
+        "doenca": "Tuberculose",
+        "local": "Hospital",
+        "observacao": "Dada logo após o nascimento na maternidade"
+      },
+      {
+        "nome": "Hepatite B - 1ª dose",
+        "doenca": "Hepatite B",
+        "local": "Hospital",
+        "observacao": "Primeira dose nas primeiras 12-24h de vida"
+      }
+    ]
+  },
+  
+  "1_2_meses": {
+    "idade": "2 meses de idade",
+    "vacinas": [
+      {
+        "nome": "Pentavalente (DTP + Hib + HepB) - 1ª dose",
+        "doenca": "Difteria, Tétano, Coqueluche, Meningite e Hepatite B",
+        "local": "Posto de Saúde",
+        "observacao": "Vacina combinada - uma picada protege contra várias doenças"
+      },
+      {
+        "nome": "VIP (Poliomielite injetável) - 1ª dose",
+        "doenca": "Poliomielite (paralisia infantil)",
+        "local": "Posto de Saúde",
+        "observacao": "Importante para erradicação da pólio"
+      },
+      {
+        "nome": "Pneumocócica 10V - 1ª dose",
+        "doenca": "Pneumonia, Meningite, Otite",
+        "local": "Posto de Saúde",
+        "observacao": "Protege contra bactéria pneumococo"
+      },
+      {
+        "nome": "Rotavírus Humano - 1ª dose",
+        "doenca": "Diarréia grave, desidratação",
+        "local": "Posto de Saúde",
+        "observacao": "Vacina oral (gotas). IMPORTANTE: não dar se bebê tiver algum problema imunológico"
+      }
+    ]
+  },
+  
+  "3_4_meses": {
+    "idade": "3 meses de idade",
+    "vacinas": [
+      {
+        "nome": "Pentavalente (DTP + Hib + HepB) - 2ª dose",
+        "doenca": "Difteria, Tétano, Coqueluche, Meningite e Hepatite B",
+        "local": "Posto de Saúde",
+        "observacao": "Reforça a proteção da 1ª dose"
+      },
+      {
+        "nome": "VIP (Poliomielite injetável) - 2ª dose",
+        "doenca": "Poliomielite",
+        "local": "Posto de Saúde"
+      },
+      {
+        "nome": "Pneumocócica 10V - 2ª dose",
+        "doenca": "Pneumonia, Meningite, Otite",
+        "local": "Posto de Saúde"
+      },
+      {
+        "nome": "Meningocócica C - 1ª dose",
+        "doenca": "Meningite meningocócica tipo C",
+        "local": "Posto de Saúde",
+        "observacao": "Importante para prevenir meningite grave"
+      },
+      {
+        "nome": "Rotavírus Humano - 2ª dose",
+        "doenca": "Diarréia grave",
+        "local": "Posto de Saúde",
+        "observacao": "Vacina oral (gotas)"
+      }
+    ]
+  },
+  
+  "4_5_meses": {
+    "idade": "4 meses de idade",
+    "vacinas": [
+      {
+        "nome": "Pneumocócica 10V - 3ª dose",
+        "doenca": "Pneumonia, Meningite, Otite",
+        "local": "Posto de Saúde"
+      }
+    ]
+  },
+  
+  "5_6_meses": {
+    "idade": "5 meses de idade",
+    "vacinas": [
+      {
+        "nome": "Pentavalente (DTP + Hib + HepB) - 3ª dose",
+        "doenca": "Difteria, Tétano, Coqueluche, Meningite e Hepatite B",
+        "local": "Posto de Saúde"
+      },
+      {
+        "nome": "VIP (Poliomielite injetável) - 3ª dose",
+        "doenca": "Poliomielite",
+        "local": "Posto de Saúde"
+      }
+    ]
+  },
+  
+  "6_12_meses": {
+    "idade": "6 meses a 1 ano",
+    "vacinas": [
+      {
+        "nome": "Influenza (Gripe) - Primeira vez",
+        "doenca": "Gripe",
+        "quando": "Início da campanha anual",
+        "dose": "2 doses na primeira vez com intervalo de 30 dias",
+        "local": "Posto de Saúde ou campanha",
+        "observacao": "Vacinação anual durante a temporada de gripe"
+      },
+      {
+        "nome": "Tríplice Viral - 1ª dose",
+        "doenca": "Sarampo, Caxumba, Rubéola",
+        "quando": "A partir de 12 meses",
+        "local": "Posto de Saúde",
+        "observacao": "Primeira dose da tríplice viral"
+      },
+      {
+        "nome": "Hepatite A - 1ª dose",
+        "doenca": "Hepatite A",
+        "quando": "A partir de 12 meses",
+        "dose": "2 doses com intervalo de 6 meses",
+        "local": "Posto de Saúde"
+      },
+      {
+        "nome": "Reforço Meningocócica C",
+        "doenca": "Meningite meningocócica tipo C",
+        "quando": "12 meses",
+        "local": "Posto de Saúde",
+        "observacao": "Reforço para proteção continuada"
+      }
+    ]
+  },
+  
+  "recomendacoes": {
+    "idade_minima": "Respeite a idade mínima para cada vacina",
+    "atraso": "Se atrasar, retome o quanto antes no posto de saúde",
+    "efeitos_colaterais": [
+      "Febre leve é normal após algumas vacinas",
+      "Irritabilidade pode acontecer",
+      "Dor no local da injeção",
+      "Geralmente passa em 24-48 horas",
+      "Use antitérmico se necessário (sob orientação médica)",
+      "Mais frio local pode ajudar com dor"
+    ],
+    "quando_procurar_medico": "Febre alta (>38,5°C), choro inconsolável, convulsão, erupção cutânea generalizada, dificuldade respiratória - PROCURE ATENDIMENTO IMEDIATO!",
+    "onde_vacinar": "Todos os postos de saúde, Unidades Básicas de Saúde e hospitais públicos. Cartão de vacinação é gratuito e obrigatório.",
+    "importante": "Mantenha a carteira de vacinação sempre atualizada. Ela é necessária para matrícula escolar."
+  },
+  
+  "carteira_vacinacao": {
+    "nome": "Carteira de Vacinação",
+    "onde_pegar": "Posto de Saúde, Unidades Básicas de Saúde ou maternidade",
+    "custo": "Gratuita",
+    "importante": "É documento oficial. Guarde com cuidado!",
+    "pode_vacinar": "Postos de saúde, UBS, maternidades, hospitais públicos",
+    "documentos": "Caderneta de vacinação e documento do bebê"
+  }
+}
+
