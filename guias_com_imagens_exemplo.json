@@ -1,0 +1,26 @@
+{
+  "exemplo_imagens": {
+    "colica": {
+      "passos": [
+        {
+          "numero": 1,
+          "titulo": "Verifique o arroto",
+          "descricao": "Segure o bebê na posição vertical por alguns minutos após mamar",
+          "imagem": "https://cdn.momjunction.com/wp-content/uploads/2020/02/How-To-Make-Your-Baby-Burp-1.jpg"
+        }
+      ]
+    },
+    "heimlich": {
+      "passos": [
+        {
+          "numero": 1,
+          "titulo": "Posicione o bebê",
+          "descricao": "Deite o bebê de bruços em seu antebraço",
+          "imagem": "https://www.healthline.com/hlcmsresource/images/topic_centers/ChildCare/infant-choking-heimlich-maneuver.jpg"
+        }
+      ]
+    }
+  },
+  "nota": "Estas são URLs de exemplo. Para produção, recomendo usar imagens hospedadas localmente ou URLs estáveis de CDNs confiáveis."
+}
+
