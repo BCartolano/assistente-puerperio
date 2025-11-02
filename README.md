@@ -1,16 +1,54 @@
 # 🤱 Assistente Puerpério
 
-Um chatbot especializado em oferecer apoio e informações sobre o período pós-parto (puerpério), desenvolvido com foco na saúde materna e bem-estar das mães.
+Um chatbot **COMPLETO** especializado em oferecer apoio e informações sobre gestação, parto e puerpério, desenvolvido com foco na saúde materna e bem-estar das mães e bebês.
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades Principais
 
-- **💬 Chat Inteligente**: Sistema de respostas baseado em IA com fallback para base de conhecimento local
-- **🚨 Sistema de Alertas**: Detecta automaticamente palavras-chave que indicam necessidade de atenção médica
-- **📚 Base de Conhecimento**: Conteúdo especializado em puerpério, alimentação, baby blues e mais
-- **📱 Interface Responsiva**: Design moderno e intuitivo, funcionando em desktop e mobile
-- **📊 Categorização**: Organização por temas (identidade, alimentação, baby blues, etc.)
-- **📝 Histórico de Conversas**: Mantém o histórico das conversas por usuário
-- **🎯 Perguntas Rápidas**: Botões com perguntas frequentes para facilitar o uso
+### 💬 Chat Inteligente
+- **79 categorias** de perguntas e respostas sobre gestação, parto, puerpério, amamentação e cuidados com bebê
+- Sistema de respostas baseado em IA (OpenAI GPT-4o-mini) com fallback inteligente
+- Detecção automática de alertas médicos
+- Mensagens de apoio empáticas e acolhedoras
+- **Telefones úteis incluídos automaticamente** nas respostas
+
+### 📞 Telefones Úteis Integrados
+- **CVV 188** - Prevenção do suicídio (24h/dia)
+- **Emergências**: SAMU 192, Bombeiros 193, Polícia 190
+- Disque Saúde, Disque Mãe, Disque Amamentação
+- Informações sobre UPAs, Postos de Saúde e Maternidades
+- **Aparecem automaticamente** quando relevante!
+
+### 🩺 Guias Práticos
+- **7 guias completos** com passos detalhados:
+  - Como aliviar cólicas do bebê (7 técnicas)
+  - Manobra de Heimlich em bebês
+  - RCP (Reanimação cardiopulmonar)
+  - Como ajudar o bebê a arrotar
+  - Como dar banho de forma segura
+  - Troca de fralda preventiva
+  - Posições seguras para dormir
+
+### 📅 Cuidados Personalizados
+- **Gestação**: Cuidados por trimestres (1º, 2º, 3º)
+- **Pós-parto**: Guias mensais (1º, 2º, 3º mês e meses 4-6)
+- Desenvolvimento do bebê
+- Exames necessários
+- Sinais de alerta
+- Orientação de amamentação
+
+### 💉 Carteira de Vacinação
+- **Vacinas da mãe**: Pré-natal e pós-parto
+- **Vacinas do bebê**: Calendário completo 0-12 meses
+- Quando e onde vacinar
+- Efeitos colaterais comuns
+- Baseado no Calendário Nacional de Imunizações
+
+### 🎨 Interface Moderna
+- Design responsivo e intuitivo
+- Funciona perfeitamente em desktop e mobile
+- Perguntas rápidas pré-definidas
+- Histórico de conversas
+- Modal de alertas médicos
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -62,8 +100,11 @@ Um chatbot especializado em oferecer apoio e informações sobre o período pós
 
 5. **Execute o aplicativo**:
    ```bash
-   cd backend
-   python app.py
+   # Opção 1: Usando wsgi (recomendado para produção)
+   python wsgi.py
+   
+   # Opção 2: Direto pelo backend (desenvolvimento)
+   cd backend && python app.py
    ```
 
 6. **Acesse no navegador**:
@@ -76,22 +117,36 @@ Um chatbot especializado em oferecer apoio e informações sobre o período pós
 ```
 chatbot-puerperio/
 ├── backend/
-│   ├── app.py                 # Aplicação Flask principal
+│   ├── app.py                      # Aplicação Flask principal
 │   ├── templates/
-│   │   └── index.html         # Interface web
+│   │   └── index.html              # Interface web
 │   ├── static/
 │   │   ├── css/
-│   │   │   └── style.css      # Estilos da interface
+│   │   │   └── style.css           # Estilos da interface
 │   │   └── js/
-│   │       └── chat.js        # Lógica do frontend
-│   └── dados/                 # Arquivos JSON com conhecimento
-├── dados/                     # Base de conhecimento
-│   ├── base_conhecimento.json
-│   ├── mensagens_apoio.json
-│   └── alertas.json
-├── requirements.txt           # Dependências Python
-├── .env.template             # Template de configuração
-└── README.md                 # Este arquivo
+│   │       └── chat.js             # Lógica do frontend
+│   ├── base_conhecimento.json      # Base sincronizada
+│   ├── mensagens_apoio.json        # Apoio sincronizado
+│   ├── telefones_uteis.json        # Telefones sincronizado
+│   ├── guias_praticos.json         # Guias sincronizado
+│   └── outros JSONs sincronizados
+├── dados/                           # Base de conhecimento
+│   ├── base_conhecimento.json      # 79 perguntas e respostas
+│   ├── mensagens_apoio.json        # 10 mensagens empáticas
+│   ├── alertas.json                # Alertas médicos
+│   ├── telefones_uteis.json        # Telefones úteis
+│   ├── guias_praticos.json         # 7 guias práticos
+│   ├── cuidados_gestacao.json      # Cuidados por trimestre
+│   ├── cuidados_pos_parto.json     # Cuidados por período
+│   ├── vacinas_mae.json            # Vacinas da mãe
+│   └── vacinas_bebe.json           # Vacinas do bebê
+├── wsgi.py                         # Entry point WSGI
+├── Procfile                        # Config Heroku/Render
+├── render.yaml                     # Config Render
+├── runtime.txt                     # Python 3.11
+├── requirements.txt                # Dependências
+├── README.md                       # Este arquivo
+└── README_DEPLOY.md                # Instruções de deploy
 ```
 
 ## 🔧 Configuração da API OpenAI (Opcional)
@@ -165,31 +220,32 @@ Modifique `dados/mensagens_apoio.json` para adicionar novas mensagens empáticas
 
 ## 🚀 Deploy
 
-### Heroku
+### Render.com (✅ RECOMENDADO - Já Configurado!)
 
-1. Crie um arquivo `Procfile`:
-   ```
-   web: python backend/app.py
-   ```
+O projeto está **totalmente configurado** para deploy automático no Render:
 
-2. Configure as variáveis de ambiente no Heroku
+1. Acesse [https://render.com](https://render.com)
+2. Conecte seu repositório GitHub
+3. Render detectará automaticamente o `render.yaml`
+4. Deploy automático iniciará em instantes!
+5. URL: `https://assistente-puerperio.onrender.com`
 
-3. Faça o deploy:
-   ```bash
-   git push heroku main
-   ```
+**Variáveis de Ambiente (no Render):**
+```env
+OPENAI_API_KEY=sua_chave (opcional)
+PORT=5000 (automático)
+```
 
-### Docker
+Veja instruções completas em: **`README_DEPLOY.md`**
 
-1. Crie um `Dockerfile`:
-   ```dockerfile
-   FROM python:3.9-slim
-   WORKDIR /app
-   COPY requirements.txt .
-   RUN pip install -r requirements.txt
-   COPY . .
-   CMD ["python", "backend/app.py"]
-   ```
+### Outras Opções de Deploy
+
+- **Railway.app**: Conecte GitHub, deploy automático
+- **Fly.io**: Instale CLI, `fly launch`
+- **Heroku**: Usa Procfile (método antigo)
+- **PythonAnywhere**: Upload manual
+
+Veja mais detalhes em: **`DEPLOY.md`**
 
 ## 🤝 Contribuição
 
