@@ -2,8 +2,11 @@ import os
 import json
 import random
 import difflib
+import sqlite3
+import bcrypt
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -19,8 +22,15 @@ app = Flask(__name__,
             static_url_path='/static')
 
 # Configurações
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'sua-chave-secreta-super-segura-mude-isso-em-producao')
 BASE_PATH = os.path.join(os.path.dirname(__file__), "..", "dados")
+DB_PATH = os.path.join(os.path.dirname(__file__), "users.db")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Login Manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'index'
 
 # Inicializa cliente OpenAI se a chave estiver disponível
 client = None
@@ -30,6 +40,46 @@ if OPENAI_API_KEY:
     except Exception as e:
         print(f"AVISO: Erro ao inicializar cliente OpenAI: {e}")
         client = None
+
+# Classe User para Flask-Login
+class User(UserMixin):
+    def __init__(self, id, name, email, baby_name=None):
+        self.id = str(id)
+        self.name = name
+        self.email = email
+        self.baby_name = baby_name
+
+# Função para inicializar banco de dados
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            baby_name TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Inicializa DB na startup
+init_db()
+
+# User loader para Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    user_data = cursor.fetchone()
+    conn.close()
+    if user_data:
+        return User(user_data[0], user_data[1], user_data[2], user_data[4])
+    return None
 
 # Carrega os arquivos JSON
 def carregar_dados():
@@ -357,6 +407,96 @@ def api_vacinas_mae():
 @app.route('/api/vacinas/bebe')
 def api_vacinas_bebe():
     return jsonify(vacinas_bebe)
+
+# Auth routes
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    baby_name = data.get('baby_name', '').strip()
+    
+    if not name or not email or not password:
+        return jsonify({"erro": "Todos os campos obrigatórios devem ser preenchidos"}), 400
+    
+    if len(password) < 6:
+        return jsonify({"erro": "A senha deve ter no mínimo 6 caracteres"}), 400
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Verifica se email já existe
+    cursor.execute('SELECT id FROM users WHERE email = ?', (email,))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({"erro": "Este email já está cadastrado"}), 400
+    
+    # Hash da senha
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    # Insere usuário
+    cursor.execute('''
+        INSERT INTO users (name, email, password_hash, baby_name)
+        VALUES (?, ?, ?, ?)
+    ''', (name, email, password_hash, baby_name if baby_name else None))
+    
+    conn.commit()
+    user_id = cursor.lastrowid
+    conn.close()
+    
+    return jsonify({"sucesso": True, "mensagem": "Cadastro realizado com sucesso! 💕", "user_id": user_id}), 201
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    
+    if not email or not password:
+        return jsonify({"erro": "Email e senha são obrigatórios"}), 400
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
+    user_data = cursor.fetchone()
+    conn.close()
+    
+    if not user_data:
+        return jsonify({"erro": "Email ou senha incorretos"}), 401
+    
+    # Verifica senha
+    if bcrypt.checkpw(password.encode('utf-8'), user_data[3].encode('utf-8')):
+        user = User(user_data[0], user_data[1], user_data[2], user_data[4])
+        login_user(user)
+        return jsonify({
+            "sucesso": True, 
+            "mensagem": "Login realizado com sucesso! Bem-vinda de volta 💕",
+            "user": {
+                "id": user_data[0],
+                "name": user_data[1],
+                "email": user_data[2],
+                "baby_name": user_data[4]
+            }
+        })
+    else:
+        return jsonify({"erro": "Email ou senha incorretos"}), 401
+
+@app.route('/api/logout', methods=['POST'])
+@login_required
+def api_logout():
+    logout_user()
+    return jsonify({"sucesso": True, "mensagem": "Logout realizado com sucesso"})
+
+@app.route('/api/user', methods=['GET'])
+@login_required
+def api_user():
+    return jsonify({
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "baby_name": current_user.baby_name
+    })
 
 # Rota para teste
 @app.route('/teste')
