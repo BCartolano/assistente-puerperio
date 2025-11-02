@@ -578,8 +578,25 @@ class ChatbotPuerperio {
             return;
         }
         
-        alert('Login funcionará em breve! Backend em desenvolvimento...');
-        this.hideAuthModal();
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password})
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                alert('🎉 ' + data.mensagem);
+                this.hideAuthModal();
+                window.location.reload();
+            } else {
+                alert('⚠️ ' + data.erro);
+            }
+        } catch (error) {
+            alert('❌ Erro ao fazer login. Tente novamente.');
+        }
     }
     
     async handleRegister() {
@@ -598,8 +615,29 @@ class ChatbotPuerperio {
             return;
         }
         
-        alert('Cadastro funcionará em breve! Backend em desenvolvimento...');
-        this.hideAuthModal();
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, email, password, baby_name: babyName})
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                alert('🎉 ' + data.mensagem);
+                this.hideAuthModal();
+                // Auto switch para login
+                setTimeout(() => {
+                    this.showAuthModal();
+                    this.switchAuthTab('login');
+                }, 500);
+            } else {
+                alert('⚠️ ' + data.erro);
+            }
+        } catch (error) {
+            alert('❌ Erro ao cadastrar. Tente novamente.');
+        }
     }
 }
 
