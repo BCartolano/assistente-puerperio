@@ -8,49 +8,49 @@
         "numero": 1,
         "titulo": "Verifique o arroto",
         "descricao": "Segure o bebê na posição vertical por alguns minutos após mamar para eliminar arrotos",
-        "imagem": "arroto.png",
+        "imagem": "https://via.placeholder.com/400x300/F4A6A6/FFFFFF?text=Posição+Vertical+para+Arroto",
         "dica": "Bata levemente nas costas enquanto o bebê está vertical"
       },
       {
         "numero": 2,
         "titulo": "Massagem abdominal",
         "descricao": "Faça massagens circulares suaves no abdome do bebê, no sentido horário",
-        "imagem": "massagem_colica.png",
+        "imagem": "https://via.placeholder.com/400x300/E8B4B8/FFFFFF?text=Massagem+Circular+Abdomen",
         "dica": "Use um pouco de óleo apropriado para bebês (sem perfumes fortes)"
       },
       {
         "numero": 3,
         "titulo": "Movimento de bicicleta",
         "descricao": "Deite o bebê de costas e mova as perninhas como se estivesse pedalando",
-        "imagem": "bicicleta.png",
+        "imagem": "https://via.placeholder.com/400x300/F8B5B5/FFFFFF?text=Movimento+Bicicleta+com+As+Pernas",
         "dica": "Faça movimentos suaves e lentos, respeite sinais de desconforto"
       },
       {
         "numero": 4,
         "titulo": "Compressa quente",
         "descricao": "Use uma fralda aquecida ou bolsa térmica MUITO MORNA na barriga do bebê",
-        "imagem": "compressa_quente.png",
+        "imagem": "https://via.placeholder.com/400x300/D4C5C0/FFFFFF?text=Compressa+Morna+na+Barriga",
         "dica": "TESTE na parte interna do seu pulso antes! Deve estar morna, nunca quente"
       },
       {
         "numero": 5,
         "titulo": "Posição de carregar",
         "descricao": "Carregue o bebê de bruços nos seus braços ou use sling/canguru",
-        "imagem": "carregar_colica.png",
+        "imagem": "https://via.placeholder.com/400x300/C1A89F/FFFFFF?text=Carregar+Bebê+de+Bruços",
         "dica": "Sempre mantenha a cabeça e pescoço do bebê bem apoiados"
       },
       {
         "numero": 6,
         "titulo": "Banho morno",
         "descricao": "Um banho morno pode relaxar o bebê e aliviar a tensão",
-        "imagem": "banho_morno.png",
+        "imagem": "https://via.placeholder.com/400x300/E8D5D1/FFFFFF?text=Banho+Morno+Relaxante",
         "dica": "Água na temperatura do corpo (37°C). Banho rápido de 5-10 minutos"
       },
       {
         "numero": 7,
         "titulo": "Sons calmantes",
         "descricao": "Use ruído branco, shhhh, música suave ou cante para o bebê",
-        "imagem": "som.png",
+        "imagem": "https://via.placeholder.com/400x300/F8F4F0/5A4A42?text=Sons+Calmantes+para+Acallmar",
         "dica": "O som pode distrair o bebê da sensação de desconforto"
       }
     ],
@@ -67,35 +67,35 @@
         "numero": 1,
         "titulo": "Posicione o bebê",
         "descricao": "Deite o bebê de bruços em seu antebraço, com a cabeça mais baixa que o tronco",
-        "imagem": "heimlich_posicao1.png",
+        "imagem": "https://via.placeholder.com/400x300/E74C3C/FFFFFF?text=1.+Bebê+de+Bruços+no+Antebraço",
         "dica": "Mantenha firmeza mas cuidado. O pescoço deve estar bem apoiado"
       },
       {
         "numero": 2,
         "titulo": "Pancadas nas costas",
         "descricao": "Dê 5 pancadas firmes nas costas do bebê, entre as escápulas",
-        "imagem": "heimlich_pancadas.png",
+        "imagem": "https://via.placeholder.com/400x300/F39C12/FFFFFF?text=2.+5+Pancadas+Nas+Costas",
         "dica": "Use a palma da mão, com cuidado. O objetivo é deslocar o objeto"
       },
       {
         "numero": 3,
         "titulo": "Gire o bebê",
         "descricao": "Vire o bebê de frente nos seus braços, mantendo a cabeça mais baixa",
-        "imagem": "heimlich_girar.png",
+        "imagem": "https://via.placeholder.com/400x300/F1C40F/FFFFFF?text=3.+Girar+Bebê+Para+Frente",
         "dica": "Tenha cuidado ao virar, sempre apoiando o pescoço e cabeça"
       },
       {
         "numero": 4,
         "titulo": "Compressões no peito",
         "descricao": "Faça 5 compressões no esterno (osso do peito) com dois dedos",
-        "imagem": "heimlich_compressor.png",
+        "imagem": "https://via.placeholder.com/400x300/27AE60/FFFFFF?text=4.+5+Compressões+No+Peito",
         "dica": "Use a profundidade de 1/3 do peito. Verifique se o objeto saiu"
       },
       {
         "numero": 5,
         "titulo": "Repita se necessário",
         "descricao": "Continue alternando entre pancadas nas costas e compressões até o objeto sair",
-        "imagem": "heimlich_repetir.png",
+        "imagem": "https://via.placeholder.com/400x300/3498DB/FFFFFF?text=5.+Repetir+Até+Objeto+Sair",
         "dica": "NÃO enfie o dedo na boca do bebê para puxar o objeto"
       }
     ],
@@ -112,35 +112,35 @@
         "numero": 1,
         "titulo": "Vire o bebê de costas",
         "descricao": "Coloque o bebê em superfície firme e plana",
-        "imagem": "rcp_posicao.png",
+        "imagem": "https://via.placeholder.com/400x300/8E44AD/FFFFFF?text=1.+Posição+de+Costas+RCP",
         "dica": "Certifique-se que o local é seguro"
       },
       {
         "numero": 2,
         "titulo": "Posicione as mãos",
         "descricao": "Use dois dedos no centro do peito, logo abaixo da linha dos mamilos",
-        "imagem": "rcp_maos.png",
+        "imagem": "https://via.placeholder.com/400x300/9B59B6/FFFFFF?text=2.+Posicione+Dois+Dedos+No+Peito",
         "dica": "Use os dedos indicador e médio"
       },
       {
         "numero": 3,
         "titulo": "Compressões",
         "descricao": "Faça 30 compressões rápidas e firmes",
-        "imagem": "rcp_compressao.png",
+        "imagem": "https://via.placeholder.com/400x300/8E44AD/FFFFFF?text=3.+30+Compressões+Rápidas",
         "dica": "Profundidade: 4cm. Ritmo: 100-120 por minuto"
       },
       {
         "numero": 4,
         "titulo": "Respiração boca a boca",
         "descricao": "Faça 2 respirações boca a boca e nariz",
-        "imagem": "rcp_respiracao.png",
+        "imagem": "https://via.placeholder.com/400x300/3498DB/FFFFFF?text=4.+2+Respirações+Boca+a+Boca",
         "dica": "Cubra completamente a boca e nariz do bebê com sua boca"
       },
       {
         "numero": 5,
         "titulo": "Repita",
         "descricao": "Continue alternando 30 compressões e 2 respirações",
-        "imagem": "rcp_repetir.png",
+        "imagem": "https://via.placeholder.com/400x300/2980B9/FFFFFF?text=5.+Repetir+Até+Chegar+Ajuda",
         "dica": "Continue até chegar ajuda médica ou o bebê voltar a respirar"
       }
     ],
@@ -155,35 +155,35 @@
         "numero": 1,
         "titulo": "Posição no ombro",
         "descricao": "Coloque o bebê sobre seu ombro, com a barriga encostada em você",
-        "imagem": "arrotar_ombro.png",
+        "imagem": "https://via.placeholder.com/400x300/F4A6A6/FFFFFF?text=1.+Bebê+No+Omb ro+Vertical",
         "dica": "Use uma fralda no ombro para proteger sua roupa"
       },
       {
         "numero": 2,
         "titulo": "Pancadinhas suaves",
         "descricao": "Bata levemente nas costas do bebê",
-        "imagem": "arrotar_pancadas.png",
+        "imagem": "https://via.placeholder.com/400x300/E8B4B8/FFFFFF?text=2.+Pancadinhas+Suaves+Costas",
         "dica": "Não precisa ser forte. Pancadas suaves são suficientes"
       },
       {
         "numero": 3,
         "titulo": "Posição sentada",
         "descricao": "Segure o bebê sentado no seu colo, inclinado um pouco para frente",
-        "imagem": "arrotar_sentado.png",
+        "imagem": "https://via.placeholder.com/400x300/F8B5B5/FFFFFF?text=3.+Bebê+Sentado+No+Colo",
         "dica": "Apoie o peito e queixo do bebê com uma mão"
       },
       {
         "numero": 4,
         "titulo": "Passear com o bebê",
         "descricao": "Movimentar o bebê suavemente pode ajudar a arrotar",
-        "imagem": "arrotar_andar.png",
+        "imagem": "https://via.placeholder.com/400x300/D4C5C0/FFFFFF?text=4.+Passear+Com+O+Bebê",
         "dica": "Caminhe devagar pela casa segurando o bebê"
       },
       {
         "numero": 5,
         "titulo": "Massagem no peito",
         "descricao": "Esfregue suavemente o peito do bebê de baixo para cima",
-        "imagem": "arrotar_massagem.png",
+        "imagem": "https://via.placeholder.com/400x300/C1A89F/FFFFFF?text=5.+Massagem+No+Peito+Ascendente",
         "dica": "Movimentos ascendentes ajudam o ar subir"
       }
     ],
@@ -199,49 +199,49 @@
         "numero": 1,
         "titulo": "Prepare tudo antes",
         "descricao": "Separe: toalha, sabonete/espuma apropriados, fralda limpa, roupa, ambiente aquecido",
-        "imagem": "banho_preparar.png",
+        "imagem": "https://via.placeholder.com/400x300/AED6F1/FFFFFF?text=1.+Prepare+Tudo+Antes",
         "dica": "Tenha tudo ao alcance - NUNCA deixe o bebê sozinho na água!"
       },
       {
         "numero": 2,
         "titulo": "Temperatura da água",
         "descricao": "A água deve estar morna (37°C). Teste com o cotovelo ou pulso",
-        "imagem": "banho_temperatura.png",
+        "imagem": "https://via.placeholder.com/400x300/85C1E9/FFFFFF?text=2.+Teste+Temperatura+Água",
         "dica": "Mais frio que muito quente. Sua pele é mais sensível que a do bebê"
       },
       {
         "numero": 3,
         "titulo": "Comece pela cabeça",
         "descricao": "Lave primeiro a cabecinha (não precisa enxaguar diariamente)",
-        "imagem": "banho_cabeca.png",
+        "imagem": "https://via.placeholder.com/400x300/5DADE2/FFFFFF?text=3.+Lave+Cab eca+Delicadamente",
         "dica": "Use pouca água na cabeça. Proteja os olhos e ouvidos"
       },
       {
         "numero": 4,
         "titulo": "Corpo delicadamente",
         "descricao": "Lave o tronco, braços, pernas com movimentos suaves",
-        "imagem": "banho_corpo.png",
+        "imagem": "https://via.placeholder.com/400x300/3498DB/FFFFFF?text=4.+Lave+Corpo+Suavemente",
         "dica": "Preste atenção nas dobras (pescoço, axilas, virilha)"
       },
       {
         "numero": 5,
         "titulo": "Área genital por último",
         "descricao": "Lave delicadamente as genitais (de frente para trás nas meninas)",
-        "imagem": "banho_genital.png",
+        "imagem": "https://via.placeholder.com/400x300/2980B9/FFFFFF?text=5.+Limpe+Genital+Por+Último",
         "dica": "NÃO puxe o prepúcio em meninos. Limpeza externa apenas"
       },
       {
         "numero": 6,
         "titulo": "Seque bem",
         "descricao": "Envolva o bebê na toalha imediatamente. Seque bem todas as dobras",
-        "imagem": "banho_secar.png",
+        "imagem": "https://via.placeholder.com/400x300/2471A3/FFFFFF?text=6.+Seque+Bem+Todas+Dobras",
         "dica": "Dobras molhadas podem causar assaduras"
       },
       {
         "numero": 7,
         "titulo": "Finalize",
         "descricao": "Coloque fralda e roupa limpa. Aqueça o bebê",
-        "imagem": "banho_finalizar.png",
+        "imagem": "https://via.placeholder.com/400x300/1A5490/FFFFFF?text=7.+Finalize+Com+Roupa+Fralda",
         "dica": "Pode dar uma mamada após o banho - ajuda a acalmar"
       }
     ],
@@ -257,49 +257,49 @@
         "numero": 1,
         "titulo": "Tenha tudo à mão",
         "descricao": "Separe: fralda limpa, lenços umedecidos/água, pomada preventiva, lixeira",
-        "imagem": "troca_preparar.png",
+        "imagem": "https://via.placeholder.com/400x300/F9E79F/FFFFFF?text=1.+Tenha+Tudo+À+Mão",
         "dica": "Organização evita acidentes - tenha tudo pronto antes de começar"
       },
       {
         "numero": 2,
         "titulo": "Posicione o bebê",
         "descricao": "Deite o bebê em superfície segura (troca) com superfície higiênica",
-        "imagem": "troca_posicao.png",
+        "imagem": "https://via.placeholder.com/400x300/F7DC6F/FFFFFF?text=2.+Posicione+Bebê+Seguro",
         "dica": "NUNCA deixe o bebê sozinho na troca - mesmo por segundos!"
       },
       {
         "numero": 3,
         "titulo": "Retire a fralda suja",
         "descricao": "Abra a fralda e segure os pés do bebê pelos tornozelos, levantando suavemente",
-        "imagem": "troca_retirar.png",
+        "imagem": "https://via.placeholder.com/400x300/F4D03F/FFFFFF?text=3.+Retire+Fralda+Levante+Pernas",
         "dica": "Levantando as pernas facilita a limpeza"
       },
       {
         "numero": 4,
         "titulo": "Limpe bem",
         "descricao": "Limpe de frente para trás, especialmente em meninas",
-        "imagem": "troca_limpar.png",
+        "imagem": "https://via.placeholder.com/400x300/F1C40F/FFFFFF?text=4.+Limpe+De+Frente+Para+Trás",
         "dica": "Use lenço ou água em cada região. Uma vez só para não espalhar bactérias"
       },
       {
         "numero": 5,
         "titulo": "Deixe arejar",
         "descricao": "Deixe a área sem fralda por alguns segundos para arejar",
-        "imagem": "troca_arejar.png",
+        "imagem": "https://via.placeholder.com/400x300/EDBB99/FFFFFF?text=5.+Deixe+Arejar+Alguns+Segundos",
         "dica": "A prevenção é a melhor forma de evitar assaduras"
       },
       {
         "numero": 6,
         "titulo": "Pomada preventiva",
         "descricao": "Passe um pouco de pomada preventiva nas áreas de contato",
-        "imagem": "troca_pomada.png",
+        "imagem": "https://via.placeholder.com/400x300/EB984E/FFFFFF?text=6.+Pomada+Preventiva+Dobras",
         "dica": "Aplique na dobra da virilha e nas nádegas. Pouca quantidade é suficiente"
       },
       {
         "numero": 7,
         "titulo": "Coloque fralda limpa",
         "descricao": "Posicione a fralda limpa e feche adequadamente (nem muito apertada nem muito frouxa)",
-        "imagem": "troca_fechar.png",
+        "imagem": "https://via.placeholder.com/400x300/E67E22/FFFFFF?text=7.+Coloque+Fralda+Nem+Apertada",
         "dica": "Deve caber um dedo entre a fralda e a cintura do bebê"
       }
     ],
@@ -316,35 +316,35 @@
         "numero": 1,
         "titulo": "Posição supina (de costas)",
         "descricao": "SEMPRE coloque o bebê de barriga para cima no berço",
-        "imagem": "dormir_costas.png",
+        "imagem": "https://via.placeholder.com/400x300/A9DFBF/FFFFFF?text=1.+SEMPRE+De+Barriga+Para+Cima",
         "dica": "Esta é a posição MAIS SEGURA comprovadamente"
       },
       {
         "numero": 2,
         "titulo": "Colchão firme",
         "descricao": "Use colchão próprio para bebês, firme e nivelado",
-        "imagem": "colchao_firme.png",
+        "imagem": "https://via.placeholder.com/400x300/82E0AA/FFFFFF?text=2.+Colchão+Firme+De+Bebê",
         "dica": "Colchões macios ou acolchoados são perigosos"
       },
       {
         "numero": 3,
         "titulo": "Berço vazio",
         "descricao": "SEM travesseiros, bichos de pelúcia, cobertores soltos ou qualquer objeto",
-        "imagem": "berco_vazio.png",
+        "imagem": "https://via.placeholder.com/400x300/58D68D/FFFFFF?text=3.+Berço+Vazio+Sem+Objetos",
         "dica": "O berço deve ter apenas o bebê e lençol firme preso"
       },
       {
         "numero": 4,
         "titulo": "Roupa adequada",
         "descricao": "Use saco de dormir ou pijama de bebê ao invés de cobertor",
-        "imagem": "roupa_dormir.png",
+        "imagem": "https://via.placeholder.com/400x300/28B463/FFFFFF?text=4.+Roupa+Adequada+Saco+Dormir",
         "dica": "Evita cobrir a cabecinha ou ficar solto"
       },
       {
         "numero": 5,
         "titulo": "Quarto do bebê",
         "descricao": "Recomenda-se que o bebê durma no mesmo quarto dos pais nos primeiros 6 meses, mas não na mesma cama",
-        "imagem": "quarto_dormir.png",
+        "imagem": "https://via.placeholder.com/400x300/229954/FFFFFF?text=5.+Quarto+Pais+Primeiros+6+Meses",
         "dica": "Berço ao lado da cama facilita amamentação e vigília"
       }
     ],
