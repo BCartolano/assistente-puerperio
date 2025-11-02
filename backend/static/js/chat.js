@@ -49,6 +49,16 @@ class ChatbotPuerperio {
         this.showRegister = document.getElementById('show-register');
         this.btnLogin = document.getElementById('btn-login');
         this.btnRegister = document.getElementById('btn-register');
+        
+        // Resources elements
+        this.resourcesModal = document.getElementById('resources-modal');
+        this.closeResources = document.getElementById('close-resources');
+        this.resourcesTitle = document.getElementById('resources-title');
+        this.resourcesContent = document.getElementById('resources-content');
+        this.btnGuias = document.getElementById('btn-guias');
+        this.btnGestacao = document.getElementById('btn-gestacao');
+        this.btnPosparto = document.getElementById('btn-posparto');
+        this.btnVacinas = document.getElementById('btn-vacinas');
     }
     
     bindEvents() {
@@ -131,6 +141,22 @@ class ChatbotPuerperio {
         this.authModal?.addEventListener('click', (e) => {
             if (e.target === this.authModal) {
                 this.hideAuthModal();
+            }
+        });
+        
+        // Resources buttons
+        this.btnGuias?.addEventListener('click', () => this.showGuias());
+        this.btnGestacao?.addEventListener('click', () => this.showGestacao());
+        this.btnPosparto?.addEventListener('click', () => this.showPosparto());
+        this.btnVacinas?.addEventListener('click', () => this.showVacinas());
+        
+        // Fechar resources modal
+        this.closeResources?.addEventListener('click', () => this.hideResourcesModal());
+        
+        // Fechar resources modal clicando fora
+        this.resourcesModal?.addEventListener('click', (e) => {
+            if (e.target === this.resourcesModal) {
+                this.hideResourcesModal();
             }
         });
     }
@@ -637,6 +663,184 @@ class ChatbotPuerperio {
             }
         } catch (error) {
             alert('❌ Erro ao cadastrar. Tente novamente.');
+        }
+    }
+    
+    // Resources functions
+    hideResourcesModal() {
+        this.resourcesModal.classList.remove('show');
+        this.resourcesContent.innerHTML = '';
+    }
+    
+    async showGuias() {
+        try {
+            const response = await fetch('/api/guias');
+            const guias = await response.json();
+            
+            this.resourcesTitle.textContent = '📚 Guias Práticos';
+            let html = '<div class="guia-grid">';
+            
+            for (const [key, guia] of Object.entries(guias)) {
+                html += `
+                    <div class="guia-card" data-guia="${key}">
+                        <div class="guia-card-title">${guia.titulo}</div>
+                        <div class="guia-card-desc">${guia.descricao}</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            this.resourcesContent.innerHTML = html;
+            this.resourcesModal.classList.add('show');
+            
+            // Add click listeners to guia cards
+            document.querySelectorAll('.guia-card').forEach(card => {
+                card.addEventListener('click', () => this.showGuiaDetalhes(card.dataset.guia, guias[card.dataset.guia]));
+            });
+        } catch (error) {
+            alert('❌ Erro ao carregar guias');
+        }
+    }
+    
+    showGuiaDetalhes(key, guia) {
+        this.resourcesTitle.textContent = guia.titulo;
+        let html = `<p style="color: #666; margin-bottom: 1.5rem;">${guia.descricao}</p>`;
+        
+        if (guia.causas) {
+            html += `<div class="alerta-importante"><strong>Causas:</strong> ${guia.causas}</div>`;
+        }
+        
+        if (guia.importante) {
+            html += `<div class="alerta-importante"><strong>⚠️ IMPORTANTE:</strong> ${guia.importante}</div>`;
+        }
+        
+        guia.passos.forEach(passo => {
+            html += `
+                <div class="passo-card">
+                    <span class="passo-numero">${passo.numero}</span>
+                    <span class="passo-titulo">${passo.titulo}</span>
+                    <p class="passo-descricao">${passo.descricao}</p>
+                    ${passo.imagem ? `<img src="${passo.imagem}" alt="${passo.titulo}" class="passo-imagem">` : ''}
+                    <div class="passo-dica">💡 ${passo.dica}</div>
+                </div>
+            `;
+        });
+        
+        if (guia.depois) {
+            html += `<div class="alerta-importante"><strong>Depois:</strong> ${guia.depois}</div>`;
+        }
+        
+        if (guia.emergencia) {
+            html += `<div class="alerta-importante" style="background: #fff3cd; border-color: #ffc107;">${guia.emergencia}</div>`;
+        }
+        
+        if (guia.sinais_medico) {
+            html += `<div class="alerta-importante"><strong>⚠️ Procure o médico se:</strong> ${guia.sinais_medico}</div>`;
+        }
+        
+        if (guia.telefones_uteis) {
+            html += `<div class="alerta-importante" style="background: #f8f9fa;">📞 ${guia.telefones_uteis}</div>`;
+        }
+        
+        this.resourcesContent.innerHTML = html;
+    }
+    
+    async showGestacao() {
+        try {
+            const response = await fetch('/api/cuidados/gestacao');
+            const gestacao = await response.json();
+            
+            this.resourcesTitle.textContent = '🤰 Cuidados na Gestação';
+            let html = '';
+            
+            gestacao.forEach(trimestre => {
+                html += `
+                    <div class="trimestre-card">
+                        <h4>${trimestre.trimestre}</h4>
+                        <p style="margin-bottom: 1rem; color: #666;">${trimestre.descricao}</p>
+                        ${trimestre.cuidados.map(cuidado => `
+                            <div class="semana-item">
+                                <strong>${cuidado.semana}:</strong> ${cuidado.cuidado}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+            
+            this.resourcesContent.innerHTML = html;
+            this.resourcesModal.classList.add('show');
+        } catch (error) {
+            alert('❌ Erro ao carregar cuidados de gestação');
+        }
+    }
+    
+    async showPosparto() {
+        try {
+            const response = await fetch('/api/cuidados/puerperio');
+            const posparto = await response.json();
+            
+            this.resourcesTitle.textContent = '👶 Cuidados Pós-Parto';
+            let html = '';
+            
+            posparto.forEach(periodo => {
+                html += `
+                    <div class="periodo-card">
+                        <h4>${periodo.periodo}</h4>
+                        <p style="margin-bottom: 1rem; color: #666;">${periodo.descricao}</p>
+                        ${periodo.cuidados.map(cuidado => `
+                            <div class="semana-item">
+                                <strong>${cuidado.semana}:</strong> ${cuidado.cuidado}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+            
+            this.resourcesContent.innerHTML = html;
+            this.resourcesModal.classList.add('show');
+        } catch (error) {
+            alert('❌ Erro ao carregar cuidados pós-parto');
+        }
+    }
+    
+    async showVacinas() {
+        try {
+            const [mae, bebe] = await Promise.all([
+                fetch('/api/vacinas/mae').then(r => r.json()),
+                fetch('/api/vacinas/bebe').then(r => r.json())
+            ]);
+            
+            this.resourcesTitle.textContent = '💉 Carteira de Vacinação';
+            let html = '<h3 style="color: #f4a6a6; margin: 1.5rem 0 1rem;">👩 Vacinas para Mãe</h3>';
+            
+            mae.forEach(vacina => {
+                html += `
+                    <div class="vacina-card">
+                        <h4>${vacina.vacina}</h4>
+                        <p style="margin-bottom: 0.5rem;"><strong>Quando:</strong> ${vacina.quando}</p>
+                        <p style="margin-bottom: 0.5rem;"><strong>Onde:</strong> ${vacina.onde}</p>
+                        <p style="color: #666;">${vacina.descricao}</p>
+                    </div>
+                `;
+            });
+            
+            html += '<h3 style="color: #f4a6a6; margin: 1.5rem 0 1rem;">👶 Vacinas para Bebê</h3>';
+            
+            bebe.forEach(vacina => {
+                html += `
+                    <div class="vacina-card">
+                        <h4>${vacina.vacina}</h4>
+                        <p style="margin-bottom: 0.5rem;"><strong>Quando:</strong> ${vacina.quando}</p>
+                        <p style="margin-bottom: 0.5rem;"><strong>Protege contra:</strong> ${vacina.protege}</p>
+                        <p style="color: #666;">${vacina.descricao}</p>
+                    </div>
+                `;
+            });
+            
+            this.resourcesContent.innerHTML = html;
+            this.resourcesModal.classList.add('show');
+        } catch (error) {
+            alert('❌ Erro ao carregar vacinas');
         }
     }
 }
