@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#f4a6a6">
-    <title>Assistente Puerpério - Apoio Materno</title>
+    <title>Sophia - Sua Amiga do Puerpério 🤱</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,13 +21,20 @@
             <div class="header-content">
                 <div class="logo">
                     <i class="fas fa-heart"></i>
-                    <h1>Assistente Puerpério</h1>
+                    <h1>Sophia 💕</h1>
+                    <span class="subtitle">Sua Amiga do Puerpério</span>
                 </div>
-                <div class="status-indicator">
-                    <span id="status-indicator" class="status-online">
-                        <i class="fas fa-circle"></i>
-                        Online
-                    </span>
+                <div class="header-right">
+                    <button class="account-button" id="account-btn">
+                        <i class="fas fa-user"></i>
+                        Minha Conta
+                    </button>
+                    <div class="status-indicator">
+                        <span id="status-indicator" class="status-online">
+                            <i class="fas fa-circle"></i>
+                            Online
+                        </span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -126,6 +133,68 @@
                 </div>
                 <div class="input-info">
                     <span id="char-count">0/500</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Modal (Login/Cadastro) -->
+        <div class="modal" id="auth-modal">
+            <div class="modal-content modal-auth">
+                <div class="modal-header">
+                    <h3><i class="fas fa-heart"></i> Bem-vinda! 💕</h3>
+                    <button class="close-modal" id="close-auth">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" data-tab="login">
+                            <i class="fas fa-sign-in-alt"></i> Entrar
+                        </button>
+                        <button class="auth-tab" data-tab="register">
+                            <i class="fas fa-user-plus"></i> Cadastrar
+                        </button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div class="auth-form active" id="login-form">
+                        <div class="form-group">
+                            <label><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="login-email" placeholder="seu@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> Senha</label>
+                            <input type="password" id="login-password" placeholder="Sua senha">
+                        </div>
+                        <button class="btn btn-primary btn-full" id="btn-login">
+                            <i class="fas fa-heart"></i> Entrar na minha conta
+                        </button>
+                        <p class="auth-link">Não tem conta? <a href="#" id="show-register">Cadastre-se aqui</a></p>
+                    </div>
+
+                    <!-- Register Form -->
+                    <div class="auth-form" id="register-form">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nome</label>
+                            <input type="text" id="register-name" placeholder="Seu nome">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="register-email" placeholder="seu@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> Senha</label>
+                            <input type="password" id="register-password" placeholder="Mínimo 6 caracteres">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-baby"></i> Nome do bebê (opcional)</label>
+                            <input type="text" id="register-baby" placeholder="Nome do seu bebê">
+                        </div>
+                        <button class="btn btn-primary btn-full" id="btn-register">
+                            <i class="fas fa-heart"></i> Criar conta
+                        </button>
+                        <p class="auth-link">Já tem conta? <a href="#" id="show-login">Entre aqui</a></p>
+                    </div>
                 </div>
             </div>
         </div>
