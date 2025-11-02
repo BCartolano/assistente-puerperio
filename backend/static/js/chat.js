@@ -28,6 +28,14 @@ class ChatbotPuerperio {
         this.closeSidebar = document.getElementById('close-sidebar');
         this.clearHistoryBtn = document.getElementById('clear-history');
         this.categoriesContainer = document.getElementById('categories');
+        
+        // Sidebar new buttons
+        this.sidebarBtnGuias = document.getElementById('sidebar-btn-guias');
+        this.sidebarBtnGestacao = document.getElementById('sidebar-btn-gestacao');
+        this.sidebarBtnPosparto = document.getElementById('sidebar-btn-posparto');
+        this.sidebarBtnVacinas = document.getElementById('sidebar-btn-vacinas');
+        this.sidebarBtnClear = document.getElementById('sidebar-btn-clear');
+        this.sidebarBtnBack = document.getElementById('sidebar-btn-back');
         this.charCount = document.getElementById('char-count');
         this.alertModal = document.getElementById('alert-modal');
         this.closeAlert = document.getElementById('close-alert');
@@ -79,10 +87,36 @@ class ChatbotPuerperio {
         this.closeSidebar.addEventListener('click', () => this.closeSidebarMenu());
         
         // Limpar histórico
-        this.clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+        this.clearHistoryBtn?.addEventListener('click', () => this.clearHistory());
         
         // Voltar ao início
         this.backBtn.addEventListener('click', () => this.backToWelcomeScreen());
+        
+        // Sidebar buttons
+        this.sidebarBtnGuias?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.showGuias();
+        });
+        this.sidebarBtnGestacao?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.showGestacao();
+        });
+        this.sidebarBtnPosparto?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.showPosparto();
+        });
+        this.sidebarBtnVacinas?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.showVacinas();
+        });
+        this.sidebarBtnClear?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.clearHistory();
+        });
+        this.sidebarBtnBack?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.backToWelcomeScreen();
+        });
         
         // Quick questions
         document.addEventListener('click', (e) => {
