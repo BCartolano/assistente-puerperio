@@ -1654,3 +1654,177 @@ body {
     color: #8b5a5a;
 }
 
+/* Vacinas Tabs */
+.vacinas-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(244, 166, 166, 0.3);
+}
+
+.vacina-tab {
+    background: transparent;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #8b5a5a;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    position: relative;
+    bottom: -2px;
+}
+
+.vacina-tab:hover {
+    color: #f4a6a6;
+}
+
+.vacina-tab.active {
+    color: #f4a6a6;
+    border-bottom-color: #f4a6a6;
+}
+
+.vacinas-content {
+    position: relative;
+}
+
+.vacina-tab-content {
+    display: none;
+}
+
+.vacina-tab-content.active {
+    display: block;
+}
+
+/* Vacina Item com Checkbox */
+.vacina-item {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #fff9f7;
+    border-radius: 12px;
+    border: 2px solid rgba(244, 166, 166, 0.3);
+    transition: all 0.3s ease;
+}
+
+.vacina-item:hover {
+    border-color: rgba(244, 166, 166, 0.6);
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.2);
+}
+
+.vacina-item.checked {
+    background: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.vacina-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    gap: 1rem;
+}
+
+.vacina-checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #f4a6a6;
+    border-radius: 5px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.checkmark::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.vacina-checkbox-label input[type="checkbox"]:checked ~ .checkmark {
+    background: #4caf50;
+    border-color: #4caf50;
+}
+
+.vacina-checkbox-label input[type="checkbox"]:checked ~ .checkmark::after {
+    opacity: 1;
+}
+
+.vacina-info {
+    flex: 1;
+}
+
+.vacina-detail {
+    color: #666;
+    font-size: 0.9em;
+    margin: 0.3rem 0;
+}
+
+/* Celebration Overlay */
+.celebration-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.celebration-overlay.show {
+    opacity: 1;
+}
+
+.celebration-content {
+    background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    color: white;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: celebrationBounce 0.5s ease;
+}
+
+.celebration-emoji {
+    font-size: 5rem;
+    animation: celebrationSpin 1s ease infinite;
+    margin-bottom: 1rem;
+}
+
+.celebration-content h2 {
+    margin: 0.5rem 0;
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.celebration-content p {
+    margin: 0.5rem 0;
+    font-size: 1.2rem;
+}
+
+@keyframes celebrationBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes celebrationSpin {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(10deg) scale(1.1); }
+}
+

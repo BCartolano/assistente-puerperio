@@ -856,61 +856,228 @@ class ChatbotPuerperio {
     
     async showVacinas() {
         try {
-            const [maeData, bebeData] = await Promise.all([
+            const [maeData, bebeData, vacinasStatus] = await Promise.all([
                 fetch('/api/vacinas/mae').then(r => r.json()),
-                fetch('/api/vacinas/bebe').then(r => r.json())
+                fetch('/api/vacinas/bebe').then(r => r.json()),
+                this.fetchVacinasStatus()
             ]);
             
             this.resourcesTitle.textContent = '💉 Carteira de Vacinação';
-            let html = '';
             
-            // Vacinas da mãe
-            for (const [key, periodo] of Object.entries(maeData)) {
-                if (key !== 'calendario') {
-                    html += `
-                        <div class="vacina-card">
-                            <h4>${periodo.nome || key}</h4>
-                            ${periodo.descricao ? `<p style="margin-bottom: 1rem; color: #666;">${periodo.descricao}</p>` : ''}
-                            ${periodo.vacinas ? periodo.vacinas.map(v => `
-                                <div style="margin-bottom: 1rem; padding: 1rem; background: #fff9f7; border-radius: 8px; border-left: 3px solid #f4a6a6;">
-                                    <strong>💉 ${v.nome}</strong><br>
-                                    ${v.quando ? `<span style="color: #666;">⏰ Quando: ${v.quando}</span><br>` : ''}
-                                    ${v.dose ? `<span style="color: #666;">📅 Dose: ${v.dose}</span><br>` : ''}
-                                    ${v.protege ? `<span style="color: #666;">🛡️ Protege: ${v.protege}</span><br>` : ''}
-                                    ${v.seguranca ? `<span style="color: #666;">✅ ${v.seguranca}</span><br>` : ''}
-                                    ${v.observacao ? `<em style="color: #8b5a5a;">${v.observacao}</em>` : ''}
-                                </div>
-                            `).join('') : ''}
-                            ${periodo.importante ? `<div class="alerta-importante" style="background: #fff3cd; border-color: #ffc107;">⚠️ ${periodo.importante}</div>` : ''}
-                        </div>
-                    `;
-                }
-            }
-            
-            // Vacinas do bebê
-            for (const [key, periodo] of Object.entries(bebeData)) {
-                if (key !== 'calendario') {
-                    html += `
-                        <div class="vacina-card">
-                            <h4>${periodo.idade || key}</h4>
-                            ${periodo.vacinas ? periodo.vacinas.map(v => `
-                                <div style="margin-bottom: 1rem; padding: 1rem; background: #e8f5e9; border-radius: 8px; border-left: 3px solid #4caf50;">
-                                    <strong>💉 ${v.nome}</strong><br>
-                                    ${v.doenca ? `<span style="color: #666;">🦠 Protege contra: ${v.doenca}</span><br>` : ''}
-                                    ${v.local ? `<span style="color: #666;">📍 Onde: ${v.local}</span><br>` : ''}
-                                    ${v.observacao ? `<em style="color: #8b5a5a;">${v.observacao}</em>` : ''}
-                                </div>
-                            `).join('') : ''}
-                        </div>
-                    `;
-                }
-            }
+            // Criar tabs para Mãe e Bebê
+            let html = `
+                <div class="vacinas-tabs">
+                    <button class="vacina-tab active" data-tab="mae">👩 Vacinas da Mamãe</button>
+                    <button class="vacina-tab" data-tab="bebe">👶 Vacinas do Bebê</button>
+                </div>
+                <div class="vacinas-content">
+                    <div class="vacina-tab-content active" id="vacinas-mae">
+                        ${this.renderVacinasMae(maeData, vacinasStatus)}
+                    </div>
+                    <div class="vacina-tab-content" id="vacinas-bebe">
+                        ${this.renderVacinasBebe(bebeData, vacinasStatus)}
+                    </div>
+                </div>
+            `;
             
             this.resourcesContent.innerHTML = html;
             this.resourcesModal.classList.add('show');
+            
+            // Bind tabs
+            document.querySelectorAll('.vacina-tab').forEach(tab => {
+                tab.addEventListener('click', () => this.switchVacinaTab(tab.dataset.tab));
+            });
+            
+            // Bind checkboxes
+            this.bindVacinaCheckboxes();
         } catch (error) {
             alert('❌ Erro ao carregar vacinas');
         }
+    }
+    
+    async fetchVacinasStatus() {
+        try {
+            const response = await fetch('/api/vacinas/status');
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.error('Erro ao buscar status:', error);
+        }
+        return {};
+    }
+    
+    renderVacinasMae(maeData, status) {
+        const vacinasTomadas = status.mae || [];
+        const nomesTomadas = new Set(vacinasTomadas.map(v => v.nome));
+        let html = '';
+        
+        for (const [key, periodo] of Object.entries(maeData)) {
+            if (key !== 'calendario' && key !== 'importante' && 'vacinas' in periodo) {
+                html += `
+                    <div class="vacina-card">
+                        <h4>${periodo.nome || key}</h4>
+                        ${periodo.descricao ? `<p style="margin-bottom: 1rem; color: #666;">${periodo.descricao}</p>` : ''}
+                        ${periodo.vacinas ? periodo.vacinas.map(v => {
+                            const isChecked = nomesTomadas.has(v.nome);
+                            return `
+                                <div class="vacina-item ${isChecked ? 'checked' : ''}" data-tipo="mae" data-nome="${this.escapeHtml(v.nome)}">
+                                    <label class="vacina-checkbox-label">
+                                        <input type="checkbox" ${isChecked ? 'checked' : ''}>
+                                        <span class="checkmark"></span>
+                                        <div class="vacina-info">
+                                            <strong>💉 ${v.nome}</strong>
+                                            ${v.quando ? `<div class="vacina-detail">⏰ ${v.quando}</div>` : ''}
+                                            ${v.dose ? `<div class="vacina-detail">📅 ${v.dose}</div>` : ''}
+                                            ${v.onde ? `<div class="vacina-detail">🏥 ${v.onde}</div>` : ''}
+                                            ${v.documentos ? `<div class="vacina-detail">📋 ${v.documentos}</div>` : ''}
+                                            ${v.protege ? `<div class="vacina-detail">🛡️ ${v.protege}</div>` : ''}
+                                            ${v.observacao ? `<em style="color: #8b5a5a; font-size: 0.9em;">${v.observacao}</em>` : ''}
+                                        </div>
+                                    </label>
+                                </div>
+                            `;
+                        }).join('') : ''}
+                    </div>
+                `;
+            }
+        }
+        
+        if (maeData.importante) {
+            html += `<div class="alerta-importante">⚠️ ${maeData.importante}</div>`;
+        }
+        
+        return html;
+    }
+    
+    renderVacinasBebe(bebeData, status) {
+        const vacinasTomadas = status.bebe || [];
+        const nomesTomadas = new Set(vacinasTomadas.map(v => v.nome));
+        let html = '';
+        
+        for (const [key, periodo] of Object.entries(bebeData)) {
+            if (key !== 'calendario' && key !== 'recomendacoes' && key !== 'carteira_vacinacao' && 'vacinas' in periodo) {
+                html += `
+                    <div class="vacina-card">
+                        <h4>${periodo.idade || key}</h4>
+                        ${periodo.vacinas ? periodo.vacinas.map(v => {
+                            const isChecked = nomesTomadas.has(v.nome);
+                            return `
+                                <div class="vacina-item ${isChecked ? 'checked' : ''}" data-tipo="bebe" data-nome="${this.escapeHtml(v.nome)}">
+                                    <label class="vacina-checkbox-label">
+                                        <input type="checkbox" ${isChecked ? 'checked' : ''}>
+                                        <span class="checkmark"></span>
+                                        <div class="vacina-info">
+                                            <strong>💉 ${v.nome}</strong>
+                                            ${v.doenca ? `<div class="vacina-detail">🦠 ${v.doenca}</div>` : ''}
+                                            ${v.local ? `<div class="vacina-detail">🏥 ${v.local}</div>` : ''}
+                                            ${v.onde ? `<div class="vacina-detail">🏥 ${v.onde}</div>` : ''}
+                                            ${v.documentos ? `<div class="vacina-detail">📋 ${v.documentos}</div>` : ''}
+                                            ${v.observacao ? `<em style="color: #8b5a5a; font-size: 0.9em;">${v.observacao}</em>` : ''}
+                                        </div>
+                                    </label>
+                                </div>
+                            `;
+                        }).join('') : ''}
+                    </div>
+                `;
+            }
+        }
+        
+        return html;
+    }
+    
+    switchVacinaTab(tab) {
+        document.querySelectorAll('.vacina-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.vacina-tab-content').forEach(c => c.classList.remove('active'));
+        
+        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        document.getElementById(`vacinas-${tab}`).classList.add('active');
+    }
+    
+    bindVacinaCheckboxes() {
+        document.querySelectorAll('.vacina-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', async (e) => {
+                const item = e.target.closest('.vacina-item');
+                const tipo = item.dataset.tipo;
+                const nome = item.dataset.nome;
+                const isChecked = e.target.checked;
+                
+                if (isChecked) {
+                    await this.marcarVacina(tipo, nome, item);
+                } else {
+                    await this.desmarcarVacina(tipo, nome, item);
+                }
+            });
+        });
+    }
+    
+    async marcarVacina(tipo, nome, itemElement) {
+        try {
+            const response = await fetch('/api/vacinas/marcar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({tipo, vacina_nome: nome})
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                itemElement.classList.add('checked');
+                this.showCelebration();
+            } else {
+                alert('⚠️ ' + data.erro);
+                itemElement.querySelector('input').checked = false;
+            }
+        } catch (error) {
+            alert('❌ Erro ao marcar vacina');
+            itemElement.querySelector('input').checked = false;
+        }
+    }
+    
+    async desmarcarVacina(tipo, nome, itemElement) {
+        try {
+            const response = await fetch('/api/vacinas/desmarcar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({tipo, vacina_nome: nome})
+            });
+            
+            if (response.ok) {
+                itemElement.classList.remove('checked');
+            }
+        } catch (error) {
+            alert('❌ Erro ao desmarcar vacina');
+        }
+    }
+    
+    showCelebration() {
+        const celebration = document.createElement('div');
+        celebration.className = 'celebration-overlay';
+        celebration.innerHTML = `
+            <div class="celebration-content">
+                <div class="celebration-emoji">🎉</div>
+                <h2>Parabéns, Mamãe! 🎉</h2>
+                <p>Você cuidou da saúde!</p>
+                <p style="font-size: 0.9em; margin-top: 1rem;">Obrigada por se proteger 💕</p>
+            </div>
+        `;
+        document.body.appendChild(celebration);
+        
+        setTimeout(() => {
+            celebration.classList.add('show');
+        }, 10);
+        
+        setTimeout(() => {
+            celebration.classList.remove('show');
+            setTimeout(() => celebration.remove(), 500);
+        }, 3000);
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 }
 

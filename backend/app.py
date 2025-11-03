@@ -63,6 +63,16 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS vacinas_tomadas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            tipo TEXT NOT NULL,
+            vacina_nome TEXT NOT NULL,
+            data_tomada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -497,6 +507,85 @@ def api_user():
         "email": current_user.email,
         "baby_name": current_user.baby_name
     })
+
+@app.route('/api/vacinas/status', methods=['GET'])
+@login_required
+def api_vacinas_status():
+    """Retorna o status das vacinas tomadas pelo usuário"""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('SELECT tipo, vacina_nome, data_tomada FROM vacinas_tomadas WHERE user_id = ?', (current_user.id,))
+    vacinas = cursor.fetchall()
+    conn.close()
+    
+    status = {}
+    for vacina in vacinas:
+        tipo = vacina[0]
+        if tipo not in status:
+            status[tipo] = []
+        status[tipo].append({
+            "nome": vacina[1],
+            "data": vacina[2]
+        })
+    
+    return jsonify(status)
+
+@app.route('/api/vacinas/marcar', methods=['POST'])
+@login_required
+def api_vacinas_marcar():
+    """Marca uma vacina como tomada"""
+    data = request.get_json()
+    tipo = data.get('tipo', '').strip()  # 'mae' ou 'bebe'
+    vacina_nome = data.get('vacina_nome', '').strip()
+    
+    if not tipo or not vacina_nome:
+        return jsonify({"erro": "Tipo e nome da vacina são obrigatórios"}), 400
+    
+    if tipo not in ['mae', 'bebe']:
+        return jsonify({"erro": "Tipo deve ser 'mae' ou 'bebe'"}), 400
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Verifica se já foi marcada
+    cursor.execute('SELECT id FROM vacinas_tomadas WHERE user_id = ? AND tipo = ? AND vacina_nome = ?', 
+                   (current_user.id, tipo, vacina_nome))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({"erro": "Esta vacina já foi marcada"}), 400
+    
+    # Insere a vacina
+    cursor.execute('INSERT INTO vacinas_tomadas (user_id, tipo, vacina_nome) VALUES (?, ?, ?)',
+                   (current_user.id, tipo, vacina_nome))
+    conn.commit()
+    vacina_id = cursor.lastrowid
+    conn.close()
+    
+    return jsonify({
+        "sucesso": True, 
+        "mensagem": "Vacina marcada com sucesso! 💉✨",
+        "vacina_id": vacina_id
+    }), 201
+
+@app.route('/api/vacinas/desmarcar', methods=['POST'])
+@login_required
+def api_vacinas_desmarcar():
+    """Remove uma vacina das vacinas tomadas"""
+    data = request.get_json()
+    tipo = data.get('tipo', '').strip()
+    vacina_nome = data.get('vacina_nome', '').strip()
+    
+    if not tipo or not vacina_nome:
+        return jsonify({"erro": "Tipo e nome da vacina são obrigatórios"}), 400
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM vacinas_tomadas WHERE user_id = ? AND tipo = ? AND vacina_nome = ?',
+                   (current_user.id, tipo, vacina_nome))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({"sucesso": True, "mensagem": "Vacina removida"})
 
 # Rota para teste
 @app.route('/teste')

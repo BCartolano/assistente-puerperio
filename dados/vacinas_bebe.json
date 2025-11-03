@@ -5,7 +5,6 @@
     "fonte": "PNO - Programa Nacional de Imunizações",
     "importante": "Mantenha a carteira de vacinação atualizada! Vacine seu bebê na idade certa."
   },
-  
   "0_2_meses": {
     "idade": "Ao nascer",
     "vacinas": [
@@ -13,17 +12,20 @@
         "nome": "BCG (ID) - Dose única",
         "doenca": "Tuberculose",
         "local": "Hospital",
-        "observacao": "Dada logo após o nascimento na maternidade"
+        "observacao": "Dada logo após o nascimento na maternidade",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Hepatite B - 1ª dose",
         "doenca": "Hepatite B",
         "local": "Hospital",
-        "observacao": "Primeira dose nas primeiras 12-24h de vida"
+        "observacao": "Primeira dose nas primeiras 12-24h de vida",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       }
     ]
   },
-  
   "1_2_meses": {
     "idade": "2 meses de idade",
     "vacinas": [
@@ -31,29 +33,36 @@
         "nome": "Pentavalente (DTP + Hib + HepB) - 1ª dose",
         "doenca": "Difteria, Tétano, Coqueluche, Meningite e Hepatite B",
         "local": "Posto de Saúde",
-        "observacao": "Vacina combinada - uma picada protege contra várias doenças"
+        "observacao": "Vacina combinada - uma picada protege contra várias doenças",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "VIP (Poliomielite injetável) - 1ª dose",
         "doenca": "Poliomielite (paralisia infantil)",
         "local": "Posto de Saúde",
-        "observacao": "Importante para erradicação da pólio"
+        "observacao": "Importante para erradicação da pólio",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Pneumocócica 10V - 1ª dose",
         "doenca": "Pneumonia, Meningite, Otite",
         "local": "Posto de Saúde",
-        "observacao": "Protege contra bactéria pneumococo"
+        "observacao": "Protege contra bactéria pneumococo",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Rotavírus Humano - 1ª dose",
         "doenca": "Diarréia grave, desidratação",
         "local": "Posto de Saúde",
-        "observacao": "Vacina oral (gotas). IMPORTANTE: não dar se bebê tiver algum problema imunológico"
+        "observacao": "Vacina oral (gotas). IMPORTANTE: não dar se bebê tiver algum problema imunológico",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       }
     ]
   },
-  
   "3_4_meses": {
     "idade": "3 meses de idade",
     "vacinas": [
@@ -61,60 +70,73 @@
         "nome": "Pentavalente (DTP + Hib + HepB) - 2ª dose",
         "doenca": "Difteria, Tétano, Coqueluche, Meningite e Hepatite B",
         "local": "Posto de Saúde",
-        "observacao": "Reforça a proteção da 1ª dose"
+        "observacao": "Reforça a proteção da 1ª dose",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "VIP (Poliomielite injetável) - 2ª dose",
         "doenca": "Poliomielite",
-        "local": "Posto de Saúde"
+        "local": "Posto de Saúde",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Pneumocócica 10V - 2ª dose",
         "doenca": "Pneumonia, Meningite, Otite",
-        "local": "Posto de Saúde"
+        "local": "Posto de Saúde",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Meningocócica C - 1ª dose",
         "doenca": "Meningite meningocócica tipo C",
         "local": "Posto de Saúde",
-        "observacao": "Importante para prevenir meningite grave"
+        "observacao": "Importante para prevenir meningite grave",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Rotavírus Humano - 2ª dose",
         "doenca": "Diarréia grave",
         "local": "Posto de Saúde",
-        "observacao": "Vacina oral (gotas)"
+        "observacao": "Vacina oral (gotas)",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       }
     ]
   },
-  
   "4_5_meses": {
     "idade": "4 meses de idade",
     "vacinas": [
       {
         "nome": "Pneumocócica 10V - 3ª dose",
         "doenca": "Pneumonia, Meningite, Otite",
-        "local": "Posto de Saúde"
+        "local": "Posto de Saúde",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       }
     ]
   },
-  
   "5_6_meses": {
     "idade": "5 meses de idade",
     "vacinas": [
       {
         "nome": "Pentavalente (DTP + Hib + HepB) - 3ª dose",
         "doenca": "Difteria, Tétano, Coqueluche, Meningite e Hepatite B",
-        "local": "Posto de Saúde"
+        "local": "Posto de Saúde",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "VIP (Poliomielite injetável) - 3ª dose",
         "doenca": "Poliomielite",
-        "local": "Posto de Saúde"
+        "local": "Posto de Saúde",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       }
     ]
   },
-  
   "6_12_meses": {
     "idade": "6 meses a 1 ano",
     "vacinas": [
@@ -124,32 +146,39 @@
         "quando": "Início da campanha anual",
         "dose": "2 doses na primeira vez com intervalo de 30 dias",
         "local": "Posto de Saúde ou campanha",
-        "observacao": "Vacinação anual durante a temporada de gripe"
+        "observacao": "Vacinação anual durante a temporada de gripe",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Tríplice Viral - 1ª dose",
         "doenca": "Sarampo, Caxumba, Rubéola",
         "quando": "A partir de 12 meses",
         "local": "Posto de Saúde",
-        "observacao": "Primeira dose da tríplice viral"
+        "observacao": "Primeira dose da tríplice viral",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Hepatite A - 1ª dose",
         "doenca": "Hepatite A",
         "quando": "A partir de 12 meses",
         "dose": "2 doses com intervalo de 6 meses",
-        "local": "Posto de Saúde"
+        "local": "Posto de Saúde",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       },
       {
         "nome": "Reforço Meningocócica C",
         "doenca": "Meningite meningocócica tipo C",
         "quando": "12 meses",
         "local": "Posto de Saúde",
-        "observacao": "Reforço para proteção continuada"
+        "observacao": "Reforço para proteção continuada",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão de Vacinação, Cartão do SUS, documento da criança ou certidão de nascimento"
       }
     ]
   },
-  
   "recomendacoes": {
     "idade_minima": "Respeite a idade mínima para cada vacina",
     "atraso": "Se atrasar, retome o quanto antes no posto de saúde",
@@ -165,7 +194,6 @@
     "onde_vacinar": "Todos os postos de saúde, Unidades Básicas de Saúde e hospitais públicos. Cartão de vacinação é gratuito e obrigatório.",
     "importante": "Mantenha a carteira de vacinação sempre atualizada. Ela é necessária para matrícula escolar."
   },
-  
   "carteira_vacinacao": {
     "nome": "Carteira de Vacinação",
     "onde_pegar": "Posto de Saúde, Unidades Básicas de Saúde ou maternidade",
@@ -175,4 +203,3 @@
     "documentos": "Caderneta de vacinação e documento do bebê"
   }
 }
-

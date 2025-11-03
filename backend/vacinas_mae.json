@@ -10,7 +10,9 @@
         "dose": "Dose anual",
         "protege": "Gripe na gestante e no bebê após nascer",
         "seguranca": "Segura e recomendada durante a gravidez",
-        "observacao": "Importante especialmente durante a temporada de gripe"
+        "observacao": "Importante especialmente durante a temporada de gripe",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão do SUS, documento de identidade, carteira de gestante"
       },
       {
         "nome": "Vacina dTpa (Tríplice bacteriana)",
@@ -18,7 +20,9 @@
         "dose": "Uma dose a cada gravidez",
         "protege": "Difteria, Tétano e Coqueluche (pertussis)",
         "seguranca": "Segura na gestação",
-        "observacao": "Protege o bebê contra coqueluche nos primeiros meses"
+        "observacao": "Protege o bebê contra coqueluche nos primeiros meses",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão do SUS, documento de identidade, carteira de gestante"
       },
       {
         "nome": "Vacina Hepatite B",
@@ -26,7 +30,9 @@
         "dose": "3 doses ao longo da gestação",
         "protege": "Hepatite B",
         "seguranca": "Segura na gestação",
-        "observacao": "Importante para prevenir transmissão ao bebê"
+        "observacao": "Importante para prevenir transmissão ao bebê",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão do SUS, documento de identidade, carteira de gestante"
       }
     ],
     "contraindicadas": [
@@ -47,28 +53,36 @@
         "quando": "Se não tomou durante a gestação",
         "dose": "Uma dose",
         "protege": "Difteria, Tétano e Coqueluche",
-        "observacao": "Importante para não transmitir coqueluche ao bebê"
+        "observacao": "Importante para não transmitir coqueluche ao bebê",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão do SUS, documento de identidade"
       },
       {
         "nome": "Vacina MMR (Tríplice viral)",
         "quando": "Após o parto se não estiver imunizada",
         "dose": "2 doses com intervalo mínimo",
         "protege": "Sarampo, Caxumba e Rubéola",
-        "observacao": "Pode ser dada durante amamentação"
+        "observacao": "Pode ser dada durante amamentação",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão do SUS, documento de identidade"
       },
       {
         "nome": "Vacina Varicela (Catapora)",
         "quando": "Após o parto se não teve catapora",
         "dose": "2 doses",
         "protege": "Varicela (catapora)",
-        "observacao": "Segura durante amamentação"
+        "observacao": "Segura durante amamentação",
+        "onde": "Unidade Básica de Saúde (UBS), Posto de Saúde",
+        "documentos": "Cartão do SUS, documento de identidade"
       },
       {
         "nome": "Vacina Febre Amarela",
         "quando": "Se for para área de risco",
         "dose": "Uma dose a cada 10 anos",
         "protege": "Febre Amarela",
-        "observacao": "Evitar amamentação por 10 dias após vacinação"
+        "observacao": "Evitar amamentação por 10 dias após vacinação",
+        "onde": "Unidade Básica de Saúde (UBS), Centro de Imunização",
+        "documentos": "Cartão do SUS, documento de identidade"
       }
     ],
     "observacao": "Muitas vacinas são seguras durante amamentação. Consulte seu médico sobre cada uma."
