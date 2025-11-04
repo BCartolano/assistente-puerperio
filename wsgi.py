@@ -1,5 +1,11 @@
 """
 WSGI entry point for the chatbot application
+
+Este arquivo é usado pelo Gunicorn para servir a aplicação Flask.
+O Gunicorn não precisa ser importado aqui - ele é executado via linha de comando:
+    gunicorn wsgi:app
+
+O Gunicorn está listado em requirements.txt e será instalado automaticamente.
 """
 import os
 import sys
@@ -12,8 +18,14 @@ backend_path = os.path.join(current_dir, 'backend')
 sys.path.insert(0, backend_path)
 
 # Importa o app do backend
-from app import app
+try:
+    from app import app  # pyright: ignore[reportMissingImports]  # noqa: F401
+    print("✅ App Flask carregado com sucesso")
+except Exception as e:
+    print(f"❌ Erro ao carregar app: {e}")
+    raise
 
 if __name__ == "__main__":
-    app.run()
+    # Para desenvolvimento local (não usa gunicorn)
+    app.run(debug=True, host='0.0.0.0', port=5000)
 

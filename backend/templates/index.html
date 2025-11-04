@@ -1,18 +1,24 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#f4a6a6">
+    <meta name="description" content="Espaço acolhedor para o puerpério — apoio, acolhimento e conversas humanizadas com Sophia.">
     <title>Sophia - Sua Amiga do Puerpério 🤱</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <style>
+        body { background: linear-gradient(135deg, #fef9f7, #f8e8e8, #f0e0e0); }
+    </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}?v={{ timestamp if timestamp else '1.0' }}" rel="stylesheet">
 </head>
 <body>
     <!-- Login Screen (shown first) -->
@@ -39,35 +45,57 @@
                 <div class="login-forms">
                     <form class="login-form active" id="initial-login-form">
                         <div class="form-group">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="initial-login-email" placeholder="Seu email" required>
+                            <label for="initial-login-email">
+                                <i class="fas fa-envelope"></i>
+                                Email
+                            </label>
+                            <input type="email" id="initial-login-email" name="email" autocomplete="email" placeholder="Seu email" required>
                         </div>
                         <div class="form-group">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="initial-login-password" placeholder="Sua senha" required>
+                            <label for="initial-login-password">
+                                <i class="fas fa-lock"></i>
+                                Senha
+                            </label>
+                            <input type="password" id="initial-login-password" name="password" autocomplete="current-password" placeholder="Sua senha" required>
                         </div>
                         <button type="submit" class="btn btn-login-main">
                             <i class="fas fa-sign-in-alt"></i>
                             Entrar
                         </button>
+                        <a href="#" class="forgot-password-link" id="forgot-password-link">
+                            <i class="fas fa-key"></i>
+                            Esqueci minha senha
+                        </a>
                     </form>
                     
                     <form class="login-form" id="initial-register-form">
                         <div class="form-group">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="initial-register-name" placeholder="Seu nome" required>
+                            <label for="initial-register-name">
+                                <i class="fas fa-user"></i>
+                                Nome
+                            </label>
+                            <input type="text" id="initial-register-name" name="name" autocomplete="name" placeholder="Seu nome" required>
                         </div>
                         <div class="form-group">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="initial-register-email" placeholder="Seu email" required>
+                            <label for="initial-register-email">
+                                <i class="fas fa-envelope"></i>
+                                Email
+                            </label>
+                            <input type="email" id="initial-register-email" name="email" autocomplete="email" placeholder="Seu email" required>
                         </div>
                         <div class="form-group">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="initial-register-password" placeholder="Sua senha (min. 6 caracteres)" required>
+                            <label for="initial-register-password">
+                                <i class="fas fa-lock"></i>
+                                Senha
+                            </label>
+                            <input type="password" id="initial-register-password" name="password" autocomplete="new-password" placeholder="Sua senha (min. 6 caracteres)" required>
                         </div>
                         <div class="form-group">
-                            <i class="fas fa-baby"></i>
-                            <input type="text" id="initial-register-baby" placeholder="Nome do bebê (opcional)">
+                            <label for="initial-register-baby">
+                                <i class="fas fa-baby"></i>
+                                Nome do bebê (opcional)
+                            </label>
+                            <input type="text" id="initial-register-baby" name="baby_name" autocomplete="off" placeholder="Nome do bebê (opcional)">
                         </div>
                         <button type="submit" class="btn btn-login-main">
                             <i class="fas fa-user-plus"></i>
@@ -89,10 +117,9 @@
                     <span class="subtitle">Sua Amiga do Puerpério</span>
                 </div>
                 <div class="header-right">
-                    <button class="account-button" id="account-btn">
-                        <i class="fas fa-user"></i>
-                        Minha Conta
-                    </button>
+                    <div class="welcome-message" id="welcome-user">
+                        <span id="user-greeting">Olá, Usuário 👋</span>
+                    </div>
                     <div class="status-indicator">
                         <span id="status-indicator" class="status-online">
                             <i class="fas fa-circle"></i>
@@ -109,7 +136,7 @@
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <h3><i class="fas fa-heart"></i> Menu Rápido</h3>
-                    <button class="close-sidebar" id="close-sidebar">
+                    <button class="close-sidebar" id="close-sidebar" aria-label="Fechar menu">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -142,7 +169,15 @@
                         </button>
                         <button class="sidebar-btn" id="sidebar-btn-back">
                             <i class="fas fa-home"></i>
-                            Voltar ao Início
+                            Voltar ao Menu
+                        </button>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h4>👤 Minha Conta</h4>
+                        <button class="sidebar-btn sidebar-btn-logout" id="sidebar-btn-logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sair da Conta
                         </button>
                     </div>
                 </div>
@@ -155,7 +190,23 @@
                     <div class="welcome-content">
                         <i class="fas fa-baby"></i>
                         <h2>Bem-vinda ao seu espaço de apoio! 💛</h2>
+                        <p class="welcome-micro-phrase">Aqui cuidamos de você enquanto você cuida do seu bebê.</p>
+                        <p class="inclusion-phrase">Cada jornada é única — e todas merecem acolhimento. 🌼</p>
                         <p>Estou aqui para te acompanhar durante essa fase especial do puerpério. Como posso te ajudar hoje? 🤱</p>
+                        
+                        <!-- Espaço de Escuta -->
+                        <div class="feeling-box">
+                            <h3>Como você está se sentindo hoje? 💬</h3>
+                            <div class="feeling-buttons">
+                                <button class="feeling-btn" data-feeling="cansada">😴 Cansada</button>
+                                <button class="feeling-btn" data-feeling="feliz">😊 Feliz</button>
+                                <button class="feeling-btn" data-feeling="ansiosa">😰 Ansiosa</button>
+                                <button class="feeling-btn" data-feeling="confusa">😕 Confusa</button>
+                                <button class="feeling-btn" data-feeling="triste">😢 Triste</button>
+                                <button class="feeling-btn" data-feeling="gratidao">🙏 Grata</button>
+                            </div>
+                        </div>
+                        
                         <div class="quick-questions">
                             <button class="quick-btn" data-question="O que é o puerpério?">
                                 💕 O que é o puerpério?
@@ -178,24 +229,52 @@
                         </div>
                         <div class="feature-sections">
                             <h3>Recursos Disponíveis 💫</h3>
-                            <div class="feature-grid">
-                                <button class="feature-btn" id="btn-guias">
-                                    <i class="fas fa-book-medical"></i>
-                                    📚 Guias Práticos
+                            <div class="feature-carousel-container">
+                                <button class="carousel-btn carousel-prev" id="feature-carousel-prev" aria-label="Anterior">
+                                    <i class="fas fa-chevron-left"></i>
                                 </button>
-                                <button class="feature-btn" id="btn-gestacao">
-                                    <i class="fas fa-heart"></i>
-                                    🤰 Gestação
-                                </button>
-                                <button class="feature-btn" id="btn-posparto">
-                                    <i class="fas fa-baby"></i>
-                                    👶 Pós-Parto
-                                </button>
-                                <button class="feature-btn" id="btn-vacinas">
-                                    <i class="fas fa-syringe"></i>
-                                    💉 Vacinação
+                                <div class="feature-carousel">
+                                    <div class="feature-carousel-track" id="feature-carousel-track">
+                                        <button class="feature-btn" id="btn-guias">
+                                            <i class="fas fa-book-medical"></i>
+                                            <span>Guias Práticos</span>
+                                        </button>
+                                        <button class="feature-btn" id="btn-gestacao">
+                                            <i class="fas fa-heart"></i>
+                                            <span>Gestação</span>
+                                        </button>
+                                        <button class="feature-btn" id="btn-posparto">
+                                            <i class="fas fa-baby"></i>
+                                            <span>Pós-Parto</span>
+                                        </button>
+                                        <button class="feature-btn" id="btn-vacinas">
+                                            <i class="fas fa-syringe"></i>
+                                            <span>Vacinação</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button class="carousel-btn carousel-next" id="feature-carousel-next" aria-label="Próximo">
+                                    <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
+                            <div class="carousel-dots" id="feature-carousel-dots">
+                                <!-- Dots serão criados dinamicamente pelo JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Páginas de Apoio Rápido -->
+                        <div class="support-links">
+                            <h3>📖 Apoio Rápido</h3>
+                            <div class="support-links-grid">
+                                <a href="#" class="support-link" data-topic="baby-blues-depressao">Quando o baby blues vira depressão pós-parto?</a>
+                                <a href="#" class="support-link" data-topic="pedir-ajuda">Como pedir ajuda sem culpa?</a>
+                                <a href="#" class="support-link" data-topic="redes-apoio">Redes de apoio próximas de mim</a>
+                            </div>
+                        </div>
+                        
+                        <!-- Mensagem Rotativa de Apoio -->
+                        <div class="rotating-message">
+                            <p id="rotating-text">Você não está sozinha. 💛</p>
                         </div>
                     </div>
                 </div>
@@ -209,7 +288,7 @@
                 <div class="back-to-welcome" id="back-to-welcome" style="display: none;">
                     <button class="btn btn-secondary" id="back-btn">
                         <i class="fas fa-home"></i>
-                        🏠 Voltar ao início
+                        🏠 Voltar ao Menu
                     </button>
                 </div>
 
@@ -228,12 +307,12 @@
         <!-- Input Area -->
         <div class="input-area">
             <div class="input-container">
-                <button class="btn btn-icon" id="menu-toggle">
+                <button class="btn btn-icon" id="menu-toggle" aria-label="Abrir menu">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="input-wrapper">
                     <input type="text" id="message-input" placeholder="Digite sua pergunta sobre puerpério..." maxlength="500">
-                    <button class="btn btn-send" id="send-button">
+                    <button class="btn btn-send" id="send-button" aria-label="Enviar mensagem">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -248,7 +327,7 @@
             <div class="modal-content modal-auth">
                 <div class="modal-header">
                     <h3><i class="fas fa-heart"></i> Bem-vinda! 💕</h3>
-                    <button class="close-modal" id="close-auth">
+                    <button class="close-modal" id="close-auth" aria-label="Fechar modal de autenticação">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -265,12 +344,12 @@
                     <!-- Login Form -->
                     <div class="auth-form active" id="login-form">
                         <div class="form-group">
-                            <label><i class="fas fa-envelope"></i> Email</label>
-                            <input type="email" id="login-email" placeholder="seu@email.com">
+                            <label for="login-email"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="login-email" name="email" autocomplete="email" placeholder="seu@email.com">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-lock"></i> Senha</label>
-                            <input type="password" id="login-password" placeholder="Sua senha">
+                            <label for="login-password"><i class="fas fa-lock"></i> Senha</label>
+                            <input type="password" id="login-password" name="password" autocomplete="current-password" placeholder="Sua senha">
                         </div>
                         <button class="btn btn-primary btn-full" id="btn-login">
                             <i class="fas fa-heart"></i> Entrar na minha conta
@@ -281,20 +360,20 @@
                     <!-- Register Form -->
                     <div class="auth-form" id="register-form">
                         <div class="form-group">
-                            <label><i class="fas fa-user"></i> Nome</label>
-                            <input type="text" id="register-name" placeholder="Seu nome">
+                            <label for="register-name"><i class="fas fa-user"></i> Nome</label>
+                            <input type="text" id="register-name" name="name" autocomplete="name" placeholder="Seu nome">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-envelope"></i> Email</label>
-                            <input type="email" id="register-email" placeholder="seu@email.com">
+                            <label for="register-email"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="register-email" name="email" autocomplete="email" placeholder="seu@email.com">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-lock"></i> Senha</label>
-                            <input type="password" id="register-password" placeholder="Mínimo 6 caracteres">
+                            <label for="register-password"><i class="fas fa-lock"></i> Senha</label>
+                            <input type="password" id="register-password" name="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-baby"></i> Nome do bebê (opcional)</label>
-                            <input type="text" id="register-baby" placeholder="Nome do seu bebê">
+                            <label for="register-baby"><i class="fas fa-baby"></i> Nome do bebê (opcional)</label>
+                            <input type="text" id="register-baby" name="baby_name" autocomplete="off" placeholder="Nome do seu bebê">
                         </div>
                         <button class="btn btn-primary btn-full" id="btn-register">
                             <i class="fas fa-heart"></i> Criar conta
@@ -310,7 +389,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3><i class="fas fa-exclamation-triangle"></i> Alerta Médico</h3>
-                    <button class="close-modal" id="close-alert">
+                    <button class="close-modal" id="close-alert" aria-label="Fechar alerta">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -335,7 +414,7 @@
             <div class="modal-content modal-resources">
                 <div class="modal-header">
                     <h3 id="resources-title"></h3>
-                    <button class="close-modal" id="close-resources">
+                    <button class="close-modal" id="close-resources" aria-label="Fechar recursos">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -347,7 +426,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/device-detector.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
 </body>
 </html>
 

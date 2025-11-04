@@ -7,9 +7,18 @@
 
 body {
     font-family: 'Poppins', 'Nunito', sans-serif;
-    background: linear-gradient(135deg, #f8f4f0 0%, #e8d5d1 50%, #d4c5c0 100%);
+    background: linear-gradient(180deg, #fff5f7 0%, #fde6ea 50%, #f8f4f0 100%);
     min-height: 100vh;
     color: #5a4a42;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23f4a6a6" opacity="0.7"/><circle cx="12" cy="12" r="6" fill="%23f4a6a6" opacity="0.5"/></svg>'), auto;
+}
+
+body * {
+    cursor: inherit;
+}
+
+button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .login-tab {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="%23f4a6a6" opacity="0.8"/><circle cx="12" cy="12" r="7" fill="%23f8b8c8" opacity="0.6"/><circle cx="12" cy="12" r="3" fill="white"/></svg>') 12 12, pointer;
 }
 
 /* Login Screen */
@@ -150,19 +159,49 @@ body {
     background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
     color: white;
     border: none;
-    padding: 1rem;
+    padding: 0.75rem 1.25rem;
     border-radius: 12px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(244, 166, 166, 0.3);
     margin-top: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    line-height: 1.4;
+}
+
+.btn-login-main i {
+    font-size: 1rem;
 }
 
 .btn-login-main:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(244, 166, 166, 0.4);
+}
+
+.forgot-password-link {
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+    color: #8b5a5a;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+}
+
+.forgot-password-link:hover {
+    color: #f4a6a6;
+    text-decoration: underline;
+}
+
+.forgot-password-link i {
+    margin-right: 0.3rem;
+    font-size: 0.85rem;
 }
 
 @keyframes fadeIn {
@@ -183,13 +222,16 @@ body {
 
 .container {
     width: 100%;
+    max-width: 100vw; /* Nunca ultrapassa viewport */
     margin: 0;
     height: 100vh;
     display: flex;
     flex-direction: column;
     background: linear-gradient(135deg, #f8f4f0 0%, #e8d5d1 50%, #d4c5c0 100%);
     overflow: hidden;
+    overflow-x: hidden; /* Sempre sem scroll horizontal */
     position: relative;
+    box-sizing: border-box;
 }
 
 .container::before {
@@ -209,13 +251,15 @@ body {
 
 /* Header */
 .header {
-    background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
+    background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%) !important; /* Garante que o fundo está correto */
     color: #8b5a5a;
     padding: 1.2rem 2rem;
-    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.2);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 30px rgba(244, 166, 166, 0.35), 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra mais destacada */
+    border-bottom: 2px solid rgba(255, 255, 255, 0.4); /* Borda mais visível */
     position: relative;
     z-index: 10;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .header-content {
@@ -281,8 +325,12 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
+    overflow-x: hidden; /* Sempre sem scroll horizontal */
     position: relative;
     z-index: 1;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
 }
 
 /* Sidebar */
@@ -381,19 +429,20 @@ body {
 
 .sidebar-btn {
     width: 100%;
-    padding: 0.9rem 1rem;
+    padding: 0.9rem 1rem; /* Padding consistente */
     margin-bottom: 0.6rem;
     background: linear-gradient(135deg, #fff9f7 0%, #fff5f3 100%);
-    border: 2px solid rgba(244, 166, 166, 0.3);
-    border-radius: 12px;
+    border: 2px solid rgba(244, 166, 166, 0.3); /* Borda consistente */
+    border-radius: 12px; /* Borda arredondada consistente */
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transição suave */
     display: flex;
     align-items: center;
     gap: 0.8rem;
     color: #8b5a5a;
     font-weight: 500;
     font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.15), 0 1px 3px rgba(0, 0, 0, 0.05); /* Sombra padronizada para profundidade */
 }
 
 .sidebar-btn i {
@@ -405,13 +454,40 @@ body {
     background: linear-gradient(135deg, #f4a6a6 0%, #f8b8c8 100%);
     border-color: #f4a6a6;
     color: white;
-    transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.3);
+    transform: translateX(5px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(244, 166, 166, 0.4), 0 3px 10px rgba(0, 0, 0, 0.1); /* Sombra mais pronunciada no hover */
+}
+.sidebar-btn:focus-visible {
+    outline: 3px solid rgba(244, 166, 166, 0.5);
+    outline-offset: 2px;
 }
 
 .sidebar-btn:hover i {
     color: white;
     transform: scale(1.1);
+}
+
+.sidebar-btn-logout {
+    background: linear-gradient(135deg, #ffe0e0 0%, #ffd0d0 100%);
+    border-left: 4px solid #e8b4b8;
+    color: #8b5a5a;
+    margin-top: 0.5rem;
+}
+
+.sidebar-btn-logout:hover {
+    background: linear-gradient(135deg, #e8b4b8 0%, #f4a6a6 100%);
+    border-left-color: #d4a5a9;
+    color: white;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(232, 180, 184, 0.4);
+}
+
+.sidebar-btn-logout i {
+    color: #e8b4b8;
+}
+
+.sidebar-btn-logout:hover i {
+    color: white;
 }
 
 .sidebar-footer {
@@ -425,21 +501,30 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
+    padding-top: 4rem; /* Espaço para o botão "Voltar ao início" não sobrepor mensagens */
+    overflow-x: hidden; /* Evita scroll horizontal */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Welcome Message */
 .welcome-message {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #fef9f7 0%, #f8e8e8 50%, #f0e0e0 100%);
-    z-index: 10;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    background: linear-gradient(135deg, #fef9f7 0%, #f8e8e8 50%, #f0e0e0 100%) !important;
+    z-index: 10 !important;
     animation: fadeIn 0.8s ease-in-out;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 1rem 0 !important;
+    box-sizing: border-box !important;
 }
 
 @keyframes fadeIn {
@@ -448,10 +533,19 @@ body {
 }
 
 .welcome-content {
-    text-align: center;
-    padding: 1.5rem 2rem;
-    max-width: 800px;
+    text-align: center !important;
+    padding: 2rem 2rem; /* Padding aumentado */
+    max-width: 900px; /* Ligeiramente maior para telas grandes, mas não muito */
+    margin: 0 auto !important; /* Centraliza o conteúdo */
+    width: 100% !important; /* Ocupa toda largura disponível */
     animation: contentFadeIn 1s ease-out 0.3s backwards;
+    box-sizing: border-box !important; /* Inclui padding no cálculo de largura */
+    display: block !important;
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    float: none !important;
+    overflow-x: hidden !important; /* Evita overflow horizontal */
 }
 
 @keyframes contentFadeIn {
@@ -476,13 +570,14 @@ body {
 }
 
 .welcome-content h2 {
-    font-size: 1.4rem;
-    margin-bottom: 0.5rem;
-    color: #8b5a5a;
+    font-size: 1.65rem; /* Aumentado para mais destaque */
+    margin-bottom: 0.8rem; /* Mais espaço abaixo */
+    color: #7a4a4a; /* Tom mais escuro para melhor contraste */
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
-    text-shadow: 0 2px 6px rgba(139, 90, 90, 0.15);
+    text-shadow: 0 3px 10px rgba(244, 166, 166, 0.35), 0 2px 5px rgba(139, 90, 90, 0.25), 0 1px 2px rgba(0, 0, 0, 0.1); /* Sombra mais pronunciada para destaque */    
     animation: titleSlideIn 0.8s ease-out 0.5s backwards;
+    line-height: 1.3;
 }
 
 @keyframes titleSlideIn {
@@ -490,13 +585,174 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.welcome-content p {
-    font-size: 0.9rem;
+.welcome-micro-phrase {
+    font-size: 0.9rem; /* Ligeiramente maior para melhor legibilidade */
+    color: #8b6a5a; /* Tom um pouco mais escuro para melhor contraste */
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-style: italic;
+    margin-top: 0.2rem;
+    margin-bottom: 1rem; /* Mais espaço abaixo */
+    line-height: 1.6;
+    text-align: center;
+    animation: textFadeIn 0.8s ease-out 0.6s backwards;
+    opacity: 0.95;
+    max-width: 700px; /* Limita largura para não espalhar demais */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.inclusion-phrase {
+    font-size: 0.85rem;
     color: #9a7a6a;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    font-style: italic;
+    margin-top: 0.3rem;
     margin-bottom: 1rem;
     line-height: 1.5;
+    text-align: center;
+    animation: textFadeIn 0.8s ease-out 0.65s backwards;
+    opacity: 0.85;
+}
+
+/* Espaço de Escuta */
+.feeling-box {
+    background: rgba(255, 255, 255, 0.6);
+    border: 2px solid rgba(244, 166, 166, 0.3);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin: 2rem auto 2rem; /* Mais espaço vertical */
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05); /* Sombra mais pronunciada */
+    animation: textFadeIn 0.8s ease-out 0.75s backwards;
+}
+
+.feeling-box h3 {
+    font-size: 1rem;
+    color: #8b5a5a;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+}
+
+.feeling-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: center;
+}
+
+.feeling-btn {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 240, 0.98) 100%);
+    border: 2px solid #f4a6a6; /* Borda consistente */
+    border-radius: 15px; /* Borda arredondada consistente */
+    padding: 0.8rem 1.1rem; /* Padding padronizado */
+    color: #8b5a5a;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.25), 0 2px 6px rgba(0, 0, 0, 0.08); /* Sombra padronizada */
+}
+
+.feeling-btn:hover {
+    background: linear-gradient(135deg, #f4a6a6 0%, #f8b8c8 100%);
+    border-color: #e8b4b8;
+    color: white;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(244, 166, 166, 0.3), 0 3px 10px rgba(0, 0, 0, 0.1); /* Sombra mais pronunciada no hover */
+}
+.feeling-btn:focus-visible {
+    outline: 3px solid rgba(244, 166, 166, 0.5);
+    outline-offset: 2px;
+}
+
+/* Páginas de Apoio Rápido */
+.support-links {
+    margin: 2.5rem auto 2rem; /* Mais espaço vertical */
+    max-width: 700px;
+    animation: textFadeIn 0.8s ease-out 0.85s backwards;
+}
+
+.support-links h3 {
+    font-size: 1rem;
+    color: #8b5a5a;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+}
+
+.support-links-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.support-link {
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(244, 166, 166, 0.3); /* Borda consistente */
+    border-radius: 12px; /* Borda arredondada consistente */
+    padding: 0.9rem 1.2rem; /* Padding consistente */
+    color: #8b5a5a;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.25), 0 2px 6px rgba(0, 0, 0, 0.08); /* Sombra padronizada */
+}
+
+.support-link:hover {
+    background: linear-gradient(135deg, #f4a6a6 0%, #f8b8c8 100%);
+    border-color: #e8b4b8;
+    color: white;
+    transform: translateX(5px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(244, 166, 166, 0.35), 0 3px 10px rgba(0, 0, 0, 0.1); /* Sombra mais pronunciada no hover */
+}
+.support-link:focus-visible {
+    outline: 3px solid rgba(244, 166, 166, 0.5);
+    outline-offset: 2px;
+}
+
+/* Mensagem Rotativa */
+.rotating-message {
+    margin-top: 2.5rem; /* Mais espaço vertical */
+    padding: 1.2rem;
+    text-align: center;
+    animation: textFadeIn 0.8s ease-out 0.9s backwards;
+}
+
+#rotating-text {
+    font-size: 0.9rem;
+    color: #9a7a6a;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+    font-style: italic;
+    animation: fadeInOut 8s infinite;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+.welcome-content p {
+    font-size: 0.95rem; /* Ligeiramente maior para melhor legibilidade */
+    color: #8b6a5a; /* Tom mais escuro para melhor contraste */
+    margin-bottom: 1.5rem; /* Espaçamento aumentado para "respirar" mais o layout */
+    line-height: 1.6; /* Melhor espaçamento entre linhas */
     font-weight: 400;
     animation: textFadeIn 0.8s ease-out 0.7s backwards;
+    max-width: 750px; /* Limita largura para não espalhar demais */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @keyframes textFadeIn {
@@ -505,12 +761,22 @@ body {
 }
 
 .quick-questions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.6rem;
-    max-width: 750px;
-    margin: 0 auto 1rem;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    max-width: 850px;
+    margin: 0 auto 1rem !important;
+    width: 100% !important; /* Ocupa toda largura disponível */
+    padding: 0 1rem; /* Padding lateral para não colar nas bordas */
     animation: buttonsSlideIn 0.8s ease-out 0.9s backwards;
+    box-sizing: border-box !important; /* Inclui padding no cálculo de largura */
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    float: none !important;
 }
 
 @keyframes buttonsSlideIn {
@@ -519,20 +785,32 @@ body {
 }
 
 .quick-btn {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 240, 0.98) 100%);
-    border: 2px solid #f4a6a6;
-    color: #8b5a5a;
-    padding: 0.7rem 1rem;
-    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 240, 0.98) 100%) !important;
+    border: 2px solid #f4a6a6 !important;
+    color: #8b5a5a !important;
+    padding: 0.9rem 1.2rem !important; /* Padding consistente */
+    border-radius: 18px; /* Borda arredondada consistente */
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     font-size: 0.85rem;
     font-weight: 600;
     font-family: 'Poppins', sans-serif;
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 15px rgba(244, 166, 166, 0.2);
-    position: relative;
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.25), 0 2px 6px rgba(0, 0, 0, 0.08); /* Sombra padronizada */
+    position: relative !important;
     overflow: hidden;
+    text-align: center !important;
+    margin: 0 auto !important;
+    float: none !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.6rem !important;
+    width: auto !important;
+    min-width: fit-content !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
 }
 
 .quick-btn::before {
@@ -555,7 +833,12 @@ body {
     border-color: #e8b4b8;
     color: white;
     transform: translateY(-5px) scale(1.03);
-    box-shadow: 0 10px 30px rgba(244, 166, 166, 0.4);
+    box-shadow: 0 10px 30px rgba(244, 166, 166, 0.4), 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra mais pronunciada no hover */
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* Transição suave no hover */
+}
+.quick-btn:focus-visible {
+    outline: 3px solid rgba(244, 166, 166, 0.5);
+    outline-offset: 2px;
 }
 
 .quick-btn:active {
@@ -569,19 +852,49 @@ body {
     padding: 1rem;
     overflow-y: auto;
     display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #fff5f7 0%, #fde6ea 50%, #f8f4f0 100%);
+    padding-top: 1rem;
+    box-sizing: border-box;
 }
 
 .chat-messages.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Quando o chat está ativo, oculta o welcome-message */
+.chat-messages.active ~ .welcome-message,
+.chat-area:has(.chat-messages.active) .welcome-message {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Garantir que welcome-message está atrás quando chat está ativo */
+.chat-area .chat-messages.active {
+    z-index: 10 !important;
+}
+
+.chat-area .welcome-message {
+    z-index: 1;
 }
 
 /* Back to Welcome Button */
 .back-to-welcome {
-    position: absolute;
-    top: 1rem;
+    position: fixed;
+    top: 5.5rem;
     right: 1rem;
-    z-index: 20;
+    z-index: 100;
     animation: slideInRight 0.3s ease-out;
+    pointer-events: auto;
 }
 
 .back-to-welcome .btn {
@@ -621,6 +934,25 @@ body {
     animation: fadeInUp 0.3s ease;
 }
 
+/* Garante que welcome-content não seja afetado por estilos de mensagem */
+.welcome-content,
+.welcome-content *,
+.quick-questions,
+.quick-questions *,
+.quick-btn {
+    flex-direction: inherit !important;
+    align-items: inherit !important;
+    justify-content: inherit !important;
+}
+
+/* PROTEÇÃO EXTRA: Remove todos os estilos de mensagem do welcome */
+.welcome-message {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
 .message.user {
     flex-direction: row-reverse;
 }
@@ -654,6 +986,100 @@ body {
     border-radius: 18px;
     position: relative;
 }
+
+ /* PROTEÇÃO: Garante que welcome-content nunca seja tratado como mensagem */
+ .welcome-message .welcome-content {
+     max-width: 100% !important;
+     width: 100% !important;
+     background: transparent !important;
+     border: none !important;
+     padding: 1.5rem 2rem !important;
+     margin: 0 auto !important;
+     display: block !important;
+     text-align: center !important;
+     position: relative !important;
+     left: auto !important;
+     right: auto !important;
+     float: none !important;
+     transform: none !important;
+     box-shadow: none !important;
+     border-radius: 0 !important;
+     box-sizing: border-box !important;
+ }
+
+/* PROTEÇÃO CRÍTICA: Remove qualquer estilo de mensagem que possa estar sendo aplicado */
+.welcome-message .welcome-content,
+.welcome-message .welcome-content * {
+    flex-direction: inherit !important;
+    align-items: inherit !important;
+    justify-content: inherit !important;
+    flex-wrap: inherit !important;
+    gap: inherit !important;
+}
+
+/* Garante que welcome-content NUNCA tenha estilos de .message */
+.welcome-content:not(.message-content):not(.message) {
+    display: block !important;
+    text-align: center !important;
+}
+
+/* Força reset completo de estilos de mensagem no welcome */
+.welcome-message .welcome-content {
+    /* Remove qualquer flex direction que possa vir de .message */
+    display: block !important;
+}
+
+.welcome-message .welcome-content h2,
+.welcome-message .welcome-content p {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+   /* Garante que quick-questions nunca seja tratado como mensagem */
+  .welcome-message .quick-questions {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      flex-direction: row !important;
+      justify-content: center !important;
+      align-items: center !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      background: transparent !important;
+      border: none !important;
+      margin: 0 auto !important;
+      padding: 0 1rem !important;
+      position: relative !important;
+      left: auto !important;
+      right: auto !important;
+      float: none !important;
+      transform: none !important;
+      box-shadow: none !important;
+      box-sizing: border-box !important;
+  }
+
+  /* Garante que quick-btn nunca seja tratado como mensagem */
+  .welcome-message .quick-btn {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 240, 0.98) 100%) !important;
+      border: 2px solid #f4a6a6 !important;
+      max-width: 100% !important;
+      width: auto !important;
+      min-width: fit-content !important;
+      position: relative !important;
+      left: auto !important;
+      right: auto !important;
+      float: none !important;
+      transform: none !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.6rem !important;
+      white-space: nowrap !important;
+  }
 
 .message.user .message-content {
     background: linear-gradient(135deg, #a8d5a8, #8bc34a);
@@ -846,7 +1272,8 @@ body {
 /* Touch-friendly interactions */
 @media (hover: none) and (pointer: coarse) {
     .btn:hover {
-        transform: none;
+        transform: none !important;
+        box-shadow: inherit !important;
     }
     
     .btn:active {
@@ -854,19 +1281,43 @@ body {
     }
     
     .quick-btn:hover {
-        transform: none;
+        transform: none !important;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 240, 0.98) 100%) !important;
+        color: #8b5a5a !important;
+        box-shadow: 0 2px 8px rgba(244, 166, 166, 0.15) !important;
     }
     
     .quick-btn:active {
+        transform: scale(0.97) !important;
+        background: linear-gradient(135deg, #f4a6a6 0%, #f8b8c8 100%) !important;
+        color: white !important;
+    }
+
+    .login-tab:hover {
+        background: transparent !important;
+        color: inherit !important;
+    }
+
+    .login-tab:active {
+        color: #f4a6a6 !important;
+    }
+
+    .btn-login-main:hover {
+        transform: none !important;
+    }
+
+    .btn-login-main:active {
         transform: scale(0.98);
     }
     
     .category-item:hover {
         transform: none;
+        background: rgba(255, 255, 255, 0.8) !important;
     }
     
     .category-item:active {
         transform: scale(0.98);
+        background: rgba(248, 181, 181, 0.2) !important;
     }
 }
 
@@ -969,28 +1420,32 @@ body {
 /* ===== RESPONSIVE DESIGN ===== */
 
 /* Large Desktop (1200px+) */
-@media (min-width: 1200px) {
-    .welcome-content {
-        max-width: 800px;
-    }
-    
-    .quick-questions {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-    }
+  @media (min-width: 1200px) {
+      .welcome-content {
+          max-width: 800px;
+      }
+
+      .quick-questions {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          justify-content: center !important;
+          gap: 1rem !important;
+      }
     
     .input-container {
         max-width: 1200px;
     }
 }
 
-/* Desktop (992px - 1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
-    .quick-questions {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.8rem;
-    }
-}
+  /* Desktop (992px - 1199px) */
+  @media (min-width: 992px) and (max-width: 1199px) {
+      .quick-questions {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          justify-content: center !important;
+          gap: 0.8rem !important;
+      }
+  }
 
 /* Tablet Landscape (768px - 991px) */
 @media (min-width: 768px) and (max-width: 991px) {
@@ -1002,8 +1457,33 @@ body {
         font-size: 1.4rem;
     }
     
+    /* Welcome message no tablet landscape */
+    .welcome-message {
+        padding: 0.45rem 0.85rem;
+        margin-right: 0.7rem;
+    }
+    
+         #user-greeting {
+          font-size: 1.15rem !important; /* Aumentado proporcionalmente */
+      }
+    
+    .header-right {
+        gap: 0.8rem;
+    }
+    
+    /* Sidebar e logout button */
     .sidebar {
         width: 280px;
+    }
+    
+    .sidebar-btn {
+        padding: 0.85rem 0.95rem;
+        font-size: 0.9rem;
+    }
+    
+    .sidebar-btn-logout {
+        padding: 0.85rem 0.95rem;
+        font-size: 0.9rem;
     }
     
     .welcome-content {
@@ -1015,15 +1495,24 @@ body {
         font-size: 1.7rem;
     }
     
-    .quick-questions {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.7rem;
-    }
-    
-    .quick-btn {
-        font-size: 0.85rem;
-        padding: 0.7rem 1rem;
-    }
+          .quick-questions {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          justify-content: center !important;
+          gap: 0.7rem !important;
+      }
+
+      .quick-btn {
+          font-size: 0.85rem;
+          padding: 0.7rem 1rem;
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 0.6rem !important;
+          width: auto !important;
+          white-space: nowrap !important;
+      }
     
     .message-content {
         max-width: 75%;
@@ -1034,8 +1523,12 @@ body {
     }
     
     .back-to-welcome {
-        top: 0.8rem;
+        top: 5rem;
         right: 0.8rem;
+    }
+    
+    .chat-area {
+        padding-top: 4rem;
     }
 }
 
@@ -1054,31 +1547,74 @@ body {
         font-size: 1.3rem;
     }
     
+    /* Welcome message no tablet portrait */
+    .welcome-message {
+        padding: 0.4rem 0.8rem;
+        margin-right: 0.6rem;
+        display: flex !important;
+    }
+    
+    #user-greeting {
+        font-size: 0.8rem;
+    }
+    
+    .header-right {
+        gap: 0.7rem;
+    }
+    
+    /* Sidebar e logout button */
     .sidebar {
         width: 260px;
     }
     
+    .sidebar-btn {
+        padding: 0.85rem 0.9rem;
+        font-size: 0.9rem;
+    }
+    
+    .sidebar-btn-logout {
+        padding: 0.85rem 0.9rem;
+        font-size: 0.9rem;
+    }
+    
     .welcome-content {
-        padding: 1.2rem;
-        max-width: 450px;
+        padding: 0.8rem 0.7rem !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
     }
     
-    .welcome-content h2 {
-        font-size: 1.6rem;
+        .welcome-content h2 {
+        font-size: 1.4rem !important;
+        margin-bottom: 0.5rem !important;
     }
-    
+
+    .welcome-micro-phrase {
+        font-size: 0.8rem !important;
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.7rem !important;
+    }
+
     .welcome-content p {
-        font-size: 1rem;
+        font-size: 0.9rem !important;
+        margin-bottom: 0.8rem !important;
     }
     
+    /* Ajusta quick-questions para tablet portrait - compacto */
     .quick-questions {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.6rem;
+        grid-template-columns: 1fr !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 0.7rem !important;
+        gap: 0.45rem !important;
+        margin: 0 auto 0.7rem !important;
     }
     
     .quick-btn {
-        font-size: 0.8rem;
-        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem !important;
+        padding: 0.55rem 0.8rem !important;
+        line-height: 1.35 !important;
     }
     
     .message-content {
@@ -1090,13 +1626,17 @@ body {
     }
     
     .back-to-welcome {
-        top: 0.6rem;
+        top: 4.5rem;
         right: 0.6rem;
     }
     
     .back-to-welcome .btn {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         padding: 0.4rem 0.7rem;
+    }
+    
+    .chat-area {
+        padding-top: 3.5rem; /* Espaço para o botão não sobrepor em mobile landscape */
     }
 }
 
@@ -1121,8 +1661,43 @@ body {
     }
     
     .welcome-content {
-        padding: 1rem;
-        max-width: 400px;
+        padding: 0.5rem 0.6rem !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
+    }
+    
+        .welcome-content h2 {
+        font-size: 1.2rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .welcome-micro-phrase {
+        font-size: 0.75rem !important;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.6rem !important;
+    }
+
+    .welcome-content p {
+        font-size: 0.85rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+    
+    /* Ajusta quick-questions para mobile landscape - compacto */
+    .quick-questions {
+        grid-template-columns: 1fr !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 0.6rem !important;
+        gap: 0.4rem !important;
+        margin: 0 auto 0.5rem !important;
+    }
+    
+    .quick-btn {
+        padding: 0.55rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        line-height: 1.3 !important;
     }
     
     .welcome-content h2 {
@@ -1134,18 +1709,60 @@ body {
         margin-bottom: 2rem;
     }
     
-    .quick-questions {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    
-    .quick-btn {
-        font-size: 0.8rem;
-        padding: 0.6rem 1rem;
-    }
+          .quick-questions {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          justify-content: center !important;
+          gap: 0.5rem !important;
+      }
+
+      .quick-btn {
+          font-size: 0.8rem;
+          padding: 0.6rem 1rem;
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 0.5rem !important;
+          width: auto !important;
+          white-space: normal !important; /* Permite quebra em mobile */
+          max-width: calc(100% - 1rem) !important; /* Previne overflow */
+      }
     
     .message-content {
         max-width: 85%;
+    }
+    
+    /* Welcome message no mobile landscape */
+    .welcome-message {
+        padding: 0.4rem 0.7rem;
+        margin-right: 0.5rem;
+        display: flex !important;
+    }
+    
+    #user-greeting {
+        font-size: 0.75rem;
+    }
+    
+    .header-right {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    /* Sidebar e logout button no mobile landscape */
+    .sidebar {
+        width: 240px;
+    }
+    
+    .sidebar-btn {
+        padding: 0.75rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .sidebar-btn-logout {
+        padding: 0.75rem 0.8rem;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
     }
     
     .input-container {
@@ -1153,16 +1770,48 @@ body {
     }
     
     .back-to-welcome {
-        display: none !important;
+        top: 3.5rem;
+        right: 0.5rem;
+        z-index: 100;
+    }
+    
+    .back-to-welcome .btn {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .chat-area {
+        padding-top: 2.5rem; /* Menos espaço em mobile landscape */
+    }
+    
+    .chat-messages {
+        padding-top: 0.5rem; /* Espaço adicional para evitar sobreposição */
     }
 }
 
 /* Mobile Portrait (até 479px) */
 @media (max-width: 479px) {
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        position: relative !important;
+    }
+    
     .container {
-        margin: 0;
-        border-radius: 0;
-        height: 100vh;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+    
+    .chat-container {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
     }
     
     .header {
@@ -1202,37 +1851,136 @@ body {
         font-size: 0.9rem;
     }
     
-    .welcome-content {
-        padding: 0.8rem;
-        max-width: 320px;
-    }
+         /* Ajusta welcome-message para mobile - ULTRA COMPACTO para caber na tela */
+     .welcome-message {
+         padding: 0 !important;
+         align-items: center !important;
+         justify-content: flex-start !important;
+         padding-top: 0.5rem !important;
+         padding-bottom: 0.5rem !important;
+         overflow-y: auto !important;
+         overflow-x: hidden !important;
+         -webkit-overflow-scrolling: touch !important;
+         box-sizing: border-box !important;
+         width: 100% !important;
+         max-width: 100vw !important;
+         left: 0 !important;
+         right: 0 !important;
+         margin: 0 !important;
+         display: flex !important;
+         flex-direction: column !important;
+     }
+     
+     /* GARANTE que o welcome-content esteja CENTRALIZADO dentro do welcome-message */
+     .welcome-message > * {
+         width: 100% !important;
+         max-width: 100% !important;
+         margin-left: auto !important;
+         margin-right: auto !important;
+     }
     
-    .welcome-content i {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-    }
+                   .welcome-content {
+          padding: 1rem 0.8rem !important;
+          max-width: 100% !important;
+          width: 100% !important;
+          margin: 0 auto !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          box-sizing: border-box !important;
+          text-align: center !important;
+          display: block !important;
+          position: relative !important;
+          left: 0 !important;
+          right: 0 !important;
+          float: none !important;
+          transform: none !important;
+          align-self: center !important;
+          overflow-x: hidden !important;
+          justify-self: center !important;
+      }
+     
+     .welcome-content i {
+         font-size: 2rem !important;
+         margin-bottom: 0.5rem !important;
+     }
+     
+          .welcome-content h2 {
+         font-size: 1.1rem !important;
+         margin-bottom: 0.5rem !important;
+         padding: 0 0.3rem !important;
+         line-height: 1.3 !important;
+         word-wrap: break-word !important;
+         overflow-wrap: break-word !important;
+         max-width: 100% !important;
+     }
+
+     .welcome-micro-phrase {
+         font-size: 0.75rem !important;
+         margin-top: 0.2rem !important;
+         margin-bottom: 0.6rem !important;
+         line-height: 1.4 !important;
+         padding: 0 0.3rem !important;
+         word-wrap: break-word !important;
+         overflow-wrap: break-word !important;
+         max-width: 100% !important;
+     }
+
+     .welcome-content p {
+         font-size: 0.85rem !important;
+         margin-bottom: 0.8rem !important;
+         line-height: 1.4 !important;
+         padding: 0 0.3rem !important;
+         word-wrap: break-word !important;
+         overflow-wrap: break-word !important;
+         max-width: 100% !important;
+     }
     
-    .welcome-content h2 {
-        font-size: 1.3rem;
-        margin-bottom: 0.8rem;
-    }
-    
-    .welcome-content p {
-        font-size: 0.9rem;
-        margin-bottom: 1.5rem;
-        line-height: 1.5;
-    }
-    
-    .quick-questions {
-        grid-template-columns: 1fr;
-        gap: 0.4rem;
-    }
-    
-    .quick-btn {
-        font-size: 0.75rem;
-        padding: 0.5rem 0.8rem;
-        border-radius: 15px;
-    }
+         /* Ajusta quick-questions para mobile portrait - ULTRA COMPACTO */
+     .quick-questions {
+         grid-template-columns: 1fr !important;
+         max-width: 100% !important;
+         width: 100% !important;
+         padding: 0 0.5rem !important;
+         gap: 0.5rem !important;
+         margin: 0.5rem auto 0.5rem !important;
+         box-sizing: border-box !important;
+         justify-items: stretch !important;
+         align-items: center !important;
+         position: relative !important;
+         left: 0 !important;
+         right: 0 !important;
+         float: none !important;
+         transform: none !important;
+         display: grid !important;
+         overflow-x: hidden !important;
+     }
+     
+     .quick-btn {
+         width: 100% !important;
+         max-width: 100% !important;
+         font-size: 0.85rem !important;
+         padding: 0.75rem 0.9rem !important;
+         border-radius: 12px !important;
+         box-sizing: border-box !important;
+         line-height: 1.4 !important;
+         min-height: 44px !important;
+         word-wrap: break-word !important;
+         overflow-wrap: break-word !important;
+         white-space: normal !important;
+         overflow: visible !important;
+         text-align: center !important;
+         display: flex !important;
+         align-items: center !important;
+         justify-content: center !important;
+         font-weight: 600 !important;
+         border-width: 2px !important;
+         box-shadow: 0 2px 8px rgba(244, 166, 166, 0.15) !important;
+     }
+
+     .quick-btn:active {
+         transform: scale(0.97) !important;
+         transition: all 0.1s !important;
+     }
     
     .message {
         gap: 0.5rem;
@@ -1279,9 +2027,68 @@ body {
         font-size: 0.7rem;
     }
     
-    /* Esconde botão "Voltar ao início" no mobile */
+    /* Welcome message no mobile portrait */
+    .header-right {
+        flex-direction: row;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+    
+    .welcome-message {
+        padding: 0.35rem 0.6rem;
+        margin-right: 0.4rem;
+        display: flex !important;
+        order: 1;
+    }
+    
+         #user-greeting {
+          font-size: 1rem !important; /* Aumentado proporcionalmente */
+      }
+    
+    .status-indicator {
+        order: 2;
+        font-size: 0.75rem;
+    }
+    
+    /* Sidebar e logout button no mobile */
+    .sidebar {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .sidebar-btn {
+        padding: 0.8rem 0.85rem;
+        font-size: 0.85rem;
+    }
+    
+    .sidebar-btn-logout {
+        padding: 0.8rem 0.85rem;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    
+    .sidebar-section {
+        margin-bottom: 1rem;
+    }
+    
+    /* Ajusta botão "Voltar ao início" para mobile portrait */
     .back-to-welcome {
-        display: none !important;
+        top: 3.5rem;
+        right: 0.4rem;
+        z-index: 100;
+    }
+    
+    .back-to-welcome .btn {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .chat-area {
+        padding-top: 2.5rem; /* Menos espaço em mobile portrait */
+    }
+    
+    .chat-messages {
+        padding-top: 0.5rem; /* Espaço adicional para evitar sobreposição */
     }
     
     .typing-indicator {
@@ -1579,34 +2386,89 @@ body {
 }
 
 /* Account Button */
-.account-button {
-    background: rgba(244, 166, 166, 0.2);
-    border: 2px solid rgba(244, 166, 166, 0.3);
-    border-radius: 20px;
+.welcome-message {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
     padding: 0.5rem 1rem;
-    color: #8b5a5a;
-    cursor: pointer;
+    background: rgba(244, 166, 166, 0.15);
+    border-radius: 20px;
+    border: 2px solid rgba(244, 166, 166, 0.25);
+}
+
+#user-greeting {
+    color: #7a4a4a !important; /* Tom mais escuro para melhor contraste */
+    font-size: 1.35rem !important; /* Aumentado para melhor visibilidade */
+    font-weight: 600 !important; /* Mais peso para destaque */
+    font-family: 'Nunito', sans-serif;
+    white-space: nowrap;
+    text-shadow: 0 2px 6px rgba(139, 90, 90, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08); /* Sombra mais pronunciada */
+}
+
+.welcome-message:hover {
+    background: rgba(244, 166, 166, 0.25);
+    transform: translateY(-1px);
     transition: all 0.3s ease;
-    font-size: 0.9rem;
 }
 
-.account-button:hover {
-    background: rgba(244, 166, 166, 0.3);
-    transform: translateY(-2px);
+/* Responsividade para Welcome Message e Header Right */
+@media (max-width: 768px) {
+    .welcome-message {
+        padding: 0.4rem 0.7rem;
+        margin-right: 0.5rem;
+        display: flex !important; /* Garante que aparece no mobile */
+    }
+    
+    #user-greeting {
+        font-size: 0.75rem;
+    }
+    
+    .header-right {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .status-indicator {
+        font-size: 0.8rem;
+    }
 }
 
-.account-button i {
-    margin-right: 0.5rem;
+/* Tablet Portrait - Ajustes para welcome message */
+@media (min-width: 576px) and (max-width: 767px) {
+          .welcome-message {
+          padding: 0.4rem 0.8rem;
+          margin-right: 0.6rem;
+      }
+
+     #user-greeting {
+          font-size: 1.1rem !important; /* Aumentado proporcionalmente */
+      }
+
+      .header {
+          padding: 1rem 1.2rem;
+    }
+    
+    .header-right {
+        gap: 0.7rem;
+    }
 }
 
-/* ===== FEATURE SECTIONS ===== */
+  /* ===== FEATURE SECTIONS ===== */
 
-.feature-sections {
-    margin-top: 1rem;
-    padding-top: 1rem;
+  .feature-sections {
+    margin-top: 2rem; /* Mais espaço vertical */
+    padding-top: 1.5rem; /* Mais padding */
     border-top: 2px solid rgba(244, 166, 166, 0.25);
-    animation: featureFadeIn 0.8s ease-out 1.1s backwards;
-}
+      animation: featureFadeIn 0.8s ease-out 1.1s backwards;
+      width: 100%;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+  }
 
 @keyframes featureFadeIn {
     from { opacity: 0; transform: translateY(15px); }
@@ -1615,38 +2477,130 @@ body {
 
 .feature-sections h3 {
     text-align: center;
-    color: #8b5a5a;
-    margin-bottom: 0.8rem;
-    font-size: 1rem;
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(139, 90, 90, 0.1);
+    color: #7a4a4a; /* Tom mais escuro para melhor contraste */
+    margin-bottom: 1.2rem; /* Mais espaço abaixo */
+    margin-top: 0.5rem; /* Espaço acima */
+    font-size: 1.15rem; /* Tamanho aumentado */
+    font-weight: 600;
+    font-family: 'Nunito', sans-serif;
+    text-shadow: 0 2px 6px rgba(139, 90, 90, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06); /* Sombra sutil */
 }
 
-.feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 0.7rem;
-    max-width: 700px;
-    margin: 0 auto;
+  /* ===== FEATURE CAROUSEL ===== */
+  .feature-carousel-container {
+      position: relative;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex !important;
+      flex-direction: row !important; /* Garante que botões de navegação e carrossel fiquem em linha */
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0 2.5rem;
+      box-sizing: border-box;
+  }
+
+.feature-carousel {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    display: block !important; /* Força display block */
+    min-width: 0; /* Permite que o flex-shrink funcione corretamente */
 }
+
+  .feature-carousel-track {
+      display: flex !important;
+      flex-direction: row !important; /* Garante que seja horizontal */
+      flex-wrap: nowrap !important; /* Impede quebra de linha */
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      gap: 1rem;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      width: 100% !important;
+      height: auto !important; /* Garante que não tenha altura fixa que force coluna */
+      overflow: visible !important; /* Permite que os botões sejam visíveis mesmo se ultrapassarem */
+      /* FORÇA LAYOUT HORIZONTAL - REGRAS MUITO ESPECÍFICAS */
+      grid-template-columns: none !important;
+      grid-template-rows: none !important;
+      grid-auto-flow: row !important;
+      column-count: auto !important;
+      column-width: auto !important;
+      flex-flow: row nowrap !important;
+  }
+  
+  /* REGRA EXTREMAMENTE ESPECÍFICA PARA GARANTIR LAYOUT HORIZONTAL */
+  .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      grid-template-columns: none !important;
+      grid-template-rows: none !important;
+  }
 
 .feature-btn {
     background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
     border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 15px;
-    padding: 0.9rem 0.7rem;
+    border-radius: 18px; /* Borda arredondada consistente */
+    padding: 1.5rem 1.2rem; /* Padding padronizado */
     color: white;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 6px 20px rgba(244, 166, 166, 0.35);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* Transição mais suave */
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.25), 0 2px 6px rgba(0, 0, 0, 0.08); /* Sombra padronizada para profundidade */
     font-weight: 700;
-    font-size: 0.85rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    position: relative;
+    font-size: 1rem;
+    display: flex !important;
+    flex-direction: column !important; /* Conteúdo interno do botão (ícone + texto) em coluna */
+    align-items: center !important; /* Centraliza horizontalmente */
+    justify-content: center !important; /* Centraliza verticalmente */
+    gap: 0.8rem !important; /* Espaçamento entre ícone e texto */
+    position: relative !important; /* Força position relative */
     overflow: hidden;
+    min-width: 160px !important;
+    width: auto !important; /* Impede que ocupe 100% da largura */
+    max-width: 200px !important; /* Largura máxima para manter tamanho consistente */
+    flex-shrink: 0 !important; /* Nunca encolhe */
+    flex-grow: 0 !important; /* Nunca expande */
+    flex-basis: auto !important; /* Base flex automática */
+    min-height: 140px;
+    /* FORÇA QUE O BOTÃO SEJA UM ITEM FLEX HORIZONTAL (irmão dos outros botões) */
+    float: none !important;
+    clear: none !important;
+    vertical-align: top !important;
+    /* GARANTE QUE NÃO SEJA AFETADO POR GRID */
+    grid-column: auto !important;
+    grid-row: auto !important;
+    /* Animação fade-in quando os cards aparecem */
+    animation: cardFadeIn 0.6s ease-out backwards;
+    opacity: 0;
+    animation-fill-mode: forwards;
+}
+
+.feature-btn:nth-child(1) { animation-delay: 0.1s; }
+.feature-btn:nth-child(2) { animation-delay: 0.2s; }
+.feature-btn:nth-child(3) { animation-delay: 0.3s; }
+.feature-btn:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.feature-btn span {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center !important; /* Centraliza o texto */
+    order: 2 !important; /* Garante que o texto venha depois do ícone */
+    display: block !important;
+    width: 100%;
 }
 
 .feature-btn::before {
@@ -1669,9 +2623,14 @@ body {
 
 .feature-btn:hover {
     transform: translateY(-8px) scale(1.05);
-    box-shadow: 0 12px 40px rgba(244, 166, 166, 0.6);
+    box-shadow: 0 12px 40px rgba(244, 166, 166, 0.6), 0 6px 20px rgba(0, 0, 0, 0.12); /* Sombra mais pronunciada no hover */
     background: linear-gradient(135deg, #f8a5b5 0%, #f4b8c8 100%);
     border-color: rgba(255, 255, 255, 0.5);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); /* Transição suave no hover */
+}
+.feature-btn:focus-visible {
+    outline: 3px solid rgba(244, 166, 166, 0.5);
+    outline-offset: 2px;
 }
 
 .feature-btn:active {
@@ -1680,16 +2639,87 @@ body {
 }
 
 .feature-btn i {
-    font-size: 1.3rem;
+    font-size: 1.3rem !important;
     transition: transform 0.3s ease;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    order: 1 !important; /* Garante que o ícone venha antes do texto */
+    display: block !important;
+    margin-bottom: 0 !important; /* Remove qualquer margin-bottom que possa existir */
+    line-height: 1 !important; /* Evita espaçamento extra */
 }
 
 .feature-btn:hover i {
     transform: scale(1.15) rotate(5deg);
 }
 
-/* ===== RESOURCES MODAL ===== */
+/* Carousel Navigation Buttons */
+.carousel-btn {
+    background: linear-gradient(135deg, rgba(244, 166, 166, 0.9) 0%, rgba(232, 180, 184, 0.9) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 15px rgba(244, 166, 166, 0.3);
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+.carousel-btn:hover {
+    background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(244, 166, 166, 0.5);
+}
+
+.carousel-btn:active {
+    transform: scale(0.95);
+}
+
+.carousel-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Carousel Dots */
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+}
+
+.carousel-dots .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(244, 166, 166, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.carousel-dots .dot.active {
+    background: #f4a6a6;
+    width: 12px;
+    height: 12px;
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.5);
+}
+
+.carousel-dots .dot:hover {
+    background: rgba(244, 166, 166, 0.7);
+    transform: scale(1.2);
+}
+
+  /* ===== RESOURCES MODAL ===== */
 
 .modal-resources {
     max-width: 900px;
@@ -1997,7 +3027,7 @@ body {
     50% { transform: rotate(10deg) scale(1.1); }
 }
 
-/* Confetti */
+    /* Confetti */
 .confetti {
     position: fixed;
     width: 10px;
@@ -2022,93 +3052,165 @@ body {
 /* ===== RESPONSIVE: LOGIN SCREEN ===== */
 
 @media (max-width: 575px) {
-    .login-container {
-        padding: 2rem 1.5rem;
-        border-radius: 20px;
-        max-width: 95%;
+    .login-screen {
+        padding: 1rem;
+        align-items: flex-start;
+        padding-top: 2rem;
+        overflow-y: auto;
     }
-    
+
+    .login-container {
+        padding: 1.5rem 1rem;
+        border-radius: 20px;
+        max-width: 100%;
+        width: calc(100% - 2rem);
+        margin: 0 auto;
+        box-shadow: 0 8px 30px rgba(244, 166, 166, 0.25);
+    }
+
+    .login-header {
+        margin-bottom: 1.5rem;
+    }
+
     .login-header i {
         font-size: 2.5rem;
+        margin-bottom: 0.5rem;
     }
-    
+
     .login-header h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        margin: 0.3rem 0;
     }
-    
+
+    .login-subtitle {
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+    }
+
     .login-content h2 {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         margin-bottom: 0.8rem;
     }
-    
-    .login-tab {
-        padding: 0.6rem;
-        font-size: 0.9rem;
+
+    .login-content p {
+        font-size: 0.85rem;
+        margin-bottom: 1.5rem;
     }
-    
+
+    .login-tabs {
+        gap: 0.3rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .login-tab {
+        padding: 0.7rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
     .login-tab i {
+        font-size: 0.9rem;
         margin-right: 0.3rem;
     }
-    
+
     .login-form .form-group {
         margin-bottom: 1rem;
     }
-    
+
     .login-form .form-group input {
-        padding: 0.9rem 1rem 0.9rem 2.8rem;
+        padding: 0.9rem 0.9rem 0.9rem 2.8rem;
         font-size: 0.95rem;
+        border-radius: 10px;
     }
-    
+
     .login-form .form-group i {
         font-size: 1rem;
         left: 0.9rem;
     }
-    
+
     .btn-login-main {
-        padding: 0.9rem;
-        font-size: 1rem;
+        padding: 0.9rem 1rem;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        border-radius: 10px;
+        min-height: 48px;
+    }
+
+    .forgot-password-link {
+        font-size: 0.85rem;
+        margin-top: 0.8rem;
+    }
+    
+    .btn-login-main i {
+        font-size: 0.95rem;
     }
 }
 
 @media (max-width: 479px) {
+    .login-screen {
+        padding: 0.5rem;
+        padding-top: 1rem;
+        align-items: flex-start;
+    }
+
     .login-container {
-        padding: 1.8rem 1.2rem;
+        padding: 1.2rem 0.9rem;
         border-radius: 15px;
+        max-width: 100%;
+        width: calc(100% - 1rem);
+        margin: 0 auto;
     }
     
     .login-header {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.2rem;
     }
     
     .login-header i {
-        font-size: 2.2rem;
+        font-size: 2rem;
         margin-bottom: 0.3rem;
     }
     
     .login-header h1 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
+        margin: 0.2rem 0;
     }
     
     .login-subtitle {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
+        margin-top: 0.2rem;
     }
     
     .login-content h2 {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .login-content p {
+        font-size: 0.8rem;
+        margin-bottom: 1.2rem;
     }
     
     .login-tabs {
-        margin-bottom: 1.5rem;
+        gap: 0.2rem;
+        margin-bottom: 1.2rem;
     }
     
     .login-tab {
-        padding: 0.5rem;
+        padding: 0.6rem 0.4rem;
+        font-size: 0.8rem;
+    }
+
+    .login-tab i {
         font-size: 0.85rem;
+        margin-right: 0.25rem;
     }
     
+    .login-form .form-group {
+        margin-bottom: 0.9rem;
+    }
+
     .login-form .form-group input {
-        padding: 0.85rem 1rem 0.85rem 2.5rem;
-        border-radius: 10px;
+        padding: 0.85rem 0.85rem 0.85rem 2.6rem;
+        border-radius: 8px;
         font-size: 0.9rem;
     }
     
@@ -2118,82 +3220,271 @@ body {
     }
     
     .btn-login-main {
-        padding: 0.85rem;
-        font-size: 0.95rem;
-        border-radius: 10px;
+        padding: 0.85rem 0.9rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        line-height: 1.4;
+        min-height: 48px;
+    }
+    
+    .btn-login-main i {
+        font-size: 0.9rem;
+    }
+
+    .forgot-password-link {
+        font-size: 0.8rem;
+        margin-top: 0.7rem;
+        padding: 0.4rem;
     }
 }
 
-/* ===== RESPONSIVE: FEATURE SECTIONS ===== */
+  /* ===== RESPONSIVE: FEATURE SECTIONS ===== */
 
-@media (max-width: 767px) {
-    .feature-sections {
-        margin-top: 0.8rem;
-        padding-top: 0.8rem;
+      @media (max-width: 767px) {
+      .feature-sections {
+          margin-top: 0.8rem;
+          padding-top: 0.8rem;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+      }
+
+      .feature-sections h3 {
+          font-size: 0.95rem;
+          margin-bottom: 0.6rem;
+          text-align: center !important;
+      }
+
+      .feature-carousel-container {
+          padding: 0 2rem;
+          gap: 0.4rem;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          display: flex !important;
+          flex-direction: row !important; /* Garante layout horizontal */
+          justify-content: center !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+      }
+      
+      .feature-carousel-track {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          /* FORÇA LAYOUT HORIZONTAL - REGRAS MUITO ESPECÍFICAS */
+          grid-template-columns: none !important;
+          grid-template-rows: none !important;
+          grid-auto-flow: row !important;
+          column-count: auto !important;
+          column-width: auto !important;
+          flex-flow: row nowrap !important;
+          width: 100% !important;
+          height: auto !important;
+          overflow: visible !important;
+      }
+      
+      /* REGRA EXTREMAMENTE ESPECÍFICA PARA GARANTIR LAYOUT HORIZONTAL */
+      .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          grid-template-columns: none !important;
+          grid-template-rows: none !important;
+      }
+
+    .carousel-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
     }
-    
-    .feature-sections h3 {
-        font-size: 0.95rem;
-        margin-bottom: 0.6rem;
+
+         .feature-btn {
+          padding: 1.2rem 1rem;
+          font-size: 0.9rem;
+          border-radius: 15px;
+          min-width: 140px !important;
+          min-height: 120px;
+          width: auto !important;
+          max-width: 200px !important;
+          flex-shrink: 0 !important;
+          flex-grow: 0 !important;
+          flex-basis: auto !important;
+          /* FORÇA QUE O BOTÃO SEJA UM ITEM FLEX HORIZONTAL (irmão dos outros botões) */
+          float: none !important;
+          clear: none !important;
+          vertical-align: top !important;
+          /* GARANTE QUE NÃO SEJA AFETADO POR GRID */
+          grid-column: auto !important;
+          grid-row: auto !important;
+          display: flex !important;
+          flex-direction: column !important; /* Ícone acima do texto */
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 0.8rem !important;
+          position: relative !important;
+      }
+
+    .feature-btn span {
+        font-size: 0.85rem;
+        order: 2 !important; /* Garante que o texto venha depois do ícone */
+        text-align: center !important;
+        display: block !important;
+        width: 100%;
     }
-    
-    .feature-grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.6rem;
-    }
-    
-    .feature-btn {
-        padding: 0.8rem 0.6rem;
-        font-size: 0.8rem;
-        border-radius: 12px;
-    }
-    
+
     .feature-btn i {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
+        order: 1 !important; /* Garante que o ícone venha antes do texto */
+        display: block !important;
+        margin-bottom: 0 !important;
+        line-height: 1 !important;
     }
-    
+
     .feature-btn::before {
         width: 180px;
         height: 180px;
     }
-}
+  }
 
-@media (max-width: 479px) {
-    .feature-sections {
-        margin-top: 0.6rem;
-        padding-top: 0.6rem;
-    }
-    
-    .feature-sections h3 {
+      @media (max-width: 479px) {
+      .feature-sections {
+          margin-top: 0.6rem;
+          padding-top: 0.6rem;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+      }
+
+      .feature-sections h3 {
+          font-size: 0.9rem;
+          margin-bottom: 0.5rem;
+          text-align: center !important;
+      }
+
+      .feature-carousel-container {
+          padding: 0 1.5rem;
+          gap: 0.3rem;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          display: flex !important;
+          flex-direction: row !important; /* Garante layout horizontal */
+          justify-content: center !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+      }
+
+      .feature-carousel-track {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          justify-content: flex-start !important;
+          width: 100% !important;
+          overflow: visible !important;
+          /* FORÇA LAYOUT HORIZONTAL - REGRAS MUITO ESPECÍFICAS */
+          grid-template-columns: none !important;
+          grid-template-rows: none !important;
+          grid-auto-flow: row !important;
+          column-count: auto !important;
+          column-width: auto !important;
+          flex-flow: row nowrap !important;
+          height: auto !important;
+      }
+      
+      /* REGRA EXTREMAMENTE ESPECÍFICA PARA GARANTIR LAYOUT HORIZONTAL */
+      .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          grid-template-columns: none !important;
+          grid-template-rows: none !important;
+      }
+
+    .carousel-btn {
+        width: 35px;
+        height: 35px;
         font-size: 0.9rem;
-        margin-bottom: 0.5rem;
     }
-    
-    .feature-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-        max-width: 100%;
-    }
-    
-    .feature-btn {
-        padding: 0.7rem 0.5rem;
+
+         .feature-btn {
+          padding: 1rem 0.8rem;
+          font-size: 0.8rem;
+          border-radius: 12px;
+          min-width: 120px !important;
+          min-height: 110px;
+          width: auto !important;
+          max-width: 200px !important;
+          flex-shrink: 0 !important;
+          flex-grow: 0 !important;
+          flex-basis: auto !important;
+          /* FORÇA QUE O BOTÃO SEJA UM ITEM FLEX HORIZONTAL (irmão dos outros botões) */
+          float: none !important;
+          clear: none !important;
+          vertical-align: top !important;
+          /* GARANTE QUE NÃO SEJA AFETADO POR GRID */
+          grid-column: auto !important;
+          grid-row: auto !important;
+          display: flex !important;
+          flex-direction: column !important; /* Ícone acima do texto */
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 0.8rem !important;
+          position: relative !important;
+      }
+
+    .feature-btn span {
         font-size: 0.75rem;
-        border-radius: 10px;
+        order: 2 !important; /* Garante que o texto venha depois do ícone */
+        text-align: center !important;
+        display: block !important;
+        width: 100%;
     }
-    
+
     .feature-btn i {
-        font-size: 1.1rem;
+        font-size: 1.3rem;
+        order: 1 !important; /* Garante que o ícone venha antes do texto */
+        display: block !important;
+        margin-bottom: 0 !important;
+        line-height: 1 !important;
     }
-    
+
     .feature-btn:hover {
         transform: translateY(-4px) scale(1.02);
     }
-    
+
     .feature-btn::before {
         width: 150px;
         height: 150px;
     }
-}
+
+    .carousel-dots {
+        gap: 0.5rem;
+        margin-top: 0.8rem;
+    }
+
+    .carousel-dots .dot {
+        width: 8px;
+        height: 8px;
+    }
+
+    .carousel-dots .dot.active {
+        width: 10px;
+        height: 10px;
+    }
+  }
 
 /* ===== RESPONSIVE: CELEBRATION OVERLAY ===== */
 
@@ -2241,40 +3532,641 @@ body {
     }
 }
 
-/* ===== RESPONSIVE: WELCOME CONTENT ADJUSTMENTS ===== */
+  /* ===== PADRONIZAÇÃO DE DISPOSITIVOS MÓVEIS ===== */
+ /* Define tamanhos padronizados de botões e efeitos para cada tipo de dispositivo */
 
-@media (max-width: 479px) {
-    .welcome-content {
-        padding: 0.8rem;
-        max-width: 300px;
-    }
-    
-    .welcome-content i {
-        font-size: 2rem;
-        margin-bottom: 0.8rem;
-    }
-    
-    .welcome-content h2 {
-        font-size: 1.2rem;
-        margin-bottom: 0.6rem;
-    }
-    
-    .welcome-content p {
-        font-size: 0.85rem;
-        margin-bottom: 1rem;
-    }
-    
-    .quick-questions {
-        gap: 0.4rem;
-        margin-bottom: 0.8rem;
-    }
-    
-    .quick-btn {
-        font-size: 0.7rem;
-        padding: 0.45rem 0.7rem;
-        border-radius: 12px;
-    }
-}
+ /* Mobile Extra Small (até 360px) - Smartphones muito pequenos */
+ @media (max-width: 360px) {
+     /* Botões Quick (perguntas rápidas) */
+     .quick-btn {
+         padding: 0.7rem 0.8rem !important;
+         font-size: 0.8rem !important;
+         min-height: 44px !important;
+         border-radius: 12px !important;
+         gap: 0.5rem !important;
+     }
+     
+     .quick-questions {
+         gap: 0.5rem !important;
+         padding: 0 0.5rem !important;
+     }
+     
+     /* Botões gerais */
+     .btn {
+         width: 40px !important;
+         height: 40px !important;
+         font-size: 0.85rem !important;
+         min-width: 40px !important;
+         min-height: 40px !important;
+     }
+     
+     .btn-send {
+         width: 42px !important;
+         height: 42px !important;
+     }
+     
+     /* Botão de login principal */
+     .btn-login-main {
+         padding: 0.8rem 0.9rem !important;
+         font-size: 0.85rem !important;
+         min-height: 44px !important;
+         border-radius: 10px !important;
+     }
+     
+            /* Botões de funcionalidades */
+      .feature-btn {
+           padding: 0.65rem 0.5rem !important;
+           font-size: 0.7rem !important;
+           border-radius: 10px !important;
+           min-height: 44px !important;
+           width: auto !important;
+           max-width: 200px !important;
+           flex-shrink: 0 !important;
+           flex-grow: 0 !important;
+           flex-basis: auto !important;
+           display: flex !important;
+           flex-direction: column !important; /* Ícone acima do texto */
+           align-items: center !important;
+           justify-content: center !important;
+           gap: 0.6rem !important;
+       }
+     
+     .feature-carousel-track {
+         display: flex !important;
+         flex-direction: row !important;
+         flex-wrap: nowrap !important;
+     }
+     
+     .feature-carousel-container {
+         display: flex !important;
+         flex-direction: row !important;
+     }
+     
+          .feature-btn i {
+          font-size: 1rem !important;
+          order: 1 !important; /* Garante que o ícone venha antes do texto */
+          display: block !important;
+          margin-bottom: 0 !important;
+          line-height: 1 !important;
+      }
+     
+     /* Sidebar buttons */
+     .sidebar-btn {
+         padding: 0.75rem 0.8rem !important;
+         font-size: 0.8rem !important;
+         min-height: 44px !important;
+     }
+     
+     /* Efeitos padronizados */
+     .quick-btn:active,
+     .feature-btn:active,
+     .sidebar-btn:active {
+         transform: scale(0.96) !important;
+         transition: all 0.1s ease !important;
+     }
+     
+     .btn:active {
+         transform: scale(0.94) !important;
+     }
+ }
+
+ /* Mobile Small (361px - 390px) - Smartphones pequenos (iPhone SE, etc) */
+ @media (min-width: 361px) and (max-width: 390px) {
+     .quick-btn {
+         padding: 0.75rem 0.85rem !important;
+         font-size: 0.82rem !important;
+         min-height: 44px !important;
+         border-radius: 12px !important;
+     }
+     
+     .quick-questions {
+         gap: 0.5rem !important;
+         padding: 0 0.6rem !important;
+     }
+     
+     .btn {
+         width: 42px !important;
+         height: 42px !important;
+         font-size: 0.9rem !important;
+         min-width: 42px !important;
+         min-height: 42px !important;
+     }
+     
+     .btn-send {
+         width: 44px !important;
+         height: 44px !important;
+     }
+     
+     .btn-login-main {
+         padding: 0.85rem 0.95rem !important;
+         font-size: 0.88rem !important;
+         min-height: 44px !important;
+         border-radius: 11px !important;
+     }
+     
+           .feature-btn {
+           padding: 0.7rem 0.55rem !important;
+           font-size: 0.72rem !important;
+           border-radius: 11px !important;
+           min-height: 44px !important;
+           width: auto !important;
+           max-width: 200px !important;
+           flex-shrink: 0 !important;
+           flex-grow: 0 !important;
+           flex-basis: auto !important;
+           display: flex !important;
+           flex-direction: column !important; /* Ícone acima do texto */
+           align-items: center !important;
+           justify-content: center !important;
+           gap: 0.6rem !important;
+       }
+     
+     .feature-carousel-track {
+         display: flex !important;
+         flex-direction: row !important;
+         flex-wrap: nowrap !important;
+     }
+     
+     .feature-carousel-container {
+         display: flex !important;
+         flex-direction: row !important;
+     }
+     
+          .feature-btn i {
+          font-size: 1.05rem !important;
+          order: 1 !important; /* Garante que o ícone venha antes do texto */
+          display: block !important;
+          margin-bottom: 0 !important;
+          line-height: 1 !important;
+      }
+     
+     .sidebar-btn {
+         padding: 0.8rem 0.85rem !important;
+         font-size: 0.82rem !important;
+         min-height: 44px !important;
+     }
+     
+     .quick-btn:active,
+     .feature-btn:active,
+     .sidebar-btn:active {
+         transform: scale(0.97) !important;
+         transition: all 0.1s ease !important;
+     }
+     
+     .btn:active {
+         transform: scale(0.95) !important;
+     }
+ }
+
+ /* Mobile Medium (391px - 414px) - Smartphones médios (iPhone 12/13/14, etc) */
+ @media (min-width: 391px) and (max-width: 414px) {
+     .quick-btn {
+         padding: 0.75rem 0.9rem !important;
+         font-size: 0.85rem !important;
+         min-height: 44px !important;
+         border-radius: 12px !important;
+     }
+     
+     .quick-questions {
+         gap: 0.5rem !important;
+         padding: 0 0.7rem !important;
+     }
+     
+     .btn {
+         width: 44px !important;
+         height: 44px !important;
+         font-size: 0.92rem !important;
+         min-width: 44px !important;
+         min-height: 44px !important;
+     }
+     
+     .btn-send {
+         width: 46px !important;
+         height: 46px !important;
+     }
+     
+     .btn-login-main {
+         padding: 0.9rem 1rem !important;
+         font-size: 0.9rem !important;
+         min-height: 48px !important;
+         border-radius: 12px !important;
+     }
+     
+           .feature-btn {
+           padding: 0.75rem 0.6rem !important;
+           font-size: 0.75rem !important;
+           border-radius: 12px !important;
+           min-height: 48px !important;
+           width: auto !important;
+           max-width: 200px !important;
+           flex-shrink: 0 !important;
+           flex-grow: 0 !important;
+           flex-basis: auto !important;
+           display: flex !important;
+           flex-direction: column !important; /* Ícone acima do texto */
+           align-items: center !important;
+           justify-content: center !important;
+           gap: 0.6rem !important;
+       }
+     
+     .feature-carousel-track {
+         display: flex !important;
+         flex-direction: row !important;
+         flex-wrap: nowrap !important;
+     }
+     
+     .feature-carousel-container {
+         display: flex !important;
+         flex-direction: row !important;
+          }
+
+     .feature-btn i {
+         font-size: 1.1rem !important;
+         order: 1 !important; /* Garante que o ícone venha antes do texto */
+         display: block !important;
+         margin-bottom: 0 !important;
+         line-height: 1 !important;
+     }
+
+     .sidebar-btn {
+         padding: 0.85rem 0.9rem !important;
+         font-size: 0.85rem !important;
+         min-height: 48px !important;
+     }
+     
+     .quick-btn:active,
+     .feature-btn:active,
+     .sidebar-btn:active {
+         transform: scale(0.97) !important;
+         transition: all 0.1s ease !important;
+     }
+     
+     .btn:active {
+         transform: scale(0.95) !important;
+     }
+ }
+
+ /* Mobile Large (415px - 480px) - Smartphones grandes (iPhone Pro Max, etc) */
+ @media (min-width: 415px) and (max-width: 480px) {
+     .quick-btn {
+         padding: 0.8rem 1rem !important;
+         font-size: 0.87rem !important;
+         min-height: 48px !important;
+         border-radius: 13px !important;
+     }
+     
+     .quick-questions {
+         gap: 0.6rem !important;
+         padding: 0 0.8rem !important;
+     }
+     
+     .btn {
+         width: 46px !important;
+         height: 46px !important;
+         font-size: 0.95rem !important;
+         min-width: 46px !important;
+         min-height: 46px !important;
+     }
+     
+     .btn-send {
+         width: 48px !important;
+         height: 48px !important;
+     }
+     
+     .btn-login-main {
+         padding: 0.9rem 1.1rem !important;
+         font-size: 0.93rem !important;
+         min-height: 48px !important;
+         border-radius: 12px !important;
+     }
+     
+           .feature-btn {
+           padding: 0.8rem 0.65rem !important;
+           font-size: 0.78rem !important;
+           border-radius: 12px !important;
+           min-height: 48px !important;
+           width: auto !important;
+           max-width: 200px !important;
+           flex-shrink: 0 !important;
+           flex-grow: 0 !important;
+           flex-basis: auto !important;
+           display: flex !important;
+           flex-direction: column !important; /* Ícone acima do texto */
+           align-items: center !important;
+           justify-content: center !important;
+           gap: 0.6rem !important;
+       }
+     
+     .feature-carousel-track {
+         display: flex !important;
+         flex-direction: row !important;
+         flex-wrap: nowrap !important;
+     }
+     
+     .feature-carousel-container {
+         display: flex !important;
+         flex-direction: row !important;
+          }
+
+     .feature-btn i {
+         font-size: 1.15rem !important;
+         order: 1 !important; /* Garante que o ícone venha antes do texto */
+         display: block !important;
+         margin-bottom: 0 !important;
+         line-height: 1 !important;
+     }
+
+     .sidebar-btn {
+         padding: 0.9rem 0.95rem !important;
+         font-size: 0.88rem !important;
+         min-height: 48px !important;
+     }
+     
+     .quick-btn:active,
+     .feature-btn:active,
+     .sidebar-btn:active {
+         transform: scale(0.98) !important;
+         transition: all 0.1s ease !important;
+     }
+     
+     .btn:active {
+         transform: scale(0.96) !important;
+     }
+ }
+
+ /* Mobile Landscape Small (481px - 568px) - Mobile em modo paisagem pequeno */
+ @media (min-width: 481px) and (max-width: 568px) {
+     .quick-btn {
+         padding: 0.75rem 0.9rem !important;
+         font-size: 0.85rem !important;
+         min-height: 44px !important;
+         border-radius: 12px !important;
+     }
+     
+     .quick-questions {
+         gap: 0.5rem !important;
+         padding: 0 0.7rem !important;
+     }
+     
+     .btn {
+         width: 44px !important;
+         height: 44px !important;
+         font-size: 0.9rem !important;
+         min-width: 44px !important;
+         min-height: 44px !important;
+     }
+     
+     .btn-send {
+         width: 46px !important;
+         height: 46px !important;
+     }
+     
+     .btn-login-main {
+         padding: 0.85rem 1rem !important;
+         font-size: 0.88rem !important;
+         min-height: 44px !important;
+         border-radius: 11px !important;
+     }
+     
+           .feature-btn {
+           padding: 0.75rem 0.6rem !important;
+           font-size: 0.75rem !important;
+           border-radius: 11px !important;
+           min-height: 44px !important;
+           width: auto !important;
+           max-width: 200px !important;
+           flex-shrink: 0 !important;
+           flex-grow: 0 !important;
+           flex-basis: auto !important;
+           display: flex !important;
+           flex-direction: column !important; /* Ícone acima do texto */
+           align-items: center !important;
+           justify-content: center !important;
+           gap: 0.6rem !important;
+       }
+     
+     .feature-carousel-track {
+         display: flex !important;
+         flex-direction: row !important;
+         flex-wrap: nowrap !important;
+     }
+     
+     .feature-carousel-container {
+         display: flex !important;
+         flex-direction: row !important;
+          }
+
+     .feature-btn i {
+         font-size: 1.1rem !important;
+         order: 1 !important; /* Garante que o ícone venha antes do texto */
+         display: block !important;
+         margin-bottom: 0 !important;
+         line-height: 1 !important;
+     }
+
+     .sidebar-btn {
+         padding: 0.8rem 0.85rem !important;
+         font-size: 0.83rem !important;
+         min-height: 44px !important;
+     }
+     
+     .quick-btn:active,
+     .feature-btn:active,
+     .sidebar-btn:active {
+         transform: scale(0.97) !important;
+         transition: all 0.1s ease !important;
+     }
+     
+     .btn:active {
+         transform: scale(0.95) !important;
+     }
+ }
+
+ /* Mobile Landscape Large (569px - 667px) - Mobile em modo paisagem grande */
+ @media (min-width: 569px) and (max-width: 667px) {
+     .quick-btn {
+         padding: 0.8rem 1rem !important;
+         font-size: 0.87rem !important;
+         min-height: 46px !important;
+         border-radius: 13px !important;
+     }
+     
+     .quick-questions {
+         gap: 0.6rem !important;
+         padding: 0 0.8rem !important;
+     }
+     
+     .btn {
+         width: 46px !important;
+         height: 46px !important;
+         font-size: 0.93rem !important;
+         min-width: 46px !important;
+         min-height: 46px !important;
+     }
+     
+     .btn-send {
+         width: 48px !important;
+         height: 48px !important;
+     }
+     
+     .btn-login-main {
+         padding: 0.9rem 1.1rem !important;
+         font-size: 0.9rem !important;
+         min-height: 46px !important;
+         border-radius: 12px !important;
+     }
+     
+           .feature-btn {
+           padding: 0.8rem 0.65rem !important;
+           font-size: 0.78rem !important;
+           border-radius: 12px !important;
+           min-height: 46px !important;
+           width: auto !important;
+           max-width: 200px !important;
+           flex-shrink: 0 !important;
+           flex-grow: 0 !important;
+           flex-basis: auto !important;
+           display: flex !important;
+           flex-direction: column !important; /* Ícone acima do texto */
+           align-items: center !important;
+           justify-content: center !important;
+           gap: 0.6rem !important;
+       }
+     
+     .feature-carousel-track {
+         display: flex !important;
+         flex-direction: row !important;
+         flex-wrap: nowrap !important;
+     }
+     
+     .feature-carousel-container {
+         display: flex !important;
+         flex-direction: row !important;
+          }
+
+     .feature-btn i {
+         font-size: 1.15rem !important;
+         order: 1 !important; /* Garante que o ícone venha antes do texto */
+         display: block !important;
+         margin-bottom: 0 !important;
+         line-height: 1 !important;
+     }
+
+     .sidebar-btn {
+         padding: 0.85rem 0.9rem !important;
+         font-size: 0.87rem !important;
+         min-height: 46px !important;
+     }
+     
+     .quick-btn:active,
+     .feature-btn:active,
+     .sidebar-btn:active {
+         transform: scale(0.98) !important;
+         transition: all 0.1s ease !important;
+     }
+     
+     .btn:active {
+         transform: scale(0.96) !important;
+     }
+ }
+
+ /* ===== RESPONSIVE: WELCOME CONTENT ADJUSTMENTS ===== */
+  
+  @media (max-width: 479px) {
+     .welcome-content {
+         padding: 1rem 0.8rem !important;
+         max-width: 100% !important;
+         width: 100% !important;
+         margin: 0 auto !important;
+         box-sizing: border-box !important;
+         text-align: center !important;
+         display: block !important;
+         position: relative !important;
+         left: auto !important;
+         right: auto !important;
+         float: none !important;
+         transform: none !important;
+         align-self: center !important;
+         overflow-x: hidden !important;
+     }
+     
+     .welcome-content i {
+         font-size: 2rem !important;
+         margin-bottom: 0.5rem !important;
+     }
+     
+     .welcome-content h2 {
+         font-size: 1.1rem !important;
+         margin-bottom: 0.5rem !important;
+         padding: 0 0.3rem !important;
+         line-height: 1.3 !important;
+         word-wrap: break-word !important;
+         overflow-wrap: break-word !important;
+         max-width: 100% !important;
+         text-align: center !important;
+     }
+     
+     .welcome-content p {
+         font-size: 0.85rem !important;
+         margin-bottom: 0.8rem !important;
+         line-height: 1.4 !important;
+         padding: 0 0.3rem !important;
+         word-wrap: break-word !important;
+         overflow-wrap: break-word !important;
+         max-width: 100% !important;
+         text-align: center !important;
+     }
+     
+     .quick-questions {
+         grid-template-columns: 1fr !important;
+         max-width: 100% !important;
+         width: 100% !important;
+         padding: 0 0.5rem !important;
+         gap: 0.5rem !important;
+         margin: 0.5rem auto 0.5rem !important;
+         box-sizing: border-box !important;
+         justify-items: stretch !important;
+         align-items: center !important;
+         position: relative !important;
+         left: auto !important;
+         right: auto !important;
+         float: none !important;
+         transform: none !important;
+         display: grid !important;
+         overflow-x: hidden !important;
+     }
+     
+     .quick-btn {
+         width: 100% !important;
+         max-width: 100% !important;
+         font-size: 0.85rem !important;
+         padding: 0.75rem 0.9rem !important;
+         border-radius: 12px !important;
+         box-sizing: border-box !important;
+         line-height: 1.4 !important;
+         min-height: 44px !important;
+         word-wrap: break-word !important;
+         overflow-wrap: break-word !important;
+         white-space: normal !important;
+         overflow: visible !important;
+         text-align: center !important;
+         display: flex !important;
+         align-items: center !important;
+         justify-content: center !important;
+         font-weight: 600 !important;
+         border-width: 2px !important;
+         box-shadow: 0 2px 8px rgba(244, 166, 166, 0.15) !important;
+         margin: 0 !important;
+         position: relative !important;
+         left: auto !important;
+         right: auto !important;
+     }
+
+     .quick-btn:active {
+         transform: scale(0.97) !important;
+         transition: all 0.1s !important;
+     }
+ }
 
 /* ===== RESPONSIVE: MODAL AUTH ===== */
 
@@ -2328,4 +4220,2275 @@ body {
         margin: 0;
     }
 }
+
+
+/* ===== DETEC��O DIN�MICA DE DISPOSITIVOS ===== */
+/* Regras CSS para classes aplicadas dinamicamente pelo device-detector.js */
+
+/* ===== TELA DE LOGIN - AJUSTES POR ORIENTAÇÃO ===== */
+
+/* Mobile Portrait - Tela de Login */
+body.orientation-portrait.device-mobile .login-container {
+    padding: 1.5rem 1rem !important;
+    max-width: 95% !important;
+    width: 95% !important;
+}
+
+body.orientation-portrait.device-mobile .login-header i {
+    font-size: 2.5rem !important;
+}
+
+body.orientation-portrait.device-mobile .login-header h1 {
+    font-size: 2rem !important;
+}
+
+body.orientation-portrait.device-mobile .login-subtitle {
+    font-size: 0.85rem !important;
+}
+
+body.orientation-portrait.device-mobile .login-content h2 {
+    font-size: 1.3rem !important;
+}
+
+body.orientation-portrait.device-mobile .login-tabs {
+    gap: 0.4rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+body.orientation-portrait.device-mobile .login-tab {
+    padding: 0.7rem 0.5rem !important;
+    font-size: 0.9rem !important;
+}
+
+body.orientation-portrait.device-mobile .form-group input {
+    padding: 0.9rem 0.9rem 0.9rem 2.8rem !important;
+    font-size: 0.95rem !important;
+}
+
+body.orientation-portrait.device-mobile .btn-login-main {
+    padding: 0.85rem 1rem !important;
+    font-size: 0.95rem !important;
+    min-height: 48px !important;
+}
+
+/* Mobile Landscape - Tela de Login */
+body.orientation-landscape.device-mobile .login-container {
+    padding: 1rem 1.5rem !important;
+    max-width: 90% !important;
+    width: 90% !important;
+}
+
+body.orientation-landscape.device-mobile .login-header {
+    margin-bottom: 1.5rem !important;
+}
+
+body.orientation-landscape.device-mobile .login-header i {
+    font-size: 2rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+body.orientation-landscape.device-mobile .login-header h1 {
+    font-size: 1.8rem !important;
+}
+
+body.orientation-landscape.device-mobile .login-subtitle {
+    font-size: 0.8rem !important;
+    margin-top: 0.3rem !important;
+}
+
+body.orientation-landscape.device-mobile .login-content h2 {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.8rem !important;
+}
+
+body.orientation-landscape.device-mobile .login-tabs {
+    gap: 0.3rem !important;
+    margin-bottom: 1.2rem !important;
+}
+
+body.orientation-landscape.device-mobile .login-tab {
+    padding: 0.6rem 0.4rem !important;
+    font-size: 0.85rem !important;
+}
+
+body.orientation-landscape.device-mobile .form-group {
+    margin-bottom: 1rem !important;
+}
+
+body.orientation-landscape.device-mobile .form-group input {
+    padding: 0.8rem 0.8rem 0.8rem 2.5rem !important;
+    font-size: 0.9rem !important;
+}
+
+body.orientation-landscape.device-mobile .btn-login-main {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9rem !important;
+    min-height: 44px !important;
+    margin-top: 0.3rem !important;
+}
+
+body.orientation-landscape.device-mobile .forgot-password-link {
+    margin-top: 0.8rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* ===== MENU INICIAL (WELCOME) - AJUSTES POR ORIENTAÇÃO ===== */
+
+/* Mobile Portrait - Welcome Content */
+body.orientation-portrait.device-mobile .welcome-content {
+    padding: 1rem 0.8rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+body.orientation-portrait.device-mobile .welcome-content h2 {
+    font-size: 1.3rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+body.orientation-portrait.device-mobile .welcome-content p {
+    font-size: 0.85rem !important;
+    margin-bottom: 0.8rem !important;
+}
+
+body.orientation-portrait.device-mobile .welcome-content i {
+    font-size: 1.8rem !important;
+    margin-bottom: 0.4rem !important;
+}
+
+body.orientation-portrait.device-mobile .quick-questions {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    padding: 0 0.8rem !important;
+    margin: 0 auto 0.8rem !important;
+}
+
+body.orientation-portrait.device-mobile .quick-btn {
+    padding: 0.75rem 0.9rem !important;
+    font-size: 0.85rem !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+}
+
+/* Mobile Landscape - Welcome Content */
+body.orientation-landscape.device-mobile .welcome-content {
+    padding: 0.8rem 1rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+body.orientation-landscape.device-mobile .welcome-content h2 {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.4rem !important;
+}
+
+body.orientation-landscape.device-mobile .welcome-content p {
+    font-size: 0.8rem !important;
+    margin-bottom: 0.6rem !important;
+}
+
+body.orientation-landscape.device-mobile .welcome-content i {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+body.orientation-landscape.device-mobile .quick-questions {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    padding: 0 1rem !important;
+    margin: 0 auto 0.6rem !important;
+    max-width: 600px !important;
+}
+
+body.orientation-landscape.device-mobile .quick-btn {
+    padding: 0.7rem 0.8rem !important;
+    font-size: 0.8rem !important;
+    min-height: 42px !important;
+    border-radius: 11px !important;
+}
+
+/* Mobile Landscape - Telas pequenas (até 667px) - volta para 1 coluna */
+body.orientation-landscape.device-mobile.screen-xs-landscape .quick-questions,
+body.orientation-landscape.device-mobile.screen-sm-landscape .quick-questions {
+    grid-template-columns: 1fr !important;
+}
+
+/* ===== BOTÕES - PADRONIZAÇÃO POR TAMANHO DE TELA ===== */
+
+/* Extra Small Portrait (até 360px) */
+body.screen-xs-portrait .quick-btn,
+body.screen-xs-portrait .btn-login-main {
+    padding: 0.7rem 0.8rem !important;
+    font-size: 0.8rem !important;
+    min-height: 42px !important;
+}
+
+body.screen-xs-portrait .btn,
+body.screen-xs-portrait .btn-send {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+}
+
+/* Small Portrait (361-390px) */
+body.screen-sm-portrait .quick-btn,
+body.screen-sm-portrait .btn-login-main {
+    padding: 0.75rem 0.85rem !important;
+    font-size: 0.82rem !important;
+    min-height: 44px !important;
+}
+
+body.screen-sm-portrait .btn,
+body.screen-sm-portrait .btn-send {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+}
+
+/* Medium Portrait (391-414px) */
+body.screen-md-portrait .quick-btn,
+body.screen-md-portrait .btn-login-main {
+    padding: 0.8rem 0.9rem !important;
+    font-size: 0.85rem !important;
+    min-height: 46px !important;
+}
+
+body.screen-md-portrait .btn,
+body.screen-md-portrait .btn-send {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+}
+
+/* Large Portrait (415-480px) */
+body.screen-lg-portrait .quick-btn,
+body.screen-lg-portrait .btn-login-main {
+    padding: 0.85rem 1rem !important;
+    font-size: 0.88rem !important;
+    min-height: 48px !important;
+}
+
+body.screen-lg-portrait .btn,
+body.screen-lg-portrait .btn-send {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+}
+
+/* Extra Small Landscape (até 568px) */
+body.screen-xs-landscape .quick-btn,
+body.screen-xs-landscape .btn-login-main {
+    padding: 0.7rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    min-height: 42px !important;
+}
+
+body.screen-xs-landscape .btn,
+body.screen-xs-landscape .btn-send {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+}
+
+/* Small Landscape (569-667px) */
+body.screen-sm-landscape .quick-btn,
+body.screen-sm-landscape .btn-login-main {
+    padding: 0.75rem 0.9rem !important;
+    font-size: 0.82rem !important;
+    min-height: 44px !important;
+}
+
+body.screen-sm-landscape .btn,
+body.screen-sm-landscape .btn-send {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+}
+
+/* Medium Landscape (668-736px) */
+body.screen-md-landscape .quick-btn,
+body.screen-md-landscape .btn-login-main {
+    padding: 0.8rem 1rem !important;
+    font-size: 0.85rem !important;
+    min-height: 46px !important;
+}
+
+body.screen-md-landscape .btn,
+body.screen-md-landscape .btn-send {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+}
+
+/* Large Landscape (737px+) */
+body.screen-lg-landscape .quick-btn,
+body.screen-lg-landscape .btn-login-main {
+    padding: 0.85rem 1.1rem !important;
+    font-size: 0.88rem !important;
+    min-height: 48px !important;
+}
+
+body.screen-lg-landscape .btn,
+body.screen-lg-landscape .btn-send {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+}
+
+/* ===== EFEITOS DE TOQUE - ACTIVE STATES ===== */
+
+/* Active states padronizados para todos os tamanhos */
+body.device-mobile .quick-btn:active {
+    transform: scale(0.97) !important;
+    transition: all 0.1s ease !important;
+}
+
+body.device-mobile .btn-login-main:active {
+    transform: scale(0.98) !important;
+    transition: all 0.1s ease !important;
+}
+
+body.device-mobile .btn:active {
+    transform: scale(0.95) !important;
+    transition: all 0.1s ease !important;
+}
+
+body.device-mobile .sidebar-btn:active {
+    transform: scale(0.98) !important;
+    transition: all 0.1s ease !important;
+}
+
+/* ===== WELCOME MESSAGE - CENTRALIZAÇÃO GARANTIDA ===== */
+
+/* Garante centralização em todas as orientações */
+body.device-mobile .welcome-message {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0.8rem 0 !important;
+}
+
+body.device-mobile .welcome-content {
+    margin: 0 auto !important;
+    text-align: center !important;
+    display: block !important;
+}
+
+body.device-mobile .quick-questions {
+    margin: 0 auto !important;
+    justify-items: stretch !important;
+}
+
+body.device-mobile .quick-btn {
+    margin: 0 auto !important;
+    text-align: center !important;
+}
+
+/* ===== REGRAS FORÇADAS PARA MOBILE - SOBRESCREVE TODAS AS MEDIA QUERIES ===== */
+/* Estas regras têm prioridade máxima e garantem que mobile funcione corretamente */
+
+/* Tela de Login - Mobile Portrait - PRIORIDADE MÁXIMA */
+body.device-mobile.orientation-portrait #login-screen .login-container {
+    padding: 1.5rem 1rem !important;
+    max-width: 95% !important;
+    width: 95% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .login-header i {
+    font-size: 2.5rem !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .login-header h1 {
+    font-size: 2rem !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .login-subtitle {
+    font-size: 0.85rem !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .login-content h2 {
+    font-size: 1.3rem !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .login-tabs {
+    gap: 0.4rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .login-tab {
+    padding: 0.7rem 0.5rem !important;
+    font-size: 0.9rem !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .form-group input {
+    padding: 0.9rem 0.9rem 0.9rem 2.8rem !important;
+    font-size: 0.95rem !important;
+}
+
+body.device-mobile.orientation-portrait #login-screen .btn-login-main {
+    padding: 0.85rem 1rem !important;
+    font-size: 0.95rem !important;
+    min-height: 48px !important;
+}
+
+/* Tela de Login - Mobile Landscape - PRIORIDADE MÁXIMA */
+body.device-mobile.orientation-landscape #login-screen .login-container {
+    padding: 1rem 1.5rem !important;
+    max-width: 90% !important;
+    width: 90% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .login-header {
+    margin-bottom: 1.5rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .login-header i {
+    font-size: 2rem !important;
+    margin-bottom: 0.3rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .login-header h1 {
+    font-size: 1.8rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .login-subtitle {
+    font-size: 0.8rem !important;
+    margin-top: 0.3rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .login-content h2 {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.8rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .login-tabs {
+    gap: 0.3rem !important;
+    margin-bottom: 1.2rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .login-tab {
+    padding: 0.6rem 0.4rem !important;
+    font-size: 0.85rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .form-group {
+    margin-bottom: 1rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .form-group input {
+    padding: 0.8rem 0.8rem 0.8rem 2.5rem !important;
+    font-size: 0.9rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .btn-login-main {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9rem !important;
+    min-height: 44px !important;
+    margin-top: 0.3rem !important;
+}
+
+body.device-mobile.orientation-landscape #login-screen .forgot-password-link {
+    margin-top: 0.8rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* Menu Inicial - Mobile Portrait - PRIORIDADE MÁXIMA */
+body.device-mobile.orientation-portrait #main-container .welcome-content,
+body.device-mobile.orientation-portrait .welcome-content {
+    padding: 1rem 0.8rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    display: block !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    float: none !important;
+    transform: none !important;
+}
+
+body.device-mobile.orientation-portrait #main-container .welcome-content h2,
+body.device-mobile.orientation-portrait .welcome-content h2 {
+    font-size: 1.3rem !important;
+    margin-bottom: 0.5rem !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+body.device-mobile.orientation-portrait #main-container .welcome-content p,
+body.device-mobile.orientation-portrait .welcome-content p {
+    font-size: 0.85rem !important;
+    margin-bottom: 0.8rem !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+body.device-mobile.orientation-portrait #main-container .welcome-content i,
+body.device-mobile.orientation-portrait .welcome-content i {
+    font-size: 1.8rem !important;
+    margin-bottom: 0.4rem !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+body.device-mobile.orientation-portrait #main-container .quick-questions,
+body.device-mobile.orientation-portrait .quick-questions {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    padding: 0 0.8rem !important;
+    margin: 0 auto 0.8rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    justify-items: stretch !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    float: none !important;
+    transform: none !important;
+}
+
+body.device-mobile.orientation-portrait #main-container .quick-btn,
+body.device-mobile.orientation-portrait .quick-btn {
+    padding: 0.75rem 0.9rem !important;
+    font-size: 0.85rem !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    float: none !important;
+    transform: none !important;
+}
+
+/* Menu Inicial - Mobile Landscape - PRIORIDADE MÁXIMA */
+body.device-mobile.orientation-landscape #main-container .welcome-content,
+body.device-mobile.orientation-landscape .welcome-content {
+    padding: 0.8rem 1rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    display: block !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    float: none !important;
+    transform: none !important;
+}
+
+body.device-mobile.orientation-landscape #main-container .welcome-content h2,
+body.device-mobile.orientation-landscape .welcome-content h2 {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.4rem !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+body.device-mobile.orientation-landscape #main-container .welcome-content p,
+body.device-mobile.orientation-landscape .welcome-content p {
+    font-size: 0.8rem !important;
+    margin-bottom: 0.6rem !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+body.device-mobile.orientation-landscape #main-container .welcome-content i,
+body.device-mobile.orientation-landscape .welcome-content i {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.3rem !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+body.device-mobile.orientation-landscape #main-container .quick-questions,
+body.device-mobile.orientation-landscape .quick-questions {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    padding: 0 1rem !important;
+    margin: 0 auto 0.6rem !important;
+    max-width: 600px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    justify-items: stretch !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    float: none !important;
+    transform: none !important;
+}
+
+body.device-mobile.orientation-landscape #main-container .quick-btn,
+body.device-mobile.orientation-landscape .quick-btn {
+    padding: 0.7rem 0.8rem !important;
+    font-size: 0.8rem !important;
+    min-height: 42px !important;
+    border-radius: 11px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    float: none !important;
+    transform: none !important;
+}
+
+/* Mobile Landscape pequeno - volta para 1 coluna */
+body.device-mobile.orientation-landscape.screen-xs-landscape .quick-questions,
+body.device-mobile.orientation-landscape.screen-sm-landscape .quick-questions {
+    grid-template-columns: 1fr !important;
+}
+
+/* Garantir que welcome-message está centralizado */
+body.device-mobile #main-container .welcome-message,
+body.device-mobile .welcome-message {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0.8rem 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Centralização absoluta do conteúdo */
+body.device-mobile #main-container .welcome-message .welcome-content,
+body.device-mobile .welcome-message .welcome-content {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Estilos responsivos para novos elementos */
+@media (max-width: 767px) {
+    .feeling-box {
+        padding: 1rem !important;
+        margin: 1rem auto !important;
+    }
+
+    .feeling-box h3 {
+        font-size: 0.9rem !important;
+    }
+
+    .feeling-btn {
+        padding: 0.6rem 0.8rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    .support-links {
+        margin: 1.5rem auto !important;
+        padding: 0 1rem !important;
+    }
+
+    .support-links h3 {
+        font-size: 0.9rem !important;
+    }
+
+    .support-link {
+        padding: 0.8rem 1rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    .rotating-message {
+        margin-top: 1.5rem !important;
+        padding: 0.8rem !important;
+    }
+
+    #rotating-text {
+        font-size: 0.85rem !important;
+    }
+
+    .inclusion-phrase {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+}
+
+@media (max-width: 479px) {
+    .feeling-box {
+        padding: 0.8rem !important;
+        margin: 0.8rem auto !important;
+    }
+
+    .feeling-buttons {
+        gap: 0.5rem !important;
+    }
+
+    .feeling-btn {
+        padding: 0.5rem 0.7rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .support-link {
+        padding: 0.7rem 0.9rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    #rotating-text {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* ========================================
+   SISTEMA RESPONSIVO UNIFICADO E FLUIDO
+   ========================================
+   Este sistema garante que toda a estrutura e detalhes visuais
+   do layout desktop sejam mantidos idênticos em celular e tablet,
+   mas ajustados automaticamente pro tamanho de cada tela.
+   ======================================== */
+
+/* ===== VARIÁVEIS CSS PARA SCALING FLUIDO ===== */
+:root {
+    /* Base scaling factors - serão ajustados por media query */
+    --scale-factor: 1;
+    --base-font-size: 16px;
+    --spacing-unit: 1rem;
+    --border-radius-base: 18px;
+    --shadow-blur-base: 12px;
+}
+
+/* ===== MOBILE PORTRAIT (< 480px) ===== */
+@media (max-width: 479px) {
+    :root {
+        --scale-factor: 0.75;
+        --spacing-unit: 0.75rem;
+    }
+
+    /* Container e layout geral */
+    .container {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Header - mantém proporções, reduz tamanho */
+    .header {
+        padding: clamp(0.8rem, 2vw, 1rem) clamp(1rem, 3vw, 1.2rem) !important;
+    }
+
+    .logo h1 {
+        font-size: clamp(1.1rem, 4vw, 1.3rem) !important;
+    }
+
+    .logo i {
+        font-size: clamp(1.2rem, 4vw, 1.4rem) !important;
+    }
+
+    #user-greeting {
+        font-size: clamp(0.9rem, 3.5vw, 1.1rem) !important;
+    }
+
+    /* Welcome Content - centralizado, margens reduzidas, organizado verticalmente */
+    .welcome-content {
+        padding: clamp(1rem, 3vw, 1.5rem) clamp(0.8rem, 4vw, 1.2rem) !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        text-align: center !important;
+    }
+
+    .welcome-content i {
+        font-size: clamp(1.8rem, 6vw, 2.2rem) !important;
+        margin-bottom: clamp(0.4rem, 1.5vw, 0.6rem) !important;
+    }
+
+    .welcome-content h2 {
+        font-size: clamp(1.2rem, 5vw, 1.5rem) !important;
+        margin-bottom: clamp(0.6rem, 2vw, 0.8rem) !important;
+        line-height: 1.3 !important;
+    }
+
+    .welcome-micro-phrase {
+        font-size: clamp(0.75rem, 3vw, 0.9rem) !important;
+        margin-bottom: clamp(0.8rem, 2.5vw, 1rem) !important;
+        padding: 0 clamp(0.5rem, 3vw, 1rem) !important;
+    }
+
+    .welcome-content p {
+        font-size: clamp(0.8rem, 3.2vw, 0.95rem) !important;
+        margin-bottom: clamp(1rem, 3vw, 1.5rem) !important;
+        padding: 0 clamp(0.5rem, 3vw, 1rem) !important;
+    }
+
+    /* Quick Questions - centralizado, botões em linha horizontal com wrap */
+    .quick-questions {
+        gap: clamp(0.5rem, 2vw, 0.75rem) !important;
+        padding: 0 clamp(0.8rem, 4vw, 1.2rem) !important;
+        margin-bottom: clamp(0.8rem, 2.5vw, 1.2rem) !important;
+        justify-content: center !important;
+    }
+
+    .quick-btn {
+        padding: clamp(0.7rem, 2.5vw, 0.9rem) clamp(0.9rem, 3vw, 1.2rem) !important;
+        font-size: clamp(0.75rem, 3vw, 0.85rem) !important;
+        border-radius: clamp(14px, 3.5vw, 18px) !important;
+        min-height: 44px !important;
+        gap: clamp(0.4rem, 1.5vw, 0.6rem) !important;
+    }
+
+    .quick-btn i {
+        font-size: clamp(0.9rem, 3.5vw, 1.1rem) !important;
+    }
+
+    /* Feature Carousel - mantém layout horizontal, centralizado */
+    .feature-sections {
+        margin-top: clamp(1rem, 3vw, 1.5rem) !important;
+        padding-top: clamp(0.8rem, 2.5vw, 1.2rem) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .feature-sections h3 {
+        font-size: clamp(0.95rem, 4vw, 1.1rem) !important;
+        margin-bottom: clamp(0.8rem, 2.5vw, 1rem) !important;
+    }
+
+    .feature-carousel-container {
+        padding: 0 clamp(1rem, 4vw, 1.5rem) !important;
+        gap: clamp(0.3rem, 1.5vw, 0.5rem) !important;
+    }
+
+    .feature-carousel-track {
+        gap: clamp(0.6rem, 2vw, 1rem) !important;
+    }
+
+    .feature-btn {
+        padding: clamp(1rem, 4vw, 1.3rem) clamp(0.8rem, 3vw, 1.1rem) !important;
+        font-size: clamp(0.8rem, 3.2vw, 0.95rem) !important;
+        border-radius: clamp(14px, 3.5vw, 18px) !important;
+        min-width: clamp(110px, 28vw, 140px) !important;
+        min-height: clamp(100px, 25vw, 120px) !important;
+        gap: clamp(0.6rem, 2vw, 0.8rem) !important;
+    }
+
+    .feature-btn i {
+        font-size: clamp(1.2rem, 5vw, 1.5rem) !important;
+    }
+
+    .feature-btn span {
+        font-size: clamp(0.75rem, 3vw, 0.9rem) !important;
+    }
+
+    .carousel-btn {
+        width: clamp(32px, 8vw, 40px) !important;
+        height: clamp(32px, 8vw, 40px) !important;
+        font-size: clamp(0.85rem, 3.5vw, 1rem) !important;
+    }
+
+    /* Feeling Box - centralizado, margens reduzidas */
+    .feeling-box {
+        padding: clamp(0.9rem, 3vw, 1.3rem) !important;
+        margin: clamp(1rem, 3vw, 1.5rem) auto !important;
+        max-width: calc(100% - clamp(1.6rem, 6vw, 2.4rem)) !important;
+        border-radius: clamp(16px, 4vw, 20px) !important;
+    }
+
+    .feeling-box h3 {
+        font-size: clamp(0.9rem, 3.5vw, 1rem) !important;
+        margin-bottom: clamp(0.8rem, 2.5vw, 1rem) !important;
+    }
+
+    .feeling-buttons {
+        gap: clamp(0.5rem, 2vw, 0.7rem) !important;
+    }
+
+    .feeling-btn {
+        padding: clamp(0.6rem, 2.5vw, 0.85rem) clamp(0.8rem, 3vw, 1.1rem) !important;
+        font-size: clamp(0.75rem, 3vw, 0.85rem) !important;
+        border-radius: clamp(12px, 3vw, 15px) !important;
+    }
+
+    /* Support Links - centralizado */
+    .support-links {
+        margin: clamp(1.5rem, 4vw, 2rem) auto !important;
+        padding: 0 clamp(0.8rem, 4vw, 1.2rem) !important;
+        max-width: calc(100% - clamp(1.6rem, 6vw, 2.4rem)) !important;
+    }
+
+    .support-links h3 {
+        font-size: clamp(0.9rem, 3.5vw, 1rem) !important;
+    }
+
+    .support-link {
+        padding: clamp(0.8rem, 2.5vw, 1rem) clamp(1rem, 3vw, 1.3rem) !important;
+        font-size: clamp(0.8rem, 3vw, 0.9rem) !important;
+        border-radius: clamp(10px, 2.5vw, 12px) !important;
+    }
+
+    /* Rotating Message */
+    .rotating-message {
+        margin-top: clamp(1.5rem, 4vw, 2rem) !important;
+        padding: clamp(0.8rem, 2.5vw, 1.2rem) !important;
+    }
+
+    #rotating-text {
+        font-size: clamp(0.8rem, 3vw, 0.9rem) !important;
+    }
+
+    .inclusion-phrase {
+        font-size: clamp(0.75rem, 3vw, 0.85rem) !important;
+        margin-bottom: clamp(0.7rem, 2vw, 1rem) !important;
+        padding: 0 clamp(0.5rem, 3vw, 1rem) !important;
+    }
+
+    /* Sidebar - adaptação para mobile */
+    .sidebar {
+        width: clamp(240px, 70vw, 280px) !important;
+    }
+
+    .sidebar-btn {
+        padding: clamp(0.75rem, 2.5vw, 0.9rem) clamp(0.8rem, 3vw, 1rem) !important;
+        font-size: clamp(0.85rem, 3.2vw, 0.95rem) !important;
+        border-radius: clamp(10px, 2.5vw, 12px) !important;
+        min-height: 44px !important;
+    }
+
+    .sidebar-btn i {
+        font-size: clamp(1rem, 3.5vw, 1.1rem) !important;
+    }
+}
+
+/* ===== TABLET PORTRAIT (480px - 767px) ===== */
+@media (min-width: 480px) and (max-width: 767px) {
+    :root {
+        --scale-factor: 0.85;
+        --spacing-unit: 0.85rem;
+    }
+
+    /* Container */
+    .container {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Header */
+    .header {
+        padding: clamp(1rem, 2.5vw, 1.2rem) clamp(1.2rem, 3vw, 1.5rem) !important;
+    }
+
+    .logo h1 {
+        font-size: clamp(1.25rem, 4vw, 1.5rem) !important;
+    }
+
+    .logo i {
+        font-size: clamp(1.4rem, 4.5vw, 1.6rem) !important;
+    }
+
+    #user-greeting {
+        font-size: clamp(1rem, 3.5vw, 1.2rem) !important;
+    }
+
+    /* Welcome Content */
+    .welcome-content {
+        padding: clamp(1.5rem, 4vw, 2rem) clamp(1.2rem, 4vw, 1.8rem) !important;
+        max-width: 95% !important;
+    }
+
+    .welcome-content i {
+        font-size: clamp(2rem, 6vw, 2.4rem) !important;
+        margin-bottom: clamp(0.5rem, 1.5vw, 0.7rem) !important;
+    }
+
+    .welcome-content h2 {
+        font-size: clamp(1.4rem, 5vw, 1.65rem) !important;
+        margin-bottom: clamp(0.7rem, 2vw, 0.9rem) !important;
+    }
+
+    .welcome-micro-phrase {
+        font-size: clamp(0.85rem, 3vw, 0.95rem) !important;
+        margin-bottom: clamp(0.9rem, 2.5vw, 1.1rem) !important;
+    }
+
+    .welcome-content p {
+        font-size: clamp(0.9rem, 3.2vw, 1rem) !important;
+        margin-bottom: clamp(1.2rem, 3vw, 1.5rem) !important;
+    }
+
+    /* Quick Questions */
+    .quick-questions {
+        gap: clamp(0.65rem, 2vw, 0.85rem) !important;
+        padding: 0 clamp(1rem, 4vw, 1.5rem) !important;
+    }
+
+    .quick-btn {
+        padding: clamp(0.8rem, 2.5vw, 0.95rem) clamp(1rem, 3vw, 1.3rem) !important;
+        font-size: clamp(0.8rem, 3vw, 0.87rem) !important;
+        border-radius: clamp(15px, 3.5vw, 18px) !important;
+        min-height: 46px !important;
+    }
+
+    /* Feature Carousel */
+    .feature-sections {
+        margin-top: clamp(1.2rem, 3vw, 1.8rem) !important;
+        padding-top: clamp(1rem, 2.5vw, 1.5rem) !important;
+    }
+
+    .feature-sections h3 {
+        font-size: clamp(1rem, 4vw, 1.15rem) !important;
+        margin-bottom: clamp(0.9rem, 2.5vw, 1.1rem) !important;
+    }
+
+    .feature-carousel-container {
+        padding: 0 clamp(1.5rem, 4vw, 2rem) !important;
+        gap: clamp(0.4rem, 1.5vw, 0.5rem) !important;
+    }
+
+    .feature-carousel-track {
+        gap: clamp(0.8rem, 2vw, 1rem) !important;
+    }
+
+    .feature-btn {
+        padding: clamp(1.2rem, 4vw, 1.4rem) clamp(1rem, 3vw, 1.2rem) !important;
+        font-size: clamp(0.9rem, 3.2vw, 1rem) !important;
+        border-radius: clamp(15px, 3.5vw, 18px) !important;
+        min-width: clamp(130px, 30vw, 150px) !important;
+        min-height: clamp(115px, 27vw, 130px) !important;
+    }
+
+    .feature-btn i {
+        font-size: clamp(1.3rem, 5vw, 1.5rem) !important;
+    }
+
+    .feature-btn span {
+        font-size: clamp(0.85rem, 3vw, 0.95rem) !important;
+    }
+
+    .carousel-btn {
+        width: clamp(36px, 8vw, 42px) !important;
+        height: clamp(36px, 8vw, 42px) !important;
+    }
+
+    /* Feeling Box */
+    .feeling-box {
+        padding: clamp(1.1rem, 3vw, 1.4rem) !important;
+        margin: clamp(1.2rem, 3vw, 1.8rem) auto !important;
+        max-width: calc(100% - clamp(2rem, 6vw, 3rem)) !important;
+    }
+
+    .feeling-box h3 {
+        font-size: clamp(0.95rem, 3.5vw, 1.05rem) !important;
+    }
+
+    .feeling-btn {
+        padding: clamp(0.7rem, 2.5vw, 0.9rem) clamp(0.9rem, 3vw, 1.1rem) !important;
+        font-size: clamp(0.8rem, 3vw, 0.87rem) !important;
+    }
+
+    /* Support Links */
+    .support-links {
+        margin: clamp(1.8rem, 4vw, 2.2rem) auto !important;
+        padding: 0 clamp(1rem, 4vw, 1.5rem) !important;
+        max-width: calc(100% - clamp(2rem, 6vw, 3rem)) !important;
+    }
+
+    .support-links h3 {
+        font-size: clamp(0.95rem, 3.5vw, 1.05rem) !important;
+    }
+
+    .support-link {
+        padding: clamp(0.85rem, 2.5vw, 1rem) clamp(1.1rem, 3vw, 1.3rem) !important;
+        font-size: clamp(0.85rem, 3vw, 0.92rem) !important;
+    }
+
+    /* Rotating Message */
+    .rotating-message {
+        margin-top: clamp(1.8rem, 4vw, 2.2rem) !important;
+        padding: clamp(1rem, 2.5vw, 1.2rem) !important;
+    }
+
+    #rotating-text {
+        font-size: clamp(0.85rem, 3vw, 0.92rem) !important;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: clamp(260px, 65vw, 290px) !important;
+    }
+
+    .sidebar-btn {
+        padding: clamp(0.85rem, 2.5vw, 0.9rem) clamp(0.9rem, 3vw, 1rem) !important;
+        font-size: clamp(0.9rem, 3.2vw, 0.95rem) !important;
+        min-height: 46px !important;
+    }
+}
+
+/* ===== TABLET LANDSCAPE / SMALL DESKTOP (768px - 991px) ===== */
+@media (min-width: 768px) and (max-width: 991px) {
+    :root {
+        --scale-factor: 0.92;
+        --spacing-unit: 0.92rem;
+    }
+
+    /* Mantém proporções, ajuste sutil */
+    .header {
+        padding: clamp(1.1rem, 2vw, 1.2rem) clamp(1.5rem, 3vw, 2rem) !important;
+    }
+
+    .logo h1 {
+        font-size: clamp(1.4rem, 3.5vw, 1.6rem) !important;
+    }
+
+    #user-greeting {
+        font-size: clamp(1.1rem, 3vw, 1.3rem) !important;
+    }
+
+    .welcome-content {
+        padding: clamp(1.8rem, 3vw, 2rem) clamp(1.8rem, 4vw, 2.2rem) !important;
+        max-width: 92% !important;
+    }
+
+    .welcome-content h2 {
+        font-size: clamp(1.5rem, 4vw, 1.65rem) !important;
+    }
+
+    .feature-btn {
+        padding: clamp(1.3rem, 3vw, 1.5rem) clamp(1.1rem, 2.5vw, 1.2rem) !important;
+        min-width: clamp(140px, 25vw, 160px) !important;
+        min-height: clamp(125px, 22vw, 140px) !important;
+    }
+
+    .feeling-box {
+        max-width: calc(100% - clamp(3rem, 8vw, 4rem)) !important;
+    }
+
+    .support-links {
+        max-width: calc(100% - clamp(3rem, 8vw, 4rem)) !important;
+    }
+}
+
+/* ===== DESKTOP (992px+) ===== */
+@media (min-width: 992px) {
+    :root {
+        --scale-factor: 1;
+        --spacing-unit: 1rem;
+    }
+
+    /* Layout original do desktop - mantém todos os detalhes visuais */
+    .welcome-content {
+        max-width: 900px !important;
+    }
+
+    .feature-carousel-container {
+        max-width: 800px !important;
+    }
+
+    .feeling-box {
+        max-width: 600px !important;
+    }
+
+    .support-links {
+        max-width: 700px !important;
+    }
+}
+
+/* ===== ORIENTAÇÃO LANDSCAPE EM MOBILE ===== */
+@media (max-width: 767px) and (orientation: landscape) {
+    /* Ajustes sutis para landscape - mais espaço horizontal */
+    .welcome-content {
+        padding-top: clamp(0.8rem, 2vw, 1.2rem) !important;
+        padding-bottom: clamp(0.8rem, 2vw, 1.2rem) !important;
+    }
+
+    .welcome-content h2 {
+        font-size: clamp(1.1rem, 4vw, 1.4rem) !important;
+        margin-bottom: clamp(0.5rem, 1.5vw, 0.7rem) !important;
+    }
+
+    .welcome-micro-phrase,
+    .welcome-content p {
+        margin-bottom: clamp(0.6rem, 2vw, 0.9rem) !important;
+    }
+
+    .quick-questions {
+        margin-bottom: clamp(0.6rem, 2vw, 0.9rem) !important;
+    }
+
+    .feeling-box,
+    .support-links,
+    .rotating-message {
+        margin-top: clamp(0.8rem, 2vw, 1.2rem) !important;
+        margin-bottom: clamp(0.8rem, 2vw, 1.2rem) !important;
+    }
+}
+
+/* ===== GARANTIA DE CENTRALIZAÇÃO ABSOLUTA EM TODOS OS DISPOSITIVOS ===== */
+@media (max-width: 991px) {
+    /* Welcome Message - sempre centralizado */
+    .welcome-message {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .welcome-content {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        left: auto !important;
+        right: auto !important;
+        float: none !important;
+        position: relative !important;
+    }
+
+    /* Feature Sections - sempre centralizado */
+    .feature-sections {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .feature-carousel-container {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        justify-content: center !important;
+    }
+
+    /* Feeling Box e Support Links - sempre centralizado */
+    .feeling-box,
+    .support-links {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        left: auto !important;
+        right: auto !important;
+    }
+}
+
+/* ===== PRESERVAÇÃO DE SOMBRAS E EFEITOS VISUAIS PROPORCIONALMENTE ===== */
+@media (max-width: 767px) {
+    /* Mantém sombras proporcionais ao tamanho */
+    .feature-btn {
+        box-shadow: 0 clamp(3px, 1vw, 4px) clamp(10px, 2.5vw, 12px) rgba(244, 166, 166, 0.25), 
+                    0 clamp(1.5px, 0.8vw, 2px) clamp(5px, 1.5vw, 6px) rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .feature-btn:hover {
+        box-shadow: 0 clamp(8px, 2vw, 12px) clamp(30px, 8vw, 40px) rgba(244, 166, 166, 0.6),
+                    0 clamp(4px, 1.5vw, 6px) clamp(15px, 4vw, 20px) rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .quick-btn {
+        box-shadow: 0 clamp(3px, 1vw, 4px) clamp(10px, 2.5vw, 12px) rgba(244, 166, 166, 0.25),
+                    0 clamp(1.5px, 0.8vw, 2px) clamp(5px, 1.5vw, 6px) rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .quick-btn:hover {
+        box-shadow: 0 clamp(8px, 2vw, 10px) clamp(25px, 7vw, 30px) rgba(244, 166, 166, 0.4),
+                    0 clamp(3px, 1.5vw, 4px) clamp(12px, 3.5vw, 15px) rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .feeling-box {
+        box-shadow: 0 clamp(3px, 1vw, 4px) clamp(15px, 4vw, 20px) rgba(244, 166, 166, 0.15),
+                    0 clamp(1.5px, 0.8vw, 2px) clamp(6px, 1.5vw, 8px) rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .support-link {
+        box-shadow: 0 clamp(3px, 1vw, 4px) clamp(10px, 2.5vw, 12px) rgba(244, 166, 166, 0.25),
+                    0 clamp(1.5px, 0.8vw, 2px) clamp(5px, 1.5vw, 6px) rgba(0, 0, 0, 0.08) !important;
+    }
+}
+
+/* ===== GARANTIA DE FLUIDIDADE NAS TRANSIÇÕES ===== */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Animações suaves para todos os elementos interativos */
+.feature-btn,
+.quick-btn,
+.feeling-btn,
+.support-link,
+.sidebar-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ===== FIM DO SISTEMA RESPONSIVO UNIFICADO ===== */
+
+/* ===== REGRAS ADICIONAIS DE CENTRALIZAÇÃO E RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+    /* Welcome Content e Cards Principais */
+    .welcome-content,
+    .feeling-box,
+    .support-links,
+    .feature-sections {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.2rem !important;
+        margin: 0 auto !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Textos dentro dos cards - centralização e quebra de palavras */
+    .welcome-content p,
+    .welcome-content h1,
+    .welcome-content h2,
+    .feeling-box p,
+    .feeling-box h3,
+    .support-links p,
+    .support-links h3,
+    .feature-sections p,
+    .feature-sections h3 {
+        text-align: center !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        font-size: clamp(0.9rem, 3vw, 1rem) !important;
+    }
+
+    /* Layout em coluna para elementos flexbox */
+    .quick-questions,
+    .feeling-buttons,
+    .support-links-grid,
+    .feature-carousel-track {
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    /* Garante que elementos inline também sejam centralizados */
+    .welcome-micro-phrase,
+    .inclusion-phrase,
+    #rotating-text {
+        text-align: center !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+}
+
+/* ===== CSS ESPECÍFICO PARA DISPOSITIVOS MÓVEIS (NÃO AFETA PC) ===== */
+@media only screen and (max-width: 768px) {
+    .welcome-message,
+    .welcome-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 90%;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .welcome-message h2,
+    .welcome-message p {
+        text-align: center;
+        width: 100%;
+    }
+
+    .feeling-buttons,
+    .quick-questions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .feeling-btn,
+    .quick-btn {
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .feature-carousel-container {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ===== CSS ESPECÍFICO PARA TABLET (NÃO AFETA PC) ===== */
+@media only screen and (min-width: 769px) and (max-width: 1024px) {
+    /* Welcome Message e Conteúdo - Centralização e Largura Adaptada */
+    .welcome-message {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        overflow-x: hidden !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .welcome-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        max-width: 85% !important;
+        margin: 0 auto !important;
+        padding: 1.5rem !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Títulos e Textos - Tamanhos para Tablet */
+    .welcome-content h1,
+    .welcome-content h2 {
+        text-align: center !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        font-size: 1.5rem !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    .welcome-content p,
+    .welcome-micro-phrase,
+    .inclusion-phrase {
+        text-align: center !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        font-size: 1rem !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* Botões Feeling - Lado a Lado com Wrap */
+    .feeling-buttons {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 0.8rem !important;
+    }
+
+    .feeling-btn {
+        display: inline-block !important;
+        width: auto !important;
+        margin-bottom: 0 !important;
+        flex: 0 1 auto !important;
+    }
+
+    /* Botões Quick - Lado a Lado com Wrap */
+    .quick-questions {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        gap: 0.8rem !important;
+    }
+
+    .quick-btn {
+        display: inline-block !important;
+        width: auto !important;
+        margin-bottom: 0 !important;
+        flex: 0 1 auto !important;
+    }
+
+    /* Feature Carousel Container - Centralizado */
+    .feature-carousel-container {
+        width: 100% !important;
+        max-width: 85% !important;
+        justify-content: center !important;
+        gap: 0.8rem !important;
+        padding: 0 1.5rem !important;
+        margin: 0 auto !important;
+    }
+
+    /* Feature Sections - Centralizado */
+    .feature-sections {
+        width: 100% !important;
+        max-width: 85% !important;
+        margin: 0 auto !important;
+        padding: 1.5rem !important;
+        text-align: center !important;
+    }
+
+    /* Feeling Box e Support Links - Centralizados */
+    .feeling-box,
+    .support-links {
+        width: 100% !important;
+        max-width: 85% !important;
+        margin: 0 auto !important;
+        padding: 1.5rem !important;
+        text-align: center !important;
+    }
+
+    /* Rotating Message - Centralizado */
+    .rotating-message {
+        width: 100% !important;
+        max-width: 85% !important;
+        margin: 0 auto !important;
+        text-align: center !important;
+    }
+
+    /* Garantia de Sem Scroll Horizontal */
+    .welcome-message,
+    .welcome-content,
+    .feature-sections,
+    .feeling-box,
+    .support-links {
+        overflow-x: hidden !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+}
+
+/* ===== ESTILO PARA CELULARES (até 768px) ===== */
+@media only screen and (max-width: 768px) {
+    body {
+        padding: 0;
+        margin: 0;
+        overflow-x: hidden;
+    }
+
+    .welcome-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 90%;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .welcome-message h1,
+    .welcome-message h2,
+    .welcome-message p {
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Botões e seções */
+    .feeling-buttons,
+    .quick-questions,
+    .feature-carousel-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .feeling-btn,
+    .quick-btn {
+        width: 90%;
+        font-size: 1rem;
+    }
+
+    /* Ajuste do carrossel */
+    .feature-carousel-container {
+        flex-direction: column;
+        width: 100%;
+        padding: 1rem 0;
+    }
+
+    .feature-carousel-item {
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    /* Tamanho das fontes */
+    h1, h2 {
+        font-size: 1.5rem;
+    }
+
+    p {
+        font-size: 1rem;
+    }
+}
+
+/* ===== ESTILO PARA TABLETS (769px até 1024px) ===== */
+@media only screen and (min-width: 769px) and (max-width: 1024px) {
+    body {
+        padding: 0 1rem;
+        overflow-x: hidden;
+    }
+
+    .welcome-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 85%;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    .welcome-message h1,
+    .welcome-message h2,
+    .welcome-message p {
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Botões e seções */
+    .feeling-buttons,
+    .quick-questions,
+    .feature-carousel-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        width: 100%;
+        margin-top: 1.5rem;
+    }
+
+    .feeling-btn,
+    .quick-btn {
+        width: 45%;
+        font-size: 1.1rem;
+    }
+
+    /* Ajuste do carrossel */
+    .feature-carousel-container {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+        padding: 1rem 0;
+    }
+
+    .feature-carousel-item {
+        width: 40%;
+        margin: 0.5rem;
+    }
+
+    /* Tamanho das fontes */
+    h1, h2 {
+        font-size: 1.8rem;
+    }
+
+    p {
+        font-size: 1.1rem;
+    }
+}
+
+/* ==== FORÇA TOTAL PRA CENTRALIZAR A ÁREA DE BOAS-VINDAS ==== */
+@media only screen and (max-width: 768px) {
+    .welcome-message {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 1.5rem 1rem !important;
+        box-sizing: border-box !important;
+    }
+
+    .welcome-content {
+        max-width: 90% !important;
+        margin: 0 auto !important;
+    }
+
+    .welcome-message h2,
+    .welcome-message p {
+        width: 100% !important;
+        text-align: center !important;
+    }
+}
+
+/* ===== CSS RESPONSIVO PARA O CABEÇALHO E BLOCO DE BOAS-VINDAS DO CABEÇALHO NO MOBILE ===== */
+@media only screen and (max-width: 768px) {
+    /* Ajuste do header completo */
+    .header {
+        padding: 0.8rem 1rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .header-content {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+    }
+
+    /* Logo ajustado */
+    .logo {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.4rem !important;
+        flex: 0 0 auto !important;
+    }
+
+    .logo h1 {
+        font-size: 1.1rem !important;
+        white-space: nowrap !important;
+    }
+
+    .logo i {
+        font-size: 1.2rem !important;
+    }
+
+    .logo .subtitle {
+        display: none !important; /* Oculta subtítulo no mobile para economizar espaço */
+    }
+
+    /* Container do bloco de boas-vindas do cabeçalho */
+    .header-right {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        gap: 0.4rem !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Bloco de boas-vindas do cabeçalho */
+    .header-right .welcome-message,
+    #welcome-user {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        padding: 0.4rem 0.6rem !important;
+        margin: 0 !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(10px) !important;
+        width: auto !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Texto de saudação do cabeçalho */
+    #user-greeting {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        color: #7a4a4a !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+        text-align: right !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Indicador de status ajustado */
+    .header-right .status-indicator {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.3rem !important;
+        font-size: 0.7rem !important;
+        padding: 0.3rem 0.5rem !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-radius: 10px !important;
+        backdrop-filter: blur(10px) !important;
+        width: auto !important;
+    }
+
+    .status-indicator span {
+        font-size: 0.7rem !important;
+    }
+
+    .status-indicator i {
+        font-size: 0.6rem !important;
+    }
+}
+
+/* ===== CSS RESPONSIVO PARA TABLET (CABEÇALHO) ===== */
+@media only screen and (min-width: 769px) and (max-width: 1024px) {
+    .header {
+        padding: 1rem 1.5rem !important;
+    }
+
+    .header-content {
+        gap: 1rem !important;
+    }
+
+    .logo h1 {
+        font-size: 1.4rem !important;
+    }
+
+    .header-right {
+        gap: 0.8rem !important;
+    }
+
+    #user-greeting {
+        font-size: 1rem !important;
+    }
+
+    .status-indicator {
+        font-size: 0.85rem !important;
+    }
+}
+
+/* Forçar o fundo e centralização do bloco de boas-vindas em telas pequenas */
+@media only screen and (max-width: 768px) {
+    .welcome-message {
+        background: linear-gradient(180deg, #fef9f7 0%, #f8e8e8 70%, #f0e0e0 100%) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        height: auto !important;
+        padding: 2rem 1rem !important;
+        border-radius: 1rem !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .welcome-message h2,
+    .welcome-message p {
+        font-size: 1.1rem !important;
+        max-width: 90% !important;
+        margin: 0 auto !important;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .welcome-message {
+        background: linear-gradient(180deg, #fef9f7 0%, #f8e8e8 50%, #f0e0e0 100%) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 2rem 1rem !important;
+        border-radius: 1rem !important;
+        max-width: 90% !important;
+        margin: 0 auto !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+    }
+
+    .welcome-message h2,
+    .welcome-message p {
+        font-size: 1.1rem !important;
+        line-height: 1.4 !important;
+    }
+}
+
+/* Ajuste do bloco de boas-vindas no mobile e tablet */
+@media (max-width: 1024px) {
+    .welcome-message {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        background: linear-gradient(180deg, #fef9f7 0%, #f8e8e8 50%, #f0e0e0 100%) !important;
+        border-radius: 1.2rem !important;
+        padding: 2rem 1rem !important;
+        margin: 1.5rem auto !important;
+        width: 90% !important;
+        max-width: 600px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .welcome-message h2,
+    .welcome-message p {
+        font-size: 1.1rem !important;
+        max-width: 90% !important;
+    }
+
+    .welcome-message i {
+        font-size: 2.2rem !important;
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* ===== CORREÇÕES CRÍTICAS PARA MOBILE ===== */
+@media only screen and (max-width: 768px) {
+    /* Garantir que não há overflow horizontal */
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+    }
+
+    /* Garantir centralização completa do welcome-message */
+    .chat-area .welcome-message {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 1rem 0.5rem !important;
+    }
+
+    .welcome-content {
+        width: 100% !important;
+        max-width: 95% !important;
+        margin: 0 auto !important;
+        padding: 1.5rem 1rem !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Garantir que botões não saiam da tela */
+    .quick-questions {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 0.5rem !important;
+        box-sizing: border-box !important;
+    }
+
+    .quick-btn {
+        max-width: calc(100% - 1rem) !important;
+        word-wrap: break-word !important;
+        white-space: normal !important;
+    }
+
+    /* Garantir que carrossel não cause overflow */
+    .feature-carousel-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Garantir que botões de sentimento não saiam */
+    .feeling-buttons {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 0.5rem !important;
+        box-sizing: border-box !important;
+    }
+
+    .feeling-btn {
+        max-width: calc(50% - 0.5rem) !important;
+        flex: 1 1 calc(50% - 0.5rem) !important;
+        min-width: 0 !important;
+    }
+
+    /* Garantir que links de apoio não saiam */
+    .support-links {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 0.5rem !important;
+        box-sizing: border-box !important;
+    }
+
+    .support-link {
+        width: 100% !important;
+        max-width: 100% !important;
+        word-wrap: break-word !important;
+        white-space: normal !important;
+    }
+}
+
+/* ===== MELHORIAS ABRANGENTES PARA MOBILE ===== */
+@media (max-width: 768px) {
+    /* Ajuste geral de fonte */
+    body {
+        font-size: 14px !important;
+    }
+
+    /* LOGIN SCREEN - Ajustes para mobile */
+    .login-container {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: auto !important;
+        padding: 2rem 1.5rem !important;
+    }
+
+    .login-header h1 {
+        font-size: 2rem !important;
+    }
+
+    .login-header i {
+        font-size: 2.5rem !important;
+    }
+
+    /* FORMULÁRIOS - Ajustes para mobile */
+    .login-form {
+        width: 100% !important;
+        margin: auto !important;
+    }
+
+    .login-form .form-group input {
+        padding: 0.9rem 1rem 0.9rem 3rem !important;
+        font-size: 16px !important; /* Previne zoom automático no iOS */
+        min-height: 48px !important; /* Tamanho mínimo de toque */
+    }
+
+    .login-form .form-group label {
+        font-size: 0.9rem !important;
+        min-height: 44px !important; /* Tamanho mínimo de toque */
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* BOTÕES - Tamanho mínimo de toque (40-48px) */
+    button,
+    .btn,
+    .btn-login-main,
+    .login-tab,
+    .quick-btn,
+    .feeling-btn,
+    .feature-btn,
+    .sidebar-btn,
+    .support-link,
+    .carousel-btn,
+    #menu-toggle,
+    #send-button,
+    #close-sidebar,
+    .close-modal {
+        min-height: 44px !important;
+        min-width: 44px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem !important;
+        touch-action: manipulation !important; /* Remove delay de 300ms no mobile */
+    }
+
+    .btn-login-main {
+        min-height: 48px !important;
+        padding: 0.9rem 1.25rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* SIDEBAR - Colapsável no mobile */
+    .sidebar {
+        width: 100% !important;
+        max-width: 320px !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Overlay quando sidebar está aberta */
+    .sidebar.open + .chat-area::before,
+    body.sidebar-open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* MENU TOGGLE - Garantir visibilidade e tamanho */
+    #menu-toggle {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        font-size: 1.2rem !important;
+    }
+
+    /* HEADER - Ajustes para mobile */
+    .header {
+        padding: 1rem 1rem !important;
+    }
+
+    .header-content {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+
+    .logo h1 {
+        font-size: 1.3rem !important;
+    }
+
+    .logo .subtitle {
+        display: none !important; /* Esconde subtitle no mobile para economizar espaço */
+    }
+
+    #user-greeting {
+        font-size: 0.85rem !important;
+    }
+
+    .status-indicator {
+        font-size: 0.8rem !important;
+    }
+
+    /* MODAIS - Ajustes para mobile */
+    .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 10px auto !important;
+        padding: 1.5rem !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-content.modal-auth,
+    .modal-content.modal-resources {
+        width: 95% !important;
+        max-width: 95% !important;
+    }
+
+    /* INPUTS - Tamanho mínimo de toque */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    #message-input {
+        min-height: 48px !important;
+        font-size: 16px !important; /* Previne zoom automático no iOS */
+        padding: 0.9rem 1.2rem !important;
+    }
+
+    /* INPUT AREA - Ajustes para mobile */
+    .input-area {
+        padding: 1rem 0.75rem !important;
+    }
+
+    .input-container {
+        gap: 0.5rem !important;
+    }
+
+    /* CARROSSEL - Ajustes para mobile */
+    .feature-carousel-container {
+        padding: 0 0.5rem !important;
+    }
+
+    .carousel-btn {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        padding: 0.5rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* QUICK QUESTIONS - Ajustes para mobile */
+    .quick-questions {
+        gap: 0.5rem !important;
+        padding: 0 0.75rem !important;
+    }
+
+    .quick-btn {
+        font-size: 0.8rem !important;
+        padding: 0.75rem 1rem !important;
+        min-height: 44px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+    }
+
+    /* FEELING BUTTONS - Ajustes para mobile */
+    .feeling-buttons {
+        gap: 0.5rem !important;
+    }
+
+    .feeling-btn {
+        font-size: 0.8rem !important;
+        padding: 0.75rem 0.9rem !important;
+        min-height: 44px !important;
+    }
+
+    /* SUPPORT LINKS - Ajustes para mobile */
+    .support-link {
+        padding: 0.9rem 1rem !important;
+        min-height: 48px !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* CHAT MESSAGES - Ajustes para mobile */
+    .message-content {
+        max-width: 85% !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* BACK TO WELCOME BUTTON - Ajustes para mobile */
+    .back-to-welcome {
+        top: 4.5rem !important;
+        right: 0.75rem !important;
+    }
+
+    .back-to-welcome .btn {
+        padding: 0.6rem 0.9rem !important;
+        font-size: 0.85rem !important;
+        min-height: 40px !important;
+    }
+
+    /* TYPING INDICATOR - Ajustes para mobile */
+    .typing-indicator {
+        margin: 0.5rem 0.75rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* PREVENIR ZOOM EM INPUTS NO iOS */
+    input,
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+
+    /* GARANTIR QUE NÃO HÁ SCROLL HORIZONTAL */
+    * {
+        max-width: 100% !important;
+    }
+
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        position: relative !important;
+    }
+}
+
+/* ===== MELHORIAS PARA TABLETS ===== */
+@media (min-width: 769px) and (max-width: 1024px) {
+    body {
+        font-size: 15px !important;
+    }
+
+    .login-container {
+        max-width: 500px !important;
+        padding: 2.5rem !important;
+    }
+
+    .modal-content {
+        width: 85% !important;
+        max-width: 600px !important;
+    }
+
+    button,
+    .btn {
+        min-height: 42px !important;
+    }
+}
+
 

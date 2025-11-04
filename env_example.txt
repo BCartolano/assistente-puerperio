@@ -4,8 +4,45 @@ OPENAI_API_KEY=your_openai_api_key_here
 # Configurações do Flask
 FLASK_ENV=development
 FLASK_DEBUG=True
+SECRET_KEY=sua-chave-secreta-super-segura-mude-isso-em-producao
 
 # Porta do servidor
 PORT=5000
 
+# URL base do aplicativo (para links de email)
+BASE_URL=http://localhost:5000
+
+# Configurações de Email (Opcional - se não configurar, emails serão logados no console)
+# 
+# OPÇÃO 1: Gmail (requer Verificação em Duas Etapas ativada)
+# 1. Ative em: https://myaccount.google.com/security
+# 2. Depois gere Senha de App: https://myaccount.google.com/apppasswords
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=seu_email@gmail.com
+MAIL_PASSWORD=sua_senha_app
+MAIL_DEFAULT_SENDER=noreply@chatbot-puerperio.com
+
+# OPÇÃO 2: Outlook/Hotmail (mais simples, não precisa de Senha de App)
+# MAIL_SERVER=smtp-mail.outlook.com
+# MAIL_PORT=587
+# MAIL_USE_TLS=True
+# MAIL_USERNAME=seu_email@outlook.com
+# MAIL_PASSWORD=sua_senha_normal
+# MAIL_DEFAULT_SENDER=noreply@chatbot-puerperio.com
+
+# OPÇÃO 3: Yahoo Mail
+# MAIL_SERVER=smtp.mail.yahoo.com
+# MAIL_PORT=587
+# MAIL_USE_TLS=True
+# MAIL_USERNAME=seu_email@yahoo.com
+# MAIL_PASSWORD=sua_senha_normal
+# MAIL_DEFAULT_SENDER=noreply@chatbot-puerperio.com
+
 # Para usar este arquivo, renomeie para .env na raiz do projeto
+# 
+# IMPORTANTE: 
+# - Gmail requer Verificação em Duas Etapas + Senha de App
+# - Outlook/Yahoo podem usar senha normal (mas menos seguro)
+# - Se não configurar, emails aparecerão apenas no console do servidor

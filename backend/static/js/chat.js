@@ -14,40 +14,166 @@ class ChatbotPuerperio {
     
     checkIfLoggedIn() {
         // Check if user is already logged in
-        fetch('/api/user')
+        fetch('/api/user', {
+            credentials: 'include'
+        })
             .then(res => {
                 if (res.ok) {
                     return res.json().then(user => {
+                        console.log('✅ [AUTH] Usuário já está logado:', user.name);
                         this.userLoggedIn = true;
                         this.currentUserName = user.name;
+                        this.updateWelcomeMessage(this.currentUserName);
                         this.initMainApp();
                     });
                 } else {
                     // User not logged in, show login screen
+                    // 401 é esperado quando não está logado - não é um erro
+                    this.userLoggedIn = false;
+                    this.currentUserName = null;
                     this.showLoginScreen();
                 }
             })
-            .catch(() => {
+            .catch((error) => {
+                // Erro na requisição - assume que não está logado
+                this.userLoggedIn = false;
+                this.currentUserName = null;
                 this.showLoginScreen();
             });
     }
     
-    initMainApp() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('main-container').style.display = 'flex';
+    updateWelcomeMessage(userName) {
+        // Remove qualquer botão antigo que possa existir (cache do navegador)
+        const oldAccountBtn = document.getElementById('account-btn');
+        if (oldAccountBtn) {
+            oldAccountBtn.style.display = 'none';
+            oldAccountBtn.remove();
+            console.log('✅ [WELCOME] Botão antigo removido');
+        }
         
-        this.initializeElements();
-        this.bindEvents();
-        this.loadCategories();
-        this.loadChatHistory();
-        this.requestNotificationPermission();
-        this.optimizeForDevice();
+        // Garante que o elemento existe
+        if (!this.userGreeting) {
+            this.userGreeting = document.getElementById('user-greeting');
+        }
+        
+        // Atualiza mensagem de boas-vindas com saudação variável conforme hora do dia
+        if (this.userGreeting && userName) {
+            // Pega apenas o primeiro nome
+            const firstName = userName.split(' ')[0];
+            
+            // Determina saudação conforme hora do dia
+            const now = new Date();
+            const hour = now.getHours();
+            let greeting;
+            
+            if (hour >= 5 && hour < 12) {
+                greeting = `Bom dia, ${firstName} 🌅`;
+            } else if (hour >= 12 && hour < 18) {
+                greeting = `Boa tarde, ${firstName} ☀️`;
+            } else if (hour >= 18 && hour < 22) {
+                greeting = `Boa noite, ${firstName} 🌆`;
+            } else {
+                greeting = `Boa madrugada, ${firstName} 🌙`;
+            }
+            
+            this.userGreeting.textContent = greeting;
+            console.log(`✅ [WELCOME] Mensagem atualizada: ${greeting}`);
+        }
+    }
+    
+    initMainApp() {
+        console.log('🚀 [INIT] initMainApp chamado');
+        const loginScreen = document.getElementById('login-screen');
+        const mainContainer = document.getElementById('main-container');
+        
+        if (loginScreen) {
+            loginScreen.classList.add('hidden');
+            loginScreen.style.display = 'none';
+            console.log('✅ [INIT] Tela de login ocultada');
+        } else {
+            console.error('❌ [INIT] Elemento login-screen não encontrado!');
+        }
+        
+        if (mainContainer) {
+            mainContainer.style.display = 'flex';
+            mainContainer.classList.remove('hidden');
+            console.log('✅ [INIT] Container principal exibido');
+        } else {
+            console.error('❌ [INIT] Elemento main-container não encontrado!');
+        }
+        
+                  // Verifica se os elementos existem antes de inicializar
+          try {
+              this.initializeElements();
+              this.bindEvents();
+
+              // Só carrega categorias se o container existir
+              // Nota: O container de categorias pode não existir mais no HTML atual
+              // Isso é normal e não impede o funcionamento do app
+              if (this.categoriesContainer) {
+                  this.loadCategories();
+              }
+              // Não exibe aviso se não encontrado - é opcional
+
+              this.loadChatHistory();
+              this.requestNotificationPermission();
+              this.optimizeForDevice();
+
+                              // Inicializa o status de conexão após os elementos serem carregados
+                // Pequeno delay para garantir que o DOM está totalmente renderizado
+                setTimeout(() => {
+                    this.checkConnectionStatus();
+                }, 100);
+
+                // Inicializa o carrossel de features após os elementos serem renderizados
+                setTimeout(() => {
+                    if (typeof initFeatureCarousel === 'function') {
+                        initFeatureCarousel();
+                    }
+                }, 200);
+
+                // Inicializa mensagem rotativa
+                this.initRotatingMessage();
+                
+                // Inicializa botões de sentimento
+                this.initFeelingButtons();
+                
+                // Inicializa links de apoio rápido
+                this.initSupportLinks();
+
+                // Foca no input de mensagem se existir
+                if (this.messageInput) {
+                    setTimeout(() => {
+                        this.messageInput.focus();
+                    }, 300);
+                }
+
+                console.log('✅ [INIT] App inicializado com sucesso');
+          } catch (error) {
+              console.error('❌ [INIT] Erro ao inicializar app:', error);
+          }
     }
     
     showLoginScreen() {
-        // Login screen is already visible by default
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('main-container').style.display = 'none';
+        // Garante que a tela de login está visível e o menu oculto
+        const loginScreen = document.getElementById('login-screen');
+        const mainContainer = document.getElementById('main-container');
+        
+        if (loginScreen) {
+            loginScreen.style.display = 'flex';
+            loginScreen.classList.remove('hidden');
+        }
+        
+        if (mainContainer) {
+            mainContainer.style.display = 'none';
+            mainContainer.classList.add('hidden');
+        }
+        
+        // Reset do estado de login
+        this.userLoggedIn = false;
+        this.currentUserName = null;
+        
+        console.log('✅ [LOGIN] Tela de login exibida');
     }
     
     initializeLoginElements() {
@@ -74,6 +200,15 @@ class ChatbotPuerperio {
             e.preventDefault();
             this.handleInitialRegister();
         });
+        
+        // Forgot password link
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        if (forgotPasswordLink) {
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleForgotPassword();
+            });
+        }
     }
     
     switchInitialTab(tab) {
@@ -91,32 +226,149 @@ class ChatbotPuerperio {
     }
     
     async handleInitialLogin() {
-        const email = document.getElementById('initial-login-email').value.trim();
-        const password = document.getElementById('initial-login-password').value;
+        const email = document.getElementById('initial-login-email').value.trim().toLowerCase();
+        const password = document.getElementById('initial-login-password').value.trim(); // Remove espaços
         
         if (!email || !password) {
             alert('Por favor, preencha todos os campos! 💕');
             return;
         }
         
+        console.log(`🔍 [LOGIN] Tentando login com email: ${email}, password length: ${password.length}`);
+        
         try {
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
+                credentials: 'include',  // Importante para cookies de sessão
                 body: JSON.stringify({email, password})
             });
             
             const data = await response.json();
+            console.log('🔍 [LOGIN] Resposta completa:', data);
+            console.log('🔍 [LOGIN] Status HTTP:', response.status);
+            console.log('🔍 [LOGIN] response.ok:', response.ok);
+            console.log('🔍 [LOGIN] data.sucesso:', data.sucesso);
+            console.log('🔍 [LOGIN] data.user:', data.user);
             
-            if (response.ok) {
+            // Se houver erro específico de email não verificado, mostra mensagem mais clara
+            if (data.erro && data.mensagem && data.pode_login === false) {
+                const userEmail = data.email || email;
+                const resend = confirm(`⚠️ ${data.mensagem}\n\nDeseja que eu reenvie o email de verificação agora?`);
+                if (resend) {
+                    this.resendVerificationEmail(userEmail);
+                }
+                return;
+            }
+            
+            if (response.ok && (data.sucesso === true || data.user)) {
+                console.log('✅ [LOGIN] Login bem-sucedido, inicializando app...');
                 this.userLoggedIn = true;
-                this.currentUserName = data.user.name;
-                this.initMainApp();
+                this.currentUserName = data.user ? data.user.name : email;
+                
+                // Atualiza mensagem de boas-vindas
+                this.updateWelcomeMessage(this.currentUserName);
+                
+                // Mostra mensagem de boas-vindas se disponível
+                if (data.mensagem) {
+                    console.log('💕 Mensagem:', data.mensagem);
+                }
+                
+                // Pequeno delay para garantir que a sessão está criada
+                setTimeout(() => {
+                    console.log('🚀 [LOGIN] Chamando initMainApp...');
+                    this.initMainApp();
+                }, 200);
             } else {
-                alert('⚠️ ' + data.erro);
+                console.log('❌ [LOGIN] Login falhou ou resposta inválida');
+                if (data.pode_login === false && data.mensagem) {
+                    // Email não verificado
+                    if (confirm(data.mensagem + '\n\nDeseja reenviar o email de verificação?')) {
+                        await this.resendVerificationEmail(email);
+                    }
+                } else {
+                    alert('⚠️ ' + (data.erro || data.mensagem || 'Erro ao fazer login'));
+                    console.error('❌ [LOGIN] Erro detalhado:', data);
+                }
             }
         } catch (error) {
+            console.error('Erro ao fazer login:', error);
             alert('❌ Erro ao fazer login. Tente novamente.');
+        }
+    }
+    
+    async handleForgotPassword() {
+        const email = prompt('Digite seu email para recuperar a senha:');
+        if (!email || !email.trim()) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/forgot-password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email.trim().toLowerCase()})
+            });
+            
+            const data = await response.json();
+            alert('📧 ' + data.mensagem);
+        } catch (error) {
+            alert('❌ Erro ao solicitar recuperação. Tente novamente.');
+        }
+    }
+    
+    async resendVerificationEmail(email) {
+        try {
+            const response = await fetch('/api/resend-verification', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: email.toLowerCase()})
+            });
+            
+            const data = await response.json();
+            alert('📧 ' + data.mensagem);
+        } catch (error) {
+            alert('❌ Erro ao reenviar email.');
+        }
+    }
+    
+    async handleLogout() {
+        if (!confirm('Tem certeza que deseja sair da sua conta? 💕')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include'
+            });
+            
+            // Mesmo se der erro, força logout local
+            this.userLoggedIn = false;
+            this.currentUserName = null;
+            
+            // Limpa histórico local
+            if (this.chatMessages) {
+                this.chatMessages.innerHTML = '';
+            }
+            this.userId = this.generateUserId();
+            
+            // Volta para tela de login
+            this.showLoginScreen();
+            
+            if (response.ok) {
+                alert('👋 Você saiu da sua conta. Até logo! 💕');
+            } else {
+                alert('👋 Você saiu da sua conta.');
+            }
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error);
+            // Força logout local mesmo com erro
+            this.userLoggedIn = false;
+            this.currentUserName = null;
+            this.showLoginScreen();
+            alert('👋 Você saiu da sua conta.');
         }
     }
     
@@ -146,7 +398,7 @@ class ChatbotPuerperio {
             const data = await response.json();
             
             if (response.ok) {
-                alert('🎉 ' + data.mensagem);
+                alert('🎉 ' + data.mensagem + (data.verification_sent ? '\n\n📧 Verifique seu email para ativar sua conta!' : ''));
                 // Auto switch to login after successful registration
                 this.switchInitialTab('login');
                 document.getElementById('initial-login-email').value = email;
@@ -172,7 +424,7 @@ class ChatbotPuerperio {
         this.menuToggle = document.getElementById('menu-toggle');
         this.closeSidebar = document.getElementById('close-sidebar');
         this.clearHistoryBtn = document.getElementById('clear-history');
-        this.categoriesContainer = document.getElementById('categories');
+        this.categoriesContainer = document.getElementById('categories'); // Pode ser null se não existir no HTML
         
         // Sidebar new buttons
         this.sidebarBtnGuias = document.getElementById('sidebar-btn-guias');
@@ -181,6 +433,7 @@ class ChatbotPuerperio {
         this.sidebarBtnVacinas = document.getElementById('sidebar-btn-vacinas');
         this.sidebarBtnClear = document.getElementById('sidebar-btn-clear');
         this.sidebarBtnBack = document.getElementById('sidebar-btn-back');
+        this.sidebarBtnLogout = document.getElementById('sidebar-btn-logout');
         this.charCount = document.getElementById('char-count');
         this.alertModal = document.getElementById('alert-modal');
         this.closeAlert = document.getElementById('close-alert');
@@ -194,7 +447,7 @@ class ChatbotPuerperio {
         // Auth elements
         this.authModal = document.getElementById('auth-modal');
         this.closeAuth = document.getElementById('close-auth');
-        this.accountBtn = document.getElementById('account-btn');
+        this.userGreeting = document.getElementById('user-greeting');
         this.authTabs = document.querySelectorAll('.auth-tab');
         this.loginForm = document.getElementById('login-form');
         this.registerForm = document.getElementById('register-form');
@@ -214,28 +467,42 @@ class ChatbotPuerperio {
         this.btnVacinas = document.getElementById('btn-vacinas');
     }
     
-    bindEvents() {
+        bindEvents() {
         // Envio de mensagem
-        this.sendButton.addEventListener('click', () => this.sendMessage());
-        this.messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
-        });
+        if (this.sendButton) {
+            this.sendButton.addEventListener('click', () => this.sendMessage());
+        }
         
-        // Contador de caracteres
-        this.messageInput.addEventListener('input', () => this.updateCharCount());
-        
+        if (this.messageInput) {
+            this.messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.sendMessage();
+                }
+            });
+
+            // Contador de caracteres
+            this.messageInput.addEventListener('input', () => this.updateCharCount());
+        }
+
         // Menu sidebar
-        this.menuToggle.addEventListener('click', () => this.toggleSidebar());
-        this.closeSidebar.addEventListener('click', () => this.closeSidebarMenu());
+        if (this.menuToggle) {
+            this.menuToggle.addEventListener('click', () => this.toggleSidebar());
+        }
         
+        if (this.closeSidebar) {
+            this.closeSidebar.addEventListener('click', () => this.closeSidebarMenu());
+        }
+
         // Limpar histórico
-        this.clearHistoryBtn?.addEventListener('click', () => this.clearHistory());
-        
+        if (this.clearHistoryBtn) {
+            this.clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+        }
+
         // Voltar ao início
-        this.backBtn.addEventListener('click', () => this.backToWelcomeScreen());
+        if (this.backBtn) {
+            this.backBtn.addEventListener('click', () => this.backToWelcomeScreen());
+        }
         
         // Sidebar buttons
         this.sidebarBtnGuias?.addEventListener('click', () => {
@@ -262,31 +529,48 @@ class ChatbotPuerperio {
             this.closeSidebarMenu();
             this.backToWelcomeScreen();
         });
+        this.sidebarBtnLogout?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.handleLogout();
+        });
         
         // Quick questions
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('quick-btn')) {
                 const question = e.target.dataset.question;
-                this.messageInput.value = question;
-                this.sendMessage();
+                if (this.messageInput && question) {
+                    this.messageInput.value = question;
+                    this.sendMessage();
+                }
             }
         });
         
-        // Modal de alerta
-        this.closeAlert.addEventListener('click', () => this.hideAlert());
-        this.emergencyCall.addEventListener('click', () => this.callEmergency());
-        this.findDoctor.addEventListener('click', () => this.findDoctorNearby());
-        
+                // Modal de alerta
+        if (this.closeAlert) {
+            this.closeAlert.addEventListener('click', () => this.hideAlert());
+        }
+        if (this.emergencyCall) {
+            this.emergencyCall.addEventListener('click', () => this.callEmergency());
+        }
+        if (this.findDoctor) {
+            this.findDoctor.addEventListener('click', () => this.findDoctorNearby());
+        }
+
         // Fechar modal clicando fora
-        this.alertModal.addEventListener('click', (e) => {
-            if (e.target === this.alertModal) {
-                this.hideAlert();
-            }
-        });
-        
+        if (this.alertModal) {
+            this.alertModal.addEventListener('click', (e) => {
+                if (e.target === this.alertModal) {
+                    this.hideAlert();
+                }
+            });
+        }
+
         // Fechar sidebar clicando fora
         document.addEventListener('click', (e) => {
-            if (this.sidebar.classList.contains('open') && 
+            if (this.sidebar && 
+                this.sidebar.classList && 
+                this.sidebar.classList.contains('open') && 
+                this.menuToggle &&
                 !this.sidebar.contains(e.target) && 
                 !this.menuToggle.contains(e.target)) {
                 this.closeSidebarMenu();
@@ -294,7 +578,7 @@ class ChatbotPuerperio {
         });
         
         // Auth modal events
-        this.accountBtn?.addEventListener('click', () => this.showAuthModal());
+        // Botão de conta removido - substituído por mensagem de boas-vindas
         this.closeAuth?.addEventListener('click', () => this.hideAuthModal());
         
         // Auth tabs
@@ -340,10 +624,15 @@ class ChatbotPuerperio {
         });
     }
     
-    updateCharCount() {
-        const count = this.messageInput.value.length;
+        updateCharCount() {
+        // Verifica se os elementos existem antes de usar
+        if (!this.messageInput || !this.charCount) {
+            return;
+        }
+
+        const count = this.messageInput.value ? this.messageInput.value.length : 0;
         this.charCount.textContent = `${count}/500`;
-        
+
         if (count > 450) {
             this.charCount.style.color = '#e74c3c';
         } else if (count > 400) {
@@ -361,16 +650,23 @@ class ChatbotPuerperio {
             this.renderCategories();
         } catch (error) {
             console.error('Erro ao carregar categorias:', error);
-            this.categoriesContainer.innerHTML = `
-                <div class="category-item">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Erro ao carregar categorias
-                </div>
-            `;
+            if (this.categoriesContainer) {
+                this.categoriesContainer.innerHTML = `
+                    <div class="category-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Erro ao carregar categorias
+                    </div>
+                `;
+            }
         }
     }
     
     renderCategories() {
+        if (!this.categoriesContainer) {
+            console.warn('categoriesContainer não encontrado');
+            return;
+        }
+        
         this.categoriesContainer.innerHTML = '';
         
         if (this.categories.length === 0) {
@@ -392,8 +688,12 @@ class ChatbotPuerperio {
             `;
             
             categoryElement.addEventListener('click', () => {
-                this.messageInput.value = `Fale sobre ${category}`;
-                this.messageInput.focus();
+                if (this.messageInput) {
+                    this.messageInput.value = `Fale sobre ${category}`;
+                    if (typeof this.messageInput.focus === 'function') {
+                        this.messageInput.focus();
+                    }
+                }
                 this.closeSidebarMenu();
             });
             
@@ -405,63 +705,113 @@ class ChatbotPuerperio {
         return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
     
-    async sendMessage() {
+        async sendMessage() {
+        // Verifica se messageInput existe antes de usar
+        if (!this.messageInput || !this.messageInput.value) {
+            console.warn('messageInput não está disponível');
+            return;
+        }
+
         const message = this.messageInput.value.trim();
         if (!message) return;
-        
+
         // Adiciona mensagem do usuário
         this.addMessage(message, 'user');
-        this.messageInput.value = '';
+        
+        if (this.messageInput) {
+            this.messageInput.value = '';
+        }
         this.updateCharCount();
-        
+
+        // Desabilita o botão de enviar para evitar múltiplos envios
+        if (this.sendButton) {
+            this.sendButton.disabled = true;
+        }
+        if (this.messageInput) {
+            this.messageInput.disabled = true;
+        }
+
         // Esconde welcome message e mostra chat
-        this.welcomeMessage.style.display = 'none';
-        this.chatMessages.classList.add('active');
-        this.backToWelcome.style.display = 'block';
-        
+        if (this.welcomeMessage) {
+            this.welcomeMessage.style.display = 'none';
+        }
+        if (this.chatMessages) {
+            this.chatMessages.classList.add('active');
+        }
+        // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
+
         // Mostra indicador de digitação
         this.showTyping();
-        
+
         try {
+            console.log('📤 Enviando mensagem:', message);
+            
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include', // Importante para cookies de sessão
                 body: JSON.stringify({
                     pergunta: message,
                     user_id: this.userId
                 })
             });
-            
+
+            console.log('📥 Resposta recebida, status:', response.status);
+
             if (!response.ok) {
-                throw new Error('Erro na resposta do servidor');
+                const errorText = await response.text();
+                console.error('❌ Erro na resposta:', response.status, errorText);
+                throw new Error(`Erro na resposta do servidor: ${response.status}`);
             }
-            
+
             const data = await response.json();
-            
+            console.log('✅ Dados recebidos:', data);
+
             // Esconde indicador de digitação
             this.hideTyping();
-            
-            // Adiciona resposta do assistente
-            this.addMessage(data.resposta, 'assistant', {
-                categoria: data.categoria,
-                alertas: data.alertas,
-                fonte: data.fonte
-            });
-            
-            // Mostra alerta se necessário
-            if (data.alertas && data.alertas.length > 0) {
-                this.showAlert(data.alertas);
+
+            // Verifica se há uma resposta válida
+            if (data.resposta) {
+                // Adiciona resposta do assistente
+                this.addMessage(data.resposta, 'assistant', {
+                    categoria: data.categoria,
+                    alertas: data.alertas,
+                    fonte: data.fonte
+                });
+
+                // Mostra alerta se necessário
+                if (data.alertas && data.alertas.length > 0) {
+                    this.showAlert(data.alertas);
+                }
+            } else {
+                console.warn('⚠️ Resposta vazia recebida:', data);
+                this.addMessage(
+                    'Desculpe, não consegui processar sua pergunta. Tente reformular sua pergunta ou tente novamente mais tarde.',
+                    'assistant'
+                );
             }
-            
+
         } catch (error) {
-            console.error('Erro ao enviar mensagem:', error);
+            console.error('❌ Erro ao enviar mensagem:', error);
             this.hideTyping();
             this.addMessage(
-                'Desculpe, ocorreu um erro ao processar sua pergunta. Tente novamente em alguns instantes.',
+                'Desculpe, ocorreu um erro ao processar sua pergunta. Verifique sua conexão e tente novamente.',
                 'assistant'
             );
+        } finally {
+            // Reabilita o botão e input
+            if (this.sendButton) {
+                this.sendButton.disabled = false;
+            }
+            if (this.messageInput) {
+                this.messageInput.disabled = false;
+                // Foca no input para permitir nova mensagem
+                if (typeof this.messageInput.focus === 'function') {
+                    this.messageInput.focus();
+                }
+            }
         }
     }
     
@@ -501,7 +851,7 @@ class ChatbotPuerperio {
             `;
         }
         
-        messageElement.innerHTML = `
+                messageElement.innerHTML = `
             <div class="message-avatar">${avatar}</div>
             <div class="message-content">
                 <div class="message-text">${this.formatMessage(content)}</div>
@@ -510,7 +860,13 @@ class ChatbotPuerperio {
                 <div class="message-time">${time}</div>
             </div>
         `;
-        
+
+        // Verifica se chatMessages existe antes de adicionar mensagem
+        if (!this.chatMessages) {
+            console.warn('chatMessages não está disponível');
+            return;
+        }
+
         this.chatMessages.appendChild(messageElement);
         this.scrollToBottom();
     }
@@ -520,29 +876,208 @@ class ChatbotPuerperio {
         return content.replace(/\n/g, '<br>');
     }
     
-    showTyping() {
+        showTyping() {
         this.isTyping = true;
-        this.typingIndicator.classList.add('show');
+        if (this.typingIndicator && this.typingIndicator.classList) {
+            this.typingIndicator.classList.add('show');
+        }
         this.scrollToBottom();
     }
-    
+
     hideTyping() {
         this.isTyping = false;
-        this.typingIndicator.classList.remove('show');
+        if (this.typingIndicator && this.typingIndicator.classList) {
+            this.typingIndicator.classList.remove('show');
+        }
     }
     
     scrollToBottom() {
+        if (!this.chatMessages) {
+            return;
+        }
         setTimeout(() => {
-            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            if (this.chatMessages && typeof this.chatMessages.scrollTop !== 'undefined') {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
         }, 100);
     }
     
-    toggleSidebar() {
-        this.sidebar.classList.toggle('open');
+        playSound(frequency = 400, duration = 100, type = 'sine') {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration / 1000);
+        } catch (e) {
+            // Silenciosamente falha se áudio não estiver disponível
+            console.log('Áudio não disponível');
+        }
     }
-    
+
+    toggleSidebar() {
+        if (!this.sidebar || !this.sidebar.classList) {
+            return;
+        }
+        
+        const isOpening = !this.sidebar.classList.contains('open');
+        this.sidebar.classList.toggle('open');
+        
+        // Adiciona/remove classe no body para controlar overlay no mobile
+        if (document.body && document.body.classList) {
+            if (isOpening) {
+                document.body.classList.add('sidebar-open');
+                this.playSound(500, 150, 'sine'); // Som suave ao abrir
+            } else {
+                document.body.classList.remove('sidebar-open');
+                this.playSound(300, 100, 'sine'); // Som mais baixo ao fechar
+            }
+        }
+    }
+
     closeSidebarMenu() {
-        this.sidebar.classList.remove('open');
+        if (!this.sidebar || !this.sidebar.classList) {
+            return;
+        }
+        
+        if (this.sidebar.classList.contains('open')) {
+            this.sidebar.classList.remove('open');
+            if (document.body && document.body.classList) {
+                document.body.classList.remove('sidebar-open'); // Remove classe do body
+            }
+            this.playSound(300, 100, 'sine'); // Som ao fechar
+        }
+    }
+
+        initRotatingMessage() {
+        const rotatingText = document.getElementById('rotating-text');
+        if (!rotatingText) return;
+
+        const messages = [
+            'Você não está sozinha. 💛',
+            'Cada dia é um passo no seu recomeço. 🌱',
+            'Você está fazendo um trabalho incrível. ✨',
+            'É normal ter dúvidas. Você é humana. 💕',
+            'Cada momento difícil é também um momento de crescimento. 🌸',
+            'Você merece todo o carinho e cuidado. 🤱',
+            'Não existe mãe perfeita, apenas mães que amam. 💝'
+        ];
+
+        let currentIndex = 0;
+
+        setInterval(() => {
+            // Verifica se o elemento ainda existe no DOM antes de acessar
+            const currentElement = document.getElementById('rotating-text');
+            if (!currentElement || !document.body.contains(currentElement)) {
+                return; // Elemento foi removido, para o intervalo
+            }
+
+            try {
+                currentElement.style.opacity = '0';
+                setTimeout(() => {
+                    // Verifica novamente dentro do timeout
+                    const checkElement = document.getElementById('rotating-text');
+                    if (!checkElement || !document.body.contains(checkElement)) {
+                        return;
+                    }
+                    currentIndex = (currentIndex + 1) % messages.length;
+                    checkElement.textContent = messages[currentIndex];
+                    checkElement.style.opacity = '1';
+                }, 500);
+            } catch (error) {
+                console.warn('Erro ao atualizar mensagem rotativa:', error);
+            }
+        }, 5000); // Muda a cada 5 segundos
+    }
+
+    initFeelingButtons() {
+        const feelingButtons = document.querySelectorAll('.feeling-btn');
+        const feelingResponses = {
+            'cansada': 'Entendo que você está cansada. O puerpério é realmente exaustivo. Lembre-se de descansar quando possível e aceitar ajuda quando oferecida. Você está fazendo muito mais do que imagina! 💤',
+            'feliz': 'Que alegria saber que você está se sentindo feliz! Aproveite esses momentos de alegria e celebre cada pequena vitória. Você merece sentir-se bem! 😊',
+            'ansiosa': 'A ansiedade no puerpério é muito comum. Você não está sozinha nisso. Respirar fundo e focar no momento presente pode ajudar. Se a ansiedade persistir ou piorar, não hesite em buscar ajuda profissional. 🤗',
+            'confusa': 'É totalmente normal se sentir confusa nessa fase. Há muitas mudanças acontecendo ao mesmo tempo. Tome um dia de cada vez e lembre-se: não há perguntas bobas. Estou aqui para ajudar! 💭',
+            'triste': 'Sinto muito que você esteja se sentindo triste. Seus sentimentos são válidos e importantes. Se essa tristeza persistir ou interferir no seu dia a dia, considere buscar ajuda profissional. Você merece apoio. 💙',
+            'gratidao': 'Que lindo sentir gratidão! Apreciar os momentos bons é muito importante. Guarde esses sentimentos para quando os dias estiverem mais difíceis. Você está criando memórias preciosas. 🙏'
+        };
+
+        feelingButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const feeling = btn.dataset.feeling;
+                const response = feelingResponses[feeling];
+                if (response) {
+                    // Esconde welcome message e mostra chat
+                    if (this.welcomeMessage) {
+                        this.welcomeMessage.style.display = 'none';
+                    }
+                    if (this.chatMessages) {
+                        this.chatMessages.classList.add('active');
+                    }
+                    // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
+
+                    // Adiciona mensagem do usuário
+                    this.addMessage(`Estou me sentindo ${btn.textContent.trim()}`, 'user');
+                    
+                    // Adiciona resposta empática
+                    setTimeout(() => {
+                        this.addMessage(response, 'assistant');
+                    }, 500);
+                }
+            });
+        });
+    }
+
+    initSupportLinks() {
+        const supportLinks = document.querySelectorAll('.support-link');
+        
+        supportLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const topic = link.dataset.topic;
+                let message = '';
+
+                switch(topic) {
+                    case 'baby-blues-depressao':
+                        message = 'O baby blues geralmente começa 2-3 dias após o parto e dura até 2 semanas. Quando os sintomas persistem por mais de 2 semanas, são muito intensos, ou incluem pensamentos de machucar a si mesma ou ao bebê, pode ser depressão pós-parto e é essencial buscar ajuda profissional imediatamente. Você não está sozinha e há tratamento eficaz. 💙';
+                        break;
+                    case 'pedir-ajuda':
+                        message = 'Pedir ajuda não é sinal de fraqueza, é sinal de sabedoria e autocuidado. Você pode começar dizendo: "Preciso de ajuda" para alguém de confiança, buscar grupos de apoio, ou procurar um profissional de saúde mental. Lembre-se: cuidar de você também é cuidar do seu bebê. Existe ajuda e esperança. 🤗';
+                        break;
+                    case 'redes-apoio':
+                        message = 'Redes de apoio podem incluir: família, amigos, grupos de mães, profissionais de saúde, psicólogos, psiquiatras, grupos online de puerpério, e linhas de ajuda. Você pode buscar no SUS, CAPS, ou ONGs focadas em saúde materna. Não hesite em pedir ajuda - você merece suporte! 💕';
+                        break;
+                }
+
+                if (message) {
+                    // Esconde welcome message e mostra chat
+                    if (this.welcomeMessage) {
+                        this.welcomeMessage.style.display = 'none';
+                    }
+                    if (this.chatMessages) {
+                        this.chatMessages.classList.add('active');
+                    }
+                    // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
+
+                    // Adiciona mensagem do usuário
+                    this.addMessage(link.textContent.trim(), 'user');
+                    
+                    // Adiciona resposta
+                    setTimeout(() => {
+                        this.addMessage(message, 'assistant');
+                    }, 500);
+                }
+            });
+        });
     }
     
     async loadChatHistory() {
@@ -551,8 +1086,12 @@ class ChatbotPuerperio {
             const history = await response.json();
             
             if (history.length > 0) {
-                this.welcomeMessage.style.display = 'none';
-                this.chatMessages.classList.add('active');
+                if (this.welcomeMessage && this.welcomeMessage.style) {
+                    this.welcomeMessage.style.display = 'none';
+                }
+                if (this.chatMessages && this.chatMessages.classList) {
+                    this.chatMessages.classList.add('active');
+                }
                 
                 history.forEach(item => {
                     this.addMessage(item.pergunta, 'user');
@@ -572,9 +1111,15 @@ class ChatbotPuerperio {
             try {
                 // Aqui você implementaria a chamada para limpar o histórico no backend
                 // Por enquanto, apenas limpa o frontend
-                this.chatMessages.innerHTML = '';
-                this.welcomeMessage.style.display = 'flex';
-                this.chatMessages.classList.remove('active');
+                if (this.chatMessages) {
+                    this.chatMessages.innerHTML = '';
+                    if (this.chatMessages.classList) {
+                        this.chatMessages.classList.remove('active');
+                    }
+                }
+                if (this.welcomeMessage && this.welcomeMessage.style) {
+                    this.welcomeMessage.style.display = 'flex';
+                }
                 
                 // Gera novo ID de usuário
                 this.userId = this.generateUserId();
@@ -588,13 +1133,26 @@ class ChatbotPuerperio {
     }
     
     showAlert(alertas) {
-        this.alertMessage.textContent = 
-            `Detectamos palavras relacionadas a: ${alertas.join(', ')}. ` +
-            'Se você está enfrentando algum problema de saúde, procure atendimento médico.';
-        this.alertModal.classList.add('show');
+        if (!this.alertMessage || !this.alertModal) {
+            console.warn('Elementos de alerta não estão disponíveis');
+            return;
+        }
+        
+        if ('textContent' in this.alertMessage) {
+            this.alertMessage.textContent = 
+                `Detectamos palavras relacionadas a: ${alertas.join(', ')}. ` +
+                'Se você está enfrentando algum problema de saúde, procure atendimento médico.';
+        }
+        
+        if (this.alertModal.classList) {
+            this.alertModal.classList.add('show');
+        }
     }
     
     hideAlert() {
+        if (!this.alertModal || !this.alertModal.classList) {
+            return;
+        }
         this.alertModal.classList.remove('show');
     }
     
@@ -608,29 +1166,131 @@ class ChatbotPuerperio {
         window.open('https://www.google.com/maps/search/médico+próximo', '_blank');
     }
     
-    // Verifica status da conexão
-    checkConnectionStatus() {
-        if (navigator.onLine) {
-            this.statusIndicator.className = 'status-online';
-            this.statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Online';
-        } else {
-            this.statusIndicator.className = 'status-offline';
-            this.statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Offline';
+        // Verifica status da conexão
+        checkConnectionStatus() {
+        try {
+            // Tenta encontrar o elemento se não foi inicializado
+            if (!this.statusIndicator) {
+                this.statusIndicator = document.getElementById('status-indicator');
+            }
+
+            // Se o elemento ainda não existe, não faz nada (usuário não está logado)
+            if (!this.statusIndicator) {
+                return; // Elemento não existe ainda (usuário não está logado)
+            }
+
+            // Verifica se document.body existe
+            if (!document.body) {
+                return;
+            }
+
+            // Verifica se o elemento ainda está no DOM (pode ter sido removido)
+            try {
+                if (!document.body.contains(this.statusIndicator)) {
+                    this.statusIndicator = null;
+                    return;
+                }
+            } catch (e) {
+                // Se houver erro ao verificar, assume que o elemento não está mais no DOM
+                this.statusIndicator = null;
+                return;
+            }
+
+            // Verificação final antes de acessar propriedades
+            // Verifica se statusIndicator ainda existe e é um elemento válido
+            if (!this.statusIndicator ||
+                !this.statusIndicator.nodeType ||
+                this.statusIndicator.nodeType !== 1) {
+                this.statusIndicator = null;
+                return;
+            }
+
+            // Verifica se className existe antes de acessar
+            if (!('className' in this.statusIndicator)) {
+                console.warn('Status indicator não tem propriedade className');
+                this.statusIndicator = null;
+                return;
+            }
+
+            // Verifica novamente se o elemento ainda está no DOM antes de modificar
+            try {
+                if (!document.body.contains(this.statusIndicator)) {
+                    this.statusIndicator = null;
+                    return;
+                }
+            } catch (e) {
+                this.statusIndicator = null;
+                return;
+            }
+
+            // Atribuições individuais com try-catch separado para cada uma
+            if (navigator.onLine) {
+                try {
+                    if (this.statusIndicator && this.statusIndicator.nodeType === 1 && 'className' in this.statusIndicator) {
+                        this.statusIndicator.className = 'status-online';
+                    }
+                } catch (e) {
+                    console.warn('Erro ao definir className online:', e);
+                    this.statusIndicator = null;
+                    return;
+                }
+                try {
+                    if (this.statusIndicator && this.statusIndicator.nodeType === 1 && 'innerHTML' in this.statusIndicator) {
+                        this.statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Online';
+                    }
+                } catch (e) {
+                    console.warn('Erro ao definir innerHTML online:', e);
+                    // Não retorna aqui, apenas loga o erro
+                }
+            } else {
+                try {
+                    if (this.statusIndicator && this.statusIndicator.nodeType === 1 && 'className' in this.statusIndicator) {
+                        this.statusIndicator.className = 'status-offline';
+                    }
+                } catch (e) {
+                    console.warn('Erro ao definir className offline:', e);
+                    this.statusIndicator = null;
+                    return;
+                }
+                try {
+                    if (this.statusIndicator && this.statusIndicator.nodeType === 1 && 'innerHTML' in this.statusIndicator) {
+                        this.statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Offline';
+                    }
+                } catch (e) {
+                    console.warn('Erro ao definir innerHTML offline:', e);
+                    // Não retorna aqui, apenas loga o erro
+                }
+            }
+        } catch (error) {
+            // Se houver erro geral, reseta a referência
+            console.warn('Erro ao atualizar status de conexão:', error);
+            this.statusIndicator = null;
         }
     }
     
-    backToWelcomeScreen() {
+        backToWelcomeScreen() {
         // Limpa as mensagens do chat
-        this.chatMessages.innerHTML = '';
-        this.chatMessages.classList.remove('active');
-        
+        if (this.chatMessages) {
+            this.chatMessages.innerHTML = '';
+            if (this.chatMessages.classList) {
+                this.chatMessages.classList.remove('active');
+            }
+        }
+
         // Mostra a tela de boas-vindas
-        this.welcomeMessage.style.display = 'flex';
-        this.backToWelcome.style.display = 'none';
-        
-        // Foca no input
-        this.messageInput.focus();
-        
+        if (this.welcomeMessage && this.welcomeMessage.style) {
+            this.welcomeMessage.style.display = 'flex';
+        }
+
+        if (this.backToWelcome && this.backToWelcome.style) {
+            this.backToWelcome.style.display = 'none';
+        }
+
+        // Foca no input se existir
+        if (this.messageInput && typeof this.messageInput.focus === 'function') {
+            this.messageInput.focus();
+        }
+
         // Gera novo ID de usuário para nova sessão
         this.userId = this.generateUserId();
     }
@@ -662,7 +1322,9 @@ class ChatbotPuerperio {
         const deviceType = this.deviceType;
         
         // Adiciona classe CSS baseada no dispositivo
-        document.body.classList.add(`device-${deviceType}`);
+        if (document.body && document.body.classList) {
+            document.body.classList.add(`device-${deviceType}`);
+        }
         
         // Otimizações específicas por dispositivo
         switch(deviceType) {
@@ -686,8 +1348,10 @@ class ChatbotPuerperio {
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 this.deviceType = this.detectDevice();
-                document.body.className = document.body.className.replace(/device-\w+/g, '');
-                document.body.classList.add(`device-${this.deviceType}`);
+                if (document.body && document.body.className && document.body.classList) {
+                    document.body.className = document.body.className.replace(/device-\w+/g, '');
+                    document.body.classList.add(`device-${this.deviceType}`);
+                }
                 this.optimizeForDevice();
             }, 100);
         });
@@ -699,8 +1363,10 @@ class ChatbotPuerperio {
                 const newDeviceType = this.detectDevice();
                 if (newDeviceType !== this.deviceType) {
                     this.deviceType = newDeviceType;
-                    document.body.className = document.body.className.replace(/device-\w+/g, '');
-                    document.body.classList.add(`device-${this.deviceType}`);
+                    if (document.body && document.body.className && document.body.classList) {
+                        document.body.className = document.body.className.replace(/device-\w+/g, '');
+                        document.body.classList.add(`device-${this.deviceType}`);
+                    }
                     this.optimizeForDevice();
                 }
             }, 250);
@@ -712,12 +1378,14 @@ class ChatbotPuerperio {
         this.closeSidebarMenu();
         
         // Ajusta tamanho do input para touch
-        if (this.messageInput) {
+        if (this.messageInput && this.messageInput.style) {
             this.messageInput.style.fontSize = '16px'; // Previne zoom no iOS
         }
         
         // Otimiza scroll suave
-        this.chatMessages.style.scrollBehavior = 'smooth';
+        if (this.chatMessages && this.chatMessages.style) {
+            this.chatMessages.style.scrollBehavior = 'smooth';
+        }
     }
     
     optimizeMobileLandscape() {
@@ -727,7 +1395,9 @@ class ChatbotPuerperio {
     
     optimizeTabletPortrait() {
         // Otimizações para tablet em portrait
-        this.chatMessages.style.scrollBehavior = 'smooth';
+        if (this.chatMessages && this.chatMessages.style) {
+            this.chatMessages.style.scrollBehavior = 'smooth';
+        }
     }
     
     optimizeTabletLandscape() {
@@ -737,7 +1407,9 @@ class ChatbotPuerperio {
     
     optimizeDesktop() {
         // Otimizações para desktop
-        this.chatMessages.style.scrollBehavior = 'auto';
+        if (this.chatMessages && this.chatMessages.style) {
+            this.chatMessages.style.scrollBehavior = 'auto';
+        }
     }
     
     // Auth functions
@@ -894,12 +1566,49 @@ class ChatbotPuerperio {
         }
         
         guia.passos.forEach(passo => {
+                        // Valida e formata a URL da imagem corretamente
+            let imagemHTML = '';
+            if (passo.imagem) {
+                try {
+                    let imagemUrl = passo.imagem.trim();
+                    if (imagemUrl) {
+                        // Se a URL não começa com protocolo, adiciona https://
+                        if (!imagemUrl.startsWith('http://') && !imagemUrl.startsWith('https://')) {
+                            // Verifica se parece ser uma URL válida (contém domínio)
+                            if (imagemUrl.includes('.') || imagemUrl.startsWith('//')) {
+                                // Se começa com //, adiciona https:
+                                if (imagemUrl.startsWith('//')) {
+                                    imagemUrl = 'https:' + imagemUrl;
+                                } else {
+                                    // Adiciona https:// no início
+                                    imagemUrl = 'https://' + imagemUrl;
+                                }
+                            } else {
+                                // URL inválida, ignora
+                                console.warn('URL de imagem inválida (sem domínio):', passo.imagem);
+                                imagemUrl = null;
+                            }
+                        }
+                        
+                        // Se a URL for válida, renderiza a imagem
+                        if (imagemUrl) {
+                            // Usa encodeURI para garantir que a URL está corretamente formatada
+                            imagemUrl = encodeURI(imagemUrl);
+                            imagemHTML = `<img src="${imagemUrl}" alt="${passo.titulo}" class="passo-imagem" onerror="this.style.display='none';" loading="lazy">`;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Erro ao processar URL da imagem:', passo.imagem, e);
+                    // Ignora imagens inválidas silenciosamente
+                }
+            }
+            
             html += `
                 <div class="passo-card">
                     <span class="passo-numero">${passo.numero}</span>
                     <span class="passo-titulo">${passo.titulo}</span>
                     <p class="passo-descricao">${passo.descricao}</p>
-                    ${passo.imagem ? `<img src="${passo.imagem}" alt="${passo.titulo}" class="passo-imagem">` : ''}
+                    ${imagemHTML}
                     <div class="passo-dica">💡 ${passo.dica}</div>
                 </div>
             `;
@@ -1169,7 +1878,8 @@ class ChatbotPuerperio {
             
             if (response.ok) {
                 itemElement.classList.add('checked');
-                this.showCelebration();
+                // Passa os dados para a comemoração personalizada
+                this.showCelebration(data.tipo, data.baby_name, data.user_name);
             } else {
                 alert('⚠️ ' + data.erro);
                 itemElement.querySelector('input').checked = false;
@@ -1196,19 +1906,51 @@ class ChatbotPuerperio {
         }
     }
     
-    showCelebration() {
-        const userName = this.currentUserName || 'Mamãe';
+    showCelebration(tipo = 'mae', babyName = null, userName = null) {
+        const user = userName || this.currentUserName || 'Mamãe';
         const celebration = document.createElement('div');
         celebration.className = 'celebration-overlay';
-        celebration.innerHTML = `
-            <div class="celebration-content">
-                <div class="confetti-container"></div>
-                <div class="celebration-emoji">🎉</div>
-                <h2>Parabéns, ${userName}! 🎉</h2>
-                <p>Você cuidou da saúde!</p>
-                <p style="font-size: 0.9em; margin-top: 1rem;">Obrigada por se proteger 💕</p>
-            </div>
-        `;
+        
+        let messageHTML = '';
+        
+        if (tipo === 'bebe' && babyName) {
+            // Comemoração para vacina do bebê com nome
+            messageHTML = `
+                <div class="celebration-content">
+                    <div class="confetti-container"></div>
+                    <div class="celebration-emoji">🎉👶</div>
+                    <h2>Parabéns, ${babyName}! 🎉</h2>
+                    <p>Você está protegido! 💪</p>
+                    <p style="font-size: 0.9em; margin-top: 1rem;">E parabéns para você também, ${user}! 💕</p>
+                    <p style="font-size: 0.85em; margin-top: 0.5rem; color: #8b5a5a;">Vocês estão cuidando da saúde juntos! 🤱</p>
+                </div>
+            `;
+        } else if (tipo === 'bebe') {
+            // Comemoração para vacina do bebê sem nome cadastrado
+            messageHTML = `
+                <div class="celebration-content">
+                    <div class="confetti-container"></div>
+                    <div class="celebration-emoji">🎉👶</div>
+                    <h2>Parabéns para o bebê! 🎉</h2>
+                    <p>Mais uma proteção! 💪</p>
+                    <p style="font-size: 0.9em; margin-top: 1rem;">E parabéns para você também, ${user}! 💕</p>
+                    <p style="font-size: 0.85em; margin-top: 0.5rem; color: #8b5a5a;">Vocês estão cuidando da saúde juntos! 🤱</p>
+                </div>
+            `;
+        } else {
+            // Comemoração para vacina da mãe
+            messageHTML = `
+                <div class="celebration-content">
+                    <div class="confetti-container"></div>
+                    <div class="celebration-emoji">🎉</div>
+                    <h2>Parabéns, ${user}! 🎉</h2>
+                    <p>Você cuidou da saúde!</p>
+                    <p style="font-size: 0.9em; margin-top: 1rem;">Obrigada por se proteger 💕</p>
+                </div>
+            `;
+        }
+        
+        celebration.innerHTML = messageHTML;
         document.body.appendChild(celebration);
         
         // Create confetti
@@ -1255,15 +1997,261 @@ class ChatbotPuerperio {
 document.addEventListener('DOMContentLoaded', () => {
     const chatbot = new ChatbotPuerperio();
     
-    // Verifica status da conexão periodicamente
-    setInterval(() => chatbot.checkConnectionStatus(), 5000);
-    chatbot.checkConnectionStatus();
-    
+        // Verifica status da conexão periodicamente (apenas se já estiver logado)
+    setInterval(() => {
+        try {
+            // Verifica se o chatbot existe e está logado
+            if (!chatbot || !chatbot.userLoggedIn) {
+                return;
+            }
+            // Verifica se o elemento ainda existe no DOM antes de chamar
+            if (!chatbot.statusIndicator) {
+                chatbot.statusIndicator = document.getElementById('status-indicator');
+            }
+            if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
+                chatbot.checkConnectionStatus();
+            } else {
+                // Se o elemento não existe, limpa a referência
+                chatbot.statusIndicator = null;
+            }
+        } catch (error) {
+            console.warn('Erro no setInterval de checkConnectionStatus:', error);
+        }
+    }, 5000);
+
+    // Verifica status inicial apenas se estiver logado
+    if (chatbot.userLoggedIn) {
+        try {
+            chatbot.checkConnectionStatus();
+        } catch (error) {
+            console.warn('Erro ao verificar status inicial:', error);
+        }
+    }
+
     // Adiciona evento de online/offline
-    window.addEventListener('online', () => chatbot.checkConnectionStatus());
-    window.addEventListener('offline', () => chatbot.checkConnectionStatus());
+    window.addEventListener('online', () => {
+        try {
+            if (chatbot && chatbot.userLoggedIn) {
+                // Verifica se o elemento existe antes de chamar
+                if (!chatbot.statusIndicator) {
+                    chatbot.statusIndicator = document.getElementById('status-indicator');
+                }
+                if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
+                    chatbot.checkConnectionStatus();
+                }
+            }
+        } catch (error) {
+            console.warn('Erro no evento online:', error);
+        }
+    });
+    window.addEventListener('offline', () => {
+        try {
+            if (chatbot && chatbot.userLoggedIn) {
+                // Verifica se o elemento existe antes de chamar
+                if (!chatbot.statusIndicator) {
+                    chatbot.statusIndicator = document.getElementById('status-indicator');
+                }
+                if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
+                    chatbot.checkConnectionStatus();
+                }
+            }
+        } catch (error) {
+            console.warn('Erro no evento offline:', error);
+        }
+    });
     
-    // Foca no input quando a página carrega
-    document.getElementById('message-input').focus();
+    // Foca no input quando a página carrega (apenas se não estiver na tela de login)
+    const messageInput = document.getElementById('message-input');
+    if (messageInput && chatbot.userLoggedIn) {
+        messageInput.focus();
+    }
+
+    // Inicializa o carrossel de features
+    initFeatureCarousel();
 });
+
+/**
+ * Inicializa o carrossel de botões de recursos
+ * Carrossel horizontal com 4 botões que desliza horizontalmente
+ */
+function initFeatureCarousel() {
+    const track = document.getElementById('feature-carousel-track');
+    const prevBtn = document.getElementById('feature-carousel-prev');
+    const nextBtn = document.getElementById('feature-carousel-next');
+    const dotsContainer = document.getElementById('feature-carousel-dots');
+    
+    if (!track || !prevBtn || !nextBtn || !dotsContainer) {
+        return; // Elementos não existem ainda
+    }
+
+    const buttons = track.querySelectorAll('.feature-btn');
+    if (buttons.length === 0) {
+        return;
+    }
+
+    let currentIndex = 0;
+    let itemsPerView = calculateItemsPerView();
+
+    // Calcula quantos itens mostrar por vez baseado no tamanho da tela
+    function calculateItemsPerView() {
+        const width = window.innerWidth;
+        if (width <= 479) return 1;      // Mobile pequeno: 1 item
+        if (width <= 767) return 2;      // Mobile médio/tablet: 2 itens
+        if (width <= 1024) return 3;     // Tablet grande/desktop pequeno: 3 itens
+        return 4;                        // Desktop: 4 itens (todos)
+    }
+
+    // Calcula quantos slides são necessários
+    function calculateTotalSlides() {
+        const items = calculateItemsPerView();
+        if (items >= buttons.length) return 0; // Não precisa de carrossel se todos cabem
+        return Math.ceil(buttons.length / items); // Número de slides necessários
+    }
+
+    // Cria ou atualiza os dots dinamicamente
+    function createDots() {
+        const totalSlides = calculateTotalSlides();
+        
+        // Se todos os botões cabem na tela, esconde os dots e botões de navegação
+        if (totalSlides === 0) {
+            dotsContainer.style.display = 'none';
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            track.style.transform = 'translateX(0)'; // Reseta posição
+            return;
+        }
+
+        // Mostra os controles
+        dotsContainer.style.display = 'flex';
+        prevBtn.style.display = 'flex';
+        nextBtn.style.display = 'flex';
+
+        // Remove dots antigos
+        dotsContainer.innerHTML = '';
+
+        // Cria novos dots baseado no número de slides necessários
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'dot';
+            if (i === 0) dot.classList.add('active');
+            dot.setAttribute('data-index', i);
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    // Atualiza o carrossel
+    function updateCarousel() {
+        itemsPerView = calculateItemsPerView();
+        const totalSlides = calculateTotalSlides();
+        
+        // Se não precisa de carrossel, reseta tudo
+        if (totalSlides === 0) {
+            track.style.transform = 'translateX(0)';
+            updateButtons();
+            createDots();
+            return;
+        }
+
+        // Aguarda o próximo frame para garantir que os tamanhos estão atualizados
+        requestAnimationFrame(() => {
+            const firstButton = track.querySelector('.feature-btn');
+            if (!firstButton) return;
+            
+            // Obtém a largura real do botão incluindo gap
+            const buttonWidth = firstButton.offsetWidth;
+            const gap = parseFloat(window.getComputedStyle(track).gap) || 16;
+            
+            // Calcula o translateX baseado no índice
+            // Desliza um "conjunto" de botões por vez (baseado em itemsPerView)
+            // Cada slide move itemsPerView botões de uma vez
+            const translateX = -(currentIndex * itemsPerView * (buttonWidth + gap));
+            
+            track.style.transform = `translateX(${translateX}px)`;
+            updateButtons();
+            updateDots();
+        });
+    }
+
+    // Atualiza estado dos botões prev/next
+    function updateButtons() {
+        const totalSlides = calculateTotalSlides();
+        if (totalSlides === 0) {
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            return;
+        }
+        
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex >= totalSlides - 1;
+    }
+
+    // Atualiza os dots
+    function updateDots() {
+        const dots = dotsContainer.querySelectorAll('.dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentIndex);
+        });
+    }
+
+    // Vai para o próximo slide
+    function nextSlide() {
+        const totalSlides = calculateTotalSlides();
+        if (totalSlides === 0) return;
+        
+        if (currentIndex < totalSlides - 1) {
+            currentIndex++;
+            updateCarousel();
+        }
+    }
+
+    // Vai para o slide anterior
+    function prevSlide() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCarousel();
+        }
+    }
+
+    // Vai para um slide específico
+    function goToSlide(index) {
+        const totalSlides = calculateTotalSlides();
+        if (totalSlides === 0) return;
+        
+        if (index >= 0 && index < totalSlides) {
+            currentIndex = index;
+            updateCarousel();
+        }
+    }
+
+    // Event listeners
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+
+    // Redimensionamento da janela
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const newItemsPerView = calculateItemsPerView();
+            const newTotalSlides = calculateTotalSlides();
+            
+            if (newItemsPerView !== itemsPerView || newTotalSlides !== calculateTotalSlides()) {
+                // Ajusta o índice atual se necessário
+                if (newTotalSlides > 0 && currentIndex >= newTotalSlides) {
+                    currentIndex = newTotalSlides - 1;
+                } else if (newTotalSlides === 0) {
+                    currentIndex = 0;
+                }
+                
+                createDots();
+                updateCarousel();
+            }
+        }, 250);
+    });
+
+    // Inicializa
+    createDots();
+    updateCarousel();
+}
 
