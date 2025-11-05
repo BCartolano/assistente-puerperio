@@ -5,10 +5,16 @@
     box-sizing: border-box;
 }
 
+html {
+    height: 100vh;
+    overflow: hidden;
+}
+
 body {
     font-family: 'Poppins', 'Nunito', sans-serif;
     background: linear-gradient(180deg, #fff5f7 0%, #fde6ea 50%, #f8f4f0 100%);
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     color: #5a4a42;
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23f4a6a6" opacity="0.7"/><circle cx="12" cy="12" r="6" fill="%23f4a6a6" opacity="0.5"/></svg>'), auto;
 }
@@ -48,6 +54,9 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     width: 90%;
     box-shadow: 0 10px 40px rgba(244, 166, 166, 0.3);
     animation: slideUp 0.5s ease;
+    box-sizing: border-box;
+    overflow: visible;
+    overflow-y: auto;
 }
 
 .login-header {
@@ -117,6 +126,10 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 
 .login-form {
     display: none;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    padding: 0;
 }
 
 .login-form.active {
@@ -126,15 +139,58 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 .login-form .form-group {
     margin-bottom: 1.2rem;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    isolation: isolate; /* Cria um novo contexto de empilhamento */
 }
 
-.login-form .form-group i {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #f4a6a6;
-    font-size: 1.1rem;
+.login-form .form-group label {
+    display: block;
+    position: relative;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    color: #8b5a5a;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Label acima do input */
+.login-form .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #8b5a5a;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Oculta o ícone do label - será movido para dentro do input via JavaScript */
+.login-form .form-group label i {
+    display: none;
+}
+
+/* Wrapper para o input com ícone */
+.login-form .form-group .input-wrapper {
+    position: relative;
+    width: 100%;
+    display: block;
+}
+
+/* Ícone dentro do input - criado via JavaScript */
+.login-form .form-group .input-icon {
+    position: absolute !important;
+    left: 1rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10 !important;
+    pointer-events: none;
+    color: #f4a6a6 !important;
+    font-size: 1.1rem !important;
+    transition: none !important;
+    will-change: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
 
 .login-form .form-group input {
@@ -143,8 +199,16 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     border: 2px solid rgba(244, 166, 166, 0.3);
     border-radius: 12px;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
     background: #fff9f7;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+}
+
+/* Garante que o ícone fique sobreposto ao input */
+.login-form .form-group .input-icon {
+    z-index: 15 !important;
 }
 
 .login-form .form-group input:focus {
@@ -154,12 +218,23 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     box-shadow: 0 0 0 3px rgba(244, 166, 166, 0.1);
 }
 
+/* Garantir que o ícone não se mova quando o input recebe foco */
+.login-form .form-group input:focus ~ .input-icon,
+.login-form .form-group input:focus + .input-icon {
+    position: absolute !important;
+    left: 1rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 3 !important;
+}
+
 .btn-login-main {
     width: 100%;
+    max-width: 100%;
     background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
     color: white;
     border: none;
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;
@@ -172,6 +247,9 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     justify-content: center;
     gap: 0.5rem;
     line-height: 1.4;
+    box-sizing: border-box;
+    white-space: nowrap;
+    min-width: fit-content;
 }
 
 .btn-login-main i {
@@ -202,6 +280,162 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 .forgot-password-link i {
     margin-right: 0.3rem;
     font-size: 0.85rem;
+}
+
+/* Remember Me Checkbox */
+.remember-me-group {
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.remember-me-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #8b5a5a;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    flex-wrap: nowrap;
+}
+
+.remember-me-label:hover {
+    color: #f4a6a6;
+}
+
+.remember-me-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #f4a6a6;
+    margin: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 2px solid rgba(244, 166, 166, 0.5);
+    border-radius: 4px;
+    background: white;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.remember-me-label input[type="checkbox"]:checked {
+    background: #f4a6a6;
+    border-color: #f4a6a6;
+}
+
+.remember-me-label input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.remember-me-label input[type="checkbox"]:focus {
+    outline: 2px solid rgba(244, 166, 166, 0.5);
+    outline-offset: 2px;
+}
+
+.remember-me-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+    flex: 0 1 auto;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.remember-me-text i {
+    font-size: 0.85rem;
+    color: #f4a6a6;
+    flex-shrink: 0;
+}
+
+/* Ajustes para mobile - garantir que o texto não seja cortado */
+@media (max-width: 768px) {
+    .remember-me-label {
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        min-width: 0;
+        max-width: 100% !important;
+        align-items: center;
+    }
+    
+    .remember-me-label input[type="checkbox"] {
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+    }
+    
+    .remember-me-text {
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        flex: 1 1 auto !important;
+        min-width: 0;
+        max-width: none !important;
+        width: auto !important;
+        display: inline-flex !important;
+    }
+    
+    .remember-me-group {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        box-sizing: border-box;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+
+/* Ajustes específicos para telas muito pequenas */
+@media (max-width: 480px) {
+    .remember-me-label {
+        font-size: 0.85rem;
+        gap: 0.4rem;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .remember-me-text {
+        font-size: 0.85rem;
+        gap: 0.3rem;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        width: calc(100% - 24px) !important;
+        max-width: calc(100% - 24px) !important;
+    }
+    
+    .remember-me-label input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        margin-right: 0.3rem;
+    }
+    
+    .remember-me-group {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0.5rem 0 !important;
+    }
 }
 
 @keyframes fadeIn {
@@ -257,7 +491,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     box-shadow: 0 6px 30px rgba(244, 166, 166, 0.35), 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra mais destacada */
     border-bottom: 2px solid rgba(255, 255, 255, 0.4); /* Borda mais visível */
     position: relative;
-    z-index: 10;
+    z-index: 1000 !important; /* Z-index alto para ficar acima de tudo */
     width: 100%;
     box-sizing: border-box;
 }
@@ -268,10 +502,146 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     align-items: center;
 }
 
+/* Mobile: Centraliza header na TELA do celular (viewport) */
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem 0.5rem !important; /* Aumentado: vertical 1rem, horizontal 0.5rem */
+        min-height: 55px !important; /* Altura mínima aumentada */
+        position: fixed !important; /* Fixo na viewport */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important; /* Largura da viewport */
+        z-index: 1000 !important; /* Acima de tudo */
+        box-shadow: 0 4px 20px rgba(244, 166, 166, 0.4) !important;
+        display: flex !important;
+        align-items: center !important; /* Centraliza verticalmente o conteúdo */
+        justify-content: center !important; /* Centraliza horizontalmente */
+    }
+    
+    .header-content {
+        justify-content: center !important;
+        position: relative !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+    
+    .logo {
+        flex: 1 !important;
+        justify-content: center !important;
+        text-align: center !important;
+        margin: 0 auto !important;
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important; /* Centralizado verticalmente */
+        transform: translate(-50%, -50%) !important; /* Centraliza perfeitamente */
+        width: auto !important;
+    }
+    
+    .header-right {
+        display: none !important; /* Remove o bloco branco (status-indicator) */
+    }
+    
+    .header-right .status-indicator {
+        display: none !important; /* Remove completamente o status-indicator */
+    }
+    
+    .logo h1 {
+        font-size: 1rem !important; /* Reduzido ainda mais: 1.1rem → 1rem */
+    }
+    
+    .logo i {
+        font-size: 1rem !important; /* Reduzido ainda mais: 1.1rem → 1rem */
+    }
+    
+    /* Ajusta o container principal para compensar o header fixo */
+    .container {
+        padding-top: 65px !important; /* Aumentado para compensar header maior: 50px → 65px */
+    }
+    
+    .chat-container {
+        padding-top: 0 !important;
+    }
+}
+
+body.device-mobile .header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    z-index: 1000 !important;
+    padding: 1rem 0.5rem !important; /* Aumentado: vertical 1rem, horizontal 0.5rem */
+    min-height: 55px !important; /* Altura mínima aumentada */
+    display: flex !important;
+    align-items: center !important; /* Centraliza verticalmente */
+    justify-content: center !important; /* Centraliza horizontalmente */
+}
+
+body.device-mobile .header-content {
+    justify-content: center !important;
+    position: relative !important;
+    width: 100% !important;
+}
+
+body.device-mobile .logo {
+    flex: 1 !important;
+    justify-content: center !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important; /* Centralizado verticalmente */
+    transform: translate(-50%, -50%) !important; /* Centraliza perfeitamente */
+    width: auto !important;
+}
+
+body.device-mobile .header-right {
+    display: none !important; /* Remove o bloco branco */
+}
+
+body.device-mobile .header-right .status-indicator {
+    display: none !important; /* Remove completamente o status-indicator */
+}
+
+/* Logo texto e ícones no mobile */
+body.device-mobile .logo h1 {
+    font-size: 1rem !important; /* Reduzido ainda mais */
+}
+
+body.device-mobile .logo i {
+    font-size: 1rem !important; /* Reduzido ainda mais */
+}
+
+/* Compensa o header fixo no mobile */
+body.device-mobile .container {
+    padding-top: 65px !important; /* Aumentado para compensar header maior: 50px → 65px */
+    overflow: hidden !important;
+    height: 100vh !important;
+}
+
+/* Garantir que o body não role em mobile */
+body.device-mobile {
+    overflow: hidden !important;
+    height: 100vh !important;
+}
+
+body.device-mobile .chat-container {
+    padding-top: 0 !important;
+    overflow: hidden !important;
+    height: 100% !important;
+}
+
 .header-right {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+/* Esconde o welcome-message no header (deixa apenas o status-indicator) */
+.header-right .welcome-message,
+.header-right #welcome-user {
+    display: none !important;
 }
 
 .logo {
@@ -328,9 +698,11 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     overflow-x: hidden; /* Sempre sem scroll horizontal */
     position: relative;
     z-index: 1;
-    width: 100%;
-    max-width: 100vw;
+    width: 95%;
+    max-width: 95vw;
+    margin: 0 auto;
     box-sizing: border-box;
+    height: 100%;
 }
 
 /* Sidebar */
@@ -345,10 +717,12 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     box-shadow: 2px 0 15px rgba(244, 166, 166, 0.1);
     position: relative;
     z-index: 5;
+    overflow: visible;
+    height: auto;
 }
 
 .sidebar.open {
-    transform: translateX(0);
+    transform: translateX(0) !important;
 }
 
 .sidebar-header {
@@ -360,6 +734,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     border-bottom: 1px solid rgba(244, 166, 166, 0.2);
 }
 
+.sidebar-header h2,
 .sidebar-header h3 {
     font-size: 1rem;
     color: #8b5a5a;
@@ -379,7 +754,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 .categories {
     flex: 1;
     padding: 1rem;
-    overflow-y: auto;
+    overflow: visible;
+    height: auto;
 }
 
 .category-item {
@@ -404,7 +780,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 /* New Sidebar Content Styles */
 .sidebar-content {
     flex: 1;
-    overflow-y: auto;
+    overflow: visible;
+    height: auto;
     padding: 1rem;
     padding-bottom: 1rem;
 }
@@ -503,8 +880,10 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     position: relative;
     padding-top: 4rem; /* Espaço para o botão "Voltar ao início" não sobrepor mensagens */
     overflow-x: hidden; /* Evita scroll horizontal */
+    overflow-y: hidden; /* Sem scroll vertical */
     width: 100%;
     box-sizing: border-box;
+    height: 100%;
 }
 
 /* Welcome Message */
@@ -525,6 +904,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     overflow-x: hidden !important;
     padding: 1rem 0 !important;
     box-sizing: border-box !important;
+    -webkit-overflow-scrolling: touch !important;
 }
 
 @keyframes fadeIn {
@@ -534,10 +914,10 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 
 .welcome-content {
     text-align: center !important;
-    padding: 2rem 2rem; /* Padding aumentado */
-    max-width: 900px; /* Ligeiramente maior para telas grandes, mas não muito */
+    padding: 0.6rem 0.8rem; /* Padding reduzido ainda mais */
+    max-width: 80% !important; /* Reduzido de 85% para 80% */
     margin: 0 auto !important; /* Centraliza o conteúdo */
-    width: 100% !important; /* Ocupa toda largura disponível */
+    width: auto !important; /* Ajusta ao conteúdo */
     animation: contentFadeIn 1s ease-out 0.3s backwards;
     box-sizing: border-box !important; /* Inclui padding no cálculo de largura */
     display: block !important;
@@ -628,8 +1008,9 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     animation: textFadeIn 0.8s ease-out 0.75s backwards;
 }
 
+.feeling-box h2,
 .feeling-box h3 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #8b5a5a;
     margin-bottom: 1rem;
     text-align: center;
@@ -673,13 +1054,29 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 
 /* Páginas de Apoio Rápido */
 .support-links {
-    margin: 2.5rem auto 2rem; /* Mais espaço vertical */
+    margin: 3.5rem auto 2rem; /* Mais espaço vertical - aumentado para separar do feeling-box */
     max-width: 700px;
     animation: textFadeIn 0.8s ease-out 0.85s backwards;
+    padding-bottom: 1rem; /* Espaço extra na parte inferior */
 }
 
+/* Mobile: Espaço extra para não ficar atrás do input fixo */
+@media (max-width: 768px) {
+    .support-links {
+        margin-bottom: 3rem !important; /* Espaço extra para o input fixo */
+        padding-bottom: 1.5rem !important;
+    }
+}
+
+body.device-mobile .support-links {
+    margin-top: 2.5rem !important; /* Aumentado para criar mais espaço do feeling-box */
+    margin-bottom: 3rem !important; /* Espaço extra para o input fixo */
+    padding-bottom: 1.5rem !important;
+}
+
+.support-links h2,
 .support-links h3 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #8b5a5a;
     margin-bottom: 1rem;
     text-align: center;
@@ -721,12 +1118,89 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     outline-offset: 2px;
 }
 
-/* Mensagem Rotativa */
-.rotating-message {
-    margin-top: 2.5rem; /* Mais espaço vertical */
-    padding: 1.2rem;
-    text-align: center;
+/* Medical Disclaimer */
+.medical-disclaimer {
+    margin: 2rem auto 2rem;
+    max-width: 700px;
     animation: textFadeIn 0.8s ease-out 0.9s backwards;
+    padding: 0 1rem;
+}
+
+.medical-disclaimer .disclaimer-text {
+    color: #8b5a5a;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin: 0;
+    padding: 1.8rem 3.5rem;
+    background: rgba(255, 249, 247, 0.9);
+    border-radius: 12px;
+    border-left: 4px solid #f4a6a6;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.15);
+}
+
+.medical-disclaimer .disclaimer-text i {
+    color: #f4a6a6;
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.medical-disclaimer .disclaimer-text strong {
+    color: #8b5a5a;
+    font-weight: 600;
+}
+
+/* Mobile: Ajustes para medical-disclaimer */
+@media (max-width: 768px) {
+    .medical-disclaimer {
+        margin-bottom: 2.5rem !important;
+        padding: 0 0.5rem;
+    }
+    
+    .medical-disclaimer .disclaimer-text {
+        font-size: 1.05rem !important;
+        padding: 1.8rem 3.2rem !important;
+        line-height: 1.7 !important;
+    }
+}
+
+body.device-mobile .medical-disclaimer {
+    margin-bottom: 2.5rem !important;
+    padding: 0 0.5rem;
+}
+
+body.device-mobile .medical-disclaimer .disclaimer-text {
+    font-size: 1.05rem !important;
+    padding: 1.8rem 3.2rem !important;
+    line-height: 1.7 !important;
+}
+
+/* Mensagem Rotativa - REMOVIDA */
+.rotating-message {
+    display: none !important; /* Oculta completamente a mensagem */
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Mobile: Mensagem rotativa REMOVIDA */
+@media (max-width: 768px) {
+    .rotating-message {
+        display: none !important; /* Oculta completamente */
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+body.device-mobile .rotating-message {
+    display: none !important; /* Oculta completamente */
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 #rotating-text {
@@ -849,7 +1323,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 /* Chat Messages */
 .chat-messages {
     flex: 1;
-    padding: 1rem;
+    padding: 0.75rem 0.5rem;
     overflow-y: auto;
     display: none;
     position: absolute;
@@ -860,8 +1334,9 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     width: 100%;
     height: 100%;
     background: linear-gradient(180deg, #fff5f7 0%, #fde6ea 50%, #f8f4f0 100%);
-    padding-top: 1rem;
+    padding-top: 0.75rem;
     box-sizing: border-box;
+    max-width: 100%;
 }
 
 .chat-messages.active {
@@ -932,6 +1407,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     align-items: flex-start;
     gap: 0.75rem;
     animation: fadeInUp 0.3s ease;
+    max-width: 100%;
+    padding: 0 0.5rem;
 }
 
 /* Garante que welcome-content não seja afetado por estilos de mensagem */
@@ -981,8 +1458,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 }
 
 .message-content {
-    max-width: 70%;
-    padding: 1rem;
+    max-width: 65%;
+    padding: 0.9rem 1rem;
     border-radius: 18px;
     position: relative;
 }
@@ -1177,14 +1654,115 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     border-top: 1px solid rgba(244, 166, 166, 0.2);
     padding: 1.2rem;
     backdrop-filter: blur(15px);
+    position: relative;
+    z-index: 999 !important; /* Abaixo do header, mas acima do conteúdo */
+}
+
+/* Mobile: Diminui tamanho do input area e reorganiza layout */
+@media (max-width: 768px) {
+    .input-area {
+        padding: 0.6rem 0.5rem !important;
+        position: fixed !important; /* Fixo na parte inferior */
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        z-index: 998 !important; /* Abaixo do header, mas acima do conteúdo */
+        box-shadow: 0 -4px 20px rgba(244, 166, 166, 0.3) !important;
+    }
+    
+    .input-container {
+        gap: 0.4rem !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .input-wrapper {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+    
+    #message-input {
+        padding: 0.5rem 0.7rem !important;
+        font-size: 0.85rem !important;
+        border-radius: 18px !important;
+    }
+    
+    .input-info {
+        display: none !important; /* Esconde contador de caracteres no mobile */
+    }
+    
+    .btn-icon,
+    #menu-toggle {
+        min-width: 38px !important;
+        min-height: 38px !important;
+        width: 38px !important;
+        height: 38px !important;
+        padding: 0.4rem !important;
+        font-size: 0.9rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .btn-send,
+    #send-button {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        padding: 0.4rem !important;
+        font-size: 0.85rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Ajusta o conteúdo para não ficar atrás do input fixo */
+    .chat-area {
+        padding-bottom: 70px !important; /* Espaço para o input fixo */
+    }
+    
+    .welcome-message {
+        padding-bottom: 80px !important; /* Espaço extra para o input fixo */
+    }
+}
+
+body.device-mobile .input-area {
+    padding: 0.6rem 0.5rem !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    z-index: 998 !important;
+}
+
+body.device-mobile .input-container {
+    gap: 0.4rem !important;
+}
+
+body.device-mobile .input-info {
+    display: none !important;
+}
+
+body.device-mobile.orientation-portrait .input-area {
+    padding: 0.55rem 0.5rem !important;
+}
+
+/* Ajusta conteúdo para não ficar atrás do input fixo */
+body.device-mobile .chat-area {
+    padding-bottom: 90px !important; /* Aumentado de 70px para 90px */
+}
+
+body.device-mobile .welcome-message {
+    padding-bottom: 100px !important; /* Aumentado de 80px para 100px */
 }
 
 .input-container {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
+    padding: 0 1rem;
 }
 
 .input-wrapper {
@@ -1192,6 +1770,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     position: relative;
     display: flex;
     align-items: center;
+    gap: 0.4rem;
 }
 
 #message-input {
@@ -1206,6 +1785,26 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     backdrop-filter: blur(10px);
     font-family: 'Poppins', sans-serif;
     color: #5a4a42;
+}
+
+/* Mobile: Diminui tamanho do input */
+@media (max-width: 768px) {
+    #message-input {
+        padding: 0.65rem 1rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 20px !important;
+    }
+}
+
+body.device-mobile #message-input {
+    padding: 0.5rem 0.7rem !important;
+    font-size: 0.85rem !important;
+    border-radius: 18px !important;
+}
+
+body.device-mobile.orientation-portrait #message-input {
+    padding: 0.5rem 0.65rem !important;
+    font-size: 0.8rem !important;
 }
 
 #message-input:focus {
@@ -1249,6 +1848,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     width: 48px;
     height: 48px;
     box-shadow: 0 6px 15px rgba(244, 166, 166, 0.3);
+    margin-left: 0.2rem;
 }
 
 .btn-icon {
@@ -1258,6 +1858,35 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     height: 48px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(244, 166, 166, 0.3);
+}
+
+/* Mobile: Diminui tamanho do botão ícone */
+@media (max-width: 768px) {
+    .btn-icon {
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0.5rem !important;
+    }
+}
+
+body.device-mobile .btn-icon,
+body.device-mobile #menu-toggle {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    padding: 0.4rem !important;
+    font-size: 0.9rem !important;
+    flex-shrink: 0 !important;
+}
+
+body.device-mobile.orientation-portrait .btn-icon,
+body.device-mobile.orientation-portrait #menu-toggle {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0.35rem !important;
 }
 
 .btn:hover {
@@ -1392,8 +2021,17 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 
 .alert-actions .btn {
     border-radius: 8px;
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 /* Animations */
@@ -1809,9 +2447,10 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     }
     
     .chat-container {
-        max-width: 100vw !important;
+        max-width: 95vw !important;
         overflow-x: hidden !important;
-        width: 100% !important;
+        width: 95% !important;
+        margin: 0 auto !important;
     }
     
     .header {
@@ -1841,6 +2480,13 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     
     .sidebar {
         width: 220px;
+        overflow: visible !important;
+        height: auto !important;
+    }
+    
+    .sidebar-content {
+        overflow: visible !important;
+        height: auto !important;
     }
     
     .sidebar-header {
@@ -1858,9 +2504,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
          justify-content: flex-start !important;
          padding-top: 0.5rem !important;
          padding-bottom: 0.5rem !important;
-         overflow-y: auto !important;
+         overflow: visible !important;
          overflow-x: hidden !important;
-         -webkit-overflow-scrolling: touch !important;
          box-sizing: border-box !important;
          width: 100% !important;
          max-width: 100vw !important;
@@ -1869,6 +2514,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
          margin: 0 !important;
          display: flex !important;
          flex-direction: column !important;
+         height: auto !important;
      }
      
      /* GARANTE que o welcome-content esteja CENTRALIZADO dentro do welcome-message */
@@ -1879,25 +2525,24 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
          margin-right: auto !important;
      }
     
-                   .welcome-content {
-          padding: 1rem 0.8rem !important;
-          max-width: 100% !important;
-          width: 100% !important;
-          margin: 0 auto !important;
-          margin-left: auto !important;
-          margin-right: auto !important;
-          box-sizing: border-box !important;
-          text-align: center !important;
-          display: block !important;
-          position: relative !important;
-          left: 0 !important;
-          right: 0 !important;
-          float: none !important;
-          transform: none !important;
-          align-self: center !important;
-          overflow-x: hidden !important;
-          justify-self: center !important;
-      }
+                  .welcome-content {
+         padding: 1.5rem 1rem 1.5rem 0.5rem !important;
+         max-width: 100% !important;
+         width: 100% !important;
+         margin: 0 auto !important;
+         margin-left: 0.5rem !important;
+         box-sizing: border-box !important;
+         text-align: center !important;
+         display: block !important;
+         position: relative !important;
+         left: 0 !important;
+         right: 0 !important;
+         float: none !important;
+         transform: none !important;
+         align-self: center !important;
+         overflow-x: hidden !important;
+         justify-self: center !important;
+     }
      
      .welcome-content i {
          font-size: 2rem !important;
@@ -1905,7 +2550,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
      }
      
           .welcome-content h2 {
-         font-size: 1.1rem !important;
+         font-size: 1.6rem !important;
          margin-bottom: 0.5rem !important;
          padding: 0 0.3rem !important;
          line-height: 1.3 !important;
@@ -2101,9 +2746,20 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         gap: 0.8rem;
     }
     
+    .alert-actions .btn {
+        padding: 0.85rem 0.75rem !important;
+        font-size: 0.85rem !important;
+        white-space: normal !important;
+        word-wrap: break-word;
+        line-height: 1.3;
+        min-height: 48px;
+    }
+    
     .modal-content {
         width: 95%;
         margin: 1rem;
+        max-width: 95vw;
+        box-sizing: border-box;
     }
     
     .modal-header {
@@ -2124,7 +2780,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 }
 
 .device-mobile-portrait .welcome-content {
-    padding: 0.8rem;
+    padding: 0.4rem 0.6rem; /* Reduzido ainda mais */
 }
 
 .device-mobile-portrait .input-area {
@@ -2133,7 +2789,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 
 /* Mobile Landscape Optimizations */
 .device-mobile-landscape .welcome-content {
-    padding: 1rem;
+    padding: 0.5rem 0.8rem; /* Reduzido ainda mais */
 }
 
 .device-mobile-landscape .quick-questions {
@@ -2148,7 +2804,12 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 }
 
 .device-tablet-portrait .welcome-content {
-    padding: 1.2rem;
+    padding: 0.8rem 0.9rem 0.8rem 0.7rem !important; /* Reduzido ainda mais */
+    margin-left: -0.3rem !important;
+}
+
+.device-tablet-portrait .welcome-content h2 {
+    font-size: 1.8rem !important;
 }
 
 /* Tablet Landscape Optimizations */
@@ -2158,7 +2819,12 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 }
 
 .device-tablet-landscape .welcome-content {
-    padding: 1.5rem;
+    padding: 1rem 1rem 1rem 0.8rem !important; /* Reduzido ainda mais */
+    margin-left: -0.3rem !important;
+}
+
+.device-tablet-landscape .welcome-content h2 {
+    font-size: 2rem !important;
 }
 
 /* Desktop Optimizations */
@@ -2329,6 +2995,90 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     animation: fadeInUp 0.4s ease;
 }
 
+/* Garantir que os estilos de remember-me funcionem também nos formulários de cadastro */
+#initial-register-form .remember-me-label,
+#register-form .remember-me-label,
+.auth-form .remember-me-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #8b5a5a;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    flex-wrap: nowrap;
+}
+
+#initial-register-form .remember-me-text,
+#register-form .remember-me-text,
+.auth-form .remember-me-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+    flex: 0 1 auto;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+#initial-register-form .remember-me-group,
+#register-form .remember-me-group,
+.auth-form .remember-me-group {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+/* Mobile - garantir que funcione em todos os formulários */
+@media (max-width: 768px) {
+    #initial-register-form .remember-me-label,
+    #register-form .remember-me-label,
+    .auth-form .remember-me-label {
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        min-width: 0;
+        max-width: 100% !important;
+        align-items: center;
+    }
+    
+    #initial-register-form .remember-me-label input[type="checkbox"],
+    #register-form .remember-me-label input[type="checkbox"],
+    .auth-form .remember-me-label input[type="checkbox"] {
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+    }
+    
+    #initial-register-form .remember-me-text,
+    #register-form .remember-me-text,
+    .auth-form .remember-me-text {
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        flex: 1 1 auto !important;
+        min-width: 0;
+        max-width: none !important;
+        width: auto !important;
+        display: inline-flex !important;
+    }
+    
+    #initial-register-form .remember-me-group,
+    #register-form .remember-me-group,
+    .auth-form .remember-me-group {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        box-sizing: border-box;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+}
+
 .form-group {
     margin-bottom: 1rem;
 }
@@ -2413,9 +3163,16 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 
 /* Responsividade para Welcome Message e Header Right */
 @media (max-width: 768px) {
+    /* Esconde welcome-message no header (deixa apenas status-indicator) */
+    .header-right .welcome-message,
+    .header-right #welcome-user {
+        display: none !important;
+    }
+    
     .welcome-message {
         padding: 0.4rem 0.7rem;
-        margin-right: 0.5rem;
+        margin-right: 0.4rem !important;
+        margin-left: 0.3rem !important;
         display: flex !important; /* Garante que aparece no mobile */
     }
     
@@ -2426,6 +3183,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     .header-right {
         flex-wrap: wrap;
         gap: 0.5rem;
+        padding-right: 0.3rem !important;
+        margin-left: auto !important;
     }
     
     .status-indicator {
@@ -2470,11 +3229,147 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
       justify-content: center;
   }
 
+/* Mobile: Esconde carrossel e mostra grid 2x2 */
+@media (max-width: 768px) {
+    .feature-carousel-container {
+        display: block !important;
+    }
+    
+    .feature-carousel-container .carousel-btn {
+        display: none !important;
+    }
+    
+    .feature-carousel-container .carousel-dots {
+        display: none !important;
+    }
+    
+    .feature-carousel {
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+    }
+    
+    .feature-carousel-track {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 1rem !important;
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .feature-btn {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    .feature-btn i {
+        order: 1 !important;
+        display: block !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    .feature-btn span {
+        order: 2 !important;
+        display: block !important;
+        text-align: center !important;
+    }
+}
+
+/* Mobile Portrait - Grid 2x2 */
+body.device-mobile.orientation-portrait .feature-carousel-container .carousel-btn,
+body.device-mobile.orientation-portrait .feature-carousel-container .carousel-dots {
+    display: none !important;
+}
+
+body.device-mobile.orientation-portrait .feature-carousel {
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+}
+
+body.device-mobile.orientation-portrait .feature-carousel-track {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 1rem !important;
+    flex-direction: column !important;
+    flex-wrap: wrap !important;
+}
+
+body.device-mobile.orientation-portrait .feature-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+}
+
+body.device-mobile.orientation-portrait .feature-btn i {
+    order: 1 !important;
+    display: block !important;
+    margin-bottom: 0.3rem !important;
+}
+
+body.device-mobile.orientation-portrait .feature-btn span {
+    order: 2 !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+/* Tablet Portrait - Grid 2x2 */
+body.device-tablet.orientation-portrait .feature-carousel-container .carousel-btn,
+body.device-tablet.orientation-portrait .feature-carousel-container .carousel-dots {
+    display: none !important;
+}
+
+body.device-tablet.orientation-portrait .feature-carousel-track {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.2rem !important;
+    transform: none !important;
+}
+
+body.device-tablet.orientation-portrait .feature-btn {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body.device-tablet.orientation-portrait .feature-btn i {
+    order: 1 !important;
+    display: block !important;
+    margin-bottom: 0.3rem !important;
+}
+
+body.device-tablet.orientation-portrait .feature-btn span {
+    order: 2 !important;
+    display: block !important;
+    text-align: center !important;
+}
+
 @keyframes featureFadeIn {
     from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+.feature-sections h2,
 .feature-sections h3 {
     text-align: center;
     color: #7a4a4a; /* Tom mais escuro para melhor contraste */
@@ -2510,6 +3405,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     min-width: 0; /* Permite que o flex-shrink funcione corretamente */
 }
 
+  /* Desktop: Layout horizontal (carrossel) */
   .feature-carousel-track {
       display: flex !important;
       flex-direction: row !important; /* Garante que seja horizontal */
@@ -2530,13 +3426,53 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
       flex-flow: row nowrap !important;
   }
   
-  /* REGRA EXTREMAMENTE ESPECÍFICA PARA GARANTIR LAYOUT HORIZONTAL */
-  .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
-      display: flex !important;
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
-      grid-template-columns: none !important;
-      grid-template-rows: none !important;
+  /* REGRA EXTREMAMENTE ESPECÍFICA PARA GARANTIR LAYOUT HORIZONTAL (apenas desktop) */
+  @media (min-width: 769px) {
+      .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          grid-template-columns: none !important;
+          grid-template-rows: none !important;
+      }
+  }
+  
+  /* Mobile e Tablet: FORÇA GRID 2x2 (sobrescreve TODAS as regras gerais) */
+  @media (max-width: 768px) {
+      .feature-carousel-track,
+      .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track,
+      #feature-carousel-track {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          grid-template-rows: repeat(2, auto) !important;
+          gap: 1rem !important;
+          flex-direction: column !important;
+          flex-wrap: wrap !important;
+          transform: none !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          padding: 0 1rem !important;
+          transition: none !important;
+      }
+  }
+  
+  body.device-mobile .feature-carousel-track,
+  body.device-tablet .feature-carousel-track,
+  body.device-mobile .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track,
+  body.device-tablet .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track,
+  body.device-mobile #feature-carousel-track,
+  body.device-tablet #feature-carousel-track {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      grid-template-rows: repeat(2, auto) !important;
+      gap: 1rem !important;
+      flex-direction: column !important;
+      flex-wrap: wrap !important;
+      transform: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 0 1rem !important;
+      transition: none !important;
   }
 
 .feature-btn {
@@ -2644,8 +3580,24 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     order: 1 !important; /* Garante que o ícone venha antes do texto */
     display: block !important;
-    margin-bottom: 0 !important; /* Remove qualquer margin-bottom que possa existir */
+    margin-bottom: 0.5rem !important; /* Espaçamento entre ícone e texto */
     line-height: 1 !important; /* Evita espaçamento extra */
+}
+
+/* Mobile: Garante que ícone fique acima do texto */
+@media (max-width: 768px) {
+    .feature-btn {
+        flex-direction: column !important;
+    }
+    
+    .feature-btn i {
+        order: 1 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .feature-btn span {
+        order: 2 !important;
+    }
 }
 
 .feature-btn:hover i {
@@ -2687,36 +3639,18 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     transform: none;
 }
 
-/* Carousel Dots */
-.carousel-dots {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.6rem;
-    margin-top: 1rem;
-    padding: 0.5rem 0;
+/* Carousel Dots - REMOVIDO (não usar mais bolinhas) */
+.carousel-dots,
+#feature-carousel-dots {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .carousel-dots .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(244, 166, 166, 0.4);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-}
-
-.carousel-dots .dot.active {
-    background: #f4a6a6;
-    width: 12px;
-    height: 12px;
-    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.5);
-}
-
-.carousel-dots .dot:hover {
-    background: rgba(244, 166, 166, 0.7);
-    transform: scale(1.2);
+    display: none !important;
 }
 
   /* ===== RESOURCES MODAL ===== */
@@ -2814,6 +3748,287 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     border-radius: 10px;
     margin: 1rem 0;
     display: block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(244, 166, 166, 0.2);
+}
+
+/* Informações técnicas dos passos */
+.passo-info-tecnica {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-left: 4px solid #f4a6a6;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.8rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #8b5a5a;
+    font-size: 0.9rem;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.info-valor {
+    color: #666;
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+/* Indicador de força */
+.info-forca {
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(244, 166, 166, 0.3);
+}
+
+.info-forca .info-label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.info-forca .info-valor {
+    display: inline-block;
+    font-weight: 600;
+    color: #8b5a5a;
+    margin-bottom: 0.5rem;
+}
+
+.forca-bar {
+    width: 100%;
+    height: 20px;
+    background: #f0f0f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.forca-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f4a6a6 0%, #e74c3c 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    box-shadow: 0 2px 4px rgba(244, 166, 166, 0.3);
+    position: relative;
+}
+
+.forca-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.forca-nivel {
+    font-size: 0.8rem;
+    color: #999;
+    font-style: italic;
+    display: block;
+    margin-top: 0.3rem;
+}
+
+/* Detalhes técnicos */
+.info-detalhes {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(244, 166, 166, 0.3);
+}
+
+.info-detalhes .info-label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.info-detalhes .info-valor {
+    background: white;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(244, 166, 166, 0.2);
+    line-height: 1.6;
+}
+
+/* Informações de temperatura */
+.info-temperatura {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(244, 166, 166, 0.3);
+}
+
+.temperatura-destaque {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: #e74c3c !important;
+    display: inline-block;
+    background: #fff3e8;
+    padding: 0.3rem 0.8rem;
+    border-radius: 8px;
+    border: 2px solid #f39c12;
+    margin: 0.5rem 0;
+}
+
+.temperatura-ambiente {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.como-testar {
+    background: #e8f5e9;
+    padding: 0.6rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    border-left: 3px solid #4caf50;
+    font-size: 0.9rem;
+    color: #2e7d32;
+}
+
+/* Materiais necessários */
+.info-materiais {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(244, 166, 166, 0.3);
+}
+
+.materiais-lista {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0;
+}
+
+.materiais-lista li {
+    padding: 0.4rem 0.8rem;
+    margin: 0.3rem 0;
+    background: white;
+    border-radius: 6px;
+    border-left: 3px solid #f4a6a6;
+    position: relative;
+    padding-left: 2rem;
+}
+
+.materiais-lista li::before {
+    content: '✓';
+    position: absolute;
+    left: 0.6rem;
+    color: #f4a6a6;
+    font-weight: bold;
+}
+
+/* Segurança */
+.info-seguranca {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(244, 166, 166, 0.3);
+}
+
+.seguranca-destaque {
+    background: #fff3e8 !important;
+    border: 2px solid #f39c12 !important;
+    padding: 0.8rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    color: #d68910 !important;
+}
+
+/* Telefones úteis */
+.info-telefones {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(244, 166, 166, 0.3);
+}
+
+.telefones-destaque {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%) !important;
+    border: 2px solid #e74c3c !important;
+    padding: 0.8rem !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    color: #c0392b !important;
+    font-size: 1rem !important;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+}
+
+/* Emergência */
+.info-emergencia {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #e74c3c;
+    background: #ffe8e8;
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #e74c3c;
+}
+
+.emergencia-destaque {
+    background: #fff !important;
+    border: 2px solid #e74c3c !important;
+    padding: 1rem !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    color: #c0392b !important;
+    font-size: 1rem !important;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    animation: pulse-emergencia 2s infinite;
+}
+
+@keyframes pulse-emergencia {
+    0%, 100% { box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); }
+    50% { box-shadow: 0 4px 20px rgba(231, 76, 60, 0.6); }
+}
+
+/* Responsivo para informações técnicas */
+@media (max-width: 768px) {
+    .passo-info-tecnica {
+        padding: 0.8rem;
+    }
+    
+    .info-label {
+        min-width: 100px;
+        font-size: 0.85rem;
+    }
+    
+    .info-valor {
+        font-size: 0.85rem;
+    }
+    
+    .forca-bar {
+        height: 18px;
+    }
+    
+    .temperatura-destaque {
+        font-size: 1rem !important;
+        padding: 0.25rem 0.6rem !important;
+    }
+    
+    .telefones-destaque,
+    .emergencia-destaque {
+        font-size: 0.9rem !important;
+        padding: 0.7rem !important;
+    }
 }
 
 .alerta-importante {
@@ -3066,6 +4281,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         width: calc(100% - 2rem);
         margin: 0 auto;
         box-shadow: 0 8px 30px rgba(244, 166, 166, 0.25);
+        overflow: visible;
+        overflow-y: auto;
     }
 
     .login-header {
@@ -3214,9 +4431,13 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         font-size: 0.9rem;
     }
     
+    .login-form .form-group .input-icon,
     .login-form .form-group i {
-        font-size: 0.95rem;
-        left: 0.85rem;
+        font-size: 0.95rem !important;
+        left: 0.85rem !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        position: absolute !important;
     }
     
     .btn-login-main {
@@ -3274,29 +4495,51 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
           box-sizing: border-box !important;
       }
       
-      .feature-carousel-track {
-          display: flex !important;
-          flex-direction: row !important;
-          flex-wrap: nowrap !important;
-          /* FORÇA LAYOUT HORIZONTAL - REGRAS MUITO ESPECÍFICAS */
-          grid-template-columns: none !important;
-          grid-template-rows: none !important;
-          grid-auto-flow: row !important;
-          column-count: auto !important;
-          column-width: auto !important;
-          flex-flow: row nowrap !important;
-          width: 100% !important;
-          height: auto !important;
-          overflow: visible !important;
+      /* Desktop: Layout horizontal */
+      @media (min-width: 769px) {
+          .feature-carousel-track {
+              display: flex !important;
+              flex-direction: row !important;
+              flex-wrap: nowrap !important;
+              /* FORÇA LAYOUT HORIZONTAL - REGRAS MUITO ESPECÍFICAS */
+              grid-template-columns: none !important;
+              grid-template-rows: none !important;
+              grid-auto-flow: row !important;
+              column-count: auto !important;
+              column-width: auto !important;
+              flex-flow: row nowrap !important;
+              width: 100% !important;
+              height: auto !important;
+              overflow: visible !important;
+          }
+          
+          .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+              display: flex !important;
+              flex-direction: row !important;
+              flex-wrap: nowrap !important;
+              grid-template-columns: none !important;
+              grid-template-rows: none !important;
+          }
       }
       
-      /* REGRA EXTREMAMENTE ESPECÍFICA PARA GARANTIR LAYOUT HORIZONTAL */
-      .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
-          display: flex !important;
-          flex-direction: row !important;
-          flex-wrap: nowrap !important;
-          grid-template-columns: none !important;
-          grid-template-rows: none !important;
+      /* Mobile: Grid 2x2 */
+      @media (max-width: 768px) {
+          .feature-carousel-track {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              grid-template-rows: repeat(2, auto) !important;
+              gap: 1rem !important;
+              transform: none !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              padding: 0 1rem !important;
+          }
+          
+          .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              grid-template-rows: repeat(2, auto) !important;
+          }
       }
 
     .carousel-btn {
@@ -3387,30 +4630,52 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
           box-sizing: border-box !important;
       }
 
-      .feature-carousel-track {
-          display: flex !important;
-          flex-direction: row !important;
-          flex-wrap: nowrap !important;
-          justify-content: flex-start !important;
-          width: 100% !important;
-          overflow: visible !important;
-          /* FORÇA LAYOUT HORIZONTAL - REGRAS MUITO ESPECÍFICAS */
-          grid-template-columns: none !important;
-          grid-template-rows: none !important;
-          grid-auto-flow: row !important;
-          column-count: auto !important;
-          column-width: auto !important;
-          flex-flow: row nowrap !important;
-          height: auto !important;
+      /* Desktop: Layout horizontal */
+      @media (min-width: 769px) {
+          .feature-carousel-track {
+              display: flex !important;
+              flex-direction: row !important;
+              flex-wrap: nowrap !important;
+              justify-content: flex-start !important;
+              width: 100% !important;
+              overflow: visible !important;
+              /* FORÇA LAYOUT HORIZONTAL - REGRAS MUITO ESPECÍFICAS */
+              grid-template-columns: none !important;
+              grid-template-rows: none !important;
+              grid-auto-flow: row !important;
+              column-count: auto !important;
+              column-width: auto !important;
+              flex-flow: row nowrap !important;
+              height: auto !important;
+          }
+          
+          .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+              display: flex !important;
+              flex-direction: row !important;
+              flex-wrap: nowrap !important;
+              grid-template-columns: none !important;
+              grid-template-rows: none !important;
+          }
       }
       
-      /* REGRA EXTREMAMENTE ESPECÍFICA PARA GARANTIR LAYOUT HORIZONTAL */
-      .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
-          display: flex !important;
-          flex-direction: row !important;
-          flex-wrap: nowrap !important;
-          grid-template-columns: none !important;
-          grid-template-rows: none !important;
+      /* Mobile: Grid 2x2 */
+      @media (max-width: 768px) {
+          .feature-carousel-track {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              grid-template-rows: repeat(2, auto) !important;
+              gap: 1rem !important;
+              transform: none !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              padding: 0 1rem !important;
+          }
+          
+          .feature-sections .feature-carousel-container .feature-carousel .feature-carousel-track {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              grid-template-rows: repeat(2, auto) !important;
+          }
       }
 
     .carousel-btn {
@@ -4269,6 +5534,37 @@ body.orientation-portrait.device-mobile .btn-login-main {
     padding: 0.85rem 1rem !important;
     font-size: 0.95rem !important;
     min-height: 48px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Remember me - Mobile Portrait */
+body.orientation-portrait.device-mobile .remember-me-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0.5rem 0 !important;
+}
+
+body.orientation-portrait.device-mobile .remember-me-label {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+}
+
+body.orientation-portrait.device-mobile .remember-me-text {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    width: auto !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    flex: 1 1 auto !important;
 }
 
 /* Mobile Landscape - Tela de Login */
@@ -4327,6 +5623,32 @@ body.orientation-landscape.device-mobile .btn-login-main {
     margin-top: 0.3rem !important;
 }
 
+/* Remember me - Mobile Landscape */
+body.orientation-landscape.device-mobile .remember-me-group {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0.5rem 0 !important;
+}
+
+body.orientation-landscape.device-mobile .remember-me-label {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+    overflow: visible !important;
+}
+
+body.orientation-landscape.device-mobile .remember-me-text {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    width: auto !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    flex: 1 1 auto !important;
+}
+
 body.orientation-landscape.device-mobile .forgot-password-link {
     margin-top: 0.8rem !important;
     font-size: 0.85rem !important;
@@ -4341,8 +5663,13 @@ body.orientation-portrait.device-mobile .welcome-content {
     width: 100% !important;
 }
 
+body.orientation-portrait.device-mobile .welcome-content {
+    padding: 1.5rem 1rem 1.5rem 0.5rem !important;
+    margin-left: 0.5rem !important;
+}
+
 body.orientation-portrait.device-mobile .welcome-content h2 {
-    font-size: 1.3rem !important;
+    font-size: 1.6rem !important;
     margin-bottom: 0.5rem !important;
 }
 
@@ -4372,13 +5699,14 @@ body.orientation-portrait.device-mobile .quick-btn {
 
 /* Mobile Landscape - Welcome Content */
 body.orientation-landscape.device-mobile .welcome-content {
-    padding: 0.8rem 1rem !important;
+    padding: 1rem 0.8rem 1rem 0.6rem !important;
     max-width: 100% !important;
     width: 100% !important;
+    margin-left: -0.2rem !important;
 }
 
 body.orientation-landscape.device-mobile .welcome-content h2 {
-    font-size: 1.2rem !important;
+    font-size: 1.5rem !important;
     margin-bottom: 0.4rem !important;
 }
 
@@ -4575,6 +5903,9 @@ body.device-mobile .welcome-message {
     align-items: center !important;
     justify-content: flex-start !important;
     padding: 0.8rem 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
 }
 
 body.device-mobile .welcome-content {
@@ -4637,9 +5968,16 @@ body.device-mobile.orientation-portrait #login-screen .form-group input {
 }
 
 body.device-mobile.orientation-portrait #login-screen .btn-login-main {
-    padding: 0.85rem 1rem !important;
+    padding: 0.85rem 1.2rem !important;
     font-size: 0.95rem !important;
     min-height: 48px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
 }
 
 /* Tela de Login - Mobile Landscape - PRIORIDADE MÁXIMA */
@@ -4694,10 +6032,12 @@ body.device-mobile.orientation-landscape #login-screen .form-group input {
 }
 
 body.device-mobile.orientation-landscape #login-screen .btn-login-main {
-    padding: 0.75rem 1rem !important;
+    padding: 0.75rem 1.2rem !important;
     font-size: 0.9rem !important;
     min-height: 44px !important;
     margin-top: 0.3rem !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
 }
 
 body.device-mobile.orientation-landscape #login-screen .forgot-password-link {
@@ -4708,9 +6048,9 @@ body.device-mobile.orientation-landscape #login-screen .forgot-password-link {
 /* Menu Inicial - Mobile Portrait - PRIORIDADE MÁXIMA */
 body.device-mobile.orientation-portrait #main-container .welcome-content,
 body.device-mobile.orientation-portrait .welcome-content {
-    padding: 1rem 0.8rem !important;
-    max-width: 100% !important;
-    width: 100% !important;
+    padding: 0.4rem 0.5rem !important; /* Reduzido ainda mais */
+    max-width: 85% !important; /* Reduzido de 90% para 85% */
+    width: auto !important; /* Ajusta ao conteúdo */
     margin: 0 auto !important;
     box-sizing: border-box !important;
     text-align: center !important;
@@ -4722,9 +6062,15 @@ body.device-mobile.orientation-portrait .welcome-content {
     transform: none !important;
 }
 
+body.device-mobile.orientation-portrait #main-container .welcome-content,
+body.device-mobile.orientation-portrait .welcome-content {
+    padding: 0.5rem 0.6rem 0.5rem 0.3rem !important; /* Reduzido ainda mais */
+    margin-left: 0.3rem !important;
+}
+
 body.device-mobile.orientation-portrait #main-container .welcome-content h2,
 body.device-mobile.orientation-portrait .welcome-content h2 {
-    font-size: 1.3rem !important;
+    font-size: 1.6rem !important;
     margin-bottom: 0.5rem !important;
     text-align: center !important;
     width: 100% !important;
@@ -4786,10 +6132,11 @@ body.device-mobile.orientation-portrait .quick-btn {
 /* Menu Inicial - Mobile Landscape - PRIORIDADE MÁXIMA */
 body.device-mobile.orientation-landscape #main-container .welcome-content,
 body.device-mobile.orientation-landscape .welcome-content {
-    padding: 0.8rem 1rem !important;
-    max-width: 100% !important;
-    width: 100% !important;
+    padding: 0.4rem 0.5rem 0.4rem 0.3rem !important; /* Reduzido ainda mais */
+    max-width: 85% !important; /* Reduzido de 90% para 85% */
+    width: auto !important; /* Ajusta ao conteúdo */
     margin: 0 auto !important;
+    margin-left: -0.2rem !important;
     box-sizing: border-box !important;
     text-align: center !important;
     display: block !important;
@@ -4802,7 +6149,7 @@ body.device-mobile.orientation-landscape .welcome-content {
 
 body.device-mobile.orientation-landscape #main-container .welcome-content h2,
 body.device-mobile.orientation-landscape .welcome-content h2 {
-    font-size: 1.2rem !important;
+    font-size: 1.5rem !important;
     margin-bottom: 0.4rem !important;
     text-align: center !important;
     width: 100% !important;
@@ -4874,7 +6221,7 @@ body.device-mobile .welcome-message {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    padding: 0.8rem 0 !important;
+    padding: 0.8rem 0 100px 0 !important; /* Adicionado padding-bottom de 100px */
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
@@ -4904,8 +6251,9 @@ body.device-mobile .welcome-message .welcome-content {
         margin: 1rem auto !important;
     }
 
+    .feeling-box h2,
     .feeling-box h3 {
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
     }
 
     .feeling-btn {
@@ -4914,12 +6262,13 @@ body.device-mobile .welcome-message .welcome-content {
     }
 
     .support-links {
-        margin: 1.5rem auto !important;
-        padding: 0 1rem !important;
+        margin: 2.5rem auto 2rem !important; /* Aumentado margin-top para criar mais espaço */
+        padding: 0 1rem 1rem !important; /* Adicionado padding-bottom */
     }
 
+    .support-links h2,
     .support-links h3 {
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
     }
 
     .support-link {
@@ -4928,8 +6277,11 @@ body.device-mobile .welcome-message .welcome-content {
     }
 
     .rotating-message {
-        margin-top: 1.5rem !important;
-        padding: 0.8rem !important;
+        display: none !important; /* Oculta completamente */
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     #rotating-text {
@@ -5081,22 +6433,64 @@ body.device-mobile .welcome-message .welcome-content {
         margin-bottom: clamp(0.8rem, 2.5vw, 1rem) !important;
     }
 
-    .feature-carousel-container {
-        padding: 0 clamp(1rem, 4vw, 1.5rem) !important;
-        gap: clamp(0.3rem, 1.5vw, 0.5rem) !important;
+    /* Esconde botões de navegação do carrossel */
+    .feature-carousel-container .carousel-btn {
+        display: none !important;
+    }
+    
+    .feature-carousel-container .carousel-dots {
+        display: none !important;
     }
 
+    .feature-carousel-container {
+        padding: 0 clamp(0.8rem, 3vw, 1.2rem) !important;
+        gap: 0 !important;
+    }
+    
+    .feature-carousel {
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+    }
+
+    /* Grid 2x2 em mobile */
     .feature-carousel-track {
-        gap: clamp(0.6rem, 2vw, 1rem) !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: clamp(0.8rem, 2.5vw, 1.2rem) !important;
+        transform: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
     }
 
     .feature-btn {
         padding: clamp(1rem, 4vw, 1.3rem) clamp(0.8rem, 3vw, 1.1rem) !important;
         font-size: clamp(0.8rem, 3.2vw, 0.95rem) !important;
         border-radius: clamp(14px, 3.5vw, 18px) !important;
-        min-width: clamp(110px, 28vw, 140px) !important;
-        min-height: clamp(100px, 25vw, 120px) !important;
-        gap: clamp(0.6rem, 2vw, 0.8rem) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: auto !important;
+        min-height: clamp(90px, 22vw, 110px) !important;
+        gap: clamp(0.5rem, 1.5vw, 0.7rem) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .feature-btn i {
+        order: 1 !important;
+        display: block !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    .feature-btn span {
+        order: 2 !important;
+        display: block !important;
+        text-align: center !important;
     }
 
     .feature-btn i {
@@ -5121,8 +6515,9 @@ body.device-mobile .welcome-message .welcome-content {
         border-radius: clamp(16px, 4vw, 20px) !important;
     }
 
+    .feeling-box h2,
     .feeling-box h3 {
-        font-size: clamp(0.9rem, 3.5vw, 1rem) !important;
+        font-size: clamp(0.8rem, 3vw, 0.9rem) !important;
         margin-bottom: clamp(0.8rem, 2.5vw, 1rem) !important;
     }
 
@@ -5153,10 +6548,13 @@ body.device-mobile .welcome-message .welcome-content {
         border-radius: clamp(10px, 2.5vw, 12px) !important;
     }
 
-    /* Rotating Message */
+    /* Rotating Message - REMOVIDA */
     .rotating-message {
-        margin-top: clamp(1.5rem, 4vw, 2rem) !important;
-        padding: clamp(0.8rem, 2.5vw, 1.2rem) !important;
+        display: none !important; /* Oculta completamente */
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     #rotating-text {
@@ -5172,6 +6570,13 @@ body.device-mobile .welcome-message .welcome-content {
     /* Sidebar - adaptação para mobile */
     .sidebar {
         width: clamp(240px, 70vw, 280px) !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+    
+    .sidebar-content {
+        overflow: visible !important;
+        height: auto !important;
     }
 
     .sidebar-btn {
@@ -5304,8 +6709,9 @@ body.device-mobile .welcome-message .welcome-content {
         max-width: calc(100% - clamp(2rem, 6vw, 3rem)) !important;
     }
 
+    .feeling-box h2,
     .feeling-box h3 {
-        font-size: clamp(0.95rem, 3.5vw, 1.05rem) !important;
+        font-size: clamp(0.8rem, 3vw, 0.9rem) !important;
     }
 
     .feeling-btn {
@@ -5329,10 +6735,13 @@ body.device-mobile .welcome-message .welcome-content {
         font-size: clamp(0.85rem, 3vw, 0.92rem) !important;
     }
 
-    /* Rotating Message */
+    /* Rotating Message - REMOVIDA */
     .rotating-message {
-        margin-top: clamp(1.8rem, 4vw, 2.2rem) !important;
-        padding: clamp(1rem, 2.5vw, 1.2rem) !important;
+        display: none !important; /* Oculta completamente */
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     #rotating-text {
@@ -5443,10 +6852,17 @@ body.device-mobile .welcome-message .welcome-content {
     }
 
     .feeling-box,
-    .support-links,
+    .support-links {
+        margin-top: clamp(0.1rem, 1.5vw, 0.5rem) !important;
+        margin-bottom: clamp(0.3rem, 1.5vw, 0.6rem) !important;
+    }
+    
     .rotating-message {
-        margin-top: clamp(0.8rem, 2vw, 1.2rem) !important;
-        margin-bottom: clamp(0.8rem, 2vw, 1.2rem) !important;
+        display: none !important; /* Oculta completamente */
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 }
 
@@ -5566,15 +6982,22 @@ body.device-mobile .welcome-message .welcome-content {
     .welcome-content h1,
     .welcome-content h2,
     .feeling-box p,
-    .feeling-box h3,
     .support-links p,
-    .support-links h3,
     .feature-sections p,
     .feature-sections h3 {
         text-align: center !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         font-size: clamp(0.9rem, 3vw, 1rem) !important;
+    }
+    .feeling-box h2,
+    .feeling-box h3,
+    .support-links h2,
+    .support-links h3 {
+        text-align: center !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        font-size: clamp(0.8rem, 2.5vw, 0.9rem) !important;
     }
 
     /* Layout em coluna para elementos flexbox */
@@ -5931,11 +7354,15 @@ body.device-mobile .welcome-message .welcome-content {
 
 /* ===== CSS RESPONSIVO PARA O CABEÇALHO E BLOCO DE BOAS-VINDAS DO CABEÇALHO NO MOBILE ===== */
 @media only screen and (max-width: 768px) {
-    /* Ajuste do header completo */
+    /* Ajuste do header completo - SOBRESCRITO pelas regras acima */
     .header {
-        padding: 0.8rem 1rem !important;
+        padding: 1rem 0.5rem !important; /* Usa os valores das regras acima */
+        min-height: 55px !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important; /* Centraliza verticalmente */
+        justify-content: center !important; /* Centraliza horizontalmente */
     }
 
     .header-content {
@@ -5947,54 +7374,45 @@ body.device-mobile .welcome-message .welcome-content {
         width: 100% !important;
     }
 
-    /* Logo ajustado */
+    /* Logo ajustado - SOBRESCRITO pelas regras acima */
     .logo {
         display: flex !important;
         align-items: center !important;
         gap: 0.4rem !important;
         flex: 0 0 auto !important;
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important; /* Centralizado verticalmente */
+        transform: translate(-50%, -50%) !important; /* Centraliza perfeitamente */
     }
 
     .logo h1 {
-        font-size: 1.1rem !important;
+        font-size: 1rem !important; /* Usa o valor das regras acima */
         white-space: nowrap !important;
     }
 
     .logo i {
-        font-size: 1.2rem !important;
+        font-size: 1rem !important; /* Usa o valor das regras acima */
     }
 
     .logo .subtitle {
         display: none !important; /* Oculta subtítulo no mobile para economizar espaço */
     }
 
-    /* Container do bloco de boas-vindas do cabeçalho */
+    /* Container do bloco de boas-vindas do cabeçalho - OCULTO conforme regras acima */
     .header-right {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-end !important;
-        justify-content: center !important;
-        gap: 0.4rem !important;
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        display: none !important; /* OCULTO conforme regras acima */
     }
 
-    /* Bloco de boas-vindas do cabeçalho */
+    /* Bloco de boas-vindas do cabeçalho - OCULTO */
     .header-right .welcome-message,
-    #welcome-user {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-end !important;
-        padding: 0.4rem 0.6rem !important;
-        margin: 0 !important;
-        background: rgba(255, 255, 255, 0.2) !important;
-        border-radius: 12px !important;
-        backdrop-filter: blur(10px) !important;
-        width: auto !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
+    .header-right #welcome-user {
+        display: none !important;
+    }
+    
+    /* Status-indicator também oculto conforme regras acima */
+    .header-right .status-indicator {
+        display: none !important;
     }
 
     /* Texto de saudação do cabeçalho */
@@ -6272,10 +7690,10 @@ body.device-mobile .welcome-message .welcome-content {
     #send-button,
     #close-sidebar,
     .close-modal {
-        min-height: 44px !important;
-        min-width: 44px !important;
-        padding: 0.75rem 1rem !important;
-        font-size: 0.9rem !important;
+        min-height: 40px !important;
+        min-width: 40px !important;
+        padding: 0.5rem !important;
+        font-size: 0.85rem !important;
         touch-action: manipulation !important; /* Remove delay de 300ms no mobile */
     }
 
@@ -6297,8 +7715,8 @@ body.device-mobile .welcome-message .welcome-content {
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2) !important;
     }
 
-    /* Overlay quando sidebar está aberta */
-    .sidebar.open + .chat-area::before,
+    /* Overlay quando sidebar está aberta - REMOVIDO para não escurecer a tela */
+    /* .sidebar.open + .chat-area::before,
     body.sidebar-open::before {
         content: '';
         position: fixed;
@@ -6309,15 +7727,17 @@ body.device-mobile .welcome-message .welcome-content {
         background: rgba(0, 0, 0, 0.5);
         z-index: 999;
         animation: fadeIn 0.3s ease;
-    }
+    } */
 
     /* MENU TOGGLE - Garantir visibilidade e tamanho */
     #menu-toggle {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        min-width: 48px !important;
-        min-height: 48px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        width: 40px !important;
+        height: 40px !important;
         font-size: 1.2rem !important;
     }
 
@@ -6488,6 +7908,287 @@ body.device-mobile .welcome-message .welcome-content {
     button,
     .btn {
         min-height: 42px !important;
+    }
+}
+
+/* ============================================
+   FOOTER - Avisos Médicos e Privacidade
+   ============================================ */
+.app-footer {
+    background: linear-gradient(135deg, #fef9f7, #f8e8e8);
+    border-top: 2px solid rgba(244, 166, 166, 0.2);
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-section {
+    margin-bottom: 1rem;
+}
+
+.footer-disclaimer {
+    color: #8b5a5a;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    background: #fff9f7;
+    border-radius: 8px;
+    border-left: 4px solid #f4a6a6;
+}
+
+.footer-disclaimer i {
+    color: #f4a6a6;
+    margin-right: 0.5rem;
+}
+
+.footer-disclaimer strong {
+    color: #8b5a5a;
+    font-weight: 600;
+}
+
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: #8b5a5a;
+    margin-top: 1rem;
+}
+
+.footer-link {
+    color: #f4a6a6;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.footer-link:hover {
+    color: #e88585;
+    text-decoration: underline;
+}
+
+.footer-link:focus {
+    outline: 2px solid #f4a6a6;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.footer-separator {
+    color: #d4a5a5;
+    margin: 0 0.25rem;
+}
+
+.footer-copyright {
+    color: #8b5a5a;
+    font-size: 0.85rem;
+}
+
+/* Mobile - Footer */
+@media (max-width: 768px) {
+    .app-footer {
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .footer-disclaimer {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .footer-separator {
+        display: none;
+    }
+    
+    .footer-link,
+    .footer-copyright {
+        font-size: 0.8rem;
+    }
+}
+
+/* Acessibilidade - Contraste melhorado */
+@media (prefers-contrast: high) {
+    .footer-disclaimer {
+        border-left-width: 6px;
+        background: #ffffff;
+    }
+    
+    .footer-link {
+        text-decoration: underline;
+    }
+}
+
+/* Acessibilidade - Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+    .footer-link {
+        transition: none;
+    }
+}
+
+/* Notificação de Sucesso */
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #fff 0%, #fff9f7 100%);
+    border: 2px solid #f4a6a6;
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 8px 32px rgba(244, 166, 166, 0.4);
+    z-index: 10001;
+    max-width: 400px;
+    min-width: 300px;
+    animation: slideInRight 0.4s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.notification-toast.success {
+    border-color: #a8d5a8;
+    box-shadow: 0 8px 32px rgba(168, 213, 168, 0.4);
+}
+
+.notification-toast.error {
+    border-color: #f4a6a6;
+    box-shadow: 0 8px 32px rgba(244, 166, 166, 0.4);
+}
+
+.notification-toast .notification-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.notification-toast.success .notification-icon {
+    color: #a8d5a8;
+}
+
+.notification-toast.error .notification-icon {
+    color: #f4a6a6;
+}
+
+.notification-toast .notification-content {
+    flex: 1;
+}
+
+.notification-toast .notification-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #8b5a5a;
+    margin-bottom: 0.3rem;
+    line-height: 1.4;
+}
+
+.notification-toast .notification-message {
+    font-size: 0.95rem;
+    color: #8b5a5a;
+    line-height: 1.5;
+}
+
+.notification-toast .notification-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: transparent;
+    border: none;
+    color: #8b5a5a;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.notification-toast .notification-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.notification-toast.hiding {
+    animation: slideOutRight 0.3s ease-out forwards;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .notification-toast {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        min-width: auto;
+        padding: 1.2rem 1.5rem;
+    }
+    
+    .notification-toast .notification-icon {
+        font-size: 1.8rem;
+    }
+    
+    .notification-toast .notification-title {
+        font-size: 1rem;
+    }
+    
+    .notification-toast .notification-message {
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile Portrait */
+@media (max-width: 479px) {
+    .notification-toast {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        padding: 1rem 1.2rem;
+        gap: 0.8rem;
+    }
+    
+    .notification-toast .notification-icon {
+        font-size: 1.6rem;
+    }
+    
+    .notification-toast .notification-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .notification-toast .notification-message {
+        font-size: 0.85rem;
     }
 }
 
