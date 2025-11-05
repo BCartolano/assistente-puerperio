@@ -6,7 +6,7 @@ Um chatbot **COMPLETO** especializado em oferecer apoio e informações sobre ge
 
 ### 💬 Chat Inteligente
 - **79 categorias** de perguntas e respostas sobre gestação, parto, puerpério, amamentação e cuidados com bebê
-- Sistema de respostas baseado em IA (OpenAI GPT-4o-mini) com fallback inteligente
+- Sistema de respostas baseado em IA (Google Gemini) com fallback inteligente
 - Detecção automática de alertas médicos
 - Mensagens de apoio empáticas e acolhedoras
 - **Telefones úteis incluídos automaticamente** nas respostas
@@ -54,7 +54,7 @@ Um chatbot **COMPLETO** especializado em oferecer apoio e informações sobre ge
 
 - **Backend**: Python Flask
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **IA**: OpenAI GPT-4o-mini (opcional)
+- **IA**: Google Gemini (obrigatório)
 - **Estilização**: CSS customizado com gradientes e animações
 - **Ícones**: Font Awesome
 
@@ -94,8 +94,8 @@ Um chatbot **COMPLETO** especializado em oferecer apoio e informações sobre ge
    # Copie o arquivo de template
    copy .env.template .env
    
-   # Edite o arquivo .env e adicione sua chave da OpenAI (opcional)
-   OPENAI_API_KEY=sua_chave_aqui
+   # Edite o arquivo .env e adicione sua chave do Gemini (obrigatório)
+   GEMINI_API_KEY=sua_chave_gemini_aqui
    ```
 
 5. **Execute o aplicativo**:
@@ -149,15 +149,16 @@ chatbot-puerperio/
 └── README_DEPLOY.md                # Instruções de deploy
 ```
 
-## 🔧 Configuração da API OpenAI (Opcional)
+## 🔧 Configuração da API Gemini (Obrigatório)
 
-O chatbot funciona perfeitamente sem a API da OpenAI, usando apenas a base de conhecimento local. Para habilitar respostas mais avançadas:
+O chatbot utiliza a API do Google Gemini para fornecer respostas inteligentes e humanizadas. Para configurar:
 
-1. Crie uma conta na [OpenAI](https://openai.com)
-2. Gere uma chave de API
-3. Adicione no arquivo `.env`:
+1. Acesse [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Crie uma conta Google (se necessário)
+3. Gere uma chave de API gratuita
+4. Adicione no arquivo `.env`:
    ```
-   OPENAI_API_KEY=sk-sua-chave-aqui
+   GEMINI_API_KEY=sua_chave_gemini_aqui
    ```
 
 ## 📊 Base de Conhecimento
@@ -232,7 +233,7 @@ O projeto está **totalmente configurado** para deploy automático no Render:
 
 **Variáveis de Ambiente (no Render):**
 ```env
-OPENAI_API_KEY=sua_chave (opcional)
+GEMINI_API_KEY=sua_chave_gemini (obrigatório)
 PORT=5000 (automático)
 ```
 
@@ -270,7 +271,7 @@ Para dúvidas ou problemas:
 ## 🙏 Agradecimentos
 
 - Comunidade Python/Flask
-- OpenAI pela API GPT
+- Google Gemini pela API
 - Font Awesome pelos ícones
 - Todas as mães que contribuíram com feedback
 

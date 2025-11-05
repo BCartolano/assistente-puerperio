@@ -57,7 +57,7 @@
   },
   "barriga_flacida": {
     "pergunta": "Minha barriga ficou flácida. Vou ter que fazer uma plástica?",
-    "resposta": "Não necessariamente! A flacidez melhora muito com exercícios específicos para o core (abdominais, prancha) após liberação médica. Creme com vitamina E e massagens podem ajudar. Se após 1-2 anos ainda incomodar muito, aí sim considere avaliar opções cirúrgicas. Mas dê tempo ao corpo se recuperar naturalmente primeiro."
+    "resposta": "Não necessariamente! A flacidez melhora muito com exercícios específicos para o core (abdominais, prancha) após liberação médica. Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. Massagens podem ajudar. Se após 1-2 anos ainda incomodar muito, aí sim considere avaliar opções cirúrgicas. Mas dê tempo ao corpo se recuperar naturalmente primeiro."
   },
   "cirurgia_plastica_pos_parto": {
     "pergunta": "Quanto tempo após o parto posso fazer uma cirurgia plástica, como lipo ou prótese de silicone?",
@@ -97,7 +97,7 @@
   },
   "queda_cabelo_amamentacao": {
     "pergunta": "É comum os cabelos caírem durante o período de amamentação?",
-    "resposta": "Sim, é muito comum! Durante a gravidez os cabelos param de cair, então no pós-parto há uma queda 'compensatória'. Isso geralmente melhora após 6-12 meses. Mantenha uma boa alimentação, considere suplementos se necessário e seja paciente."
+    "resposta": "Sim, é muito comum! Durante a gravidez os cabelos param de cair, então no pós-parto há uma queda 'compensatória'. Isso geralmente melhora após 6-12 meses. Mantenha uma boa alimentação. Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. Seja paciente."
   },
   "exercicio_producao_leite": {
     "pergunta": "A prática de atividade física prejudica a produção do leite?",
@@ -181,7 +181,7 @@
   },
   "medicamentos_seguros_gravidez": {
     "pergunta": "Quais medicamentos posso tomar com segurança?",
-    "resposta": "Muitos medicamentos são contraindicados na gravidez. NUNCA tome remédios por conta própria. Medicamentos seguros precisam ser prescritos pelo médico que conhece sua gestação. Até remédios comuns como alguns antigripais podem ser perigosos."
+    "resposta": "Muitos medicamentos são contraindicados na gravidez. NUNCA tome remédios por conta própria. Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. Medicamentos seguros precisam ser prescritos pelo médico que conhece sua gestação. Até remédios comuns como alguns antigripais podem ser perigosos."
   },
   "tingir_cabelo_gravidez": {
     "pergunta": "Posso tingir o cabelo ou fazer outros procedimentos estéticos?",
@@ -281,7 +281,7 @@
   },
   "prevenir_assadura": {
     "pergunta": "Como prevenir assaduras?",
-    "resposta": "Troque fraldas com frequência, limpe bem a cada troca, deixe área arejar alguns minutos, use pomada preventiva adequada, evite fraldas muito apertadas, lave delicadamente a cada troca. Uma boa higiene é fundamental para prevenir."
+    "resposta": "Troque fraldas com frequência, limpe bem a cada troca, deixe área arejar alguns minutos. Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. Se o pediatra recomendar pomada preventiva, siga as instruções. Evite fraldas muito apertadas, lave delicadamente a cada troca. Uma boa higiene é fundamental para prevenir."
   },
   "colicas_bebe": {
     "pergunta": "Como lidar com as cólicas do bebê?",
@@ -301,7 +301,7 @@
   },
   "sintomas_depressao_pos_parto": {
     "pergunta": "Quais os sintomas da depressão pós-parto e como ela é tratada?",
-    "resposta": "Sintomas: tristeza profunda, perda de interesse, dificuldade de vínculo com bebê, pensamentos negativos, alterações de sono/appetite, cansaço extremo. Tratamento: terapia, medicamentos (compatíveis com amamentação), suporte familiar. Não é culpa sua - é uma condição que tem tratamento eficaz."
+    "resposta": "Sintomas: tristeza profunda, perda de interesse, dificuldade de vínculo com bebê, pensamentos negativos, alterações de sono/appetite, cansaço extremo. Tratamento: terapia, suporte familiar. Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. O tratamento com medicamentos, quando indicado, deve ser prescrito por profissional de saúde qualificado. Não é culpa sua - é uma condição que tem tratamento eficaz."
   },
   "procurar_ajuda_mental": {
     "pergunta": "Quando devo procurar ajuda profissional para a minha saúde mental?",
