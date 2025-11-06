@@ -27,9 +27,19 @@ Guia rápido para usar o projeto **apenas com NGROK** (sem Railway/Render).
 
 ---
 
-## 📝 Passo 2: Criar Arquivo .env (1 minuto)
+## 📝 Passo 2: Verificar Arquivo .env (1 minuto)
 
-1. **Na pasta do projeto**, crie um arquivo chamado `.env`
+O projeto procura o arquivo `.env` nesta ordem:
+1. **Raiz do projeto** (prioridade - será usado primeiro) ✅
+2. Pasta `backend` (só se não houver na raiz)
+
+### Se você JÁ TEM .env:
+- ✅ **Verifique se está na raiz** - será usado automaticamente
+- ✅ **Verifique se tem `GEMINI_API_KEY`** configurada
+- ✅ Se tiver na raiz E na backend, o da **raiz será usado**
+
+### Se NÃO TEM .env:
+1. **Na raiz do projeto**, crie um arquivo chamado `.env`
 
 2. **Copie este conteúdo:**
    ```env
