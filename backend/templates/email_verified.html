@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Verificado - Sophia 💕</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#f4a6a6">
+    <title>Email Confirmado - Sophia 💕</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
         * {
             margin: 0;
@@ -14,30 +18,31 @@
         }
         
         body {
-            font-family: 'Nunito', sans-serif;
-            background: linear-gradient(135deg, #f8f4f0 0%, #e8d5d1 50%, #d4c5c0 100%);
+            background: linear-gradient(135deg, #fef9f7, #f8e8e8, #f0e0e0);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            font-family: 'Nunito', sans-serif;
+            padding: 1rem;
         }
         
-        .container {
+        .verification-container {
             background: white;
             border-radius: 20px;
-            padding: 3rem;
+            padding: 3rem 2rem;
             max-width: 500px;
             width: 100%;
-            box-shadow: 0 10px 40px rgba(244, 166, 166, 0.3);
             text-align: center;
-            animation: fadeIn 0.5s ease;
+            box-shadow: 0 10px 40px rgba(244, 166, 166, 0.3), 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(244, 166, 166, 0.2);
+            animation: fadeInUp 0.6s ease-out;
         }
         
-        @keyframes fadeIn {
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -45,92 +50,105 @@
             }
         }
         
-        .icon {
-            font-size: 5rem;
-            color: #f4a6a6;
-            margin-bottom: 1rem;
-            animation: bounce 1s ease infinite;
+        .verification-icon {
+            font-size: 4rem;
+            color: #a8d5a8;
+            margin-bottom: 1.5rem;
+            animation: scaleIn 0.5s ease-out 0.2s backwards;
         }
         
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
             }
-            50% {
-                transform: translateY(-10px);
+            to {
+                transform: scale(1);
             }
         }
         
-        h1 {
-            font-size: 2rem;
-            color: #8b5a5a;
-            margin-bottom: 1rem;
+        .verification-title {
+            font-size: 1.8rem;
             font-weight: 700;
+            color: #7a4a4a;
+            margin-bottom: 1rem;
+            font-family: 'Nunito', sans-serif;
         }
         
-        p {
+        .verification-message {
             font-size: 1.1rem;
-            color: #9a7a6a;
-            margin-bottom: 2rem;
+            color: #8b6a5a;
             line-height: 1.6;
+            margin-bottom: 2rem;
         }
         
-        .name {
-            color: #f4a6a6;
-            font-weight: 600;
-        }
-        
-        .btn {
+        .verification-link {
             display: inline-block;
-            background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
+            margin-top: 1.5rem;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, #f4a6a6 0%, #f8b8c8 100%);
             color: white;
-            padding: 1rem 2rem;
-            border-radius: 12px;
             text-decoration: none;
+            border-radius: 25px;
             font-weight: 600;
-            font-size: 1rem;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(244, 166, 166, 0.3);
         }
         
-        .btn:hover {
+        .verification-link:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(244, 166, 166, 0.4);
         }
         
-        .btn i {
-            margin-right: 0.5rem;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 2rem;
+        @media (max-width: 768px) {
+            .verification-container {
+                padding: 2rem 1.5rem;
             }
             
-            h1 {
+            .verification-icon {
+                font-size: 3rem;
+            }
+            
+            .verification-title {
                 font-size: 1.5rem;
             }
             
-            .icon {
-                font-size: 4rem;
+            .verification-message {
+                font-size: 1rem;
             }
         }
     </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="icon">✅</div>
-        <h1>Email Verificado! 💕</h1>
-        <p>
-            Olá <span class="name">{{ name }}</span>!<br>
-            Seu email foi verificado com sucesso!<br>
-            Agora você pode fazer login e começar a usar o Sophia.
+    <div class="verification-container">
+        {% if error %}
+        <div class="verification-icon" style="color: #f4a6a6;">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h1 class="verification-title">Erro na Verificação</h1>
+        <p class="verification-message">
+            {% if message %}{{ message }}{% else %}Ocorreu um erro ao verificar seu email. Por favor, tente novamente.{% endif %}
         </p>
-        <a href="/" class="btn">
-            <i class="fas fa-sign-in-alt"></i>
-            Ir para Login
+        {% else %}
+        <div class="verification-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1 class="verification-title">Email Confirmado! ✅</h1>
+        <p class="verification-message">
+            Seu email foi confirmado com sucesso. Você já pode fechar esta página e fazer login no Assistente Puerpério.
+        </p>
+        <p class="verification-message" style="font-size: 0.95rem; color: #9a7a6a; margin-top: 0.5rem;">
+            Pode fechar esta página
+        </p>
+        {% endif %}
+        {% if base_url and not error %}
+        <a href="{{ base_url }}" class="verification-link">
+            <i class="fas fa-home"></i> Voltar ao Início
         </a>
+        {% endif %}
     </div>
 </body>
 </html>
-
