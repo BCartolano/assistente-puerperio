@@ -1166,7 +1166,9 @@ Não force regras rígidas. Deixe seu treinamento guiar você para respostas nat
                 logger.info(f"[CHAT] 📚 Resposta da base local HUMANIZADA (similaridade: {similaridade:.2f})")
         else:
                 # Mensagens de apoio já são humanizadas, mas podemos melhorar
-                resposta_apoio = random.choice(list(self.apoio.values()))
+                apoio_item = random.choice(list(self.apoio.values()))
+                # Suporta tanto estrutura antiga (string) quanto nova (dict com "mensagem")
+                resposta_apoio = apoio_item if isinstance(apoio_item, str) else apoio_item.get("mensagem", str(apoio_item))
                 # Garante que mensagens de apoio também tenham perguntas empáticas
                 if "?" not in resposta_apoio[-50:]:
                     perguntas_empaticas = [
@@ -2217,9 +2219,9 @@ def api_user():
         print(f"[AUTH] Erro ao verificar usuário: {e}")
         return jsonify({"erro": "Não autenticado"}), 401
 
-@app.route('/api/diagnostico', methods=['POST'])
-def api_diagnostico():
-    """Diagnóstico: verifica se o email existe e se o hash está correto"""
+@app.route('/api/verificacao', methods=['POST'])
+def api_verificacao():
+    """Verificação: verifica se o email existe e se o hash está correto"""
     data = request.get_json()
     email = data.get('email', '').strip().lower()
     

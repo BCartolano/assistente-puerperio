@@ -42,6 +42,15 @@ class CoherenceChecker:
             "consulte",
             "profissional",
             "não substitui",
+            "procure orientação",
+            "orientação médica",
+            "orientação de enfermagem",
+            "prescrição médica",
+            "prescrito",
+            "prescrita",
+            "realize apenas com",
+            "deve ser indicado",
+            "deve ser orientado",
             "check_coherence",  # Ignora no próprio script
             "validate_json",    # Ignora nos scripts de validação
             "simulate_dialogue" # Ignora nos scripts de validação
@@ -95,9 +104,13 @@ class CoherenceChecker:
             content_lower = content_str.lower()
             
             for word in self.forbidden_words:
-                if word.lower() in content_lower:
+                # Usa regex com word boundaries para evitar falsos positivos
+                pattern = rf'\b{re.escape(word.lower())}\b'
+                matches = list(re.finditer(pattern, content_lower))
+                
+                for match in matches:
                     # Verifica se está em contexto permitido (avisos médicos)
-                    word_pos = content_lower.find(word.lower())
+                    word_pos = match.start()
                     context_before = content_lower[max(0, word_pos-100):word_pos]
                     context_after = content_lower[word_pos:min(len(content_lower), word_pos+100)]
                     context = context_before + context_after
@@ -108,6 +121,7 @@ class CoherenceChecker:
                         self.issues["critical"].append(
                             f"[CRITICO] {file_path}: Palavra proibida encontrada: '{word}'"
                         )
+                        break  # Evita múltiplos avisos para a mesma palavra no mesmo arquivo
             
             # Verifica estrutura de chaves
             self.check_json_structure(file_path, data)

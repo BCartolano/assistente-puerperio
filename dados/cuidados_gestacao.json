@@ -1,5 +1,7 @@
 {
   "1_trimestre": {
+    "trimestre": "1",
+    "titulo": "Primeiro Trimestre",
     "semanas": "1-12",
     "nome": "Primeiro Trimestre",
     "descricao": "Fase de formação e desenvolvimento inicial",
@@ -35,6 +37,8 @@
   },
   
   "2_trimestre": {
+    "trimestre": "2",
+    "titulo": "Segundo Trimestre",
     "semanas": "13-24",
     "nome": "Segundo Trimestre",
     "descricao": "Fase de crescimento e desenvolvimento",
@@ -69,6 +73,8 @@
   },
   
   "3_trimestre": {
+    "trimestre": "3",
+    "titulo": "Terceiro Trimestre",
     "semanas": "25-40",
     "nome": "Terceiro Trimestre",
     "descricao": "Preparação para o parto",

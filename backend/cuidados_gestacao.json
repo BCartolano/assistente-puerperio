@@ -1,5 +1,7 @@
 {
   "1_trimestre": {
+    "trimestre": "1",
+    "titulo": "Primeiro Trimestre",
     "semanas": "1-12",
     "nome": "Primeiro Trimestre",
     "descricao": "Fase de formação e desenvolvimento inicial",
@@ -42,6 +44,8 @@
   },
   
   "2_trimestre": {
+    "trimestre": "2",
+    "titulo": "Segundo Trimestre",
     "semanas": "13-24",
     "nome": "Segundo Trimestre",
     "descricao": "Fase de crescimento e desenvolvimento",
@@ -57,7 +61,7 @@
       "Pense no quartinho do bebê"
     ],
     "desenvolvimento_bebe": "Bebê começa a se mover, você pode sentir os chutes, sexo já visível no ultrassom, órgãos se desenvolvendo",
-    "informacao_ultrassonografia": "A ultrassonografia obstétrica é um recurso importante para acompanhar a evolução da gestação. Seus principais objetivos incluem: datar a gestação, identificar precocemente gravidez gemelar, diagnosticar viabilidade e detectar anomalias. Deve ser solicitada no início do pré-natal e no final do segundo trimestre, conforme recomendação da Rede Cegonha. ⚕️ Procure orientação médica ou de enfermagem sobre quando realizar cada exame.",
+    "informacao_ultrassonografia": "A ultrassonografia obstétrica é um recurso importante para acompanhar a evolução da gestação. Seus principais objetivos incluem: datar a gestação, identificar precocemente gravidez gemelar, verificar viabilidade e detectar anomalias. Deve ser solicitada no início do pré-natal e no final do segundo trimestre, conforme recomendação da Rede Cegonha. ⚕️ Procure orientação médica ou de enfermagem sobre quando realizar cada exame.",
     "exames": [
       "Coombs indireto (se gestante Rh negativo) - ⚕️ Realize apenas com prescrição médica",
       "Teste de tolerância à glicose com 75g (entre 24 e 28 semanas) - ⚕️ Realize apenas com prescrição médica",
@@ -79,6 +83,8 @@
   },
   
   "3_trimestre": {
+    "trimestre": "3",
+    "titulo": "Terceiro Trimestre",
     "semanas": "25-40",
     "nome": "Terceiro Trimestre",
     "descricao": "Preparação para o parto",

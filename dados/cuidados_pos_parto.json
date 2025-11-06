@@ -1,8 +1,11 @@
 {
   "primeiro_mes": {
+    "periodo": "1-4 semanas",
+    "titulo": "Primeiro mês - Adaptação",
     "semanas": "1-4",
     "nome": "Primeiro mês - Adaptação",
     "descricao": "Primeiras semanas após o parto - recuperação e adaptação",
+    "cuidados": [],
     "cuidados_fisicos": [
       "Descanse o máximo possível",
       "Durma quando o bebê dorme",
@@ -38,9 +41,12 @@
   },
   
   "segundo_mes": {
+    "periodo": "5-8 semanas",
+    "titulo": "Segundo mês - Estabelecendo rotinas",
     "semanas": "5-8",
     "nome": "Segundo mês - Estabelecendo rotinas",
     "descricao": "Rotinas começam a se estabelecer",
+    "cuidados": [],
     "cuidados_fisicos": [
       "Cicatrização deve estar bem avançada",
       "Inchaços devem diminuir",
@@ -69,9 +75,12 @@
   },
   
   "terceiro_mes": {
+    "periodo": "9-12 semanas",
+    "titulo": "Terceiro mês - Ganhando confiança",
     "semanas": "9-12",
     "nome": "Terceiro mês - Ganhando confiança",
     "descricao": "Você está se adaptando e ganhando confiança",
+    "cuidados": [],
     "cuidados_fisicos": [
       "Pode começar exercícios mais intensos (se liberado)",
       "Continue alimentação balanceada",
@@ -98,9 +107,12 @@
   },
   
   "quarto_sexto_mes": {
+    "periodo": "13-24 semanas",
+    "titulo": "Meses 4-6 - Novo normal",
     "semanas": "13-24",
     "nome": "Meses 4-6 - Novo normal",
     "descricao": "Encontrando seu novo normal",
+    "cuidados": [],
     "cuidados_fisicos": [
       "Você pode retomar atividades físicas mais intensas",
       "Foco em fortalecimento do core",
