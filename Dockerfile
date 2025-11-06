@@ -18,8 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia o resto da aplicação
 COPY . .
 
-# Expõe a porta
+# Expõe a porta (Railway usa porta dinâmica, mas definimos 8080 como padrão)
 EXPOSE 8080
 
-# Comando para iniciar a aplicação
-CMD ["gunicorn", "wsgi:app", "--bind", "0.0.0.0:8080"]
+# Comando para iniciar a aplicação (Railway fornece PORT via variável de ambiente)
+# Usa PORT se definido, caso contrário usa 8080
+CMD sh -c "gunicorn wsgi:app --bind 0.0.0.0:${PORT:-8080}"
