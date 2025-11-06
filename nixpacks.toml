@@ -1,8 +1,11 @@
 [phases.setup]
-nixPkgs = ["python311", "sqlite", "gcc"]
+nixPkgs = ["python311", "sqlite", "gcc", "pkg-config"]
 
 [phases.install]
-cmds = ["pip install --no-cache-dir -r requirements.txt"]
+cmds = [
+  "pip install --no-cache-dir -r requirements.txt",
+  "python -c 'import sqlite3; print(\"SQLite version:\", sqlite3.sqlite_version)'"
+]
 
 [phases.build]
 cmds = ["echo 'Build completo'"]

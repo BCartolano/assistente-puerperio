@@ -27,4 +27,4 @@ EXPOSE 8080
 RUN chmod +x start.sh
 
 # Comando para iniciar a aplicação (Railway fornece PORT via variável de ambiente)
-CMD ["./start.sh"]
+CMD ["/bin/bash", "start.sh"]
