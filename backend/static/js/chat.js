@@ -69,6 +69,8 @@ class ChatbotPuerperio {
                         
                         this.updateWelcomeMessage(this.currentUserName);
                         this.initMainApp();
+                        // Garante que o Menu Inicial está visível ao recarregar
+                        this.backToWelcomeScreen();
                     });
                 } else {
                     // User not logged in, show login screen
@@ -76,6 +78,10 @@ class ChatbotPuerperio {
                     this.userLoggedIn = false;
                     this.currentUserName = null;
                     this.showLoginScreen();
+                    
+                    // Carrega histórico mesmo sem estar logado (para usuários anônimos)
+                    // O userId já foi gerado no constructor e está salvo no localStorage
+                    this.loadChatHistory();
                 }
             })
             .catch((error) => {
@@ -83,6 +89,10 @@ class ChatbotPuerperio {
                 this.userLoggedIn = false;
                 this.currentUserName = null;
                 this.showLoginScreen();
+                
+                // Carrega histórico mesmo sem estar logado (para usuários anônimos)
+                // O userId já foi gerado no constructor e está salvo no localStorage
+                this.loadChatHistory();
             });
     }
     
@@ -657,6 +667,11 @@ class ChatbotPuerperio {
             if (this.chatMessages) {
                 this.chatMessages.innerHTML = '';
             }
+            
+            // Se o usuário estava logado, limpa o userId do localStorage
+            // Para usuários não logados, mantém o userId para preservar histórico
+            // Mas se estava logado, gera novo userId para próxima sessão
+            localStorage.removeItem('chatbot_user_id');
             this.userId = this.generateUserId();
             
             // Volta para tela de login
@@ -764,7 +779,19 @@ class ChatbotPuerperio {
     }
     
     generateUserId() {
-        return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        // Tenta recuperar userId do localStorage primeiro
+        let userId = localStorage.getItem('chatbot_user_id');
+        
+        // Se não existe, gera um novo e salva no localStorage
+        if (!userId) {
+            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('chatbot_user_id', userId);
+            console.log('🆕 [USER_ID] Novo userId gerado e salvo:', userId);
+        } else {
+            console.log('✅ [USER_ID] userId recuperado do localStorage:', userId);
+        }
+        
+        return userId;
     }
     
     showNotification(title, message, type = 'success') {
@@ -832,6 +859,7 @@ class ChatbotPuerperio {
         this.welcomeMessage = document.getElementById('welcome-message');
         this.sidebar = document.getElementById('sidebar');
         this.menuToggle = document.getElementById('menu-toggle');
+        this.menuToggleHeader = document.getElementById('menu-toggle-header');
         this.closeSidebar = document.getElementById('close-sidebar');
         
         // Log para debug
@@ -881,6 +909,9 @@ class ChatbotPuerperio {
         this.btnGestacao = document.getElementById('btn-gestacao');
         this.btnPosparto = document.getElementById('btn-posparto');
         this.btnVacinas = document.getElementById('btn-vacinas');
+        
+        // Botão de iniciar conversa
+        this.startChatBtn = document.getElementById('start-chat-btn');
     }
     
         bindEvents() {
@@ -901,9 +932,12 @@ class ChatbotPuerperio {
             this.messageInput.addEventListener('input', () => this.updateCharCount());
         }
 
-        // Menu sidebar
+        // Menu sidebar - ambos os botões (header e input-area)
         if (this.menuToggle) {
             this.menuToggle.addEventListener('click', () => this.toggleSidebar());
+        }
+        if (this.menuToggleHeader) {
+            this.menuToggleHeader.addEventListener('click', () => this.toggleSidebar());
         }
         
         if (this.closeSidebar) {
@@ -918,6 +952,11 @@ class ChatbotPuerperio {
         // Voltar ao início
         if (this.backBtn) {
             this.backBtn.addEventListener('click', () => this.backToWelcomeScreen());
+        }
+        
+        // Botão de iniciar conversa
+        if (this.startChatBtn) {
+            this.startChatBtn.addEventListener('click', () => this.startChat());
         }
         
         // Sidebar buttons
@@ -986,9 +1025,10 @@ class ChatbotPuerperio {
             if (this.sidebar && 
                 this.sidebar.classList && 
                 this.sidebar.classList.contains('open') && 
-                this.menuToggle &&
+                (this.menuToggle || this.menuToggleHeader) &&
                 !this.sidebar.contains(e.target) && 
-                !this.menuToggle.contains(e.target)) {
+                !(this.menuToggle && this.menuToggle.contains(e.target)) &&
+                !(this.menuToggleHeader && this.menuToggleHeader.contains(e.target))) {
                 this.closeSidebarMenu();
             }
         });
@@ -1131,6 +1171,9 @@ class ChatbotPuerperio {
         const message = this.messageInput.value.trim();
         if (!message) return;
 
+        // Marca que o usuário já interagiu (para mostrar mensagem de boas-vindas nas próximas vezes)
+        localStorage.setItem(`sophia_has_interacted_${this.userId}`, 'true');
+
         // Adiciona mensagem do usuário
         this.addMessage(message, 'user');
         
@@ -1153,6 +1196,11 @@ class ChatbotPuerperio {
         }
         if (this.chatMessages) {
             this.chatMessages.classList.add('active');
+        }
+        // Mostra o input do chat (usa .input-area diretamente)
+        const inputArea = document.querySelector('.input-area');
+        if (inputArea && inputArea.style) {
+            inputArea.style.display = 'flex';
         }
         // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
 
@@ -1480,6 +1528,17 @@ class ChatbotPuerperio {
                     if (this.chatMessages) {
                         this.chatMessages.classList.add('active');
                     }
+                    // Mostra o input do chat (usa .input-area diretamente)
+                    const inputArea = document.querySelector('.input-area');
+                    if (inputArea && inputArea.style) {
+                        inputArea.style.display = 'flex';
+                    }
+                    // Foca no input
+                    if (this.messageInput) {
+                        setTimeout(() => {
+                            this.messageInput.focus();
+                        }, 100);
+                    }
                     // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
 
                     // Adiciona mensagem do usuário
@@ -1523,6 +1582,17 @@ class ChatbotPuerperio {
                     if (this.chatMessages) {
                         this.chatMessages.classList.add('active');
                     }
+                    // Mostra o input do chat (usa .input-area diretamente)
+                    const inputArea = document.querySelector('.input-area');
+                    if (inputArea && inputArea.style) {
+                        inputArea.style.display = 'flex';
+                    }
+                    // Foca no input
+                    if (this.messageInput) {
+                        setTimeout(() => {
+                            this.messageInput.focus();
+                        }, 100);
+                    }
                     // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
 
                     // Adiciona mensagem do usuário
@@ -1545,26 +1615,32 @@ class ChatbotPuerperio {
             
             console.log(`📋 [HISTORY] Histórico recebido: ${history.length} mensagens`);
             
+            // IMPORTANTE: NÃO exibe o histórico na tela
+            // O histórico é carregado apenas para que o backend possa usá-lo como contexto
+            // A Sophia lembrará das conversas anteriores, mas a tela começa limpa
+            
+            // Limpa qualquer histórico visual que possa ter ficado
+            if (this.chatMessages) {
+                this.chatMessages.innerHTML = '';
+                if (this.chatMessages.classList) {
+                    this.chatMessages.classList.remove('active');
+                }
+            }
+            if (this.welcomeMessage && this.welcomeMessage.style) {
+                this.welcomeMessage.style.display = 'flex';
+            }
+            
             if (history.length > 0) {
-                if (this.welcomeMessage && this.welcomeMessage.style) {
-                    this.welcomeMessage.style.display = 'none';
-                }
-                if (this.chatMessages && this.chatMessages.classList) {
-                    this.chatMessages.classList.add('active');
-                }
-                
-                history.forEach(item => {
-                    this.addMessage(item.pergunta, 'user');
-                    this.addMessage(item.resposta, 'assistant', {
-                        categoria: item.categoria,
-                        alertas: item.alertas
-                    });
-                });
-                
-                console.log(`✅ [HISTORY] Histórico carregado com sucesso: ${history.length} mensagens exibidas`);
+                console.log(`✅ [HISTORY] Histórico carregado no backend (${history.length} mensagens) - NÃO exibido na tela para manter interface limpa`);
+                // NÃO mostra mensagem automática - o usuário deve clicar no Menu Inicial para começar
+                // A Sophia lembrará do histórico quando o usuário iniciar uma nova conversa
             } else {
                 console.log(`ℹ️ [HISTORY] Nenhuma mensagem encontrada no histórico para userId: ${this.userId}`);
             }
+            
+            // SEMPRE garante que o Menu Inicial está visível ao recarregar
+            // O usuário deve clicar para iniciar uma nova conversa
+            this.backToWelcomeScreen();
         } catch (error) {
             console.error('❌ [HISTORY] Erro ao carregar histórico:', error);
             console.error('❌ [HISTORY] userId usado:', this.userId);
@@ -1574,8 +1650,18 @@ class ChatbotPuerperio {
     async clearHistory() {
         if (confirm('Tem certeza de que deseja limpar todo o histórico de conversas?')) {
             try {
-                // Aqui você implementaria a chamada para limpar o histórico no backend
-                // Por enquanto, apenas limpa o frontend
+                // Limpa o histórico no backend
+                const response = await fetch(`/api/historico/${this.userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    console.log('✅ [HISTORY] Histórico limpo no backend');
+                } else {
+                    console.warn('⚠️ [HISTORY] Erro ao limpar histórico no backend');
+                }
+                
+                // Limpa o frontend
                 if (this.chatMessages) {
                     this.chatMessages.innerHTML = '';
                     if (this.chatMessages.classList) {
@@ -1586,8 +1672,8 @@ class ChatbotPuerperio {
                     this.welcomeMessage.style.display = 'flex';
                 }
                 
-                // Gera novo ID de usuário
-                this.userId = this.generateUserId();
+                // NÃO gera novo userId - mantém o mesmo para manter consistência
+                // O histórico foi limpo, mas o userId permanece o mesmo
                 
                 alert('Histórico limpo com sucesso!');
             } catch (error) {
@@ -1733,6 +1819,30 @@ class ChatbotPuerperio {
         }
     }
     
+    startChat() {
+        // Esconde welcome message e mostra chat
+        if (this.welcomeMessage) {
+            this.welcomeMessage.style.display = 'none';
+        }
+        if (this.chatMessages) {
+            this.chatMessages.classList.add('active');
+        }
+        // Mostra o input do chat
+        const inputArea = document.querySelector('.input-area');
+        if (inputArea && inputArea.style) {
+            inputArea.style.display = 'flex';
+        }
+        // Foca no input
+        if (this.messageInput) {
+            setTimeout(() => {
+                this.messageInput.focus();
+            }, 100);
+        }
+        // Adiciona mensagem de boas-vindas da Sophia
+        const welcomeMsg = "Oi! 🌸 Sou a Sophia! Estou aqui para te ajudar com qualquer dúvida sobre puerpério, gestação ou cuidados com o bebê. Como posso te ajudar hoje?";
+        this.addMessage(welcomeMsg, 'assistant');
+    }
+    
         backToWelcomeScreen() {
         // Limpa as mensagens do chat
         if (this.chatMessages) {
@@ -1751,13 +1861,15 @@ class ChatbotPuerperio {
             this.backToWelcome.style.display = 'none';
         }
 
-        // Foca no input se existir
-        if (this.messageInput && typeof this.messageInput.focus === 'function') {
-            this.messageInput.focus();
+        // Oculta o input do chat quando volta ao menu inicial
+        const inputArea = document.querySelector('.input-area');
+        if (inputArea && inputArea.style) {
+            inputArea.style.display = 'none';
         }
-
-        // Gera novo ID de usuário para nova sessão
-        this.userId = this.generateUserId();
+        
+        // NÃO gera novo userId - mantém o mesmo para preservar histórico
+        // O userId é persistente e mantém a memória da Sophia
+        // this.userId = this.generateUserId(); // REMOVIDO - mantém userId persistente
     }
     
     requestNotificationPermission() {

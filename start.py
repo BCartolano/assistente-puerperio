@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Script de inicialização do Assistente Puerpério
 """
@@ -6,6 +7,45 @@ import os
 import sys
 import subprocess
 import platform
+
+# Configura encoding UTF-8 para Windows (apenas variável de ambiente)
+if sys.platform == 'win32':
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    # Tenta configurar o console para UTF-8 (se disponível)
+    try:
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        if hasattr(sys.stderr, 'reconfigure'):
+            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        # Se não conseguir reconfigurar, apenas usa a variável de ambiente
+        pass
+
+# Suprime erros de shutdown do Python (não críticos)
+# Esses erros são comuns quando threads daemon tentam escrever durante o shutdown
+import sys
+import threading
+
+# Variável global para controlar shutdown
+_shutting_down = threading.Event()
+
+# Handler de exceção global para suprimir erros durante shutdown
+_original_excepthook = sys.excepthook
+
+def safe_excepthook(exc_type, exc_value, exc_traceback):
+    """Handler de exceção que suprime erros de shutdown não críticos"""
+    # Se estiver em shutdown, suprime erros relacionados a locks de I/O
+    if _shutting_down.is_set():
+        error_msg = str(exc_value) if exc_value else ""
+        # Suprime apenas erros específicos de shutdown
+        if "could not acquire lock" in error_msg or "_enter_buffered_busy" in error_msg:
+            return  # Ignora esse erro específico
+    # Para outros erros, usa o handler original
+    _original_excepthook(exc_type, exc_value, exc_traceback)
+
+# Substitui o handler de exceção apenas no Windows
+if sys.platform == 'win32':
+    sys.excepthook = safe_excepthook
 
 def check_python_version():
     """Verifica se a versão do Python é compatível"""
@@ -108,12 +148,43 @@ def start_server():
         print("Dica: Pressione Ctrl+C para parar o servidor")
         print("=" * 50)
         
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        # Configura tratamento de sinais para shutdown limpo
+        import signal
+        import atexit
+        
+        def shutdown_handler(signum=None, frame=None):
+            """Handler para shutdown limpo"""
+            _shutting_down.set()  # Marca que está em shutdown
+            print("\n\nEncerrando servidor...")
+            try:
+                # Tenta fazer shutdown limpo
+                if hasattr(app, 'do_teardown_appcontext'):
+                    app.do_teardown_appcontext()
+            except:
+                pass
+            # Aguarda um pouco para threads finalizarem
+            import time
+            time.sleep(0.3)
+            # Restaura o handler original antes de sair
+            sys.excepthook = _original_excepthook
+            sys.exit(0)
+        
+        # Registra handlers
+        signal.signal(signal.SIGINT, shutdown_handler)
+        signal.signal(signal.SIGTERM, shutdown_handler)
+        atexit.register(shutdown_handler)
+        
+        # Configura Flask para não usar threads daemon que causam problemas no shutdown
+        app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False, threaded=True)
         
     except ImportError as e:
         print(f"ERRO: Erro ao importar o aplicativo: {e}")
         print("Verifique se todas as dependências estão instaladas.")
         return False
+    except KeyboardInterrupt:
+        print("\n\nServidor encerrado pelo usuário.")
+        shutdown_handler()
+        return True
     except Exception as e:
         print(f"ERRO: Erro ao iniciar o servidor: {e}")
         return False
@@ -153,7 +224,20 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n\nAssistente Puerperio encerrado pelo usuario.")
         print("Obrigado por usar nosso sistema!")
+        # Aguarda um pouco para threads finalizarem
+        import time
+        time.sleep(0.5)
+        sys.exit(0)
     except Exception as e:
         print(f"\nERRO: Erro inesperado: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
+    finally:
+        # Limpa recursos antes de sair
+        try:
+            import time
+            time.sleep(0.2)  # Dá tempo para threads finalizarem
+        except:
+            pass
 
