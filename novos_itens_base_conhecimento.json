@@ -1,0 +1,123 @@
+{
+  "sono_bebe_rotina": {
+    "pergunta": "Como estabelecer uma rotina de sono para o bebê?",
+    "resposta": "Estabelecer rotina de sono ajuda muito! Crie um ritual consistente: banho morno, massagem, música calma, luz baixa, leitura ou canto. Faça sempre na mesma ordem e horários similares. Bebês se sentem seguros com previsibilidade. Comece por volta de 6-8 semanas, quando o bebê já começa a distinguir dia e noite.",
+    "categoria": "sono_bebe"
+  },
+  "sono_bebe_sonecas": {
+    "pergunta": "Quantas sonecas o bebê precisa durante o dia?",
+    "resposta": "Varia conforme a idade: recém-nascidos (0-3 meses): 4-5 sonecas, 3-6 meses: 3-4 sonecas, 6-9 meses: 2-3 sonecas, 9-12 meses: 2 sonecas, 12-18 meses: 1-2 sonecas. O importante é observar os sinais de cansaço do bebê (esfregar olhos, bocejar, irritabilidade) e oferecer o sono antes que fique superestimulado.",
+    "categoria": "sono_bebe"
+  },
+  "sono_bebe_despertar_noturno": {
+    "pergunta": "É normal o bebê acordar várias vezes durante a noite?",
+    "resposta": "Sim, é completamente normal! Bebês recém-nascidos acordam a cada 2-3 horas para mamar. Com o tempo, o sono noturno vai se alongando. Aos 6 meses, muitos bebês já dormem períodos mais longos (6-8 horas), mas ainda podem acordar. Cada bebê tem seu ritmo. Paciência e consistência na rotina ajudam.",
+    "categoria": "sono_bebe"
+  },
+  "sono_bebe_berco_cama": {
+    "pergunta": "É seguro o bebê dormir na cama comigo?",
+    "resposta": "Compartilhar a cama (co-sleeping) tem riscos e benefícios. Os riscos incluem sufocamento, queda da cama, sobreaquecimento. Se optar por compartilhar, use colchão firme, sem travesseiros próximos ao bebê, sem cobertores soltos, sem álcool ou medicação que cause sono profundo. O mais seguro nos primeiros 6 meses é o bebê dormir no próprio berço ao lado da cama dos pais (room-sharing).",
+    "categoria": "sono_bebe"
+  },
+  "sono_bebe_problemas_comuns": {
+    "pergunta": "Meu bebê não consegue dormir sozinho. O que fazer?",
+    "resposta": "É comum bebês precisarem de ajuda para dormir! Técnicas suaves: coloque no berço sonolento mas ainda acordado, fique por perto (pode colocar a mão), use ruído branco, mantenha rotina consistente. Evite métodos muito rígidos nos primeiros meses. Cada família encontra sua forma. Se for muito difícil, considere buscar ajuda de consultor em sono infantil.",
+    "categoria": "sono_bebe"
+  },
+  "sono_bebe_regressao": {
+    "pergunta": "Meu bebê estava dormindo bem e agora acorda muito. O que aconteceu?",
+    "resposta": "Pode ser uma regressão de sono! Comuns em: 4 meses (mudança no ciclo de sono), 8-10 meses (ansiedade de separação, desenvolvimento motor), 12 meses (transições). É temporário, geralmente dura 2-6 semanas. Mantenha rotina, seja paciente, ofereça conforto. Passa! Se persistir muito, considere avaliar outros fatores (fome, dentição, doença).",
+    "categoria": "sono_bebe"
+  },
+  "bebe_desenvolvimento_motor": {
+    "pergunta": "Quando o bebê começa a sentar, engatinhar e andar?",
+    "resposta": "Cada bebê tem seu ritmo! Marcos aproximados: sentar sem apoio: 6-8 meses, engatinhar: 7-10 meses, ficar em pé: 9-12 meses, andar: 12-15 meses. Varia muito! Não compare seu bebê com outros. O importante é progresso constante. Se houver preocupação com atrasos significativos, converse com o pediatra.",
+    "categoria": "bebe"
+  },
+  "bebe_dentes": {
+    "pergunta": "Quando os primeiros dentes do bebê aparecem?",
+    "resposta": "Geralmente entre 6-10 meses, mas pode variar (alguns nascem aos 3 meses, outros só após 1 ano). Primeiros dentes: incisivos centrais inferiores. Sintomas: baba excessiva, irritabilidade, gengivas inchadas, vontade de morder tudo. Ofereça mordedores gelados, massageie gengivas, mantenha higiene mesmo antes dos dentes aparecerem.",
+    "categoria": "bebe"
+  },
+  "bebe_vacinas": {
+    "pergunta": "Quais vacinas o bebê precisa tomar e quando?",
+    "resposta": "Siga o calendário de vacinação do Ministério da Saúde: BCG e Hepatite B (ao nascer), Pentavalente, Pneumocócica, Rotavírus (2, 4, 6 meses), Meningocócica, Tríplice Viral (12 meses). Mantenha carteira de vacinação atualizada. Vacinas são fundamentais para proteger seu bebê de doenças graves. Converse com o pediatra sobre qualquer dúvida.",
+    "categoria": "bebe"
+  },
+  "bebe_febre": {
+    "pergunta": "Quando devo me preocupar com febre no bebê?",
+    "resposta": "Bebês menores de 3 meses: qualquer febre (acima de 37,8°C) requer avaliação médica IMEDIATA. Bebês maiores: febre acima de 38,5°C com outros sintomas (choro inconsolável, dificuldade para acordar, manchas na pele, vômitos) também requer avaliação. Febre isolada pode ser normal em infecções comuns. Quando em dúvida, sempre consulte o pediatra.",
+    "categoria": "bebe"
+  },
+  "bebe_choro_excessivo": {
+    "pergunta": "Meu bebê chora muito. Quando devo me preocupar?",
+    "resposta": "Choro é comunicação! Causas comuns: fome, sono, fralda suja, cólica, calor/frio, necessidade de colo. Choro excessivo (mais de 3 horas/dia, 3+ dias/semana) pode ser cólica. Preocupe-se se: choro muito agudo, associado a febre, vômitos, recusa de alimento, letargia, ou se você sentir que algo está muito errado. Sempre confie em seu instinto materno.",
+    "categoria": "bebe"
+  },
+  "amamentacao_mastite": {
+    "pergunta": "O que é mastite e como tratar?",
+    "resposta": "Mastite é inflamação/infecção da mama. Sintomas: área vermelha, quente, dolorida, febre, mal-estar. Causas: ingurgitamento, pega incorreta, cansaço. Tratamento: continue amamentando (ou ordenhando), aplique calor antes de mamar, massagem suave, repouso, hidratação. Se febre persistir ou piorar após 24h, procure médico - pode precisar de antibiótico.",
+    "categoria": "amamentacao"
+  },
+  "amamentacao_bomba_leite": {
+    "pergunta": "Como usar bomba de leite?",
+    "resposta": "Bomba manual ou elétrica ajuda a extrair leite. Use quando: precisa se ausentar, quer aumentar produção, ingurgitamento, mamilos doloridos. Técnica: lave as mãos, massageie mamas antes, coloque bomba corretamente, comece com sucção suave aumentando gradualmente, alterne entre mamas. Armazene leite em recipiente limpo e use em até 24h na geladeira ou congele.",
+    "categoria": "amamentacao"
+  },
+  "amamentacao_armazenamento": {
+    "pergunta": "Como armazenar leite materno?",
+    "resposta": "Leite materno: temperatura ambiente (até 25°C): 4 horas, geladeira (4°C): até 4 dias, freezer (-18°C): até 6 meses. Use recipientes limpos (vidro ou plástico livre de BPA), rotule com data, não encha completamente (expande ao congelar). Para descongelar: deixe na geladeira ou em água morna (nunca micro-ondas). Agite suavemente antes de oferecer.",
+    "categoria": "amamentacao"
+  },
+  "amamentacao_desmame": {
+    "pergunta": "Como fazer o desmame?",
+    "resposta": "Desmame deve ser gradual e respeitoso. Substitua uma mamada por vez, espere alguns dias antes de substituir a próxima. Para bebês maiores: ofereça alimentos sólidos primeiro, depois leite materno. Reduza tempo de mamada gradualmente. Seja paciente - desmame pode levar semanas ou meses. Se o bebê resistir muito, talvez não seja o momento. Respeite o ritmo do bebê e seu próprio.",
+    "categoria": "amamentacao"
+  },
+  "amamentacao_publico": {
+    "pergunta": "Posso amamentar em público?",
+    "resposta": "Sim! Amamentar em público é seu direito! No Brasil, é protegido por lei. Você pode amamentar onde quiser, quando quiser. Se se sentir mais confortável, pode usar camisa de amamentação, cobertor fino, ou procurar espaços mais privados. Mas não há obrigação de se esconder. Amamentar é natural e seu bebê precisa se alimentar. Não se sinta constrangida!",
+    "categoria": "amamentacao"
+  },
+  "saude_mental_ansiedade_pos_parto": {
+    "pergunta": "Estou muito ansiosa desde que o bebê nasceu. É normal?",
+    "resposta": "Ansiedade pós-parto é comum! Preocupações excessivas, pensamentos intrusivos, dificuldade para relaxar, sintomas físicos (coração acelerado, sudorese). Diferente do baby blues, pode persistir. Técnicas: respiração profunda, meditação, exercícios leves, compartilhar preocupações, limitar informações excessivas. Se for incapacitante ou persistir, procure ajuda profissional. Não é culpa sua!",
+    "categoria": "saude_mental"
+  },
+  "saude_mental_culpa": {
+    "pergunta": "Me sinto culpada por não estar feliz o tempo todo. Isso é normal?",
+    "resposta": "Sim, é completamente normal! Culpa materna é muito comum. Você pode amar seu bebê e ainda sentir tristeza, cansaço, frustração. Maternidade real não é só felicidade - é também desafio, cansaço, dúvidas. Você não precisa ser perfeita. Seja gentil consigo mesma. Compartilhe sentimentos com pessoas de confiança. Busque ajuda se a culpa for constante e paralisante.",
+    "categoria": "saude_mental"
+  },
+  "nutricao_ferro": {
+    "pergunta": "Preciso tomar suplemento de ferro no pós-parto?",
+    "resposta": "Depende! Se você teve anemia na gestação ou perdeu muito sangue no parto, pode precisar. Alimentos ricos em ferro: carnes vermelhas, folhas verde-escuras, leguminosas, castanhas. Combine com vitamina C (frutas cítricas) para melhor absorção. Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. Exames de sangue podem confirmar necessidade.",
+    "categoria": "alimentacao"
+  },
+  "nutricao_producao_leite": {
+    "pergunta": "Quais alimentos ajudam na produção de leite?",
+    "resposta": "Alimentos galactogogos (que estimulam produção): aveia, cevada, nozes, sementes de gergelim, folhas verde-escuras, grãos integrais, proteínas magras. Mas o mais importante: hidratação adequada (2-3 litros água/dia), amamentação frequente, descanso, baixo estresse. Alimentação equilibrada e variada é fundamental. Não há 'super alimentos' mágicos - é conjunto de fatores!",
+    "categoria": "alimentacao"
+  },
+  "sintomas_incontinencia": {
+    "pergunta": "Estou com incontinência urinária após o parto. Isso é normal?",
+    "resposta": "É comum, especialmente após parto normal! O assoalho pélvico pode ter sido sobrecarregado. Exercícios de Kegel ajudam muito: contraia músculos como se estivesse segurando xixi, segure 5 segundos, relaxe, repita 10-15 vezes várias vezes ao dia. Melhora gradualmente. Se persistir após 3-6 meses ou for muito incômodo, procure fisioterapeuta pélvica ou ginecologista.",
+    "categoria": "sintomas"
+  },
+  "sintomas_hemorroidas": {
+    "pergunta": "Desenvolvi hemorroidas após o parto. Como tratar?",
+    "resposta": "Hemorroidas são comuns no pós-parto (esforço do parto + constipação). Alívio: banhos de assento mornos, pomadas específicas (consulte médico), evitar constipação (água, fibras, movimentação), não fazer força ao evacuar. Melhora gradualmente. Se muito dolorosas ou persistirem, consulte médico. Pode indicar necessidade de tratamento específico.",
+    "categoria": "sintomas"
+  },
+  "relacionamento_divisao_tarefas": {
+    "pergunta": "Meu parceiro não ajuda tanto quanto eu gostaria. Como conversar sobre isso?",
+    "resposta": "Comunicação é chave! Escolha momento tranquilo, use 'eu sinto' em vez de acusações, seja específica sobre o que precisa (ex: 'preciso que você dê banho no bebê enquanto eu preparo jantar'), reconheça esforços dele, dividam responsabilidades por escrito se ajudar. Lembre-se: ele também está se adaptando. Seja paciente mas firme. Terapia de casal pode ajudar se conflitos persistirem.",
+    "categoria": "relacionamento"
+  },
+  "exercicios_kegel": {
+    "pergunta": "Como fazer exercícios de Kegel corretamente?",
+    "resposta": "Kegel fortalece assoalho pélvico: contraia músculos como se estivesse segurando xixi e gases ao mesmo tempo, segure 5-10 segundos, relaxe completamente, repita 10-15 vezes, faça 3 séries por dia. Pode fazer em qualquer lugar (sentada, deitada, em pé). Importante: não contraia glúteos ou abdômen. Se tiver dúvida, procure fisioterapeuta pélvica para orientação adequada.",
+    "categoria": "exercicios"
+  }
+}
+

@@ -876,6 +876,7 @@ class ChatbotPuerperio {
         this.sidebarBtnPosparto = document.getElementById('sidebar-btn-posparto');
         this.sidebarBtnVacinas = document.getElementById('sidebar-btn-vacinas');
         this.sidebarBtnClear = document.getElementById('sidebar-btn-clear');
+        this.sidebarBtnClearMemory = document.getElementById('sidebar-btn-clear-memory');
         this.sidebarBtnBack = document.getElementById('sidebar-btn-back');
         this.sidebarBtnLogout = document.getElementById('sidebar-btn-logout');
         this.charCount = document.getElementById('char-count');
@@ -980,6 +981,10 @@ class ChatbotPuerperio {
             this.closeSidebarMenu();
             this.clearHistory();
         });
+        this.sidebarBtnClearMemory?.addEventListener('click', () => {
+            this.closeSidebarMenu();
+            this.clearMemory();
+        });
         this.sidebarBtnBack?.addEventListener('click', () => {
             this.closeSidebarMenu();
             this.backToWelcomeScreen();
@@ -991,9 +996,31 @@ class ChatbotPuerperio {
         
         // Quick questions
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('quick-btn')) {
-                const question = e.target.dataset.question;
+            // Verifica se o clique foi no botão ou em um elemento dentro dele (como ícone)
+            const quickBtn = e.target.closest('.quick-btn');
+            if (quickBtn) {
+                const question = quickBtn.dataset.question;
                 if (this.messageInput && question) {
+                    // Esconde welcome message e mostra chat
+                    if (this.welcomeMessage) {
+                        this.welcomeMessage.style.display = 'none';
+                    }
+                    if (this.chatMessages) {
+                        this.chatMessages.classList.add('active');
+                    }
+                    // Mostra o input do chat
+                    const inputArea = document.querySelector('.input-area');
+                    if (inputArea && inputArea.style) {
+                        inputArea.style.display = 'flex';
+                    }
+                    
+                    // Mostra o aviso do CVV no rodapé (só quando há conversa ativa)
+                    const cvvFooter = document.getElementById('cvv-disclaimer-footer');
+                    if (cvvFooter && cvvFooter.style) {
+                        cvvFooter.style.display = 'block';
+                    }
+                    
+                    // Define a pergunta e envia
                     this.messageInput.value = question;
                     this.sendMessage();
                 }
@@ -1202,6 +1229,13 @@ class ChatbotPuerperio {
         if (inputArea && inputArea.style) {
             inputArea.style.display = 'flex';
         }
+        
+        // Mostra o aviso do CVV no rodapé (só quando há conversa ativa)
+        const cvvFooter = document.getElementById('cvv-disclaimer-footer');
+        if (cvvFooter && cvvFooter.style) {
+            cvvFooter.style.display = 'block';
+        }
+        
         // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
 
         // Mostra indicador de digitação
@@ -1238,15 +1272,25 @@ class ChatbotPuerperio {
 
             // Verifica se há uma resposta válida
             if (data.resposta) {
+                // Verifica se há alerta de risco emocional/suicídio (mostrar aviso visual acolhedor)
+                if (data.mostrar_aviso_visual && data.alerta_ativo) {
+                    this.showAvisoVisualRisco(data.nivel_risco);
+                } else if (!data.alerta_ativo) {
+                    // Se não há alerta ativo, esconde o aviso visual (usuário pode ter dito que está bem)
+                    this.hideAvisoVisualRisco();
+                }
+                
                 // Adiciona resposta do assistente
                 this.addMessage(data.resposta, 'assistant', {
                     categoria: data.categoria,
                     alertas: data.alertas,
-                    fonte: data.fonte
+                    fonte: data.fonte,
+                    alerta_ativo: data.alerta_ativo,
+                    nivel_risco: data.nivel_risco
                 });
 
-                // Mostra alerta se necessário
-                if (data.alertas && data.alertas.length > 0) {
+                // Mostra alerta médico se necessário (alertas médicos normais)
+                if (data.alertas && data.alertas.length > 0 && !data.alerta_ativo) {
                     this.showAlert(data.alertas);
                 }
             } else {
@@ -1683,6 +1727,67 @@ class ChatbotPuerperio {
         }
     }
     
+    async clearMemory() {
+        // Confirmação dupla para garantir que o usuário tem certeza
+        const primeiraConfirmacao = confirm(
+            '⚠️ ATENÇÃO: Esta ação irá apagar TODA a memória da Sophia!\n\n' +
+            'Isso inclui:\n' +
+            '• Nomes memorizados (seu nome, nome do bebê, etc.)\n' +
+            '• Lugares mencionados\n' +
+            '• Comidas e preferências\n' +
+            '• Informações pessoais salvas\n\n' +
+            'A Sophia não se lembrará mais desses dados em conversas futuras.\n\n' +
+            'Deseja continuar?'
+        );
+        
+        if (!primeiraConfirmacao) {
+            return;
+        }
+        
+        // Segunda confirmação
+        const segundaConfirmacao = confirm(
+            '🛑 ÚLTIMA CONFIRMAÇÃO\n\n' +
+            'Tem CERTEZA ABSOLUTA de que deseja apagar toda a memória da Sophia?\n\n' +
+            'Esta ação NÃO PODE ser desfeita.'
+        );
+        
+        if (!segundaConfirmacao) {
+            return;
+        }
+        
+        try {
+            // Limpa a memória no backend
+            const response = await fetch('/api/limpar-memoria-ia', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.sucesso) {
+                console.log('✅ [MEMORY] Memória da Sophia limpa:', data);
+                
+                // Mostra mensagem de sucesso detalhada
+                alert(
+                    '✅ Memória da Sophia limpa com sucesso!\n\n' +
+                    `• ${data.conversas_apagadas || 0} conversa(s) da memória\n` +
+                    `• ${data.info_apagadas || 0} informação(ões) pessoal(is)\n` +
+                    `• ${data.memoria_sophia_apagadas || 0} dado(s) memorizado(s) (nomes, lugares, comidas)\n\n` +
+                    'A Sophia não se lembrará mais desses dados em conversas futuras.'
+                );
+            } else {
+                console.error('❌ [MEMORY] Erro ao limpar memória:', data);
+                alert('Erro ao limpar memória da Sophia. Tente novamente.');
+            }
+        } catch (error) {
+            console.error('❌ [MEMORY] Erro ao limpar memória:', error);
+            alert('Erro ao limpar memória da Sophia. Tente novamente.');
+        }
+    }
+    
     showAlert(alertas) {
         if (!this.alertMessage || !this.alertModal) {
             console.warn('Elementos de alerta não estão disponíveis');
@@ -1705,6 +1810,185 @@ class ChatbotPuerperio {
             return;
         }
         this.alertModal.classList.remove('show');
+    }
+    
+    showAvisoVisualRisco(nivelRisco = 'alto') {
+        // Remove aviso anterior se existir
+        const avisoAnterior = document.querySelector('.aviso-risco-visual');
+        if (avisoAnterior) {
+            avisoAnterior.remove();
+        }
+        
+        // Cria elemento de aviso visual acolhedor
+        const avisoRisco = document.createElement('div');
+        avisoRisco.className = 'aviso-risco-visual';
+        avisoRisco.setAttribute('data-nivel', nivelRisco);
+        
+        const nivelTexto = nivelRisco === 'alto' ? 'alto' : 'leve';
+        const corFundo = nivelRisco === 'alto' ? '#fff3cd' : '#fff9e6'; // Amarelo claro, mais intenso para alto
+        const corBorda = nivelRisco === 'alto' ? '#ffc107' : '#ffd700'; // Borda mais forte para alto
+        
+        avisoRisco.innerHTML = `
+            <div class="aviso-risco-content">
+                <div class="aviso-risco-icon">💛</div>
+                <div class="aviso-risco-text">
+                    <strong>Se estiver em um momento difícil, o CVV (188) pode te ouvir 24h.</strong>
+                    <p>Você não precisa enfrentar isso sozinho(a).</p>
+                    <a href="https://cvv.org.br/chat/" target="_blank" rel="noopener" class="aviso-risco-button">
+                        Falar com alguém agora
+                    </a>
+                </div>
+                <button class="aviso-risco-close" onclick="this.parentElement.parentElement.remove()" aria-label="Fechar aviso">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        // Estilização inline para garantir que apareça
+        avisoRisco.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: ${corFundo};
+            border-bottom: 3px solid ${corBorda};
+            padding: 1rem;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.3s ease-out;
+        `;
+        
+        // Adiciona ao body
+        document.body.appendChild(avisoRisco);
+        
+        // Adiciona animação CSS
+        if (!document.getElementById('aviso-risco-styles')) {
+            const style = document.createElement('style');
+            style.id = 'aviso-risco-styles';
+            style.textContent = `
+                @keyframes slideDown {
+                    from {
+                        transform: translateY(-100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideUp {
+                    from {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateY(-100%);
+                        opacity: 0;
+                    }
+                }
+                .aviso-risco-content {
+                    display: flex;
+                    align-items: center;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    gap: 1rem;
+                }
+                .aviso-risco-icon {
+                    font-size: 2rem;
+                    flex-shrink: 0;
+                }
+                .aviso-risco-text {
+                    flex: 1;
+                    color: #856404;
+                }
+                .aviso-risco-text strong {
+                    display: block;
+                    margin-bottom: 0.25rem;
+                    font-size: 1.1rem;
+                }
+                .aviso-risco-text p {
+                    margin: 0;
+                    font-size: 0.95rem;
+                }
+                .aviso-risco-text a {
+                    color: #856404;
+                    text-decoration: underline;
+                    font-weight: 600;
+                }
+                .aviso-risco-text a:hover {
+                    color: #533f03;
+                }
+                .aviso-risco-button {
+                    display: inline-block;
+                    margin-top: 0.5rem;
+                    padding: 0.5rem 1.5rem;
+                    background: #856404;
+                    color: white !important;
+                    text-decoration: none !important;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    transition: background 0.3s;
+                }
+                .aviso-risco-button:hover {
+                    background: #533f03;
+                    color: white !important;
+                }
+                .aviso-risco-close {
+                    background: transparent;
+                    border: none;
+                    font-size: 1.2rem;
+                    color: #856404;
+                    cursor: pointer;
+                    padding: 0.5rem;
+                    flex-shrink: 0;
+                    transition: color 0.2s;
+                }
+                .aviso-risco-close:hover {
+                    color: #533f03;
+                }
+                /* Ajusta padding do chat quando o aviso está visível */
+                body:has(.aviso-risco-visual) .chat-container {
+                    padding-top: 80px;
+                }
+                @media (max-width: 768px) {
+                    .aviso-risco-content {
+                        flex-direction: column;
+                        text-align: center;
+                    }
+                    .aviso-risco-icon {
+                        font-size: 1.5rem;
+                    }
+                    .aviso-risco-text {
+                        font-size: 0.9rem;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Ajusta o padding do container de chat para não ficar sobreposto
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            chatContainer.style.paddingTop = '80px';
+        }
+        
+        console.log('✅ [ALERTA] Aviso visual de risco exibido (nível: ' + nivelRisco + ')');
+    }
+    
+    hideAvisoVisualRisco() {
+        const avisoRisco = document.querySelector('.aviso-risco-visual');
+        if (avisoRisco) {
+            avisoRisco.style.animation = 'slideUp 0.3s ease-out';
+            setTimeout(() => {
+                avisoRisco.remove();
+                // Remove padding do chat
+                const chatContainer = document.querySelector('.chat-container');
+                if (chatContainer) {
+                    chatContainer.style.paddingTop = '';
+                }
+            }, 300);
+        }
     }
     
     callEmergency() {
@@ -1832,6 +2116,13 @@ class ChatbotPuerperio {
         if (inputArea && inputArea.style) {
             inputArea.style.display = 'flex';
         }
+        
+        // Mostra o aviso do CVV no rodapé (só quando há conversa ativa)
+        const cvvFooter = document.getElementById('cvv-disclaimer-footer');
+        if (cvvFooter && cvvFooter.style) {
+            cvvFooter.style.display = 'block';
+        }
+        
         // Foca no input
         if (this.messageInput) {
             setTimeout(() => {
@@ -1865,6 +2156,12 @@ class ChatbotPuerperio {
         const inputArea = document.querySelector('.input-area');
         if (inputArea && inputArea.style) {
             inputArea.style.display = 'none';
+        }
+        
+        // Oculta o aviso do CVV quando volta ao menu inicial
+        const cvvFooter = document.getElementById('cvv-disclaimer-footer');
+        if (cvvFooter && cvvFooter.style) {
+            cvvFooter.style.display = 'none';
         }
         
         // NÃO gera novo userId - mantém o mesmo para preservar histórico
@@ -2442,7 +2739,31 @@ class ChatbotPuerperio {
                         `).join('') : ''}
                         ${trimestre.desenvolvimento_bebe ? `<div style="margin-top: 1rem; padding: 0.8rem; background: #e8f5e9; border-radius: 8px;"><strong>👶 Desenvolvimento do bebê:</strong><br>${trimestre.desenvolvimento_bebe}</div>` : ''}
                         ${trimestre.informacao_ultrassonografia ? `<div style="margin-top: 1rem; padding: 0.8rem; background: #e3f2fd; border-left: 4px solid #2196F3; border-radius: 8px;"><strong>📊 Informação sobre Ultrassonografia:</strong><br>${trimestre.informacao_ultrassonografia}</div>` : ''}
-                        ${trimestre.exames ? `<div style="margin-top: 1rem;"><strong>🔬 Exames recomendados:</strong><ul style="margin: 0.5rem 0; padding-left: 1.5rem;">${trimestre.exames.map(ex => `<li>${ex}</li>`).join('')}</ul></div>` : ''}
+                        ${trimestre.exames ? `
+                            <div class="exames-container" style="margin-top: 1.5rem;">
+                                <div class="exames-header">
+                                    <i class="fas fa-vial"></i>
+                                    <strong>🔬 Exames recomendados:</strong>
+                                </div>
+                                <div class="exames-list">
+                                    ${trimestre.exames.map(ex => {
+                                        // Separa o nome do exame do aviso médico
+                                        const parts = ex.split(' - ⚕️ ');
+                                        const nomeExame = parts[0];
+                                        const aviso = parts[1] || '';
+                                        return `
+                                            <div class="exame-item">
+                                                <div class="exame-content">
+                                                    <i class="fas fa-check-circle exame-icon"></i>
+                                                    <span class="exame-nome">${nomeExame}</span>
+                                                </div>
+                                                ${aviso ? `<div class="exame-aviso"><i class="fas fa-stethoscope"></i> ${aviso}</div>` : ''}
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                         ${trimestre.alerta ? `<div class="alerta-importante"><strong>⚠️ Atenção:</strong> ${trimestre.alerta}</div>` : ''}
                     </div>
                 `;

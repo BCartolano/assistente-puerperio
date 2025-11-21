@@ -1,7 +1,12 @@
 # Configurações do Chatbot Puerpério
-# GEMINI_API_KEY (obrigatório para uso da IA)
-# Obtenha sua chave em: https://makersuite.google.com/app/apikey
-GEMINI_API_KEY=sua_chave_gemini_aqui
+# OPENAI_API_KEY (obrigatório para uso da IA)
+# Obtenha sua chave em: https://platform.openai.com/api-keys
+OPENAI_API_KEY=sua_chave_openai_aqui
+USE_AI=true
+
+# OPENAI_ASSISTANT_ID (opcional - será criado automaticamente se não configurado)
+# Se você já tiver um assistente criado, pode adicionar o ID aqui para reutilizá-lo
+# OPENAI_ASSISTANT_ID=asst_xxxxx
 
 # Configurações do Flask
 FLASK_ENV=development

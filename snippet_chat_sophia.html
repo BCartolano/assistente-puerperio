@@ -1,0 +1,146 @@
+<!-- 
+    ============================================
+    SOPHIA CHAT EMBED - SNIPPET PARA COLEAR
+    ============================================
+    Cole este código no final do seu HTML, antes de </body>
+    ============================================
+-->
+
+<!-- Container do Chat Widget -->
+<div id="sophia-chat-widget" style="position: fixed; bottom: 20px; right: 20px; width: 380px; height: 600px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 9999; display: flex; flex-direction: column; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #f4a6a6 0%, #e89595 100%); color: white; padding: 16px 20px; border-radius: 12px 12px 0 0;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">💛 Sophia – Assistente para Mães</h3>
+    </div>
+    
+    <!-- Chat Body -->
+    <div id="sophia-chat-body" style="flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa;">
+        <!-- Mensagem Inicial -->
+        <div style="margin-bottom: 16px; padding: 12px 16px; background: white; border: 1px solid #e9ecef; border-radius: 8px;">
+            <p><strong>Olá! 👋 Sou a Sophia, sua assistente para maternidade e puerpério.</strong></p>
+            <p>Estou aqui para ajudar você com <strong>informações gerais</strong> sobre gestação, puerpério e cuidados com o bebê.</p>
+            <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 12px; margin: 10px 0; border-radius: 8px; color: #856404; font-size: 13px;">
+                <strong>⚠️ IMPORTANTE:</strong><br>
+                • ❌ Não dou recomendações médicas<br>
+                • ❌ Não prescrevo medicamentos<br>
+                • ❌ Não diagnostico doenças<br>
+                • ❌ Não substituo atendimento profissional<br><br>
+                <strong>✅ Sempre consulte profissionais de saúde qualificados.</strong>
+            </div>
+            <p style="margin-top: 12px;">Como posso ajudar você hoje? 💛</p>
+        </div>
+    </div>
+    
+    <!-- Input Area -->
+    <div style="padding: 16px; background: white; border-top: 1px solid #e9ecef; display: flex; gap: 10px;">
+        <input type="text" id="sophia-chat-input" placeholder="Digite sua mensagem..." style="flex: 1; padding: 10px 14px; border: 1px solid #e9ecef; border-radius: 20px; font-size: 14px; outline: none;">
+        <button id="sophia-chat-send" style="padding: 10px 20px; background: #f4a6a6; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 600;">Enviar</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // ============================================
+    // CONFIGURAÇÃO
+    // ============================================
+    const CONFIG = {
+        title: "Sophia – Assistente para Mães",
+        theme: "light",
+        language: "pt-BR",
+        safety: {
+            blockDiagnostics: true,
+            blockMedications: true,
+            blockMedicalAdvice: true,
+            blockPrescriptions: true,
+            blockTreatments: true,
+            alwaysRecommendProfessional: true
+        }
+    };
+    
+    // ============================================
+    // FILTRO DE SEGURANÇA
+    // ============================================
+    const SafetyFilter = {
+        patterns: [
+            /você tem\s+\w+|você está com\s+\w+|você sofre de\s+\w+/i,
+            /diagnóstico de\s+\w+|é um caso de\s+\w+|parece ser\s+\w+/i,
+            /tome\s+(?:o|a)?\s*(?:medicamento|remédio)|use\s+(?:o|a)?\s*(?:medicamento|remédio)/i,
+            /recomendo\s+(?:o|a)?\s*(?:medicamento|remédio)|prescrevo|receite/i,
+            /\d+\s*(?:mg|ml|comprimidos?)\s+(?:por|ao)\s+(?:dia|semana)/i,
+            /faça este tratamento|iniciar tratamento com|use este procedimento/i
+        ],
+        
+        check: function(text) {
+            return this.patterns.some(pattern => pattern.test(text));
+        },
+        
+        getWarning: function() {
+            return `⚠️ <strong>IMPORTANTE:</strong> Não posso fornecer diagnósticos, prescrições ou tratamentos médicos. Consulte um profissional de saúde qualificado. Como posso ajudar você de outras formas? 💛`;
+        }
+    };
+    
+    // ============================================
+    // FUNCIONALIDADE DO CHAT
+    // ============================================
+    const body = document.getElementById('sophia-chat-body');
+    const input = document.getElementById('sophia-chat-input');
+    const send = document.getElementById('sophia-chat-send');
+    
+    function addMessage(text, isUser) {
+        const div = document.createElement('div');
+        div.style.cssText = `margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; max-width: 80%; word-wrap: break-word; ${isUser ? 'background: #f4a6a6; color: white; margin-left: auto;' : 'background: white; border: 1px solid #e9ecef;'}`;
+        div.innerHTML = text;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+    }
+    
+    function processMessage(msg) {
+        if (SafetyFilter.check(msg)) {
+            return SafetyFilter.getWarning();
+        }
+        
+        // Adicione aqui a integração com sua API
+        // Por enquanto, resposta simples:
+        let response = 'Obrigada por sua mensagem! Estou aqui para ajudar com informações gerais sobre maternidade e puerpério. Como posso ajudar você hoje? 💛';
+        
+        // Adiciona aviso de segurança
+        response += '<div style="background: #fff3cd; border: 1px solid #ffc107; padding: 10px; margin-top: 10px; border-radius: 6px; color: #856404; font-size: 12px;"><strong>⚠️ AVISO:</strong> Este conteúdo é informativo. Sempre consulte um profissional de saúde.</div>';
+        
+        return response;
+    }
+    
+    send.addEventListener('click', function() {
+        const msg = input.value.trim();
+        if (msg) {
+            addMessage(msg, true);
+            input.value = '';
+            setTimeout(() => {
+                addMessage(processMessage(msg), false);
+            }, 500);
+        }
+    });
+    
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') send.click();
+    });
+    
+    // Responsivo
+    if (window.innerWidth <= 768) {
+        const widget = document.getElementById('sophia-chat-widget');
+        widget.style.width = '100%';
+        widget.style.height = '100vh';
+        widget.style.bottom = '0';
+        widget.style.right = '0';
+        widget.style.borderRadius = '0';
+    }
+})();
+</script>
+
+<!-- 
+    ============================================
+    FIM DO SNIPPET
+    ============================================
+-->
+

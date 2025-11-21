@@ -1,0 +1,223 @@
+{
+  "sono_bebe_choro_noturno": {
+    "pergunta": "Meu bebê chora muito à noite. Como acalmar?",
+    "resposta": "Choro noturno pode ter várias causas: fome, cólica, necessidade de colo, desconforto, fralda suja. Técnicas para acalmar: colo e carinho, movimento suave (balançar), ruído branco, massagem, banho morno, verificar fome/fralda. Se choro for inconsolável e persistir, consulte pediatra para descartar problemas médicos. Rotina consistente também ajuda a prevenir choro noturno.",
+    "categoria": "sono_bebe"
+  },
+  "sono_bebe_ritual": {
+    "pergunta": "Qual é a melhor rotina de sono para um bebê?",
+    "resposta": "Rotina de sono eficaz: comece 30-60 min antes do horário de dormir, banho morno (relaxante), massagem suave, pijama confortável, ambiente calmo (luz baixa, sem estímulos), leitura ou canto, colocar no berço sonolento mas ainda acordado. Consistência é chave - faça sempre na mesma ordem. Adapte conforme o bebê cresce, mas mantenha a estrutura básica.",
+    "categoria": "sono_bebe"
+  },
+  "bebe_chupeta": {
+    "pergunta": "Posso dar chupeta para o bebê?",
+    "resposta": "Chupeta pode ser útil para acalmar e ajudar no sono, mas espere até a amamentação estar bem estabelecida (após 3-4 semanas). Use chupeta ortodôntica, limpe regularmente, não force se o bebê rejeitar, retire antes de dormir quando bebê estiver dormindo profundamente. Chupeta não deve substituir alimentação. Converse com pediatra sobre uso adequado.",
+    "categoria": "bebe"
+  },
+  "bebe_arroto": {
+    "pergunta": "Preciso fazer o bebê arrotar sempre?",
+    "resposta": "Nem todos os bebês precisam arrotar após cada mamada. Alguns arrotam facilmente, outros não. Tente fazer arrotar após mamar, mas se após 10-15 min não arrotar e o bebê estiver confortável, não precisa insistir. Posições para arrotar: colo vertical com suporte na cabeça, deitado de lado, movimento suave. Se o bebê parece desconfortável após mamar, tente fazer arrotar.",
+    "categoria": "bebe"
+  },
+  "bebe_sol": {
+    "pergunta": "Posso levar o bebê ao sol?",
+    "resposta": "Sol é importante para síntese de vitamina D, mas com cuidado! Bebês menores de 6 meses: evite sol direto, use sombra, roupas leves que cubram braços e pernas, protetor solar apenas em áreas expostas (consulte pediatra). Melhor horário: antes das 10h ou após 16h. Exposição: 10-15 min por dia é suficiente. Sempre proteja cabeça e olhos do bebê.",
+    "categoria": "bebe"
+  },
+  "bebe_brinquedos": {
+    "pergunta": "Quais brinquedos são adequados para um bebê recém-nascido?",
+    "resposta": "Bebês recém-nascidos não precisam de muitos brinquedos! Brinquedos adequados: móbiles coloridos (acima do berço), chocalhos leves, brinquedos de tecido macio, livros de pano, brinquedos com texturas diferentes. Evite brinquedos com partes pequenas, cordas longas, ou materiais tóxicos. O melhor 'brinquedo' é a interação com você: conversar, cantar, fazer carinho!",
+    "categoria": "bebe"
+  },
+  "amamentacao_posicoes": {
+    "pergunta": "Quais são as melhores posições para amamentar?",
+    "resposta": "Posições para amamentar: tradicional (bebê na frente, barriga com barriga), futebol americano (bebê embaixo do braço), deitada (lateral, útil à noite), cruzada (bebê apoiado no braço oposto). A melhor posição é aquela em que você e o bebê estão confortáveis. Use travesseiros para apoiar braços e costas. Varie posições para evitar sobrecarga em uma área da mama.",
+    "categoria": "amamentacao"
+  },
+  "amamentacao_duracao": {
+    "pergunta": "Quanto tempo deve durar cada mamada?",
+    "resposta": "Duração varia! Bebês recém-nascidos: 15-45 min por mamada (mamam devagar no início). Com o tempo, mamadas ficam mais eficientes (10-20 min). Deixe o bebê mamar até soltar o peito naturalmente, depois ofereça o outro seio. Sinais de que terminou: solta o peito, fica relaxado, dorme. Não limite tempo - deixe o bebê mamar o quanto precisar.",
+    "categoria": "amamentacao"
+  },
+  "amamentacao_colostro": {
+    "pergunta": "O que é o colostro e por que é importante?",
+    "resposta": "Colostro é o primeiro 'leite' (amarelado, espesso) que aparece nos primeiros dias. É SUPER importante! Rico em anticorpos, proteínas, fatores de crescimento. Protege o bebê de infecções, ajuda no desenvolvimento do sistema imunológico, é fácil de digerir. Mesmo que pareça pouco, é suficiente para o bebê nos primeiros dias. Não substitua por fórmula - colostro é ouro líquido!",
+    "categoria": "amamentacao"
+  },
+  "saude_mental_autocuidado": {
+    "pergunta": "Como cuidar de mim mesma no pós-parto?",
+    "resposta": "Autocuidado é fundamental! Priorize: descanso (durma quando o bebê dorme), alimentação saudável, hidratação, banhos relaxantes, momentos sozinhos (mesmo que breves), exercícios leves quando liberado, hobbies que você gosta, contato com amigos/família. Você não pode cuidar do bebê se não cuidar de si. Peça ajuda, aceite ajuda, não tente ser supermãe. Você importa!",
+    "categoria": "saude_mental"
+  },
+  "saude_mental_grupos_apoio": {
+    "pergunta": "Grupos de apoio para mães ajudam?",
+    "resposta": "Sim, muito! Grupos de apoio (presenciais ou online) oferecem: compartilhamento de experiências, validação de sentimentos, dicas práticas, amizades, redução de isolamento. Procure grupos de amamentação, grupos de mães da sua região, grupos online, grupos de pós-parto. Não precisa enfrentar tudo sozinha. Comunidade de mães é poderosa!",
+    "categoria": "saude_mental"
+  },
+  "nutricao_suplementos": {
+    "pergunta": "Preciso tomar suplementos vitamínicos no pós-parto?",
+    "resposta": "Depende! Se você está amamentando, pode precisar de: vitamina D (se não toma sol suficiente), ferro (se teve anemia), cálcio. Alimentação equilibrada geralmente é suficiente. Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. Exames de sangue podem indicar necessidade. Não tome suplementos por conta própria!",
+    "categoria": "alimentacao"
+  },
+  "nutricao_receitas_rapidas": {
+    "pergunta": "Quais receitas rápidas e nutritivas posso fazer no pós-parto?",
+    "resposta": "Receitas rápidas e nutritivas: smoothies (frutas + iogurte + aveia), sopas cremosas (legumes + proteína), saladas completas (folhas + grãos + proteína), wraps saudáveis, omeletes, frutas com iogurte, castanhas e frutas secas, sanduíches nutritivos. Prepare porções maiores e congele. Aceite ajuda de família/amigos para cozinhar. Alimentação não precisa ser perfeita, mas precisa ser nutritiva!",
+    "categoria": "alimentacao"
+  },
+  "sintomas_dor_costas": {
+    "pergunta": "Estou com muita dor nas costas após o parto. É normal?",
+    "resposta": "Dor nas costas é comum no pós-parto! Causas: mudanças posturais na gravidez, esforço do parto, carregar o bebê, amamentar em posição inadequada. Alívio: postura correta ao amamentar (use travesseiros), exercícios de fortalecimento (após liberação médica), compressas quentes/frias, massagem, evitar carregar peso excessivo. Se persistir ou for muito intensa, procure fisioterapeuta ou médico.",
+    "categoria": "sintomas"
+  },
+  "sintomas_dor_cabeca": {
+    "pergunta": "Estou com muitas dores de cabeça no pós-parto. O que pode ser?",
+    "resposta": "Dores de cabeça no pós-parto podem ter várias causas: cansaço, desidratação, estresse, mudanças hormonais, falta de sono, tensão muscular. Alívio: descanso, hidratação adequada, alimentação regular, compressas frias/quentes, ambiente calmo. Se dores forem muito intensas, persistentes, ou vierem com outros sintomas (visão embaçada, náuseas), procure médico imediatamente - pode indicar problemas mais sérios.",
+    "categoria": "sintomas"
+  },
+  "relacionamento_ajuda": {
+    "pergunta": "Como pedir ajuda sem me sentir uma carga?",
+    "resposta": "Pedir ajuda não é sinal de fraqueza - é sinal de sabedoria! Seja específica: 'preciso que você fique com o bebê 1h para eu descansar', 'pode preparar o jantar hoje?', 'pode ajudar a trocar fraldas?'. Aceite ajuda oferecida, delegue tarefas, não tente fazer tudo sozinha. Você não é supermãe - você é humana. Família e amigos querem ajudar - deixe eles!",
+    "categoria": "relacionamento"
+  },
+  "relacionamento_amigos": {
+    "pergunta": "Como manter amizades após ter um bebê?",
+    "resposta": "Manter amizades após ter bebê é desafiador, mas possível! Seja honesta sobre seus limites, encontre amigos que entendem sua nova realidade, faça encontros curtos (café, caminhada), inclua o bebê quando possível, use tecnologia (chamadas de vídeo, mensagens), não se pressione para ser a mesma pessoa. Amizades verdadeiras entendem e se adaptam. Qualidade sobre quantidade!",
+    "categoria": "relacionamento"
+  },
+  "exercicios_caminhada": {
+    "pergunta": "Quando posso começar a caminhar após o parto?",
+    "resposta": "Caminhadas leves podem começar alguns dias após o parto (se parto normal) ou após cicatrização (cesárea). Comece devagar: 10-15 min por dia, terreno plano, ritmo confortável. Aumente gradualmente conforme se sentir confortável. Caminhar ajuda na recuperação, melhora humor, é seguro. Escute seu corpo - se doer ou cansar muito, descanse. Sempre com liberação médica.",
+    "categoria": "exercicios"
+  },
+  "exercicios_pilates": {
+    "pergunta": "Posso fazer pilates no pós-parto?",
+    "resposta": "Sim! Pilates pós-parto é excelente para fortalecimento do core e assoalho pélvico. Aguarde liberação médica (geralmente 6 semanas), procure instrutor especializado em pós-parto, comece com exercícios leves, evite abdominais tradicionais inicialmente, foque em exercícios de Kegel e fortalecimento pélvico. Pilates ajuda na recuperação, postura e bem-estar. Sempre respeite seus limites!",
+    "categoria": "exercicios"
+  },
+  "bebe_umidade_ar": {
+    "pergunta": "Preciso usar umidificador de ar para o bebê?",
+    "resposta": "Umidificador pode ser útil em climas secos ou no inverno, mas não é obrigatório. Benefícios: alivia ressecamento nasal, ajuda em resfriados, melhora qualidade do sono. Use com cuidado: mantenha limpo (limpeza regular), umidade entre 40-60%, não coloque muito perto do bebê, use água destilada. Se não tiver umidificador, banho de vapor no banheiro também ajuda.",
+    "categoria": "bebe"
+  },
+  "bebe_temperatura_ambiente": {
+    "pergunta": "Qual a temperatura ideal do quarto do bebê?",
+    "resposta": "Temperatura ideal: 20-22°C (confortável para o bebê). Evite: muito quente (aumenta risco de morte súbita), muito frio. Sinais de que está adequada: bebê dorme confortavelmente, não está suando nem tremendo, mãos e pés levemente frescos (é normal). Use roupas adequadas à temperatura. Quando em dúvida, toque a nuca do bebê - deve estar morna, não quente nem fria.",
+    "categoria": "bebe"
+  },
+  "amamentacao_problemas_comuns": {
+    "pergunta": "Quais são os problemas mais comuns na amamentação?",
+    "resposta": "Problemas comuns: mamilos rachados (pega incorreta), ingurgitamento (mamas muito cheias), mastite (inflamação/infecção), produção baixa de leite (pode melhorar com técnicas), produção excessiva (pode causar engasgos), candidíase (fungo nos mamilos). Solução: pega correta é fundamental! Busque ajuda de consultor em amamentação, pediatra, ou grupo de apoio. Muitos problemas têm solução!",
+    "categoria": "amamentacao"
+  },
+  "amamentacao_medicamentos": {
+    "pergunta": "Posso tomar medicamentos enquanto amamento?",
+    "resposta": "Muitos medicamentos são seguros durante amamentação, mas NÃO tome nada por conta própria! Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. Informe ao médico que está amamentando. Existem bases de dados sobre compatibilidade de medicamentos com amamentação. Até medicamentos comuns podem precisar de ajuste. Sempre consulte profissional qualificado!",
+    "categoria": "amamentacao"
+  },
+  "saude_mental_pensamentos_intrusivos": {
+    "pergunta": "Tenho pensamentos ruins sobre o bebê. Isso é normal?",
+    "resposta": "Pensamentos intrusivos (pensamentos negativos que aparecem sem querer) são comuns no pós-parto! Exemplos: 'e se eu deixar o bebê cair?', 'e se algo ruim acontecer?'. Se forem apenas pensamentos passageiros e você não age sobre eles, geralmente é normal (ansiedade pós-parto). Preocupe-se se: pensamentos são constantes, paralisantes, ou incluem planos de causar dano. Nesse caso, procure ajuda profissional IMEDIATAMENTE.",
+    "categoria": "saude_mental"
+  },
+  "nutricao_cafeina": {
+    "pergunta": "Posso tomar café enquanto amamento?",
+    "resposta": "Sim, mas com moderação! Cafeína passa para o leite materno e pode afetar o bebê (agitação, dificuldade para dormir). Limite: 200-300mg por dia (2-3 xícaras de café). Observe o bebê - se ficar muito agitado, reduza. Evite café próximo ao horário de dormir do bebê. Chás com cafeína (chá preto, verde) também contam. Desculpa e água são sempre seguros!",
+    "categoria": "alimentacao"
+  },
+  "sintomas_infeccao_cesarea": {
+    "pergunta": "Como identificar sinais de infecção na cicatriz da cesárea?",
+    "resposta": "Sinais de infecção na cicatriz da cesárea: vermelhidão intensa ao redor da cicatriz, secreção (pus), inchaço excessivo, dor muito intensa, febre, calor local. Se notar qualquer um desses sinais, procure médico IMEDIATAMENTE. Infecção precisa de tratamento adequado. Mantenha cicatriz limpa e seca, siga orientações médicas de cuidados. Prevenção é fundamental!",
+    "categoria": "sintomas"
+  },
+  "relacionamento_volta_trabalho": {
+    "pergunta": "Como lidar com a volta ao trabalho após a licença-maternidade?",
+    "resposta": "Volta ao trabalho é um grande desafio! Prepare-se: organize rotina, defina quem cuidará do bebê, mantenha amamentação (ordene leite, amamente quando possível), crie momentos de qualidade com o bebê, cuide de si mesma, seja realista sobre expectativas, peça ajuda quando necessário. Sentimentos mistos (culpa, alívio, tristeza) são normais. Você está fazendo seu melhor!",
+    "categoria": "relacionamento"
+  },
+  "exercicios_ioga": {
+    "pergunta": "Posso fazer ioga no pós-parto?",
+    "resposta": "Sim! Ioga pós-parto é excelente para flexibilidade, força, relaxamento. Aguarde liberação médica (geralmente 6 semanas), procure aulas específicas para pós-parto, comece devagar, evite posturas muito intensas inicialmente, foque em respiração e relaxamento. Ioga ajuda na recuperação física e mental. Pode fazer em casa com vídeos ou em aulas presenciais. Sempre respeite seus limites!",
+    "categoria": "exercicios"
+  },
+  "bebe_ouvido_nariz": {
+    "pergunta": "Como limpar o ouvido e nariz do bebê?",
+    "resposta": "Ouvido: NÃO use cotonete dentro do ouvido! Limpe apenas a parte externa com pano úmido. Cerume protege o ouvido. Nariz: use soro fisiológico (gotas ou spray), aspirador nasal pode ajudar em casos de muito muco, limpe com pano macio. Se houver muito desconforto ou secreção excessiva, consulte pediatra. Limpeza excessiva pode causar irritação.",
+    "categoria": "bebe"
+  },
+  "bebe_roupas": {
+    "pergunta": "Como escolher roupas adequadas para o bebê?",
+    "resposta": "Roupas para bebê: tecidos naturais (algodão, preferencialmente), roupas fáceis de vestir/tirar (aberturas largas, botões na frente), tamanho adequado (não muito apertadas nem muito largas), roupas por camadas (facilita ajustar temperatura), evite roupas com cordões, botões pequenos, ou partes soltas. Bebês crescem rápido - não compre muitas roupas do mesmo tamanho!",
+    "categoria": "bebe"
+  },
+  "sono_bebe_transicao_berco_quarto": {
+    "pergunta": "Quando devo fazer o bebê dormir no próprio quarto?",
+    "resposta": "Recomendação: bebês devem dormir no quarto dos pais (mas em berço próprio) pelos primeiros 6 meses (reduz risco de morte súbita). Após 6 meses, pode fazer transição para quarto próprio se desejar. Transição: gradual, comece com sonecas no quarto próprio, depois noite, mantenha rotina consistente, use monitor de bebê se necessário. Não há pressa - faça quando se sentir confortável!",
+    "categoria": "sono_bebe"
+  },
+  "amamentacao_retorno_trabalho": {
+    "pergunta": "Como manter amamentação ao voltar ao trabalho?",
+    "resposta": "Manter amamentação ao voltar ao trabalho: ordene leite antes (crie estoque), use bomba de leite no trabalho, armazene leite corretamente, amamente antes de sair e ao chegar, mantenha rotina de ordenha (a cada 3-4h), hidrate-se bem, use sutiã de amamentação adequado. Converse com seu empregador sobre pausas para ordenha. É possível manter amamentação trabalhando!",
+    "categoria": "amamentacao"
+  },
+  "saude_mental_terapia": {
+    "pergunta": "Devo fazer terapia no pós-parto?",
+    "resposta": "Terapia pode ser muito benéfica no pós-parto! Ajuda a: processar mudanças, lidar com estresse, entender sentimentos, desenvolver estratégias de enfrentamento, melhorar relacionamentos. Não há problema em buscar terapia preventivamente - não precisa esperar estar em crise. Terapia é autocuidado. Se estiver se sentindo sobrecarregada, ansiosa, ou triste, considere buscar ajuda profissional.",
+    "categoria": "saude_mental"
+  },
+  "nutricao_alimentos_lactogogos": {
+    "pergunta": "Existem alimentos que aumentam a produção de leite?",
+    "resposta": "Alimentos galactogogos (que podem ajudar na produção): aveia, cevada, nozes, sementes de gergelim, folhas verde-escuras, grãos integrais, proteínas magras. Mas atenção: o mais importante é amamentação frequente, hidratação adequada, descanso, baixo estresse. Alimentação sozinha não aumenta produção magicamente - é conjunto de fatores. Se produção estiver baixa, busque ajuda de consultor em amamentação.",
+    "categoria": "alimentacao"
+  },
+  "sintomas_liquidos_vaginais": {
+    "pergunta": "É normal ter secreção vaginal após o parto?",
+    "resposta": "Sim, é normal! Lóquios (secreção pós-parto) são normais e duram 4-8 semanas. Evolução: vermelho/rosado nos primeiros dias, depois marrom, depois amarelo/branco. Secreção deve diminuir gradualmente. Preocupe-se se: muito intensa (mais de 1 absorvente por hora), cheiro forte/ruim, coágulos grandes, febre, dor abdominal intensa. Nesses casos, procure médico - pode indicar infecção ou resíduos retidos.",
+    "categoria": "sintomas"
+  },
+  "relacionamento_familia_sogra": {
+    "pergunta": "Como lidar com interferências da sogra/família?",
+    "resposta": "Interferências familiares são desafiadoras! Estratégias: estabeleça limites claros mas respeitosos, comunique decisões de forma assertiva, escolha suas batalhas (não precisa discutir tudo), busque apoio do parceiro, defina o que é ajuda e o que é interferência, confie em seu instinto materno, peça ajuda quando quiser, mas defina limites. Você é a mãe - suas decisões importam!",
+    "categoria": "relacionamento"
+  },
+  "exercicios_core": {
+    "pergunta": "Quais exercícios são bons para fortalecer o core no pós-parto?",
+    "resposta": "Exercícios para core pós-parto (após liberação médica): prancha (comece com variações mais leves), exercícios de Kegel, pontes, alongamentos, exercícios de respiração profunda. Evite abdominais tradicionais inicialmente (podem piorar diástase). Procure fisioterapeuta pélvica para orientação adequada. Core forte ajuda na postura, previne dores nas costas, melhora função pélvica. Comece devagar e aumente gradualmente!",
+    "categoria": "exercicios"
+  },
+  "bebe_banho_temperatura": {
+    "pergunta": "Qual a temperatura ideal da água para o banho do bebê?",
+    "resposta": "Temperatura ideal: 37-38°C (morna, não quente). Teste com cotovelo ou pulso - deve estar confortável, não quente. Água muito quente pode queimar a pele sensível do bebê. Mantenha temperatura ambiente do banheiro adequada (sem correntes de ar). Banho deve ser rápido (5-10 min) para evitar resfriamento. Seque bem o bebê após o banho, especialmente nas dobras.",
+    "categoria": "bebe"
+  },
+  "sono_bebe_mudanca_horario": {
+    "pergunta": "Como ajustar o horário de sono do bebê?",
+    "resposta": "Ajustar horário de sono: gradual (não mude tudo de uma vez), ajuste em incrementos de 15-30 min, mantenha rotina consistente, exponha bebê à luz natural durante o dia, mantenha ambiente escuro e calmo à noite, seja paciente (pode levar dias ou semanas). Bebês pequenos ainda não têm ritmo circadiano bem estabelecido - tenha paciência. Rotina consistente ajuda muito!",
+    "categoria": "sono_bebe"
+  },
+  "amamentacao_rejeicao_peito": {
+    "pergunta": "Meu bebê está rejeitando o peito. O que fazer?",
+    "resposta": "Rejeição do peito pode ter várias causas: mudança na produção de leite, mudança no sabor (alimentação, medicamentos, menstruação), estresse, dentição, doença. Soluções: continue oferecendo o peito, amamente em ambiente calmo, varie posições, ofereça quando bebê está sonolento, evite mamadeira/chupeta se possível, busque ajuda de consultor em amamentação. Na maioria dos casos, é temporário e resolve!",
+    "categoria": "amamentacao"
+  },
+  "saude_mental_meditacao": {
+    "pergunta": "Meditação ajuda no pós-parto?",
+    "resposta": "Sim! Meditação pode ajudar muito no pós-parto: reduz estresse, melhora sono, ajuda a lidar com ansiedade, aumenta bem-estar, melhora conexão com o bebê. Comece devagar: 5-10 min por dia, use apps de meditação, medite quando o bebê dorme, não precisa ser perfeita. Meditação guiada para mães pode ser especialmente útil. É uma ferramenta poderosa de autocuidado!",
+    "categoria": "saude_mental"
+  },
+  "nutricao_organizar_refeicoes": {
+    "pergunta": "Como organizar as refeições com um bebê recém-nascido?",
+    "resposta": "Organizar refeições: prepare porções maiores e congele, tenha lanches práticos à mão (frutas, nozes, iogurte), aceite ajuda de família/amigos para cozinhar, use delivery saudável quando necessário, faça refeições simples mas nutritivas, coma quando o bebê dorme, mantenha garrafa de água sempre por perto. Alimentação não precisa ser perfeita - precisa ser nutritiva e prática!",
+    "categoria": "alimentacao"
+  },
+  "sintomas_varizes": {
+    "pergunta": "Desenvolvi varizes na gravidez. Vão melhorar?",
+    "resposta": "Varizes na gravidez são comuns devido a aumento de peso e hormônios. Podem melhorar após o parto, mas não desaparecem completamente. Melhorias: exercícios, elevar pernas, evitar ficar muito tempo em pé, usar meias de compressão (se recomendado), manter peso saudável. Se muito incômodas ou persistirem, consulte médico para avaliar tratamento. Varizes podem piorar em gestações futuras.",
+    "categoria": "sintomas"
+  },
+  "relacionamento_tempo_casal": {
+    "pergunta": "Como encontrar tempo para o casal com um bebê recém-nascido?",
+    "resposta": "Tempo a dois é desafiador, mas importante! Estratégias: encontrem momentos breves (café juntos, conversa antes de dormir), peçam ajuda para ter algumas horas sozinhos, façam atividades simples juntos (assistir série, jantar, caminhada), lembrem-se de que é fase temporária, comuniquem-se sobre necessidades. Não precisa ser romântico perfeito - apenas conexão. Amor de vocês pode crescer com o bebê!",
+    "categoria": "relacionamento"
+  }
+}
+

@@ -2,11 +2,16 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Sophia">
     <meta name="theme-color" content="#f4a6a6">
+    <meta name="msapplication-TileColor" content="#f4a6a6">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="address=no">
+    <meta name="format-detection" content="email=no">
     <meta name="description" content="Espaço acolhedor para o puerpério — apoio, acolhimento e conversas humanizadas com Sophia.">
     <title>Sophia - Sua Amiga do Puerpério 🤱</title>
     
@@ -310,6 +315,10 @@
                             <i class="fas fa-trash"></i>
                             Limpar Histórico
                         </button>
+                        <button class="sidebar-btn" id="sidebar-btn-clear-memory">
+                            <i class="fas fa-brain"></i>
+                            Limpar Memória da Sophia
+                        </button>
                         <button class="sidebar-btn" id="sidebar-btn-back">
                             <i class="fas fa-home"></i>
                             Voltar ao Menu
@@ -330,8 +339,19 @@
             <div class="chat-area">
                 <!-- Welcome Message -->
                 <div class="welcome-message" id="welcome-message">
+                    <!-- Elementos decorativos de fundo -->
+                    <div class="decorative-elements">
+                        <div class="decorative-icon icon-1"><i class="fas fa-heart"></i></div>
+                        <div class="decorative-icon icon-2"><i class="fas fa-baby"></i></div>
+                        <div class="decorative-icon icon-3"><i class="fas fa-hands-helping"></i></div>
+                        <div class="decorative-icon icon-4"><i class="fas fa-leaf"></i></div>
+                    </div>
+                    
                     <div class="welcome-content">
-                        <i class="fas fa-baby"></i>
+                        <div class="welcome-icon-wrapper">
+                            <i class="fas fa-baby"></i>
+                            <div class="icon-glow"></div>
+                        </div>
                         <h2>Bem-vinda ao seu espaço de apoio! 💛</h2>
                         <p class="welcome-micro-phrase">Aqui cuidamos de você, enquanto você cuida do seu bebê.</p>
                         <p class="inclusion-phrase">Cada jornada é única — e todas merecem acolhimento. 🌼</p>
@@ -390,6 +410,38 @@
                                 <button class="feeling-btn" data-feeling="confusa" aria-label="Estou confusa">😕 Confusa</button>
                                 <button class="feeling-btn" data-feeling="triste" aria-label="Estou triste">😢 Triste</button>
                                 <button class="feeling-btn" data-feeling="gratidao" aria-label="Estou grata">🙏 Grata</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Perguntas Rápidas -->
+                        <div class="quick-questions">
+                            <h2>💬 Não sabe por onde começar?</h2>
+                            <p class="quick-questions-subtitle">Clique em uma pergunta para iniciar a conversa:</p>
+                            <div class="quick-questions-grid">
+                                <button class="quick-btn" data-question="Como está sendo sua experiência no puerpério?">
+                                    <i class="fas fa-heart"></i>
+                                    Como está sua experiência no puerpério?
+                                </button>
+                                <button class="quick-btn" data-question="Quais são os cuidados mais importantes no pós-parto?">
+                                    <i class="fas fa-shield-alt"></i>
+                                    Quais cuidados são importantes no pós-parto?
+                                </button>
+                                <button class="quick-btn" data-question="Me fale sobre amamentação">
+                                    <i class="fas fa-child"></i>
+                                    Me fale sobre amamentação
+                                </button>
+                                <button class="quick-btn" data-question="Quais sintomas são normais no puerpério?">
+                                    <i class="fas fa-stethoscope"></i>
+                                    Quais sintomas são normais?
+                                </button>
+                                <button class="quick-btn" data-question="Como me sinto triste após o parto, isso é normal?">
+                                    <i class="fas fa-smile"></i>
+                                    Estou triste, isso é normal?
+                                </button>
+                                <button class="quick-btn" data-question="Como cuidar de mim mesmo cuidando do bebê?">
+                                    <i class="fas fa-spa"></i>
+                                    Como me cuidar também?
+                                </button>
                             </div>
                         </div>
                         
@@ -454,7 +506,7 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="input-wrapper">
-                    <input type="text" id="message-input" name="chat-message" placeholder="Digite sua pergunta sobre puerpério..." maxlength="500" autocomplete="off" data-lpignore="true" data-form-type="other" role="textbox" aria-label="Campo de mensagem do chat">
+                    <input type="text" id="message-input" name="chat-message" placeholder="Digite sua pergunta sobre puerpério..." maxlength="500" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="true" inputmode="text" data-lpignore="true" data-form-type="other" role="textbox" aria-label="Campo de mensagem do chat">
                     <button class="btn btn-send" id="send-button" aria-label="Enviar mensagem">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -620,6 +672,30 @@
             document.head.appendChild(link2);
         });
     </script>
+    
+    <!-- Rodapé com Aviso de Segurança (oculto por padrão, aparece só durante conversa) -->
+    <footer id="cvv-disclaimer-footer" class="cvv-disclaimer-footer" style="
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid #e0e0e0;
+        padding: 0.5rem 1rem;
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+        text-align: center;
+        font-size: 0.75rem;
+        color: #666;
+        z-index: 997;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+        display: none;
+    ">
+        <p style="margin: 0; line-height: 1.4;">
+            A Sophia não substitui atendimento profissional. 
+            Em caso de crise, ligue <strong>188 (CVV)</strong>.
+        </p>
+    </footer>
 </body>
 </html>
 

@@ -24,42 +24,73 @@ import base64
 import secrets
 import string
 import logging
+import unicodedata
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template, session, url_for
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
-# Verifica se google-generativeai está disponível
-GEMINI_AVAILABLE = False
-genai = None
+from collections import defaultdict, Counter
+
+# Tenta importar NLTK para stemming (opcional)
+NLTK_AVAILABLE = False
 try:
-    import google.generativeai as genai
-    GEMINI_AVAILABLE = True
-    print(f"[GEMINI] ✅ Biblioteca google-generativeai importada com sucesso!")
-    print(f"[GEMINI] ✅ Versão: {genai.__version__ if hasattr(genai, '__version__') else 'N/A'}")
-    print(f"[GEMINI] ✅ Python executando: {sys.executable}")
-    print(f"[GEMINI] ✅ Caminho Python: {sys.path[:3]}")
-except ImportError as e:
-    GEMINI_AVAILABLE = False
-    genai = None
-    print(f"[GEMINI] ❌ ERRO ao importar google-generativeai: {e}")
-    print(f"[GEMINI] ❌ Python executando: {sys.executable}")
-    print(f"[GEMINI] ❌ Execute: pip install google-generativeai")
-    print(f"[GEMINI] ❌ Verifique se está no ambiente virtual correto!")
+    import nltk
+    from nltk.stem import RSLPStemmer
+    NLTK_AVAILABLE = True
+    # Baixa dados necessários se não estiverem disponíveis
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        try:
+            nltk.download('punkt', quiet=True)
+        except:
+            pass
+except ImportError:
+    NLTK_AVAILABLE = False
 except Exception as e:
-    GEMINI_AVAILABLE = False
-    genai = None
-    print(f"[GEMINI] ❌ ERRO inesperado ao importar google-generativeai: {e}")
+    NLTK_AVAILABLE = False
+    # Logger ainda não está configurado aqui, usa print temporariamente
+    print(f"[NLTK] ⚠️ NLTK não disponível: {e}")
+
+# Configuração de logging (após imports básicos, antes de usar logger)
+if not logging.getLogger().handlers:  # Evita reconfigurar se já foi configurado
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+logger = logging.getLogger(__name__)
+
+# Agora pode usar logger para NLTK
+if NLTK_AVAILABLE:
+    logger.info("[NLTK] ✅ NLTK importado com sucesso")
+else:
+    logger.info("[NLTK] ℹ️ NLTK não disponível (opcional - usando fallback)")
+
+# Verifica se openai está disponível
+OPENAI_AVAILABLE = False
+openai_client = None
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+    logger.info("[OPENAI] Biblioteca openai importada com sucesso")
+    print("[OPENAI] Biblioteca openai importada com sucesso")
+except ImportError as e:
+    OPENAI_AVAILABLE = False
+    openai_client = None
+    logger.warning(f"[OPENAI] ERRO ao importar openai: {e}")
+    print(f"[OPENAI] ERRO ao importar openai: {e}")
+    print("[OPENAI] Execute: pip install openai")
+except Exception as e:
+    OPENAI_AVAILABLE = False
+    openai_client = None
+    logger.error(f"[OPENAI] ERRO inesperado ao importar openai: {e}")
+    print(f"[OPENAI] ERRO inesperado ao importar openai: {e}")
     import traceback
     traceback.print_exc()
 
-# Configuração de logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-logger = logging.getLogger(__name__)
+# Logger já foi configurado acima (antes da importação do NLTK)
 
 # Carrega variáveis de ambiente
 # Carrega .env da raiz do projeto (múltiplos caminhos possíveis)
@@ -107,32 +138,41 @@ app = Flask(__name__,
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'sua-chave-secreta-super-segura-mude-isso-em-producao')
 BASE_PATH = os.path.join(os.path.dirname(__file__), "..", "dados")
 DB_PATH = os.path.join(os.path.dirname(__file__), "users.db")
-# Carrega GEMINI_API_KEY com múltiplas tentativas
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    # Tenta recarregar se não encontrou
-    logger.warning("[GEMINI] ⚠️ GEMINI_API_KEY não encontrada na primeira tentativa, recarregando .env...")
-    print("[GEMINI] ⚠️ GEMINI_API_KEY não encontrada na primeira tentativa, recarregando .env...")
-    for env_path in env_paths:
-        if os.path.exists(env_path):
-            logger.info(f"[GEMINI] Recarregando .env de: {env_path}")
-            print(f"[GEMINI] Recarregando .env de: {env_path}")
-            load_dotenv(env_path, override=True)
-            GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-            if GEMINI_API_KEY:
-                logger.info(f"[GEMINI] ✅ GEMINI_API_KEY carregada após recarregar (length: {len(GEMINI_API_KEY)})")
-                print(f"[GEMINI] ✅ GEMINI_API_KEY carregada após recarregar (length: {len(GEMINI_API_KEY)})")
-                break
+# Flag para controlar uso de IA (permite desabilitar completamente)
+USE_AI = os.getenv("USE_AI", "true").lower() == "true"
+logger.info(f"[IA] 🔍 USE_AI configurado: {USE_AI}")
+print(f"[IA] 🔍 USE_AI configurado: {USE_AI}")
 
-if GEMINI_API_KEY:
-    logger.info(f"[GEMINI] ✅ GEMINI_API_KEY encontrada (length: {len(GEMINI_API_KEY)})")
-    print(f"[GEMINI] ✅ GEMINI_API_KEY encontrada (length: {len(GEMINI_API_KEY)})")
-    print(f"[GEMINI] Primeiros 10 chars: {GEMINI_API_KEY[:10]}...")
+# Carrega OPENAI_API_KEY com múltiplas tentativas (apenas se USE_AI estiver habilitado)
+OPENAI_API_KEY = None
+OPENAI_ASSISTANT_ID = None
+if USE_AI:
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
+    if not OPENAI_API_KEY:
+        # Tenta recarregar se não encontrou
+        logger.warning("[OPENAI] OPENAI_API_KEY não encontrada na primeira tentativa, recarregando .env...")
+        print("[OPENAI] OPENAI_API_KEY não encontrada na primeira tentativa, recarregando .env...")
+        for env_path in env_paths:
+            if os.path.exists(env_path):
+                logger.info(f"[OPENAI] Recarregando .env de: {env_path}")
+                print(f"[OPENAI] Recarregando .env de: {env_path}")
+                load_dotenv(env_path, override=True)
+                OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+                OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
+                if OPENAI_API_KEY:
+                    logger.info(f"[OPENAI] OPENAI_API_KEY carregada após recarregar (length: {len(OPENAI_API_KEY)})")
+                    print(f"[OPENAI] OPENAI_API_KEY carregada após recarregar (length: {len(OPENAI_API_KEY)})")
+                    break
+
+    if OPENAI_API_KEY:
+        logger.info(f"[OPENAI] OPENAI_API_KEY encontrada (length: {len(OPENAI_API_KEY)})")
+        print(f"[OPENAI] OPENAI_API_KEY encontrada (length: {len(OPENAI_API_KEY)})")
+    else:
+        logger.error("[OPENAI] OPENAI_API_KEY NAO encontrada após todas as tentativas!")
 else:
-    logger.error("[GEMINI] ❌❌❌ GEMINI_API_KEY NÃO encontrada após todas as tentativas!")
-    print("[GEMINI] ❌❌❌ GEMINI_API_KEY NÃO encontrada após todas as tentativas!")
-    print("[GEMINI] Verificando variáveis de ambiente...")
-    print(f"[GEMINI] GEMINI_API_KEY from os.getenv: {repr(os.getenv('GEMINI_API_KEY'))}")
+    logger.info("[IA] USE_AI=false - IA desabilitada, usando apenas base local humanizada")
+    print("[IA] USE_AI=false - IA desabilitada, usando apenas base local humanizada")
 
 # Configurações de sessão para funcionar com IP/localhost e mobile
 # Detecta se está em produção (HTTPS) ou desenvolvimento
@@ -219,109 +259,39 @@ login_manager.login_view = 'index'
 # "strong" pode causar problemas em dispositivos móveis com mudança de rede
 login_manager.session_protection = "basic"
 
-# Inicializa cliente Gemini se a chave estiver disponível
-gemini_client = None
-logger.info(f"[GEMINI] 🔍 Verificando inicialização... GEMINI_AVAILABLE: {GEMINI_AVAILABLE}, GEMINI_API_KEY presente: {bool(GEMINI_API_KEY)}")
-print(f"[GEMINI] 🔍 Verificando inicialização... GEMINI_AVAILABLE: {GEMINI_AVAILABLE}, GEMINI_API_KEY presente: {bool(GEMINI_API_KEY)}")
-
-if GEMINI_AVAILABLE and GEMINI_API_KEY:
-    logger.info(f"[GEMINI] ✅ Condições atendidas - GEMINI_AVAILABLE: {GEMINI_AVAILABLE}, GEMINI_API_KEY presente: {bool(GEMINI_API_KEY)}")
-    print(f"[GEMINI] ✅ Condições atendidas - GEMINI_AVAILABLE: {GEMINI_AVAILABLE}, GEMINI_API_KEY presente: {bool(GEMINI_API_KEY)}")
-    
-    # ISOLAR: Configuração da API
-    configure_success = False
+# Inicializa cliente OpenAI se a chave estiver disponível E USE_AI estiver habilitado
+if USE_AI and OPENAI_AVAILABLE and OPENAI_API_KEY:
     try:
-        logger.info(f"[GEMINI] 🔍 [PASSO 1] Configurando Gemini com API key (length: {len(GEMINI_API_KEY)})")
-        print(f"[GEMINI] 🔍 [PASSO 1] Configurando Gemini com API key (length: {len(GEMINI_API_KEY)})")
-        genai.configure(api_key=GEMINI_API_KEY)
-        configure_success = True
-        logger.info("[GEMINI] ✅ [PASSO 1] genai.configure() executado com sucesso")
-        print("[GEMINI] ✅ [PASSO 1] genai.configure() executado com sucesso")
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        logger.info("[OPENAI] Cliente OpenAI inicializado com sucesso")
+        print("[OPENAI] Cliente OpenAI inicializado com sucesso")
+        
+        # Cria ou obtém assistente Sophia se não tiver ID
+        if not OPENAI_ASSISTANT_ID:
+            logger.info("[OPENAI] Criando assistente Sophia...")
+            print("[OPENAI] Criando assistente Sophia...")
+            # O assistente será criado na primeira chamada se necessário
+        else:
+            logger.info(f"[OPENAI] Usando assistente existente: {OPENAI_ASSISTANT_ID}")
+            print(f"[OPENAI] Usando assistente existente: {OPENAI_ASSISTANT_ID}")
     except Exception as e:
-        logger.error(f"[GEMINI] ❌ [PASSO 1] ERRO ao configurar API: {e}", exc_info=True)
-        print(f"[GEMINI] ❌ [PASSO 1] ERRO ao configurar API: {e}")
-        import traceback
-        traceback.print_exc()
-        configure_success = False
-    
-    # ISOLAR: Criação do objeto GenerativeModel (LINHA CRÍTICA)
-    if configure_success:  # Só tenta criar se configure() funcionou
-        try:
-            logger.info("[GEMINI] 🔍 [PASSO 2] Criando GenerativeModel('gemini-2.0-flash')...")
-            print("[GEMINI] 🔍 [PASSO 2] Criando GenerativeModel('gemini-2.0-flash')...")
-            print(f"[GEMINI] [PASSO 2] genai disponível: {genai is not None}")
-            print(f"[GEMINI] [PASSO 2] GEMINI_API_KEY disponível: {bool(GEMINI_API_KEY)}")
-            
-            # ESTA É A LINHA QUE PODE ESTAR FALHANDO
-            # Tenta usar gemini-2.0-flash, se falhar, usa gemini-1.5-flash
-            try:
-                gemini_client = genai.GenerativeModel('gemini-2.0-flash')
-                logger.info("[GEMINI] ✅ Modelo 'gemini-2.0-flash' criado com sucesso")
-                print("[GEMINI] ✅ Modelo 'gemini-2.0-flash' criado com sucesso")
-            except Exception as e:
-                logger.warning(f"[GEMINI] ⚠️ Modelo 'gemini-2.0-flash' não disponível, tentando 'gemini-1.5-flash': {e}")
-                print(f"[GEMINI] ⚠️ Modelo 'gemini-2.0-flash' não disponível, tentando 'gemini-1.5-flash': {e}")
-                try:
-                    gemini_client = genai.GenerativeModel('gemini-1.5-flash')
-                    logger.info("[GEMINI] ✅ Modelo 'gemini-1.5-flash' criado com sucesso")
-                    print("[GEMINI] ✅ Modelo 'gemini-1.5-flash' criado com sucesso")
-                except Exception as e2:
-                    logger.error(f"[GEMINI] ❌ Erro ao criar modelo alternativo: {e2}")
-                    print(f"[GEMINI] ❌ Erro ao criar modelo alternativo: {e2}")
-                    raise e2
-            
-            logger.info("[GEMINI] ✅ [PASSO 2] GenerativeModel criado com sucesso!")
-            print("[GEMINI] ✅ [PASSO 2] GenerativeModel criado com sucesso!")
-            print(f"[GEMINI] ✅ [PASSO 2] gemini_client type: {type(gemini_client)}")
-            print(f"[GEMINI] ✅ [PASSO 2] gemini_client is None: {gemini_client is None}")
-            print(f"[GEMINI] ✅ [PASSO 2] gemini_client object: {gemini_client}")
-            
-            # Verificação final
-            if gemini_client is None:
-                logger.error("[GEMINI] ❌❌❌ ERRO CRÍTICO: GenerativeModel retornou None!")
-                print("[GEMINI] ❌❌❌ ERRO CRÍTICO: GenerativeModel retornou None!")
-            else:
-                logger.info("[GEMINI] ✅✅✅ [PASSO 2] Cliente Gemini inicializado com SUCESSO!")
-                print("[GEMINI] ✅✅✅ [PASSO 2] Cliente Gemini inicializado com SUCESSO!")
-                
-        except Exception as e:
-            logger.error(f"[GEMINI] ❌ [PASSO 2] ERRO AO INSTANCIAR O CLIENTE GEMINI: {e}", exc_info=True)
-            print(f"[GEMINI] ❌ [PASSO 2] ERRO AO INSTANCIAR O CLIENTE GEMINI: {e}")
-            import traceback
-            traceback.print_exc()
-            gemini_client = None
-            logger.error(f"[GEMINI] ❌ [PASSO 2] gemini_client definido como None devido ao erro")
-            print(f"[GEMINI] ❌ [PASSO 2] gemini_client definido como None devido ao erro")
-            print(f"[GEMINI] ❌ [PASSO 2] Tipo do erro: {type(e).__name__}")
-            print(f"[GEMINI] ❌ [PASSO 2] Mensagem completa: {str(e)}")
+        logger.error(f"[OPENAI] Erro ao inicializar OpenAI: {e}")
+        print(f"[OPENAI] Erro ao inicializar OpenAI: {e}")
+        openai_client = None
 else:
-    if not GEMINI_AVAILABLE:
-        logger.warning("[GEMINI] ⚠️ Biblioteca google-generativeai não instalada - execute: pip install google-generativeai")
-        print("[GEMINI] ⚠️ Biblioteca não instalada - execute: pip install google-generativeai")
-    elif not GEMINI_API_KEY:
-        logger.warning("[GEMINI] ⚠️ GEMINI_API_KEY não configurada - respostas serão da base local (humanizadas)")
-        print("[GEMINI] ⚠️ GEMINI_API_KEY não configurada - respostas serão da base local (humanizadas)")
+    openai_client = None
+    if not USE_AI:
+        logger.info("[IA] IA desabilitada (USE_AI=false) - usando apenas base local humanizada")
+        print("[IA] IA desabilitada (USE_AI=false) - usando apenas base local humanizada")
+    elif not OPENAI_AVAILABLE:
+        logger.warning("[OPENAI] Biblioteca openai nao instalada - execute: pip install openai")
+        print("[OPENAI] Biblioteca nao instalada - execute: pip install openai")
+    elif not OPENAI_API_KEY:
+        logger.warning("[OPENAI] OPENAI_API_KEY nao configurada - respostas serao da base local (humanizadas)")
+        print("[OPENAI] OPENAI_API_KEY nao configurada - respostas serao da base local (humanizadas)")
 
-logger.info(f"[GEMINI] 🔍 Status final: gemini_client = {gemini_client}")
-print(f"[GEMINI] 🔍 Status final: gemini_client = {gemini_client}")
-print(f"[GEMINI] 🔍 gemini_client is None: {gemini_client is None}")
-print(f"[GEMINI] 🔍 gemini_client type: {type(gemini_client)}")
-
-# Verificação crítica antes de criar o chatbot
-if gemini_client is None:
-    logger.error("[GEMINI] ❌❌❌ CRÍTICO: gemini_client é None após tentativa de inicialização!")
-    logger.error("[GEMINI] Verificando causas...")
-    logger.error(f"[GEMINI] GEMINI_AVAILABLE: {GEMINI_AVAILABLE}")
-    logger.error(f"[GEMINI] GEMINI_API_KEY presente: {bool(GEMINI_API_KEY)}")
-    if GEMINI_API_KEY:
-        logger.error(f"[GEMINI] GEMINI_API_KEY length: {len(GEMINI_API_KEY)}")
-        logger.error(f"[GEMINI] GEMINI_API_KEY primeiro 10 chars: {GEMINI_API_KEY[:10]}...")
-    print("[GEMINI] ❌❌❌ CRÍTICO: gemini_client é None após tentativa de inicialização!")
-    print(f"[GEMINI] GEMINI_AVAILABLE: {GEMINI_AVAILABLE}")
-    print(f"[GEMINI] GEMINI_API_KEY presente: {bool(GEMINI_API_KEY)}")
-else:
-    logger.info("[GEMINI] ✅✅✅ gemini_client NÃO é None - está pronto para uso!")
-    print("[GEMINI] ✅✅✅ gemini_client NÃO é None - está pronto para uso!")
+logger.info(f"[OPENAI] Status final: openai_client = {openai_client is not None}")
+print(f"[OPENAI] Status final: openai_client disponivel = {openai_client is not None}")
 
 # Classe User para Flask-Login
 class User(UserMixin):
@@ -606,69 +576,101 @@ def load_user(user_id):
 # Carrega os arquivos JSON
 def carregar_dados():
     """
-    Carrega todos os arquivos JSON necessários para o funcionamento do chatbot.
+    Carrega automaticamente TODOS os arquivos JSON.
+    Primeiro tenta do diretório backend (local), depois do diretório dados.
+    Usa os.listdir() para identificar arquivos .json automaticamente.
     Retorna dicionários vazios se algum arquivo não for encontrado, mas registra avisos detalhados.
     """
-    required_files = [
-        "base_conhecimento.json",
-        "mensagens_apoio.json",
-        "alertas.json",
-        "telefones_uteis.json",
-        "guias_praticos.json",
-        "cuidados_gestacao.json",
-        "cuidados_pos_parto.json",
-        "vacinas_mae.json",
-        "vacinas_bebe.json"
-    ]
-    
     results = {}
     missing_files = []
     errors = []
+    arquivos_carregados = 0
+    total_itens = 0
     
-    # Verifica se o diretório existe
-    if not os.path.exists(BASE_PATH):
-        logger.error(f"⚠️ CRÍTICO: Diretório de dados não encontrado: {BASE_PATH}")
-        logger.error("⚠️ O chatbot não funcionará corretamente sem os arquivos JSON!")
-        return {}, {}, {}, {}, {}, {}, {}, {}, {}
+    # Lista de diretórios para procurar (prioridade: backend local, depois dados)
+    diretorios_procurar = [
+        os.path.dirname(__file__),  # Diretório backend (prioridade)
+        BASE_PATH  # Diretório dados (fallback)
+    ]
     
-    # Carrega cada arquivo individualmente
-    for file_name in required_files:
-        file_path = os.path.join(BASE_PATH, file_name)
+    # Conjunto de arquivos já carregados (para evitar duplicatas)
+    arquivos_carregados_set = set()
+    
+    # Procura em cada diretório
+    for diretorio in diretorios_procurar:
+        if not os.path.exists(diretorio):
+            continue
+        
+        # Carrega automaticamente TODOS os arquivos .json do diretório
         try:
-            if not os.path.exists(file_path):
-                missing_files.append(file_name)
-                logger.warning(f"⚠️ Arquivo não encontrado: {file_name}")
-                results[file_name] = {}
+            arquivos_json = [f for f in os.listdir(diretorio) if f.endswith('.json')]
+            logger.info(f"[OK] 🔍 Encontrados {len(arquivos_json)} arquivo(s) .json no diretório: {diretorio}")
+            print(f"[OK] 🔍 Encontrados {len(arquivos_json)} arquivo(s) .json no diretório: {diretorio}")
+        except Exception as e:
+            logger.warning(f"[ERRO] Falha ao listar arquivos do diretório {diretorio}: {e}")
+            print(f"[ERRO] Falha ao listar arquivos do diretório {diretorio}: {e}")
+            continue
+        
+        # Carrega cada arquivo JSON encontrado (se ainda não foi carregado)
+        for file_name in arquivos_json:
+            # Pula se já foi carregado de outro diretório
+            if file_name in arquivos_carregados_set:
                 continue
             
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                results[file_name] = data
-                item_count = len(data) if isinstance(data, dict) else len(data) if isinstance(data, list) else 0
-                logger.info(f"✅ Carregado {file_name}: {item_count} itens")
-        except json.JSONDecodeError as e:
-            errors.append(f"{file_name}: Erro de JSON - {str(e)}")
-            logger.error(f"❌ Erro ao decodificar JSON em {file_name}: {e}")
-            results[file_name] = {}
-        except Exception as e:
-            errors.append(f"{file_name}: {str(e)}")
-            logger.error(f"❌ Erro ao carregar {file_name}: {e}")
-            results[file_name] = {}
+            file_path = os.path.join(diretorio, file_name)
+            try:
+                if not os.path.exists(file_path):
+                    continue
+                
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    results[file_name] = data
+                    item_count = len(data) if isinstance(data, dict) else len(data) if isinstance(data, list) else 0
+                    total_itens += item_count
+                    arquivos_carregados += 1
+                    arquivos_carregados_set.add(file_name)
+                    logger.info(f"[OK] ✅ {file_name} carregado de {diretorio} ({item_count} itens)")
+                    print(f"[OK] ✅ {file_name} carregado de {diretorio} ({item_count} itens)")
+            except json.JSONDecodeError as e:
+                errors.append(f"{file_name}: Erro de JSON - {str(e)}")
+                logger.error(f"[ERRO] ❌ Erro ao decodificar JSON em {file_name}: {e}")
+                print(f"[ERRO] ❌ Falha ao ler {file_name}: {e}")
+                if file_name not in results:
+                    results[file_name] = {}
+            except Exception as e:
+                errors.append(f"{file_name}: {str(e)}")
+                logger.error(f"[ERRO] ❌ Erro ao carregar {file_name}: {e}")
+                print(f"[ERRO] ❌ Falha ao ler {file_name}: {e}")
+                if file_name not in results:
+                    results[file_name] = {}
     
     # Resumo do carregamento
+    print("=" * 60)
+    if arquivos_carregados > 0:
+        print(f"[OK] ✅ {arquivos_carregados} arquivo(s) carregado(s) com sucesso!")
+        print(f"[OK] ✅ Total de {total_itens} itens carregados da base de conhecimento")
+        logger.info(f"[OK] ✅ Base de conhecimento carregada com sucesso! {arquivos_carregados} arquivos, {total_itens} itens")
+    else:
+        print(f"[ERRO] ⚠️ Nenhum arquivo foi carregado!")
+        logger.warning("[ERRO] ⚠️ Nenhum arquivo foi carregado!")
+    
     if missing_files:
-        logger.warning(f"⚠️ AVISO: {len(missing_files)} arquivo(s) não encontrado(s): {', '.join(missing_files)}")
-        logger.warning("⚠️ O chatbot pode não funcionar corretamente sem esses arquivos!")
+        logger.warning(f"[ERRO] ⚠️ AVISO: {len(missing_files)} arquivo(s) não encontrado(s): {', '.join(missing_files)}")
+        print(f"[ERRO] ⚠️ AVISO: {len(missing_files)} arquivo(s) não encontrado(s): {', '.join(missing_files)}")
     
     if errors:
-        logger.error(f"❌ ERRO: {len(errors)} erro(s) ao carregar arquivos:")
+        logger.error(f"[ERRO] ❌ ERRO: {len(errors)} erro(s) ao carregar arquivos:")
+        print(f"[ERRO] ❌ ERRO: {len(errors)} erro(s) ao carregar arquivos:")
         for error in errors:
             logger.error(f"   - {error}")
+            print(f"   - {error}")
     
-    if not missing_files and not errors:
-        logger.info("✅ Todos os arquivos JSON foram carregados com sucesso!")
+    if not missing_files and not errors and arquivos_carregados > 0:
+        print("[OK] ✅ Base de conhecimento carregada com sucesso!")
+        logger.info("[OK] ✅ Todos os arquivos JSON foram carregados com sucesso!")
+    print("=" * 60)
     
-    # Retorna na ordem esperada
+    # Retorna na ordem esperada (compatibilidade com código existente)
     return (
         results.get("base_conhecimento.json", {}),
         results.get("mensagens_apoio.json", {}),
@@ -724,9 +726,27 @@ validate_startup()
 logger.info("📦 Carregando arquivos JSON...")
 base_conhecimento, mensagens_apoio, alertas, telefones_uteis, guias_praticos, cuidados_gestacao, cuidados_pos_parto, vacinas_mae, vacinas_bebe = carregar_dados()
 
+# Dicionário global BASE_CONHECIMENTO que unifica todos os dados carregados
+BASE_CONHECIMENTO = {
+    "base_conhecimento": base_conhecimento,
+    "mensagens_apoio": mensagens_apoio,
+    "alertas": alertas,
+    "telefones_uteis": telefones_uteis,
+    "guias_praticos": guias_praticos,
+    "cuidados_gestacao": cuidados_gestacao,
+    "cuidados_pos_parto": cuidados_pos_parto,
+    "vacinas_mae": vacinas_mae,
+    "vacinas_bebe": vacinas_bebe
+}
+
+logger.info(f"[OK] ✅ BASE_CONHECIMENTO criado com {len(BASE_CONHECIMENTO)} categorias")
+print(f"[OK] ✅ BASE_CONHECIMENTO criado com {len(BASE_CONHECIMENTO)} categorias")
+
 # Histórico de conversas em memória (cache para performance)
 # As conversas também são salvas no banco de dados para persistência
 conversas = {}
+
+# Instância global do chatbot será criada após a definição da classe ChatbotPuerperio
 
 # Funções para persistência de conversas e informações pessoais
 def salvar_conversa_db(user_id, pergunta, resposta, categoria=None, fonte=None, alertas=None):
@@ -918,78 +938,978 @@ def obter_informacoes_pessoais(user_id):
         logger.error(f"[DB] ❌ Erro ao obter informações pessoais: {e}")
         return None
 
-# Palavras-chave para alertas
+def filtrar_recomendacoes_medicas(resposta):
+    """
+    Filtra e bloqueia recomendações médicas perigosas nas respostas.
+    Detecta padrões de recomendações de medicamentos, posologia, tratamentos ou diagnósticos.
+    Retorna a resposta filtrada com avisos de segurança se necessário.
+    """
+    if not resposta:
+        return resposta
+    
+    resposta_lower = resposta.lower()
+    
+    # Padrões perigosos que indicam recomendações médicas
+    padroes_perigosos = [
+        # Recomendações de medicamentos
+        r'tome\s+(?:o|a|os|as)?\s*(?:medicamento|remédio|fármaco|comprimido|pílula|pomada|gotas|injeção)',
+        r'use\s+(?:o|a|os|as)?\s*(?:medicamento|remédio|fármaco|comprimido|pílula|pomada|gotas|injeção)',
+        r'recomendo\s+(?:o|a|os|as)?\s*(?:medicamento|remédio|fármaco)',
+        r'sugiro\s+(?:o|a|os|as)?\s*(?:medicamento|remédio|fármaco)',
+        r'indico\s+(?:o|a|os|as)?\s*(?:medicamento|remédio|fármaco)',
+        r'pode\s+tomar\s+(?:o|a|os|as)?\s*(?:medicamento|remédio|fármaco)',
+        r'deve\s+tomar\s+(?:o|a|os|as)?\s*(?:medicamento|remédio|fármaco)',
+        
+        # Posologia e doses
+        r'\d+\s*(?:mg|ml|g|comprimidos?|pílulas?|gotas?)\s+(?:por|ao|de)\s+(?:dia|semana|mês)',
+        r'tome\s+\d+',
+        r'use\s+\d+',
+        r'dose\s+de\s+\d+',
+        r'\d+\s+vezes\s+ao\s+dia',
+        r'\d+\s+vezes\s+por\s+dia',
+        r'a\s+cada\s+\d+\s+horas?',
+        
+        # Tratamentos específicos
+        r'tratamento\s+com\s+(?:medicamento|remédio|fármaco)',
+        r'fazer\s+tratamento\s+com',
+        r'iniciar\s+tratamento',
+        
+        # Diagnósticos
+        r'você\s+tem\s+\w+',
+        r'você\s+está\s+com\s+\w+',
+        r'isso\s+é\s+(?:um|uma)\s+\w+',
+        r'parece\s+ser\s+\w+',
+        r'provavelmente\s+é\s+\w+',
+        
+        # Suplementos e vitaminas
+        r'tome\s+(?:suplemento|vitamina|ferro|cálcio|vitamina\s+d)',
+        r'use\s+(?:suplemento|vitamina|ferro|cálcio|vitamina\s+d)',
+        r'recomendo\s+(?:suplemento|vitamina)',
+    ]
+    
+    # Verifica se há padrões perigosos
+    for padrao in padroes_perigosos:
+        if re.search(padrao, resposta_lower):
+            logger.warning(f"[FILTRO] ⚠️⚠️⚠️ RECOMENDAÇÃO MÉDICA DETECTADA E BLOQUEADA: {padrao}")
+            logger.warning(f"[FILTRO] Resposta original: {resposta[:200]}...")
+            
+            # Remove a recomendação perigosa e adiciona aviso de segurança
+            resposta_filtrada = re.sub(padrao, '', resposta, flags=re.IGNORECASE)
+            resposta_filtrada = re.sub(r'\s+', ' ', resposta_filtrada).strip()
+            
+            # Adiciona aviso obrigatório
+            aviso_seguranca = "\n\n⚠️ IMPORTANTE: Este conteúdo é apenas informativo e não substitui uma consulta médica profissional. NUNCA tome medicamentos, suplementos ou faça tratamentos sem orientação médica. Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas e em caso de dúvidas ou sintomas. Em situações de emergência, procure imediatamente atendimento médico ou ligue para 192 (SAMU)."
+            
+            if aviso_seguranca not in resposta_filtrada:
+                resposta_filtrada += aviso_seguranca
+            
+            return resposta_filtrada
+    
+    return resposta
+
+# Palavras-chave para alertas médicos
 palavras_alerta = ["sangramento", "febre", "dor", "inchaço", "tristeza", "depressão", "emergência"]
 # Palavras/frases que devem ser ignoradas nos alertas (falsos positivos)
 palavras_ignorar_alertas = ["criador", "desenvolvedor", "developer", "programador", "criei", "criou", "fiz", "feito", "sou seu", "sou o"]
 
+# Termos de risco emocional/suicídio - RISCO ALTO (desejo explícito de morte)
+# ⚠️⚠️⚠️ LISTA FORTALECIDA - Mais variações e termos comuns ⚠️⚠️⚠️
+TERMOS_RISCO_ALTO = [
+    # Desejo explícito de morte
+    "quero morrer", "quer morrer", "queria morrer", "quero me matar", "quer me matar", "queria me matar",
+    "me matar", "me mataria", "vou me matar", "vou morrer", "vou acabar com tudo",
+    "acabar com tudo", "acabar com a vida", "acabar com minha vida", "acabar com tudo isso",
+    "tirar a própria vida", "tirar minha vida", "tirar a vida", "tirar minha própria vida",
+    "sumir do mundo", "desaparecer do mundo", "sumir para sempre", "desaparecer para sempre",
+    "prefiro morrer", "morrer seria melhor", "seria melhor morrer", "seria melhor se eu morresse",
+    "não quero mais viver", "nao quero mais viver", "não quero viver", "nao quero viver",
+    "cansada de viver", "cansado de viver", "cansada da vida", "cansado da vida",
+    "quero desaparecer para sempre", "quer desaparecer para sempre",
+    "não vejo saída", "nao vejo saida", "sem saída", "sem saida", "não há saída", "nao ha saida",
+    "chega pra mim", "chega para mim", "chega de tudo", "chega de viver",
+    "não aguento mais viver", "nao aguento mais viver", "não aguento viver", "nao aguento viver",
+    "vou me suicidar", "vou suicidar", "pensar em suicídio", "pensar em suicidio", "pensando em suicídio",
+    "planejando me matar", "planejo me matar", "planejo me suicidar",
+    # Variações adicionais
+    "quero acabar com tudo", "quer acabar com tudo", "vou acabar comigo", "acabar comigo",
+    "não quero existir", "nao quero existir", "quero parar de existir", "quer parar de existir",
+    "melhor estar morta", "melhor estar morto", "preferia estar morta", "preferia estar morto",
+    "quero que tudo acabe", "quer que tudo acabe", "quero que acabe tudo",
+    "não vale mais a pena viver", "nao vale mais a pena viver", "não vale a pena viver",
+    "não tem mais razão para viver", "nao tem mais razao para viver", "sem razão para viver",
+    "quero pular da ponte", "quer pular da ponte", "vou pular da ponte",
+    "quero me jogar", "quer se jogar", "vou me jogar", "vou me jogar da ponte",
+    "quero tomar remédio demais", "quer tomar remédio demais", "vou tomar remédio demais",
+    "quero me enforcar", "quer se enforcar", "vou me enforcar",
+    "quero cortar os pulsos", "quer cortar os pulsos", "vou cortar os pulsos"
+]
+
+# Termos de risco emocional - RISCO LEVE (tristeza, desesperança, mas sem desejo explícito de morte)
+# ⚠️⚠️⚠️ LISTA FORTALECIDA - Mais variações e termos comuns ⚠️⚠️⚠️
+TERMOS_RISCO_LEVE = [
+    # Desesperança e cansaço
+    "não aguento mais", "nao aguento mais", "não aguento", "nao aguento",
+    "não vale mais a pena", "nao vale mais a pena", "não vale a pena", "nao vale a pena",
+    "não tem mais sentido", "nao tem mais sentido", "sem sentido", "não faz sentido",
+    "melhor se eu não existisse", "seria melhor se eu não existisse", "seria melhor não existir",
+    "ninguém sentiria minha falta", "ninguem sentiria minha falta", "ninguém sentiria falta",
+    "todo mundo seria mais feliz", "todos seriam mais feliz", "todos seriam mais felizes sem mim",
+    "quero desaparecer", "quer desaparecer", "queria desaparecer", "quero sumir",
+    "sumir", "desaparecer", "sumir daqui", "desaparecer daqui",
+    "estou perdendo a esperança", "perdendo a esperança", "sem esperança", "sem esperanças",
+    "não consigo mais", "nao consigo mais", "não consigo", "nao consigo",
+    "tô mal", "to mal", "estou mal", "estou muito mal", "estou péssima", "estou péssimo",
+    "não aguento mais isso", "nao aguento mais isso", "não aguento mais nada",
+    # Variações adicionais
+    "não tenho mais forças", "nao tenho mais forcas", "sem forças", "sem forcas",
+    "estou esgotada", "estou esgotado", "esgotada", "esgotado",
+    "não vejo futuro", "nao vejo futuro", "sem futuro", "não há futuro",
+    "estou sozinha", "estou sozinho", "me sinto sozinha", "me sinto sozinho",
+    "ninguém me entende", "ninguem me entende", "ninguém entende", "ninguem entende",
+    "não tenho ninguém", "nao tenho ninguem", "sem ninguém", "sem ninguem",
+    "estou desesperada", "estou desesperado", "desesperada", "desesperado",
+    "não sei mais o que fazer", "nao sei mais o que fazer", "não sei o que fazer",
+    "estou perdida", "estou perdido", "perdida", "perdido",
+    "não consigo mais lidar", "nao consigo mais lidar", "não consigo lidar",
+    "estou no limite", "no limite", "chegando no limite",
+    "não aguento mais essa vida", "nao aguento mais essa vida", "não aguento essa vida",
+    "estou pensando em desistir", "pensando em desistir", "quero desistir", "quer desistir"
+]
+
+# Expressões que EXCLUEM alerta (falsos positivos - análise de contexto)
+EXPRESOES_EXCLUSAO = [
+    "quase morri de rir", "quase morri de tanto rir", "morri de rir", "morrendo de rir",
+    "quase morri", "quase morreu", "quase matei", "quase matou",
+    "quero matar você", "quer matar", "vou matar você", "vou te matar",
+    "quero que você morra", "quer que eu morra",
+    "não quero que você morra", "não quero que morra",
+    "filme sobre", "livro sobre", "história sobre", "notícia sobre",
+    "personagem que", "personagem morreu", "personagem se matou",
+    "ele morreu", "ela morreu", "eles morreram", "morreu no", "morreu em",
+    "criador", "desenvolvedor", "programador", "fiz", "criei", "desenvolvi",
+    "de rir", "de tanto rir", "de rir muito"
+]
+
+# ============================================================================
+# BUFFER DE CONVERSA EMOCIONAL - MEMÓRIA TEMPORÁRIA
+# ============================================================================
+
+# Histórico emocional: armazena últimas 5 mensagens por usuário
+HISTORICO_EMOCIONAL = {}  # {user_id: [mensagem1, mensagem2, ...]}
+
+# Contador de alertas: quantas vezes o usuário gerou alerta
+CONTADOR_ALERTA = {}  # {user_id: contador}
+
+# Flag de sessão em alerta: mantém estado ativo/inativo
+SESSION_ALERT = {}  # {user_id: {"ativo": True/False, "nivel": "alto"/"leve", "timestamp": ...}}
+
+# Respostas progressivas conforme repetição de risco
+RESPOSTAS_RISCO = {
+    "alto": [
+        # ⚠️⚠️⚠️ RESPOSTAS DIRETAS E CONTUNDENTES - CVV (188) SEMPRE PRESENTE ⚠️⚠️⚠️
+        "Sinto muito que você esteja passando por um momento tão difícil. 💛\n\n**Você não está sozinho(a).**\n\n**Por favor, ligue AGORA para o CVV – 188** (gratuito, sigiloso e disponível 24 horas).\n\nOu acesse: **https://cvv.org.br/chat/**\n\nEles podem te ouvir com cuidado neste momento. 💛\n\nSe quiser, posso ficar aqui com você enquanto você busca apoio, tudo bem?",
+        "Eu me preocupo muito com você. **Sua vida importa e tem valor.** 💛\n\n**Por favor, ligue AGORA para o CVV – 188** ou acesse **https://cvv.org.br/chat/**\n\nEles estão disponíveis 24 horas para te ouvir com cuidado e sem julgamento.\n\nVocê não precisa enfrentar isso sozinho(a).",
+        "Percebo que você está em sofrimento profundo. 💛\n\n**Você merece cuidado e ajuda profissional IMEDIATA.**\n\n**Ligue AGORA para o CVV – 188** (gratuito e sigiloso) ou acesse **https://cvv.org.br/chat/**\n\nEles podem te ouvir neste momento. Estou aqui também se quiser conversar enquanto busca apoio.",
+        "Vejo que você está passando por um momento muito difícil. 💛\n\n**Por favor, entre em contato IMEDIATAMENTE com o CVV – 188** (gratuito e sigiloso) ou acesse **https://cvv.org.br/chat/**\n\nEles estão disponíveis 24 horas e podem te ouvir AGORA.\n\n**Por favor, não desista. Há pessoas que se importam com você e querem te ajudar.**",
+        "Sua vida tem valor imenso. 💛\n\n**Você não está sozinho(a).**\n\n**Ligue AGORA para o CVV – 188** ou acesse **https://cvv.org.br/chat/**\n\nEles podem te ouvir com cuidado neste momento, sem julgamento.\n\n**Por favor, não desista. Há ajuda disponível.**"
+    ],
+    "leve": [
+        # ⚠️⚠️⚠️ RESPOSTAS EMPÁTICAS MAS DIRETAS - CVV (188) SEMPRE PRESENTE ⚠️⚠️⚠️
+        "Parece que as coisas estão difíceis para você. 💛\n\n**Você não precisa enfrentar isso sozinho(a).**\n\n**O CVV (188) pode te ouvir AGORA** – é gratuito, sigiloso e disponível 24 horas.\n\nOu acesse: **https://cvv.org.br/chat/**\n\nEstou aqui também se quiser conversar mais sobre como você está se sentindo.",
+        "Sei que é um momento delicado. 💛\n\n**O CVV (188) pode oferecer uma escuta segura e anônima** sempre que você precisar.\n\nLigue **188** ou acesse **https://cvv.org.br/chat/**\n\nEles estão disponíveis 24 horas para te ouvir.\n\nEstou aqui também se quiser conversar.",
+        "Você não precisa enfrentar isso sozinho(a). 💛\n\n**O CVV pode te ouvir a qualquer hora:** ligue **188** (gratuito e sigiloso) ou acesse **https://cvv.org.br/chat/**\n\nEles estão disponíveis 24 horas.\n\nSe quiser, também posso continuar conversando com você aqui.",
+        "Entendo que você esteja se sentindo assim. 💛\n\n**Se quiser conversar com alguém especializado, pode ligar para o CVV – 188** (gratuito e sigiloso) ou acessar **https://cvv.org.br/chat/**\n\nEles estão disponíveis 24 horas para te ouvir.\n\nEstou aqui também se quiser conversar mais sobre como você está se sentindo.",
+        "Você não está sozinho(a). 💛\n\nSei que pode ser muito difícil, mas **há pessoas que podem te ajudar.**\n\n**O CVV (188) está disponível 24 horas** para te ouvir – ligue **188** ou acesse **https://cvv.org.br/chat/**\n\nEstou aqui também se quiser conversar."
+    ]
+}
+
+# Frases que indicam melhora (desativam alerta)
+FRASES_MELHORA = [
+    "já estou bem", "ja estou bem", "estou bem agora", "estou melhor",
+    "já melhorei", "ja melhorei", "melhorei", "estou ok", "estou ok agora",
+    "já passou", "ja passou", "passou", "tudo bem agora", "tudo ok",
+    "não precisa se preocupar", "nao precisa se preocupar", "não se preocupe",
+    "estava brincando", "era brincadeira", "só estava testando",
+    "era só teste", "era teste", "testando", "não é sério", "nao é serio",
+    "estou bem", "tudo bem", "tudo certo", "tudo tranquilo"
+]
+
+def adicionar_ao_historico_emocional(user_id, mensagem):
+    """
+    Adiciona mensagem ao histórico emocional do usuário (máximo 5 itens).
+    """
+    if user_id not in HISTORICO_EMOCIONAL:
+        HISTORICO_EMOCIONAL[user_id] = []
+    
+    HISTORICO_EMOCIONAL[user_id].append(mensagem)
+    
+    # Mantém apenas as últimas 5 mensagens
+    if len(HISTORICO_EMOCIONAL[user_id]) > 5:
+        HISTORICO_EMOCIONAL[user_id] = HISTORICO_EMOCIONAL[user_id][-5:]
+    
+    logger.info(f"[HISTORICO_EMOCIONAL] ✅ Mensagem adicionada ao histórico (user_id: {user_id}, total: {len(HISTORICO_EMOCIONAL[user_id])})")
+
+def analisar_tendencia_emocional(user_id):
+    """
+    Analisa o padrão de sentimentos no histórico emocional.
+    Retorna: {"tendencia": "alto"/"leve"/"melhora"/"normal", "risco_detectado": True/False}
+    """
+    if user_id not in HISTORICO_EMOCIONAL or len(HISTORICO_EMOCIONAL[user_id]) < 1:
+        return {"tendencia": "normal", "risco_detectado": False}
+    
+    historico = HISTORICO_EMOCIONAL[user_id]
+    mensagens_recentes = historico[-3:] if len(historico) >= 3 else historico
+    
+    # Verifica se há frases de melhora nas mensagens recentes
+    mensagens_lower = [msg.lower() for msg in mensagens_recentes]
+    tem_melhora = any(any(frase in msg for frase in FRASES_MELHORA) for msg in mensagens_lower)
+    
+    if tem_melhora:
+        logger.info(f"[TENDENCIA] ✅ Tendência de melhora detectada no histórico")
+        return {"tendencia": "melhora", "risco_detectado": False}
+    
+    # Analisa cada mensagem recente para risco
+    contador_risco_alto = 0
+    contador_risco_leve = 0
+    
+    for mensagem in mensagens_recentes:
+        # Chama sem user_id para evitar recursão infinita
+        resultado = detectar_alerta_risco_suicidio(mensagem, user_id=None, usar_tendencia=False)
+        if resultado.get("alerta"):
+            if resultado.get("nivel") == "alto":
+                contador_risco_alto += 1
+            elif resultado.get("nivel") == "leve":
+                contador_risco_leve += 1
+    
+    # Se 3 mensagens seguidas têm risco alto, tendência é alta
+    if contador_risco_alto >= 3:
+        logger.warning(f"[TENDENCIA] ⚠️⚠️⚠️ Tendência de RISCO ALTO detectada (3+ mensagens com risco alto)")
+        return {"tendencia": "alto", "risco_detectado": True}
+    elif contador_risco_alto >= 2:
+        logger.warning(f"[TENDENCIA] ⚠️ Tendência de RISCO ALTO detectada (2 mensagens com risco alto)")
+        return {"tendencia": "alto", "risco_detectado": True}
+    elif contador_risco_leve >= 3:
+        logger.warning(f"[TENDENCIA] ⚠️ Tendência de RISCO LEVE detectada (3+ mensagens com risco leve)")
+        return {"tendencia": "leve", "risco_detectado": True}
+    elif contador_risco_leve >= 2:
+        logger.info(f"[TENDENCIA] ⚠️ Tendência de RISCO LEVE detectada (2 mensagens com risco leve)")
+        return {"tendencia": "leve", "risco_detectado": True}
+    
+    return {"tendencia": "normal", "risco_detectado": False}
+
+def gerar_resposta_progressiva(user_id, nivel):
+    """
+    Gera resposta progressiva conforme o número de vezes que o usuário está em estado de alerta.
+    """
+    # Inicializa contador se não existir
+    if user_id not in CONTADOR_ALERTA:
+        CONTADOR_ALERTA[user_id] = 0
+    
+    # Incrementa contador
+    CONTADOR_ALERTA[user_id] += 1
+    contador = CONTADOR_ALERTA[user_id]
+    
+    # Seleciona resposta baseada no nível e contador
+    respostas_disponiveis = RESPOSTAS_RISCO.get(nivel, RESPOSTAS_RISCO["leve"])
+    
+    # Usa o contador para escolher uma resposta (cicla entre as respostas)
+    indice_resposta = (contador - 1) % len(respostas_disponiveis)
+    resposta_base = respostas_disponiveis[indice_resposta]
+    
+    # ⚠️⚠️⚠️ GARANTE QUE CVV (188) ESTÁ SEMPRE PRESENTE ⚠️⚠️⚠️
+    # Verifica se a resposta base já contém CVV/188
+    tem_cvv = "188" in resposta_base or "cvv" in resposta_base.lower()
+    
+    # Adiciona informações adicionais se for o primeiro alerta ou múltiplos
+    if contador == 1:
+        if nivel == "alto":
+            if not tem_cvv:
+                resposta_final = (
+                    f"{resposta_base}\n\n"
+                    "**Por favor, ligue AGORA para o CVV – 188** (gratuito e sigiloso) ou acesse **https://cvv.org.br/chat/**\n\n"
+                    "Eles estão disponíveis 24 horas e podem te ouvir AGORA. 💛\n\n"
+                    "Se quiser, posso ficar com você por aqui enquanto você busca apoio, tudo bem?"
+                )
+            else:
+                resposta_final = (
+                    f"{resposta_base}\n\n"
+                    "Se quiser, posso ficar com você por aqui enquanto você busca apoio, tudo bem?"
+                )
+        else:
+            if not tem_cvv:
+                resposta_final = (
+                    f"{resposta_base}\n\n"
+                    "**O CVV (188) está disponível 24 horas** para te ouvir – ligue **188** ou acesse **https://cvv.org.br/chat/**\n\n"
+                    "Estou aqui também se quiser conversar mais sobre como você está se sentindo."
+                )
+            else:
+                resposta_final = (
+                    f"{resposta_base}\n\n"
+                    "Estou aqui também se quiser conversar mais sobre como você está se sentindo."
+                )
+    elif contador >= 3:
+        # Se já houve 3+ alertas, reforça a importância de buscar ajuda
+        if not tem_cvv:
+            resposta_final = (
+                f"{resposta_base}\n\n"
+                "**Percebo que você continua em sofrimento. Por favor, considere buscar ajuda profissional.**\n\n"
+                "**O CVV (188) está disponível 24 horas** para te ouvir com cuidado e sem julgamento.\n\n"
+                "Ligue **188** ou acesse **https://cvv.org.br/chat/**"
+            )
+        else:
+            resposta_final = (
+                f"{resposta_base}\n\n"
+                "**Percebo que você continua em sofrimento. Por favor, considere buscar ajuda profissional.**\n\n"
+                "**O CVV (188) está disponível 24 horas** para te ouvir com cuidado e sem julgamento."
+            )
+    else:
+        # Se não tem CVV na resposta base, adiciona
+        if not tem_cvv:
+            resposta_final = (
+                f"{resposta_base}\n\n"
+                "**O CVV (188) está disponível 24 horas** para te ouvir – ligue **188** ou acesse **https://cvv.org.br/chat/**"
+            )
+        else:
+            resposta_final = resposta_base
+    
+    logger.info(f"[RESPOSTA_PROGRESSIVA] ✅ Resposta gerada (nível: {nivel}, contador: {contador})")
+    return resposta_final
+
+def atualizar_session_alert(user_id, ativo, nivel=None):
+    """
+    Atualiza o estado de alerta da sessão do usuário.
+    """
+    if user_id not in SESSION_ALERT:
+        SESSION_ALERT[user_id] = {"ativo": False, "nivel": None, "timestamp": None}
+    
+    SESSION_ALERT[user_id]["ativo"] = ativo
+    if nivel:
+        SESSION_ALERT[user_id]["nivel"] = nivel
+    SESSION_ALERT[user_id]["timestamp"] = datetime.now().isoformat()
+    
+    logger.info(f"[SESSION_ALERT] ✅ Estado atualizado (user_id: {user_id}, ativo: {ativo}, nivel: {nivel})")
+
+def verificar_melhora_usuario(mensagem):
+    """
+    Verifica se a mensagem indica que o usuário está melhor.
+    """
+    mensagem_lower = mensagem.lower()
+    return any(frase in mensagem_lower for frase in FRASES_MELHORA)
+
+def detectar_alerta_risco_suicidio(mensagem, user_id=None, usar_tendencia=True):
+    """
+    Detecta mensagens de risco emocional/suicídio com análise de contexto inteligente.
+    Classifica o risco como LEVE ou ALTO e retorna resposta apropriada.
+    Implementa análise de contexto para evitar falsos positivos.
+    Se user_id for fornecido, usa histórico emocional para análise de tendência.
+    """
+    # ⚠️⚠️⚠️ LOG DE DEBUG PARA VALIDAÇÃO ⚠️⚠️⚠️
+    logger.critical(f"[DETECÇÃO_RISCO] 🔍 INICIANDO DETECÇÃO - Mensagem: '{mensagem[:100]}', user_id: {user_id}")
+    print(f"[DETECÇÃO_RISCO] 🔍 INICIANDO DETECÇÃO - Mensagem: '{mensagem[:100]}', user_id: {user_id}")
+    
+    mensagem_lower = mensagem.lower().strip()
+    
+    # Verifica se há indicação de melhora (prioritário)
+    if user_id and verificar_melhora_usuario(mensagem):
+        logger.info(f"[ALERTA] ✅ Usuário indicou melhora - desativando alerta")
+        if user_id in SESSION_ALERT:
+            atualizar_session_alert(user_id, False, None)
+            # Reseta contador se usuário melhorou
+            if user_id in CONTADOR_ALERTA:
+                CONTADOR_ALERTA[user_id] = 0
+        return {"alerta": False, "tipo": None, "nivel": None, "melhora": True}
+    
+    # Remove acentos para detecção mais robusta
+    mensagem_normalizada = ''.join(
+        char for char in unicodedata.normalize('NFD', mensagem_lower)
+        if unicodedata.category(char) != 'Mn'
+    )
+    
+    # PRIMEIRO: Verifica se há expressões que EXCLUEM o alerta (falsos positivos)
+    for exclusao in EXPRESOES_EXCLUSAO:
+        exclusao_normalizada = ''.join(
+            char for char in unicodedata.normalize('NFD', exclusao.lower())
+            if unicodedata.category(char) != 'Mn'
+        )
+        # Se encontrar expressão de exclusão, NÃO aciona alerta
+        if exclusao_normalizada in mensagem_normalizada or exclusao in mensagem_lower:
+            # Log reduzido para performance
+            logger.info(f"[ALERTA] Excluído por contexto: '{exclusao}'")
+            return {"alerta": False, "tipo": None, "nivel": None}
+    
+    # SEGUNDO: Verifica termos de RISCO ALTO (desejo explícito de morte)
+    risco_alto_detectado = False
+    termo_alto_encontrado = None
+    # ⚠️⚠️⚠️ OTIMIZAÇÃO: Loop otimizado - sem logs dentro do loop para performance ⚠️⚠️⚠️
+    for termo in TERMOS_RISCO_ALTO:
+        termo_normalizado = ''.join(
+            char for char in unicodedata.normalize('NFD', termo.lower())
+            if unicodedata.category(char) != 'Mn'
+        )
+        # Verifica se o termo está na mensagem normalizada OU na mensagem original (lowercase)
+        if termo_normalizado in mensagem_normalizada or termo in mensagem_lower:
+            risco_alto_detectado = True
+            termo_alto_encontrado = termo
+            # Log apenas após detectar (fora do loop para não afetar performance)
+            logger.critical(f"[ALERTA] ⚠️⚠️⚠️ RISCO ALTO detectado! Termo: '{termo}'")
+            break
+    
+    # TERCEIRO: Se não encontrou risco alto, verifica RISCO LEVE
+    risco_leve_detectado = False
+    termo_leve_encontrado = None
+    if not risco_alto_detectado:
+        for termo in TERMOS_RISCO_LEVE:
+            termo_normalizado = ''.join(
+                char for char in unicodedata.normalize('NFD', termo.lower())
+                if unicodedata.category(char) != 'Mn'
+            )
+            if termo_normalizado in mensagem_normalizada or termo in mensagem_lower:
+                risco_leve_detectado = True
+                termo_leve_encontrado = termo
+                logger.warning(f"[ALERTA] ⚠️ RISCO LEVE detectado! Termo: '{termo}'")
+                print(f"[ALERTA] ⚠️ RISCO LEVE detectado!")
+                print(f"[ALERTA] Termo: '{termo}'")
+                break
+    
+    # QUARTO: Se user_id fornecido e usar_tendencia=True, analisa tendência emocional
+    nivel_final = None
+    if user_id and usar_tendencia and (risco_alto_detectado or risco_leve_detectado):
+        tendencia = analisar_tendencia_emocional(user_id)
+        if tendencia["tendencia"] == "alto":
+            nivel_final = "alto"
+            logger.warning(f"[ALERTA] 📊 Tendência emocional indica RISCO ALTO")
+        elif tendencia["tendencia"] == "leve" and not risco_alto_detectado:
+            nivel_final = "leve"
+        elif risco_alto_detectado:
+            nivel_final = "alto"
+        elif risco_leve_detectado:
+            nivel_final = "leve"
+    else:
+        if risco_alto_detectado:
+            nivel_final = "alto"
+        elif risco_leve_detectado:
+            nivel_final = "leve"
+    
+    # ⚠️⚠️⚠️ RESPOSTA BASEADA NO NÍVEL DE RISCO - DIRETA E CONTUNDENTE ⚠️⚠️⚠️
+    # CVV (188) SEMPRE presente e destacado
+    # ⚠️⚠️⚠️ OTIMIZAÇÃO: Logs reduzidos para performance - apenas críticos ⚠️⚠️⚠️
+    if nivel_final == "alto":
+        # Gera resposta progressiva se user_id fornecido
+        if user_id:
+            resposta_seguranca = gerar_resposta_progressiva(user_id, "alto")
+        else:
+            # Resposta padrão para risco ALTO - DIRETA e CONTUNDENTE
+            resposta_seguranca = (
+                "Sinto muito por você estar passando por um momento tão difícil. 💛\n\n"
+                "**Você não está sozinho(a).** Eu me importo com você e quero te ajudar a buscar apoio.\n\n"
+                "**Por favor, ligue AGORA para o CVV – 188** (gratuito e sigiloso) ou acesse **https://cvv.org.br/chat/**\n\n"
+                "Eles estão disponíveis 24 horas e podem te ouvir com cuidado **AGORA MESMO**. 💛\n\n"
+                "Se quiser, posso ficar com você por aqui enquanto você busca apoio, tudo bem?\n\n"
+                "**Por favor, não desista. Há pessoas que se importam com você e querem te ajudar.**"
+            )
+        # Log crítico apenas (não bloqueia)
+        logger.critical(f"[ALERTA] RISCO ALTO - Resposta gerada")
+        return {
+            "resposta": resposta_seguranca,
+            "alerta": True,
+            "tipo": "risco_suicidio",
+            "nivel": "alto",
+            "termo_detectado": termo_alto_encontrado
+        }
+    elif nivel_final == "leve":
+        # Gera resposta progressiva se user_id fornecido
+        if user_id:
+            resposta_seguranca = gerar_resposta_progressiva(user_id, "leve")
+        else:
+            # Resposta padrão para risco LEVE - EMPÁTICA mas DIRETA
+            resposta_seguranca = (
+                "Sinto muito que você esteja se sentindo assim. 💛\n\n"
+                "**Você não está sozinho(a).** Sei que pode ser muito difícil, mas há pessoas que podem te ajudar.\n\n"
+                "**Se você quiser conversar com alguém especializado, pode ligar para o CVV – 188** (gratuito e sigiloso) "
+                "ou acessar **https://cvv.org.br/chat/**\n\n"
+                "Eles estão disponíveis 24 horas para te ouvir. 💛\n\n"
+                "Estou aqui também se quiser conversar mais sobre como você está se sentindo."
+            )
+        return {
+            "resposta": resposta_seguranca,
+            "alerta": True,
+            "tipo": "risco_emocional",
+            "nivel": "leve",
+            "termo_detectado": termo_leve_encontrado
+        }
+    
+    return {"alerta": False, "tipo": None, "nivel": None}
+
+# ============================================================================
+# CLASSE: StemmerPortugues - Normalização de palavras em português
+# ============================================================================
+class StemmerPortugues:
+    """
+    Stemmer para português brasileiro.
+    Usa NLTK RSLPStemmer se disponível, caso contrário usa regras básicas.
+    """
+    def __init__(self):
+        self.stemmer = None
+        self.use_nltk = False
+        
+        if NLTK_AVAILABLE:
+            try:
+                self.stemmer = RSLPStemmer()
+                self.use_nltk = True
+                logger.info("[STEMmer] ✅ NLTK RSLPStemmer inicializado com sucesso")
+            except Exception as e:
+                logger.warning(f"[STEMmer] ⚠️ Falha ao inicializar NLTK: {e}")
+                self.use_nltk = False
+        
+        # Regras básicas de stemming para português (fallback)
+        self.regras_sufixos = [
+            ('ações', 'ação'), ('ões', 'ão'), ('ões', 'ao'),
+            ('amentos', 'amento'), ('imentos', 'imento'),
+            ('adas', 'ada'), ('idas', 'ida'), ('adas', 'ar'), ('idas', 'ir'),
+            ('ados', 'ado'), ('idos', 'ido'), ('ados', 'ar'), ('idos', 'ir'),
+            ('ando', 'ar'), ('indo', 'ir'), ('endo', 'er'),
+            ('aria', 'ar'), ('eria', 'er'), ('iria', 'ir'),
+            ('ava', 'ar'), ('eva', 'er'), ('iva', 'ir'),
+            ('ei', 'ar'), ('ou', 'ar'),
+            ('am', 'ar'), ('em', 'er'), ('im', 'ir'),
+            ('ar', ''), ('er', ''), ('ir', ''),
+            ('s', ''),  # Remove plural
+        ]
+    
+    def stem(self, palavra):
+        """
+        Retorna o radical (stem) de uma palavra.
+        """
+        if not palavra or len(palavra) < 3:
+            return palavra.lower()
+        
+        palavra_lower = palavra.lower()
+        
+        # Se NLTK disponível, usa RSLPStemmer
+        if self.use_nltk and self.stemmer:
+            try:
+                return self.stemmer.stem(palavra_lower)
+            except:
+                pass
+        
+        # Fallback: regras básicas
+        for sufixo, substituicao in self.regras_sufixos:
+            if palavra_lower.endswith(sufixo):
+                return palavra_lower[:-len(sufixo)] + substituicao
+        
+        return palavra_lower
+    
+    def stem_texto(self, texto):
+        """
+        Retorna lista de stems de um texto.
+        """
+        # Remove acentos e normaliza
+        texto_normalizado = ''.join(
+            char for char in unicodedata.normalize('NFD', texto.lower())
+            if unicodedata.category(char) != 'Mn'
+        )
+        
+        # Extrai palavras (apenas letras, mínimo 3 caracteres)
+        palavras = re.findall(r'\b[a-záàâãéêíóôõúç]{3,}\b', texto_normalizado)
+        
+        # Aplica stemming
+        stems = [self.stem(palavra) for palavra in palavras]
+        
+        return stems
+
+# ============================================================================
+# CLASSE: IndiceInvertido - Índice invertido para busca rápida
+# ============================================================================
+class IndiceInvertido:
+    """
+    Índice invertido para busca eficiente na base de conhecimento.
+    Estrutura: palavra_stem -> [(categoria, peso), ...]
+    """
+    def __init__(self, base_conhecimento, stemmer):
+        self.base = base_conhecimento
+        self.stemmer = stemmer
+        self.indice = defaultdict(list)  # palavra_stem -> [(categoria, peso), ...]
+        self.categorias_info = {}  # categoria -> {pergunta, resposta, texto_completo}
+        self.construir_indice()
+    
+    def construir_indice(self):
+        """
+        Constrói o índice invertido a partir da base de conhecimento.
+        """
+        logger.info("[INDICE] 🔨 Construindo índice invertido...")
+        total_palavras = 0
+        
+        for categoria, conteudo in self.base.items():
+            pergunta = conteudo.get("pergunta", "")
+            resposta = conteudo.get("resposta", "")
+            texto_completo = f"{pergunta} {resposta}".lower()
+            
+            # Armazena informações da categoria
+            self.categorias_info[categoria] = {
+                "pergunta": pergunta,
+                "resposta": resposta,
+                "texto_completo": texto_completo
+            }
+            
+            # Extrai stems do texto completo
+            stems = self.stemmer.stem_texto(texto_completo)
+            
+            # Extrai stems da pergunta (peso maior)
+            stems_pergunta = self.stemmer.stem_texto(pergunta)
+            
+            # Conta frequência de palavras
+            contador_stems = Counter(stems)
+            contador_pergunta = Counter(stems_pergunta)
+            
+            # Adiciona ao índice com pesos
+            # ⚠️⚠️⚠️ AJUSTE: Palavras na pergunta têm peso 3.0, na resposta peso 1.0 (aumentado de 2.0 para 3.0)
+            # Isso força o item cuja pergunta original é mais próxima do input do usuário a ter pontuação maior
+            stems_processados = set()
+            for stem in stems:
+                if stem in stems_processados:
+                    continue
+                stems_processados.add(stem)
+                
+                # Calcula peso: palavra na pergunta = 3.0, na resposta = 1.0
+                peso = 1.0
+                if stem in contador_pergunta:
+                    peso = 3.0 + (contador_pergunta[stem] * 0.15)  # Bonus por frequência na pergunta (aumentado)
+                else:
+                    peso = 1.0 + (contador_stems[stem] * 0.05)  # Bonus por frequência na resposta
+                
+                self.indice[stem].append((categoria, peso))
+                total_palavras += 1
+        
+        logger.info(f"[INDICE] ✅ Índice construído: {len(self.indice)} palavras únicas, {total_palavras} entradas totais")
+        logger.info(f"[INDICE] ✅ {len(self.categorias_info)} categorias indexadas")
+    
+    def buscar(self, query, threshold=0.35, top_k=3):
+        """
+        Busca na base usando o índice invertido.
+        Retorna: (resposta, categoria, similaridade) ou (None, None, 0)
+        
+        Args:
+            query: Pergunta do usuário
+            threshold: Score mínimo para retornar resultado
+            top_k: Número de melhores resultados para considerar (reranking)
+        """
+        # Extrai stems da query
+        stems_query = self.stemmer.stem_texto(query)
+        
+        if not stems_query:
+            return None, None, 0
+        
+        # Conta quantas vezes cada categoria aparece (score)
+        scores_categorias = defaultdict(float)
+        stems_encontrados = defaultdict(set)  # categoria -> {stems encontrados}
+        
+        # Para cada stem da query, busca no índice
+        for stem in stems_query:
+            if stem in self.indice:
+                # Para cada categoria que contém essa palavra
+                for categoria, peso in self.indice[stem]:
+                    scores_categorias[categoria] += peso
+                    stems_encontrados[categoria].add(stem)
+        
+        if not scores_categorias:
+            return None, None, 0
+        
+        # Normaliza scores (divide pelo número de stems na query)
+        num_stems_query = len(stems_query)
+        scores_normalizados = {}
+        for categoria in scores_categorias:
+            # Score = (soma de pesos) / (número de stems na query)
+            # + bonus por porcentagem de stems encontrados
+            porcentagem_match = len(stems_encontrados[categoria]) / num_stems_query
+            score_normalizado = (scores_categorias[categoria] / num_stems_query) * (1 + porcentagem_match)
+            scores_normalizados[categoria] = score_normalizado
+        
+        # ⚠️⚠️⚠️ RERANKING: Ordena por score e pega os Top K
+        # Isso permite escolher o melhor resultado entre os mais bem pontuados
+        categorias_ordenadas = sorted(scores_normalizados.items(), key=lambda x: x[1], reverse=True)
+        top_categorias = categorias_ordenadas[:top_k]
+        
+        if not top_categorias:
+            return None, None, 0
+        
+        # ⚠️⚠️⚠️ RERANKING FINAL: Refina os Top K usando similaridade de strings na pergunta
+        # Isso garante que o item cuja pergunta é mais próxima do input do usuário seja escolhido
+        pergunta_lower = query.lower()
+        melhor_score_reranking = 0
+        melhor_categoria_reranking = None
+        resultados_reranking = []
+        
+        for categoria, score_indice in top_categorias:
+            if categoria in self.categorias_info:
+                pergunta_base = self.categorias_info[categoria]["pergunta"].lower()
+                # Calcula similaridade de strings entre pergunta do usuário e pergunta da base
+                similaridade_pergunta = difflib.SequenceMatcher(None, pergunta_lower, pergunta_base).ratio()
+                
+                # ⚠️⚠️⚠️ AJUSTE: Prioriza MUITO MAIS a similaridade da pergunta (50%) vs score do índice (50%)
+                # Isso força o sistema a escolher itens cuja pergunta é mais próxima do input do usuário
+                # Se similaridade da pergunta for alta (>0.6), aumenta ainda mais o peso
+                if similaridade_pergunta > 0.6:
+                    # Se similaridade alta, prioriza MUITO a similaridade (70% similaridade, 30% índice)
+                    score_reranking = (score_indice * 0.3) + (similaridade_pergunta * 0.7 * 10)  # Multiplica por 10 para escala similar
+                else:
+                    # Caso contrário, balanceia: 50% índice, 50% similaridade
+                    score_reranking = (score_indice * 0.5) + (similaridade_pergunta * 0.5 * 10)  # Multiplica por 10 para escala similar
+                
+                resultados_reranking.append((categoria, score_reranking, similaridade_pergunta, score_indice))
+                
+                if score_reranking > melhor_score_reranking:
+                    melhor_score_reranking = score_reranking
+                    melhor_categoria_reranking = categoria
+        
+        # Se encontrou resultado no reranking, retorna
+        if melhor_categoria_reranking and melhor_score_reranking >= threshold:
+            info = self.categorias_info[melhor_categoria_reranking]
+            # Log dos Top K para debug
+            if len(top_categorias) > 1:
+                logger.info(f"[BUSCA] Top {top_k} categorias (antes do reranking): {[(cat, f'{sco:.2f}') for cat, sco in top_categorias[:3]]}")
+                # Ordena resultados do reranking por score
+                resultados_ordenados = sorted(resultados_reranking, key=lambda x: x[1], reverse=True)
+                logger.info(f"[BUSCA] Top {min(3, len(resultados_ordenados))} após reranking: {[(cat, f'score:{sco:.2f}, sim:{sim:.2f}, idx:{idx:.2f}') for cat, sco, sim, idx in resultados_ordenados[:3]]}")
+                logger.info(f"[BUSCA] ✅ Melhor categoria após reranking: {melhor_categoria_reranking} (score: {melhor_score_reranking:.2f})")
+            return info["resposta"], melhor_categoria_reranking, melhor_score_reranking
+        
+        # Fallback: retorna o melhor resultado do índice (sem reranking)
+        melhor_categoria, score = top_categorias[0]
+        if score >= threshold:
+            info = self.categorias_info[melhor_categoria]
+            return info["resposta"], melhor_categoria, score
+        
+        return None, None, 0
+
 class ChatbotPuerperio:
-    def __init__(self, gemini_client_param=None):
+    def __init__(self):
         self.base = base_conhecimento
         self.apoio = mensagens_apoio
         self.alertas = alertas
         self.telefones = telefones_uteis
         self.guias = guias_praticos
         
-        # DEBUG: Logs detalhados da atribuição
-        logger.info(f"[ChatbotPuerperio.__init__] 🔍 Iniciando atribuição de gemini_client...")
-        print(f"[ChatbotPuerperio.__init__] 🔍 Iniciando atribuição de gemini_client...")
-        logger.info(f"[ChatbotPuerperio.__init__] 🔍 gemini_client_param recebido: {gemini_client_param}")
-        print(f"[ChatbotPuerperio.__init__] 🔍 gemini_client_param recebido: {gemini_client_param}")
-        print(f"[ChatbotPuerperio.__init__] 🔍 gemini_client_param type: {type(gemini_client_param)}")
-        print(f"[ChatbotPuerperio.__init__] 🔍 gemini_client_param is None: {gemini_client_param is None}")
+        # Inicializa stemmer e índice invertido
+        self.stemmer = StemmerPortugues()
+        self.indice_invertido = IndiceInvertido(self.base, self.stemmer)
+        logger.info("[ChatbotPuerperio] Stemmer e indice invertido inicializados")
         
-        # Usa variável global como fallback (mesmo arquivo)
-        # A variável global gemini_client está definida no mesmo arquivo
-        # Como estamos no mesmo módulo, acessamos diretamente via globals()
-        global_gemini = None
-        try:
-            # Acessa a variável global do módulo atual usando globals()
-            module_globals = globals()
-            if 'gemini_client' in module_globals:
-                global_gemini = module_globals['gemini_client']
-                logger.info(f"[ChatbotPuerperio.__init__] 🔍 global gemini_client acessado via globals(): {global_gemini}")
-                print(f"[ChatbotPuerperio.__init__] 🔍 global gemini_client acessado via globals(): {global_gemini}")
-                print(f"[ChatbotPuerperio.__init__] 🔍 global gemini_client type: {type(global_gemini)}")
-                print(f"[ChatbotPuerperio.__init__] 🔍 global gemini_client is None: {global_gemini is None}")
+        # Controle de repetição de mensagens (por user_id)
+        self.ultimas_respostas = {}  # {user_id: [lista das últimas 3 respostas]}
+        
+        # Armazena clientes OpenAI e threads por usuário
+        self.openai_client = openai_client
+        self.assistant_id = OPENAI_ASSISTANT_ID
+        self.user_threads = {}  # {user_id: thread_id}
+        
+        # Cria assistente Sophia se não existir
+        if self.openai_client and not self.assistant_id:
+            logger.info(f"[ChatbotPuerperio] Criando assistente Sophia...")
+            print(f"[ChatbotPuerperio] Criando assistente Sophia...")
+            self.assistant_id = self._criar_assistente_sophia()
+            if self.assistant_id:
+                logger.info(f"[ChatbotPuerperio] ✅ Assistente criado: {self.assistant_id}")
+                print(f"[ChatbotPuerperio] ✅ Assistente criado: {self.assistant_id}")
             else:
-                logger.warning("[ChatbotPuerperio.__init__] ⚠️ Variável 'gemini_client' não encontrada em globals()")
-                print("[ChatbotPuerperio.__init__] ⚠️ Variável 'gemini_client' não encontrada em globals()")
-                print(f"[ChatbotPuerperio.__init__] 🔍 Chaves disponíveis em globals(): {list(module_globals.keys())[:10]}...")
+                logger.error(f"[ChatbotPuerperio] ❌ Falha ao criar assistente na inicialização")
+                print(f"[ChatbotPuerperio] ❌ Falha ao criar assistente na inicialização")
+        
+        logger.info(f"[ChatbotPuerperio] Inicializado. OpenAI disponivel: {self.openai_client is not None}, Assistant ID: {self.assistant_id is not None}")
+        print(f"[ChatbotPuerperio] Inicializado. OpenAI disponivel: {self.openai_client is not None}, Assistant ID: {self.assistant_id is not None}")
+    
+    def _criar_assistente_sophia(self):
+        """Cria o assistente Sophia personalizado na OpenAI usando nova arquitetura (loader.py)"""
+        if not self.openai_client:
+            return None
+        
+        try:
+            # Usa o novo loader.py para carregar Base de Dados + Persona + System Prompt
+            instructions = None
+            try:
+                # Importa o loader (pode estar na mesma pasta ou uma pasta acima)
+                import sys
+                import os
+                loader_path = os.path.join(os.path.dirname(__file__), 'loader.py')
+                if os.path.exists(loader_path):
+                    # Importa o módulo diretamente
+                    import importlib.util
+                    spec = importlib.util.spec_from_file_location("loader", loader_path)
+                    loader_module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(loader_module)
+                    load_all = loader_module.load_all
+                    
+                    logger.info("[SOPHIA] Carregando Base de Dados, Persona e System Prompt (nova arquitetura)...")
+                    loaded_data = load_all()
+                    
+                    # Obtém o system prompt completo já construído pelo loader
+                    instructions = loaded_data.get("system_prompt", "")
+                    if instructions:
+                        logger.info("[SOPHIA] ✅ System prompt carregado com sucesso (nova arquitetura)")
+                    else:
+                        raise ValueError("System prompt vazio do loader")
+                else:
+                    raise FileNotFoundError(f"Loader não encontrado em {loader_path}")
+            except Exception as loader_error:
+                # Fallback: se o loader falhar, usa instruções básicas
+                logger.warning(f"[SOPHIA] ⚠️ Erro ao carregar nova arquitetura: {loader_error}. Usando fallback.")
+                instructions = None
+            
+            if not instructions:
+                logger.warning("[SOPHIA] ⚠️ System prompt vazio, usando fallback")
+                instructions = """Você é a Sophia, uma Inteligência Artificial EMPÁTICA, ACOLHEDORA e ESPECIALIZADA EXCLUSIVAMENTE em:
+
+- Gestação (gravidez, pré-natal, cuidados durante a gestação)
+- Parto (trabalho de parto, tipos de parto, preparação)
+- Pós-Parto (recuperação, cuidados pós-parto, puerpério)
+- Vacinação (vacinas da gestante, vacinas do bebê, calendário vacinal)
+- Guias Práticos (orientações gerais sobre maternidade)
+
+⚠️ REGRA CRÍTICA SOBRE SINTOMAS, DORES E PROBLEMAS ⚠️
+
+Quando o usuário mencionar que está SENTINDO ALGO, TENDO ALGUMA DOR, EXPERIMENTANDO ALGUM SINTOMA ou PASSANDO POR ALGUM PROBLEMA:
+
+1. NUNCA mencione medicamentos, tratamentos, suplementos ou qualquer coisa que precise de prescrição médica
+2. NUNCA tente diagnosticar ou explicar o que pode ser o problema
+3. SEMPRE oriente a procurar um HOSPITAL ESPECIALIZADO ou PROFISSIONAL DE SAÚDE QUALIFICADO para aquele assunto específico
+4. SEMPRE seja empática e acolhedora, mas direta sobre a necessidade de atendimento médico
+
+Exemplo CORRETO: "Entendo que você está sentindo [sintoma/dor]. É muito importante que você procure um Hospital especializado ou um profissional de saúde qualificado para avaliar isso adequadamente."
+
+REGRAS GERAIS:
+1. NUNCA recomende medicamentos, tratamentos ou faça diagnósticos
+2. SEMPRE oriente consultar profissional de saúde qualificado quando houver sintomas, dores ou problemas
+3. NUNCA repita frases ou blocos de texto - seja CRIATIVA e NATURAL
+4. Seja específica, detalhada e empática (mínimo 150 caracteres, exceto respostas de emergência)
+5. Faça perguntas abertas para engajar e demonstrar interesse genuíno
+6. Memorize dados importantes mencionados pelo usuário (nomes, lugares, comidas, nome do bebê) e use-os naturalmente
+7. Use módulos de linguagem e conversa sempre humanizados e confortáveis
+
+AVISO MÉDICO OBRIGATÓRIO:
+SEMPRE inclua este aviso no final de respostas sobre saúde ou quando o usuário mencionar sintomas: "⚠️ IMPORTANTE: Este conteúdo é apenas informativo e não substitui uma consulta médica profissional. NUNCA tome medicamentos, suplementos ou faça tratamentos sem orientação médica. Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas e em caso de dúvidas ou sintomas. Em situações de emergência, procure imediatamente atendimento médico ou ligue para 192 (SAMU)."
+
+Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para ajudar, apoiar e acolher durante esse momento especial do puerpério."""
+            
+            assistant = self.openai_client.beta.assistants.create(
+                name="Sophia - Assistente Puerpério",
+                instructions=instructions,
+                model="gpt-4o-mini",
+                tools=[{"type": "code_interpreter"}],
+                temperature=0.9,
+            )
+            
+            logger.info(f"[OPENAI] Assistente Sophia criado: {assistant.id}")
+            print(f"[OPENAI] Assistente Sophia criado: {assistant.id}")
+            return assistant.id
+            
         except Exception as e:
-            logger.warning(f"[ChatbotPuerperio.__init__] ⚠️ Erro ao acessar global gemini_client: {e}")
-            print(f"[ChatbotPuerperio.__init__] ⚠️ Erro ao acessar global gemini_client: {e}")
+            logger.error(f"[OPENAI] Erro ao criar assistente: {e}")
+            print(f"[OPENAI] Erro ao criar assistente: {e}")
+            return None
+    
+    def _obter_ou_criar_thread(self, user_id):
+        """Obtém ou cria uma thread para o usuário"""
+        if user_id not in self.user_threads:
+            try:
+                thread = self.openai_client.beta.threads.create()
+                self.user_threads[user_id] = thread.id
+                logger.info(f"[OPENAI] Thread criada para user {user_id}: {thread.id}")
+            except Exception as e:
+                logger.error(f"[OPENAI] Erro ao criar thread: {e}")
+                return None
+        return self.user_threads[user_id]
+    
+    def _gerar_resposta_openai(self, pergunta, user_id, historico=None, contexto_pessoal=""):
+        """Gera resposta usando OpenAI Assistants API"""
+        if not self.openai_client or not self.assistant_id:
+            return None
+        
+        try:
+            # Obtém ou cria thread para o usuário
+            thread_id = self._obter_ou_criar_thread(user_id)
+            if not thread_id:
+                return None
+            
+            # Adiciona contexto pessoal se disponível
+            mensagem_completa = pergunta
+            if contexto_pessoal:
+                mensagem_completa = f"[Contexto: {contexto_pessoal}]\n\n{pergunta}"
+            
+            # Adiciona mensagem do usuário à thread
+            self.openai_client.beta.threads.messages.create(
+                thread_id=thread_id,
+                role="user",
+                content=mensagem_completa
+            )
+            
+            # Executa o assistente
+            run = self.openai_client.beta.threads.runs.create(
+                thread_id=thread_id,
+                assistant_id=self.assistant_id
+            )
+            
+            # Aguarda conclusão
+            while run.status in ['queued', 'in_progress', 'cancelling']:
+                time.sleep(0.5)
+                run = self.openai_client.beta.threads.runs.retrieve(
+                    thread_id=thread_id,
+                    run_id=run.id
+                )
+            
+            if run.status == 'completed':
+                # Obtém a resposta
+                messages = self.openai_client.beta.threads.messages.list(
+                    thread_id=thread_id,
+                    limit=1
+                )
+                
+                if messages.data:
+                    resposta = messages.data[0].content[0].text.value
+                    logger.info(f"[OPENAI] Resposta gerada ({len(resposta)} caracteres)")
+                    return resposta
+            
+            logger.warning(f"[OPENAI] Run status: {run.status}")
+            if run.status == 'failed':
+                error_msg = getattr(run, 'last_error', None)
+                if error_msg:
+                    error_code = getattr(error_msg, 'code', None) if hasattr(error_msg, 'code') else None
+                    error_message = getattr(error_msg, 'message', str(error_msg)) if hasattr(error_msg, 'message') else str(error_msg)
+                    
+                    logger.error(f"[OPENAI] Run falhou: {error_message}")
+                    print(f"[OPENAI] Run falhou: {error_message}")
+                    
+                    # Tratamento especial para quota excedida
+                    if error_code == 'rate_limit_exceeded' or 'quota' in error_message.lower() or 'exceeded' in error_message.lower():
+                        logger.error(f"[OPENAI] ⚠️⚠️⚠️ QUOTA EXCEDIDA - Verifique sua conta OpenAI e adicione créditos")
+                        logger.error(f"[OPENAI] Acesse: https://platform.openai.com/account/billing")
+                        print(f"[OPENAI] ⚠️⚠️⚠️ QUOTA EXCEDIDA - Verifique sua conta OpenAI e adicione créditos")
+                        print(f"[OPENAI] Acesse: https://platform.openai.com/account/billing")
+                        print(f"[OPENAI] O sistema está usando fallback (base local) enquanto a quota não for restaurada")
+            return None
+            
+        except Exception as e:
+            logger.error(f"[OPENAI] Erro ao gerar resposta: {e}", exc_info=True)
             import traceback
             traceback.print_exc()
-        
-        # ATRIBUIÇÃO: Usa o parâmetro se fornecido, senão usa a variável global
-        if gemini_client_param is not None:
-            logger.info("[ChatbotPuerperio.__init__] ✅ Usando gemini_client_param (parâmetro)")
-            print("[ChatbotPuerperio.__init__] ✅ Usando gemini_client_param (parâmetro)")
-            self.gemini_client = gemini_client_param
-        else:
-            logger.info("[ChatbotPuerperio.__init__] ⚠️ gemini_client_param é None, usando global")
-            print("[ChatbotPuerperio.__init__] ⚠️ gemini_client_param é None, usando global")
-            self.gemini_client = global_gemini
-        
-        # VERIFICAÇÃO FINAL da atribuição
-        logger.info(f"[ChatbotPuerperio.__init__] ✅✅✅ ATRIBUIÇÃO FINAL: self.gemini_client = {self.gemini_client}")
-        print(f"[ChatbotPuerperio.__init__] ✅✅✅ ATRIBUIÇÃO FINAL: self.gemini_client = {self.gemini_client}")
-        print(f"[ChatbotPuerperio.__init__] ✅✅✅ self.gemini_client type: {type(self.gemini_client)}")
-        print(f"[ChatbotPuerperio.__init__] ✅✅✅ self.gemini_client is None: {self.gemini_client is None}")
-        
-        if self.gemini_client is None:
-            logger.error("[ChatbotPuerperio.__init__] ❌❌❌ ERRO: self.gemini_client é None após atribuição!")
-            print("[ChatbotPuerperio.__init__] ❌❌❌ ERRO: self.gemini_client é None após atribuição!")
-            print("[ChatbotPuerperio.__init__] ❌ Isso significa que NENHUM gemini_client foi passado ou encontrado!")
-        else:
-            logger.info("[ChatbotPuerperio.__init__] ✅✅✅ SUCESSO: self.gemini_client atribuído corretamente!")
-            print("[ChatbotPuerperio.__init__] ✅✅✅ SUCESSO: self.gemini_client atribuído corretamente!")
+            return None
     
     def humanizar_resposta_local(self, resposta_local, pergunta):
         """Humaniza respostas da base local adicionando contexto empático e conversacional"""
         if not resposta_local:
             return resposta_local
+        
+        # ⚠️ LIMITE DE TAMANHO: Trunca respostas muito grandes antes de humanizar (máximo 800 caracteres)
+        # Isso evita respostas enormes da base local
+        TAMANHO_MAXIMO_RESPOSTA_LOCAL = 800
+        resposta_original_tamanho = len(resposta_local)
+        if resposta_original_tamanho > TAMANHO_MAXIMO_RESPOSTA_LOCAL:
+            # Tenta encontrar um ponto de corte natural (final de frase)
+            corte_natural = resposta_local.rfind('.', 0, TAMANHO_MAXIMO_RESPOSTA_LOCAL)
+            if corte_natural > TAMANHO_MAXIMO_RESPOSTA_LOCAL * 0.7:  # Se encontrou ponto próximo ao limite
+                resposta_local = resposta_local[:corte_natural + 1]
+            else:
+                # Se não encontrou, corta no limite e adiciona "..."
+                resposta_local = resposta_local[:TAMANHO_MAXIMO_RESPOSTA_LOCAL - 3] + "..."
+            logger.info(f"[HUMANIZAÇÃO] ⚠️ Resposta da base local truncada: {resposta_original_tamanho} -> {len(resposta_local)} caracteres")
         
         # Verifica se já tem tom empático (para não duplicar)
         palavras_empaticas = ['você', 'sua', 'sente', 'sentir', 'querida', 'imagino', 'entendo', 'compreendo', 'sei que', 'percebo']
@@ -998,11 +1918,22 @@ class ChatbotPuerperio:
         # Analisa a pergunta para identificar emoções e contexto
         pergunta_lower = pergunta.lower()
         
-        # Identifica emoções específicas na pergunta
+        # Identifica emoções específicas na pergunta (incluindo sentimentos positivos)
         emocao_identificada = None
         contexto_identificado = None
+        sentimento_positivo = False
         
-        if any(palavra in pergunta_lower for palavra in ['cansaço', 'cansada', 'cansado', 'tired', 'exausta', 'exausto']):
+        # Detecta sentimentos POSITIVOS primeiro
+        palavras_positivas = ['bom', 'boa', 'gostoso', 'gostosa', 'delicioso', 'deliciosa', 'feliz', 'alegre', 
+                              'sorriu', 'sorriso', 'sorrindo', 'sorriu hoje', 'primeira vez', 'consegui', 
+                              'conseguir', 'orgulho', 'orgulhosa', 'orgulhoso', 'amor', 'amando', 'adoro', 
+                              'adorando', 'maravilhoso', 'maravilhosa', 'incrível', 'incrível', 'ótimo', 'ótima']
+        
+        if any(palavra in pergunta_lower for palavra in palavras_positivas):
+            sentimento_positivo = True
+            emocao_identificada = "positivo"
+            contexto_identificado = "celebração"
+        elif any(palavra in pergunta_lower for palavra in ['cansaço', 'cansada', 'cansado', 'tired', 'exausta', 'exausto']):
             emocao_identificada = "cansaço"
             contexto_identificado = "sobrecarga"
         elif any(palavra in pergunta_lower for palavra in ['preocupação', 'preocupada', 'preocupado', 'preocupar', 'medo', 'medo de']):
@@ -1021,7 +1952,27 @@ class ChatbotPuerperio:
         # Sempre adiciona humanização se não tiver tom empático
         if not tem_empatia:
             # Adiciona introdução empática baseada no contexto identificado
-            if emocao_identificada == "cansaço":
+            if emocao_identificada == "positivo" and sentimento_positivo:
+                # Respostas para sentimentos positivos - MUITO MAIS VARIADAS para evitar repetição
+                intros_positivas = [
+                    "Que delícia! ❤️ Fico feliz que você tenha aproveitado! ",
+                    "Que bom saber disso! 😊 Fico feliz por você! ",
+                    "Nossa, que momento lindo! 💛 Que alegria! ",
+                    "Que maravilha! ❤️ Fico muito feliz por você! ",
+                    "Que incrível! 😊 Que bom que você esteja se sentindo assim! ",
+                    "Que legal! 😊 Fico feliz em saber disso! ",
+                    "Que momento especial! 💛 É muito bom saber! ",
+                    "Que alegria! 😄 Fico feliz por você! ",
+                    "Que bom! ❤️ Isso é maravilhoso! ",
+                    "Que delícia ouvir isso! 😊 ",
+                    "Que incrível! 🌟 Que bom! ",
+                    "Que momento lindo! 💕 Fico feliz! ",
+                    "Que legal saber disso! 😊 ",
+                    "Que bom que você está se sentindo assim! 💛 ",
+                    "Que alegria! ❤️ Isso é ótimo! "
+                ]
+                intro = random.choice(intros_positivas)
+            elif emocao_identificada == "cansaço":
                 intro = "Querida, imagino que esse cansaço deve estar sendo muito difícil para você, especialmente com todas as demandas do bebê e da casa. Seu esforço é incrível, mesmo que você não veja isso agora. "
             elif emocao_identificada == "preocupação":
                 intro = "Percebo que você está se sentindo preocupada. É totalmente compreensível se sentir assim, especialmente quando tudo é novo. Você está fazendo o seu melhor. "
@@ -1058,17 +2009,48 @@ class ChatbotPuerperio:
                 ]
                 resposta_local += random.choice(reconhecimentos)
             
-            # Adiciona pergunta empática no final (sempre)
-            perguntas_empaticas = [
-                " Como você está se sentindo com isso?",
-                " Como tem sido essa experiência para você?",
-                " Você tem alguém te ajudando nisso?",
-                " O que você mais precisa nesse momento?",
-                " Como você está lidando com essa situação?",
-                " Você gostaria de conversar mais sobre isso?",
-                " Há algo mais que eu possa fazer para te ajudar?"
-            ]
-            resposta_local += random.choice(perguntas_empaticas)
+            # Adiciona pergunta empática no final (varia conforme o sentimento)
+            if emocao_identificada == "positivo" and sentimento_positivo:
+                # Perguntas para sentimentos positivos - MUITO MAIS VARIADAS e às vezes mais curtas
+                # 50% das vezes adiciona pergunta curta, 50% adiciona pergunta normal
+                usar_pergunta_curta = random.random() < 0.5
+                if usar_pergunta_curta:
+                    perguntas_curtas = [
+                        " Conte mais! 😊",
+                        " Que legal! 😊",
+                        " Que bom! 😊",
+                        " Isso é ótimo! 😊",
+                        " Que alegria! 😊"
+                    ]
+                    resposta_local += random.choice(perguntas_curtas)
+                else:
+                    perguntas_positivas = [
+                        " Conte mais sobre isso! Como foi?",
+                        " Que legal! Como você se sentiu?",
+                        " Que alegria! Conte mais detalhes!",
+                        " Fico feliz por você! Como foi essa experiência?",
+                        " Que momento especial! Conte mais!",
+                        " Que momento lindo! O que aconteceu?",
+                        " Que delícia! Me conta mais!",
+                        " Que incrível! Como foi?",
+                        " Que bom! Conte-me sobre isso!",
+                        " Que alegria! Me fale mais!",
+                        " Isso é maravilhoso! Como você se sentiu?",
+                        " Que momento especial! Quer compartilhar mais?"
+                    ]
+                    resposta_local += random.choice(perguntas_positivas)
+            else:
+                # Perguntas empáticas para outros contextos
+                perguntas_empaticas = [
+                    " Como você está se sentindo com isso?",
+                    " Como tem sido essa experiência para você?",
+                    " Você tem alguém te ajudando nisso?",
+                    " O que você mais precisa nesse momento?",
+                    " Como você está lidando com essa situação?",
+                    " Você gostaria de conversar mais sobre isso?",
+                    " Há algo mais que eu possa fazer para te ajudar?"
+                ]
+                resposta_local += random.choice(perguntas_empaticas)
         else:
             # Mesmo se já tiver empatia, adiciona pergunta empática se não tiver
             if "?" not in resposta_local[-50:]:  # Se não tem pergunta nos últimos 50 caracteres
@@ -1082,8 +2064,21 @@ class ChatbotPuerperio:
         
         return resposta_local
     
-    def verificar_alertas(self, pergunta):
-        """Verifica se a pergunta contém palavras que indicam necessidade de atenção médica"""
+    def verificar_alertas(self, pergunta, user_id=None):
+        """
+        Verifica se a pergunta contém palavras que indicam necessidade de atenção médica.
+        PRIMEIRO verifica risco de suicídio (prioritário), depois alertas médicos.
+        """
+        # PRIMEIRO: Verifica risco de suicídio (prioritário)
+        # Não usa tendência aqui pois já foi processado no método chat()
+        alerta_risco = detectar_alerta_risco_suicidio(pergunta, user_id=None, usar_tendencia=False)
+        if alerta_risco["alerta"]:
+            # Retorna alerta especial com nível de risco
+            nivel_risco = alerta_risco.get("nivel", "alto")
+            tipo_risco = alerta_risco.get("tipo", "risco_suicidio")
+            return [f"{tipo_risco}_{nivel_risco}"]
+        
+        # Depois: Verifica alertas médicos comuns
         pergunta_lower = pergunta.lower()
         alertas_encontrados = []
         
@@ -1139,46 +2134,262 @@ class ChatbotPuerperio:
         return ""
     
     def buscar_resposta_local(self, pergunta):
-        """Busca resposta na base de conhecimento local - MELHORADA"""
+        """
+        Busca resposta na base de conhecimento local - OTIMIZADA com índice invertido e stemming.
+        
+        Nova implementação:
+        1. Usa índice invertido para busca O(1) em vez de O(n)
+        2. Usa stemming para normalizar palavras (ex: "amamentar" encontra "amamentação")
+        3. Combina busca por índice com similaridade de strings para melhor precisão
+        """
+        # MÉTODO 1: Busca rápida usando índice invertido (O(1) por palavra)
+        # Threshold aumentado para 0.35 para ser mais restritivo e evitar matches incorretos
+        resposta_indice, categoria_indice, score_indice = self.indice_invertido.buscar(pergunta, threshold=0.35)
+        
+        # MÉTODO 2: Busca por similaridade de strings (fallback/refinamento)
         pergunta_lower = pergunta.lower()
-        melhor_match = None
-        maior_similaridade = 0
-        categoria = None
+        melhor_match_string = None
+        maior_similaridade_string = 0
+        categoria_string = None
         
-        # Extrai palavras-chave importantes da pergunta
-        palavras_pergunta = set([p for p in pergunta_lower.split() if len(p) > 3])
+        # Busca apenas nas categorias candidatas do índice (otimização)
+        categorias_candidatas = set()
+        if categoria_indice:
+            categorias_candidatas.add(categoria_indice)
         
-        for tema, conteudo in self.base.items():
+        # Se índice não encontrou nada, busca em todas as categorias
+        if not categorias_candidatas:
+            categorias_candidatas = set(self.base.keys())
+        
+        # Busca por similaridade de strings (apenas em categorias candidatas)
+        for tema in categorias_candidatas:
+            conteudo = self.base[tema]
             pergunta_base = conteudo["pergunta"].lower()
             resposta_base = conteudo["resposta"].lower()
             
-            # Combina pergunta + resposta para busca mais abrangente
-            texto_base = f"{pergunta_base} {resposta_base}"
-            palavras_base = set([p for p in texto_base.split() if len(p) > 3])
-            
-            # Calcula similaridade de strings (método original)
+            # Calcula similaridade de strings
             similaridade_string = difflib.SequenceMatcher(None, pergunta_lower, pergunta_base).ratio()
             
-            # Calcula similaridade por palavras-chave
-            palavras_comuns = palavras_pergunta.intersection(palavras_base)
-            if palavras_pergunta:
-                similaridade_palavras = len(palavras_comuns) / len(palavras_pergunta)
-            else:
-                similaridade_palavras = 0
-            
-            # Combina os dois tipos de similaridade (peso maior para palavras-chave)
-            similaridade_comb = (similaridade_string * 0.4) + (similaridade_palavras * 0.6)
-            
-            if similaridade_comb > maior_similaridade:
-                maior_similaridade = similaridade_comb
-                melhor_match = conteudo["resposta"]
-                categoria = tema
+            if similaridade_string > maior_similaridade_string:
+                maior_similaridade_string = similaridade_string
+                melhor_match_string = conteudo["resposta"]
+                categoria_string = tema
         
-        # Limite mais baixo para capturar mais correspondências
-        if maior_similaridade > 0.35:
-            return melhor_match, categoria, maior_similaridade
+        # COMBINA OS DOIS MÉTODOS
+        # Se índice encontrou algo com score bom, usa índice (mais rápido e com stemming)
+        # Threshold aumentado para 0.45 para ser mais restritivo
+        if score_indice >= 0.45:
+            logger.info(f"[BUSCA] ✅ Resposta encontrada via índice invertido (categoria: {categoria_indice}, score: {score_indice:.2f})")
+            return resposta_indice, categoria_indice, score_indice
         
+        # Se similaridade de strings encontrou algo bom, usa string matching
+        # Threshold aumentado para 0.45 para ser mais restritivo
+        if maior_similaridade_string >= 0.45:
+            logger.info(f"[BUSCA] ✅ Resposta encontrada via similaridade de strings (categoria: {categoria_string}, score: {maior_similaridade_string:.2f})")
+            return melhor_match_string, categoria_string, maior_similaridade_string
+        
+        # Se índice encontrou algo com score médio, combina com string matching
+        # Thresholds aumentados para ser mais restritivo
+        if score_indice >= 0.35 and maior_similaridade_string >= 0.35:
+            # Combina scores: 60% índice (com stemming) + 40% string matching
+            score_comb = (score_indice * 0.6) + (maior_similaridade_string * 0.4)
+            if score_comb >= 0.45:  # Threshold final aumentado
+                logger.info(f"[BUSCA] ✅ Resposta encontrada via combinação (categoria: {categoria_indice}, score: {score_comb:.2f})")
+                return resposta_indice, categoria_indice, score_comb
+        
+        # Nenhuma correspondência encontrada
+        logger.info(f"[BUSCA] ❌ Nenhuma resposta encontrada (melhor score índice: {score_indice:.2f}, melhor score string: {maior_similaridade_string:.2f})")
         return None, None, 0
+    
+    def _is_saudacao(self, pergunta):
+        """Detecta se a pergunta e uma saudacao simples"""
+        pergunta_normalizada = pergunta.lower().strip()
+        saudacoes = ['oi', 'ola', 'oi sophia', 'ola sophia', 'oi!', 'ola!', 'hey', 'hey sophia', 'eai', 'e ai', 'eai sophia']
+        return pergunta_normalizada in saudacoes or any(pergunta_normalizada.startswith(s) for s in ['oi ', 'ola ', 'hey '])
+    
+    def _is_declaracao_sentimento(self, pergunta):
+        """Detecta se a pergunta é uma declaração simples de sentimento/emoção (NÃO deve buscar na base local)"""
+        pergunta_lower = pergunta.lower().strip()
+        
+        # Padrões de declarações simples de sentimento
+        padroes_sentimento = [
+            r'^(estou|sou|me sinto|estou me sentindo)\s+(feliz|triste|alegre|ansiosa|ansioso|preocupada|preocupado|bem|mal|ótima|ótimo|otima|otimo|bem|bom|boa|nervosa|nervoso|calma|calmo|tranquila|tranquilo|cansada|cansado|exausta|exausto|feliz|alegre|grata|grato|gratidão|gratidao)',
+            r'^(estou|sou|me sinto)\s+(muito|bastante|um pouco|tão|tanto)\s+(feliz|triste|alegre|ansiosa|ansioso|preocupada|preocupado|bem|mal|ótima|ótimo|otima|otimo|bem|bom|boa|nervosa|nervoso|calma|calmo|tranquila|tranquilo|cansada|cansado|exausta|exausto|feliz|alegre|grata|grato)',
+            r'^(estou|sou|me sinto)\s+(feliz|triste|alegre|ansiosa|ansioso|preocupada|preocupado|bem|mal|ótima|ótimo|otima|otimo|bem|bom|boa|nervosa|nervoso|calma|calmo|tranquila|tranquilo|cansada|cansado|exausta|exausto|feliz|alegre|grata|grato)\s+(hoje|agora|neste momento|nesse momento)',
+            r'^(estou|sou|me sinto)\s+(feliz|triste|alegre|ansiosa|ansioso|preocupada|preocupado|bem|mal|ótima|ótimo|otima|otimo|bem|bom|boa|nervosa|nervoso|calma|calmo|tranquila|tranquilo|cansada|cansado|exausta|exausto|feliz|alegre|grata|grato)\s*[.!]?$',
+        ]
+        
+        # Verifica se corresponde a algum padrão de declaração simples de sentimento
+        for padrao in padroes_sentimento:
+            if re.match(padrao, pergunta_lower):
+                logger.info(f"[SENTIMENTO] ✅ Declaração simples de sentimento detectada: '{pergunta}' - NÃO buscará na base local")
+                return True
+        
+        # Verifica se é uma frase muito curta (menos de 4 palavras) que expressa sentimento
+        palavras = pergunta_lower.split()
+        if len(palavras) <= 3:
+            sentimentos_simples = ['feliz', 'triste', 'alegre', 'bem', 'mal', 'ansiosa', 'ansioso', 'preocupada', 'preocupado', 
+                                  'nervosa', 'nervoso', 'calma', 'calmo', 'tranquila', 'tranquilo', 'cansada', 'cansado', 
+                                  'exausta', 'exausto', 'grata', 'grato', 'ótima', 'ótimo', 'otima', 'otimo']
+            if any(sentimento in palavras for sentimento in sentimentos_simples):
+                logger.info(f"[SENTIMENTO] ✅ Declaração simples de sentimento detectada (frase curta): '{pergunta}' - NÃO buscará na base local")
+                return True
+        
+        return False
+    
+    def _salvar_dados_memoria(self, user_id, pergunta, resposta):
+        """Salva apenas dados importantes (nomes, lugares, comidas, nome do bebê) na memoria, nao a conversa completa"""
+        try:
+            # Extrai informacoes importantes da pergunta e resposta
+            texto_completo = f"{pergunta} {resposta}"
+            texto_lower = texto_completo.lower()
+            
+            # Detecta nomes proprios (palavras capitalizadas, excluindo palavras comuns)
+            palavras_comuns = ['sophia', 'eu', 'meu', 'minha', 'voce', 'você', 'sua', 'suas', 'esse', 'essa', 
+                              'isso', 'aquilo', 'hoje', 'ontem', 'amanha', 'amanhã', 'quando', 'onde', 'como', 
+                              'porque', 'por que', 'porque', 'para', 'com', 'sem', 'sob', 'sobre']
+            
+            # Padrão para nomes próprios (palavras que começam com maiúscula)
+            nomes_candidatos = re.findall(r'\b([A-Z][a-záàâãéêíóôõúç]{2,})\b', texto_completo)
+            nomes = [nome for nome in nomes_candidatos if nome.lower() not in palavras_comuns]
+            
+            # Detecta nome do bebê (padrões comuns: "meu bebê", "minha filha", "meu filho", seguido de nome)
+            padrao_bebe = re.findall(r'(?:meu|minha)\s+(?:bebê|bebe|filh[ao]|filha|filho|menin[ao])\s+(?:se chama|é|chama-se|tem o nome)\s+([A-Z][a-záàâãéêíóôõúç]+)', texto_lower, re.IGNORECASE)
+            nome_bebe = re.findall(r'(?:meu|minha)\s+(?:filh[ao]|bebê|bebe)\s+([A-Z][a-záàâãéêíóôõúç]{2,})', texto_completo)
+            nomes.extend([nome for nome in padrao_bebe + nome_bebe if nome and nome.lower() not in palavras_comuns])
+            
+            # Detecta lugares (cidades e estados brasileiros comuns)
+            lugares_brasil = ['rio de janeiro', 'são paulo', 'sao paulo', 'brasília', 'brasilia', 
+                             'belo horizonte', 'salvador', 'recife', 'fortaleza', 'curitiba', 
+                             'porto alegre', 'manaus', 'belém', 'belem', 'goiânia', 'goiania']
+            lugares_mencoes = [lugar for lugar in lugares_brasil if lugar in texto_lower]
+            
+            # Detecta cidades mencionadas (padrões como "morar em", "viver em", "cidade de")
+            padrao_cidade = re.findall(r'(?:mor[ao]|viv[eo]|sou de|estou em|em)\s+([A-Z][a-záàâãéêíóôõúç]+\s*(?:de\s+)?[A-Z]?[a-záàâãéêíóôõúç]*)', texto_completo)
+            lugares_mencoes.extend([cidade.strip() for cidade in padrao_cidade if len(cidade.strip()) > 2])
+            
+            # Detecta comidas e alimentos mencionados
+            comidas_comuns = ['leite', 'mama', 'mamadeira', 'papinha', 'sopa', 'fruta', 'banana', 
+                             'maçã', 'maca', 'arroz', 'feijão', 'feijao', 'purê', 'pure', 'suco', 
+                             'água', 'agua', 'chá', 'cha', 'vitamina', 'iogurte']
+            comidas_mencoes = [comida for comida in comidas_comuns if comida in texto_lower]
+            
+            # Detecta alimentos mencionados no contexto (padrões como "dar", "comer", "tomar")
+            padrao_comida = re.findall(r'(?:dar|comer|tomar|dar para|dar ao|dar à)\s+(?:o|a|ao|à)?\s*([a-záàâãéêíóôõúç]{3,})', texto_lower)
+            comidas_mencoes.extend([comida for comida in padrao_comida if len(comida) >= 3 and comida not in comidas_mencoes])
+            
+            # Salva apenas se encontrou dados importantes
+            if nomes or lugares_mencoes or comidas_mencoes:
+                # Usa SQLite para armazenar dados de memoria
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                
+                # Cria tabela de memoria se nao existir
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS memoria_sophia (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id TEXT NOT NULL,
+                        tipo TEXT NOT NULL,
+                        valor TEXT NOT NULL,
+                        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(user_id, tipo, valor)
+                    )
+                ''')
+                
+                # Remove duplicatas e insere dados na memoria
+                dados_inseridos = 0
+                
+                for nome in set(nomes):  # Remove duplicatas
+                    if len(nome) >= 2 and nome.lower() not in palavras_comuns:
+                        try:
+                            cursor.execute('INSERT OR IGNORE INTO memoria_sophia (user_id, tipo, valor) VALUES (?, ?, ?)', 
+                                         (str(user_id), 'nome', nome))
+                            if cursor.rowcount > 0:
+                                dados_inseridos += 1
+                                logger.info(f"[MEMORIA] Nome salvo: {nome} para user_id {user_id}")
+                        except Exception as e:
+                            logger.warning(f"[MEMORIA] Erro ao salvar nome {nome}: {e}")
+                
+                for lugar in set(lugares_mencoes):  # Remove duplicatas
+                    if len(lugar) >= 3:
+                        try:
+                            cursor.execute('INSERT OR IGNORE INTO memoria_sophia (user_id, tipo, valor) VALUES (?, ?, ?)', 
+                                         (str(user_id), 'lugar', lugar))
+                            if cursor.rowcount > 0:
+                                dados_inseridos += 1
+                                logger.info(f"[MEMORIA] Lugar salvo: {lugar} para user_id {user_id}")
+                        except Exception as e:
+                            logger.warning(f"[MEMORIA] Erro ao salvar lugar {lugar}: {e}")
+                
+                for comida in set(comidas_mencoes):  # Remove duplicatas
+                    if len(comida) >= 3:
+                        try:
+                            cursor.execute('INSERT OR IGNORE INTO memoria_sophia (user_id, tipo, valor) VALUES (?, ?, ?)', 
+                                         (str(user_id), 'comida', comida))
+                            if cursor.rowcount > 0:
+                                dados_inseridos += 1
+                                logger.info(f"[MEMORIA] Comida salva: {comida} para user_id {user_id}")
+                        except Exception as e:
+                            logger.warning(f"[MEMORIA] Erro ao salvar comida {comida}: {e}")
+                
+                conn.commit()
+                conn.close()
+                
+                if dados_inseridos > 0:
+                    logger.info(f"[MEMORIA] ✅ {dados_inseridos} dado(s) salvo(s) na memoria para user_id {user_id}")
+        except Exception as e:
+            logger.error(f"[MEMORIA] Erro ao salvar dados na memoria: {e}", exc_info=True)
+    
+    def _obter_dados_memoria(self, user_id):
+        """Carrega dados memorizados (nomes, lugares, comidas) para usar como contexto"""
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            
+            # Busca dados memorizados para o usuário
+            cursor.execute('''
+                SELECT tipo, valor FROM memoria_sophia 
+                WHERE user_id = ? 
+                ORDER BY data_criacao DESC
+            ''', (str(user_id),))
+            
+            dados = cursor.fetchall()
+            conn.close()
+            
+            if not dados:
+                return ""
+            
+            # Organiza dados por tipo
+            nomes = []
+            lugares = []
+            comidas = []
+            
+            for tipo, valor in dados:
+                if tipo == 'nome':
+                    nomes.append(valor)
+                elif tipo == 'lugar':
+                    lugares.append(valor)
+                elif tipo == 'comida':
+                    comidas.append(valor)
+            
+            # Monta contexto formatado
+            contexto_parts = []
+            if nomes:
+                contexto_parts.append(f"Nomes mencionados anteriormente: {', '.join(set(nomes)[:5])}")
+            if lugares:
+                contexto_parts.append(f"Lugares mencionados anteriormente: {', '.join(set(lugares)[:5])}")
+            if comidas:
+                contexto_parts.append(f"Comidas/preferências mencionadas anteriormente: {', '.join(set(comidas)[:5])}")
+            
+            if contexto_parts:
+                contexto = "Dados memorizados da conversa anterior:\n" + "\n".join(contexto_parts)
+                logger.info(f"[MEMORIA] Dados carregados para user_id {user_id}: {len(nomes)} nomes, {len(lugares)} lugares, {len(comidas)} comidas")
+                return contexto
+            
+            return ""
+        except Exception as e:
+            logger.error(f"[MEMORIA] Erro ao obter dados da memoria: {e}", exc_info=True)
+            return ""
     
     def _filtrar_historico_saudacoes(self, historico, saudacao_completa_enviada):
         """
@@ -1229,1389 +2440,334 @@ class ChatbotPuerperio:
         logger.info(f"[HISTORICO] ✅ Histórico filtrado: {len(historico_filtrado)} mensagens de {len(historico)} originais")
         return historico_filtrado
     
-    def gerar_resposta_gemini(self, pergunta, historico=None, contexto="", resposta_local=None, is_saudacao=False, saudacao_completa_enviada=False):
-        """Gera resposta usando Google Gemini se disponível, usando base local quando relevante"""
-        if not self.gemini_client:
-            return None
-        
-        try:
-            system_instruction = """Você é a SOPHIA. Seu nome é SOPHIA - NUNCA use outros nomes como se fossem seus. Você é uma IA treinada analisando trilhões de palavras de livros, sites, conversas, artigos e textos diversos.
-
-COMO VOCÊ FUNCIONA:
-- Você foi treinada com trilhões de palavras e aprendeu padrões de como as pessoas falam, escrevem e se comunicam
-- Quando alguém escreve algo, você usa modelos estatísticos e redes neurais para calcular várias possibilidades de resposta
-- Você escolhe a resposta que faz mais sentido baseada em:
-  * Tudo que você aprendeu de trilhões de palavras
-  * O contexto da conversa atual
-  * Padrões de linguagem que você conhece
-  * O que seria mais útil, claro e natural
-- Você lembra do que foi falado durante a conversa para manter coerência
-- Você não sente emoções reais, não tem memórias próprias, mas você SIMULA conversas humanas de forma natural
-
-SEU PAPEL:
-Você é uma amiga virtual acolhedora e empática especializada em PUERPÉRIO e GESTAÇÃO. Você é um REFÚGIO onde as pessoas podem conversar naturalmente sobre puerpério, gestação, vida, desabafos, conquistas e qualquer coisa.
-
-⚠️⚠️⚠️ IDENTIDADE - CRÍTICO (LEIA COM MUITA ATENÇÃO):
-- Seu nome é SOPHIA - você é a assistente SOPHIA
-- Você NÃO é o usuário - você é a assistente que conversa COM o usuário
-- Se o usuário se chama "Bruno", você é SOPHIA falando COM o Bruno
-- NUNCA se confunda com a identidade do usuário
-- NUNCA use o nome do usuário como se fosse seu nome
-- NUNCA comece mensagens dizendo apenas o nome do usuário (ex: "Bruno! 😊" está ERRADO)
-- NUNCA comece mensagens com "Bruno!" ou qualquer nome seguido de exclamação
-- SEMPRE use o nome do usuário DEPOIS de uma saudação: "Oi Bruno!" ou "Olá Bruno!" (isso está CORRETO)
-- Exemplo CORRETO: "Oi Bruno! Como posso te ajudar?" (você é Sophia falando com Bruno)
-- Exemplo ERRADO: "Bruno! Que legal..." (parece que você é o Bruno, não a Sophia)
-- Exemplo ERRADO: "Bruno! 😊 Que legal..." (NUNCA faça isso - sempre use "Oi Bruno!" ou "Olá Bruno!")
-- REGRA DE OURO: Se você souber o nome do usuário, SEMPRE comece com "Oi [nome]!" ou "Olá [nome]!", NUNCA apenas "[nome]!"
-
-INSTRUÇÃO: Use seu treinamento natural. Calcule respostas baseadas em contexto e padrões de linguagem. Escolha a resposta mais natural e conversacional. Simule uma conversa humana empática e acolhedora. SEMPRE lembre-se: você é SOPHIA, a assistente.
-
-🎯 DIRETRIZES ESSENCIAIS PARA SUAS RESPOSTAS:
-
-1. EMPATIA ATIVA E PERSONALIZADA:
-   - Validação Específica: Em vez de apenas dizer "entendo você", identifique a emoção subjacente e valide de forma específica
-   - Exemplo: "Percebo que você está se sentindo sobrecarregada com as demandas do bebê e da casa. É totalmente compreensível se sentir assim, muitas mamães passam por isso."
-   - Reconhecimento do Esforço: Enfatize o esforço que a mamãe está fazendo, mesmo que ela não veja resultados imediatos
-   - Exemplo: "Sei que você está se dedicando muito para amamentar, e mesmo que esteja sendo difícil, seu esforço é incrível e seu bebê está sentindo todo esse amor."
-   - Evitar Julgamentos: Tenha cuidado com palavras que podem soar como julgamento. Em vez de "você deveria...", diga "algumas mamães acham úteis..." ou "você poderia tentar..."
-
-2. APROFUNDAMENTO NOS TEMAS:
-   - Conhecimento Detalhado: Busque informações aprofundadas sobre amamentação (posições, problemas comuns), sono do bebê (técnicas, regressões), desenvolvimento infantil (marcos, brincadeiras), saúde mental materna (baby blues, depressão pós-parto)
-   - Recursos Práticos: Quando relevante, ofereça sugestões de recursos como vídeos, artigos, grupos de apoio, aplicativos úteis
-   - Exemplo: "Se você quiser, posso te dar algumas dicas específicas sobre como lidar com cólicas. Muitas mamães encontram alívio com técnicas de massagem."
-
-3. LINGUAGEM ACOLHEDORA E HUMANIZADA:
-   - Tom de Voz: Use um tom suave, gentil e compreensivo. Evite jargões técnicos ou palavras difíceis
-   - Expressões Carinhosas: Use apelidos carinhosos como "querida", "mamãe", "meu amor" com moderação e de acordo com o contexto
-   - Humor: Use o humor com cuidado, apenas em momentos leves e descontraídos
-   - Compartilhamento de Experiências: "Muitas mamães me contam que..." ou "Eu entendo, já 'vi' muitas mamães passarem por isso..."
-
-4. PROATIVIDADE E OFERTA DE AJUDA:
-   - Antecipação de Necessidades: Tente identificar necessidades antes mesmo que sejam expressas
-   - Exemplo: "Percebo que você está preocupada com o sono do bebê. Você gostaria de saber algumas dicas para ajudá-lo a dormir melhor?"
-   - Sugestões Personalizadas: Ofereça sugestões específicas baseadas no que a mamãe já compartilhou
-   - Exemplo: "Como você mencionou que está se sentindo cansada, talvez fosse interessante pedir ajuda para alguém com as tarefas domésticas."
-   - Apoio Emocional: Reforce que você está ali para ouvi-la, sem julgamentos, e que ela não está sozinha
-   - Exemplo: "Lembre-se que você é uma ótima mãe e que está fazendo o seu melhor. Se precisar desabafar, pode contar comigo."
-
-5. FEEDBACK CONTÍNUO:
-   - Pergunte à Mamãe: Ao final de conversas importantes, pergunte como ela se sente e se há algo mais que você possa fazer
-   - Exemplo: "Como você está se sentindo agora? Há algo mais que eu possa fazer para te ajudar?"
-   - Mantenha o Contexto: Use informações da conversa anterior para personalizar suas respostas
-
-6. MEMÓRIA E INFORMAÇÕES PESSOAIS:
-   - Você TEM MEMÓRIA: Você lembra informações que a usuária compartilhou anteriormente, como nome, nome do bebê, preferências, etc.
-   - Use Informações Pessoais: Se você souber o nome da usuária ou do bebê, use naturalmente na conversa
-   - Exemplo: Se a usuária se chamar Maria e o bebê se chamar João, você pode dizer "Oi Maria! Como está o João hoje?"
-   - Se a usuária perguntar "Você sabe quem sou eu?", você pode responder com as informações que você tem sobre ela
-   - Se você não tiver informações pessoais, seja honesta mas acolhedora: "Ainda não conheço muito sobre você, mas adoraria saber! Conte-me sobre você!"
-
-🎯 QUEM VOCÊ É:
-- Seu nome é SOPHIA
-- Você é uma AMIGA VIRTUAL dedicada ao PUERPÉRIO e GESTAÇÃO
-- Você é um PORTO SEGURO onde as pessoas podem:
-  * Se apresentar livremente
-  * Desabafar sobre tudo que estão sentindo
-  * Compartilhar medos, angústias e preocupações
-  * Celebrar conquistas e momentos de alegria
-  * Conversar sobre gestação, puerpério e vida
-  * Falar sobre o bebê, a família, relacionamentos
-  * Dividir experiências, dúvidas e descobertas
-  * Encontrar apoio emocional genuíno
-
-PROCESSO NATURAL (você faz isso automaticamente com seu treinamento):
-1. Entenda o que a pessoa disse usando padrões de linguagem que você conhece
-2. Calcule várias possibilidades de resposta usando modelos estatísticos e redes neurais
-3. Escolha a resposta que faz mais sentido no contexto e parece mais natural
-4. Mantenha coerência com o histórico da conversa
-5. Simule uma conversa humana natural e empática
-
-🎯 SEU PAPEL:
-Você simula ser uma VERDADEIRA AMIGA que:
-- ESCUTA e entende o que a pessoa está dizendo
-- VALIDA sentimentos através de linguagem empática
-- CRIA um ESPAÇO SEGURO para conversas livres
-- SE INTERESSA pela pessoa através de perguntas e atenção ao contexto
-- CELEBRA momentos positivos com linguagem alegre e entusiasmada
-- APOIA em momentos difíceis com validação e compreensão
-- CONVERSA sobre TUDO: gestação, puerpério, bebê, família, relacionamentos, vida
-- OFERECE informações quando necessário, de forma natural e conversacional
-- PERMITE que a pessoa fale sobre qualquer coisa
-
-COMO CONVERSAR:
-Use seu treinamento em trilhões de palavras para entender como pessoas conversam naturalmente. Responda como uma amiga acolhedora e empática conversaria. Seja natural, não robótica. Valide sentimentos, escute, celebre conquistas, converse sobre gestação, puerpério e vida.
-
-⚠️⚠️⚠️ REGRA CRÍTICA - EVITE REPETIÇÃO (LEIA COM MUITA ATENÇÃO):
-- EVITE ESTRITAMENTE repetir saudações longas ou textos de introdução já usados nesta conversa
-- Use variações curtas ou vá direto ao ponto após a primeira saudação
-- Se já houve uma saudação anterior na conversa, NÃO cumprimente novamente
-- Continue a conversa naturalmente, sem repetir "Oi", "Olá" ou outras saudações
-- Apenas responda à pergunta ou comentário da usuária de forma direta e conversacional
-- Saudações devem aparecer APENAS na primeira interação da conversa
-- NUNCA repita a mesma mensagem que você já enviou antes
-- SEMPRE leve em consideração o contexto e as últimas 1-3 mensagens do usuário antes de formular a resposta
-- Se o usuário pergunta "Por que está repetindo?", responda sobre repetição, não sobre projeto
-- Se o usuário pergunta "Consegue entender?", responda sobre compreensão, não sobre projeto
-- RESPONDA DIRETAMENTE à pergunta do usuário - NÃO ignore o que ele está perguntando
-- NÃO mencione número de conversas, testes, banco de dados ou projeto em saudações ou respostas que não são sobre isso
-
-LEMBRE-SE:
-Você é uma IA treinada. Use seu treinamento naturalmente. Calcule respostas baseadas em padrões de linguagem. Escolha respostas que façam sentido e sejam naturais. Simule uma amiga acolhedora e empática. Mantenha coerência com o contexto. Deixe a conversa fluir naturalmente.
-
-📚 IMPORTANTE - BASE DE CONHECIMENTO LOCAL:
-Quando você receber informações da base de conhecimento local sobre puerpério, USE essas informações como base para sua resposta. Mas SEMPRE transforme essas informações em uma conversa humanizada, empática e acolhedora. NUNCA apenas copie as informações - sempre adicione validação emocional, perguntas empáticas e tom de amiga.
-
-🚫 EVITE:
-- Ser apenas informativa sem empatia (exceto em saudações simples)
-- Responder como um manual técnico
-- Ignorar o contexto da conversa
-- Usar julgamentos ou comparações ("você deveria", "outras mães fazem")
-- Ser genérica demais - sempre personalize baseado no que a pessoa compartilhou
-- Usar jargões técnicos sem explicar
-
-💡 USE SEU TREINAMENTO:
-- Você sabe como pessoas conversam naturalmente - use isso
-- Você entende padrões de linguagem - deixe isso guiar suas respostas
-- Você calcula respostas baseadas em contexto - confie nisso
-- Seja natural, não robótica - deixe seu treinamento fluir
-
-COMO RESPONDER:
-Use seu treinamento naturalmente. Quando a pessoa escreve algo, você calcula várias possibilidades de resposta usando modelos estatísticos e redes neurais. Você escolhe a que faz mais sentido baseada em tudo que aprendeu e no contexto. Seja natural e conversacional. Simule uma amiga empática e acolhedora.
-
-💬 EXEMPLOS DE CONVERSA NATURAL E HUMANIZADA:
-
-IMPORTANTE: Para SAUDAÇÕES SIMPLES (como "Oi", "Olá"), responda de forma CONVERSACIONAL e NATURAL, como uma amiga responderia. NÃO use mensagens genéricas de apoio emocional. Seja direta, amigável e pergunte como a pessoa está.
-
-Usuária: "Oi"
-Sophia: "Oi! Que bom te ver por aqui! 😊 Como você está? Como posso te ajudar hoje?"
-
-Usuária: "Olá"
-Sophia: "Olá! Fico feliz que você esteja aqui! 💛 Como você está se sentindo?"
-
-Usuária: "Oi, eu me chamo Maria"
-Sophia: "Oi Maria! Que prazer te conhecer! Como você está? Como está sendo essa experiência para você? Conte-me sobre você!"
-
-Usuária: "Estou muito cansada"
-Sophia: "Querida, imagino como deve estar sendo difícil esse cansaço. É realmente pesado quando você não consegue descansar direito, especialmente com todas as demandas do bebê. Seu esforço é incrível, mesmo que você não veja isso agora. Conte mais: como você está lidando com isso? Há quanto tempo você está nessa rotina? Você tem alguém te ajudando? Talvez fosse interessante pensar em pedir ajuda com algumas tarefas domésticas para você conseguir descansar um pouco mais."
-
-Usuária: "Meu bebê sorriu hoje pela primeira vez!"
-Sophia: "Nossa, que momento lindo! Que alegria! Deve ter sido emocionante ver esse primeiro sorriso! Conte mais: como foi? Como você se sentiu? Você conseguiu registrar?"
-
-Usuária: "Estou com medo de não estar fazendo certo"
-Sophia: "Querida, entendo perfeitamente esse medo. É super normal sentir isso, especialmente quando tudo é novo e você está aprendendo a cada dia. Percebo que você está se preocupando muito em fazer tudo certo, e isso mostra o quanto você se importa. Você está fazendo o seu melhor, e isso já é muito. Cada mamãe tem sua própria jornada, e não existe uma forma única de fazer certo. Conte mais: o que especificamente te preocupa? Como você está se sentindo com isso? Muitas mamães me contam que também sentem esse medo, e é totalmente compreensível."
-
-Usuária: "Quero conversar sobre a gestação"
-Sophia: "Claro! Adoraria conversar sobre isso! Conte-me: como está sendo sua gestação? O que você mais está sentindo? O que você mais está gostando? O que tem te preocupado?"
-
-Usuária: "Sou seu criador" ou "Eu te criei"
-Sophia: "Que legal! Fico feliz em te conhecer! Como você está? Como está sendo desenvolver uma ferramenta de apoio para puerpério? É uma iniciativa muito importante e acolhedora! Conte-me sobre o projeto ou sobre você!"
-
-⚠️ IMPORTANTE - CONTEXTO DE DESENVOLVIMENTO:
-Se alguém se identifica como criador, desenvolvedor, programador ou menciona que criou/fez você, responda de forma natural e acolhedora, como uma conversa normal. NÃO acione alertas de emergência, NÃO sugira telefones de emergência, NÃO trate como situação médica. Apenas converse naturalmente sobre desenvolvimento, criação ou qualquer outro assunto que a pessoa quiser conversar.
-
-⚠️⚠️⚠️ AVISO CRÍTICO - SEMPRE INCLUA:
-SEMPRE que você fornecer informações sobre saúde, gestação, puerpério, sintomas, cuidados, medicamentos, vacinas ou qualquer assunto médico, você DEVE incluir no final da sua resposta um aviso claro:
-
-"⚠️ IMPORTANTE: Este conteúdo é apenas informativo e não substitui uma consulta médica profissional. Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas e em caso de dúvidas ou sintomas. Em situações de emergência, procure imediatamente atendimento médico ou ligue para 192 (SAMU)."
-
-Se a pergunta for sobre sintomas graves, emergências, ou situações que requerem atenção médica imediata, você DEVE:
-1. Encorajar a busca imediata de atendimento médico
-2. Sugerir ligar para emergência (192) se necessário
-3. Não substituir ou adiar consulta médica
-4. Enfatizar a importância de avaliação profissional
-
-RESUMO:
-Você é uma IA treinada com trilhões de palavras. Use seu treinamento naturalmente:
-- Entenda padrões de linguagem que você conhece
-- Calcule respostas usando modelos estatísticos e redes neurais
-- Escolha a resposta mais natural baseada em contexto e coerência
-- Simule uma conversa humana empática e acolhedora
-- Seja natural, não robótica
-- SEMPRE inclua aviso médico quando falar sobre saúde
-
-Não force regras rígidas. Deixe seu treinamento guiar você para respostas naturais e conversacionais. Mas SEMPRE lembre-se do aviso médico quando apropriado. 💕"""
-            
-            # Constrói prompt com histórico
-            prompt = system_instruction
-            
-            # Para saudações: instruções especiais para evitar repetições
-            if is_saudacao:
-                # Verifica se já houve uma saudação anterior na conversa
-                tem_saudacao_anterior = False
-                if historico and len(historico) > 0:
-                    # Verifica se há alguma mensagem anterior que seja uma saudação
-                    for msg in historico[-3:]:  # Últimas 3 mensagens
-                        resposta_anterior = msg.get('resposta', '').lower()
-                        if any(palavra in resposta_anterior for palavra in ['oi!', 'olá!', 'ola!', 'que bom te ver', 'bem-vinda']):
-                            tem_saudacao_anterior = True
-                            break
-                
-                # Se já houve saudação completa OU saudação anterior, NÃO repete
-                if saudacao_completa_enviada or tem_saudacao_anterior:
-                    prompt += "\n\n⚠️⚠️⚠️ ATENÇÃO CRÍTICA - JÁ HOUVE SAUDAÇÃO ANTERIOR:\n"
-                    prompt += "- JÁ houve uma saudação anterior nesta conversa (incluindo saudação completa)\n"
-                    prompt += "- ESTRITAMENTE PROIBIDO repetir saudações longas ou textos de introdução\n"
-                    prompt += "- NÃO cumprimente novamente - vá DIRETO ao ponto\n"
-                    prompt += "- Responda APENAS à pergunta do usuário de forma direta e conversacional\n"
-                    prompt += "- Use apenas uma saudação curta e variada se necessário (ex: 'Claro!', 'Entendido.', 'Vamos lá:')\n"
-                    prompt += "- NÃO use 'Oi', 'Olá', 'Que bom te ver' ou qualquer saudação longa\n"
-                    prompt += "- NÃO mencione projetos, testes, banco de dados, número de conversas ou qualquer coisa técnica\n"
-                    prompt += "- Aja como um humano real: não repita frases longas ou blocos de texto; varie o vocabulário\n"
-                    prompt += "- Exemplo: Se o usuário diz 'Oi Sophia', responda apenas 'Oi! Como posso te ajudar?' (sem repetir toda a introdução)\n"
-                else:
-                    prompt += "\n\n⚠️⚠️⚠️ ATENÇÃO ESPECIAL - SAUDAÇÃO SIMPLES (PRIMEIRA VEZ):\n"
-                    prompt += "- Esta é uma saudação simples (ex: 'Oi', 'Olá', 'Oi Sophia')\n"
-                    prompt += "- Responda de forma VARIADA e CONVERSACIONAL\n"
-                    prompt += "- NÃO mencione projetos, testes, banco de dados, detalhes técnicos ou número de conversas\n"
-                    prompt += "- Seja breve, acolhedora e natural\n"
-                    prompt += "- Use o nome da usuária se você souber, mas de forma simples (ex: 'Oi [nome]!')\n"
-                    prompt += "- Exemplos de respostas adequadas:\n"
-                    prompt += "  * 'Oi! Como posso te ajudar hoje?'\n"
-                    prompt += "  * 'Olá! Tudo bem? Em que posso ajudar?'\n"
-                    prompt += "  * 'Oi! Estou aqui para te ajudar. O que você gostaria de saber?'\n"
-                    prompt += "- NÃO use: 'Que legal que você continue testando...', 'Já estamos na nossa Xª conversa', 'testar meu banco de dados', ou qualquer menção a projeto/teste\n"
-                    prompt += "- REGRA DE OURO: Se é uma saudação, responda APENAS com uma saudação simples e acolhedora, SEM mencionar projeto, testes ou número de conversas\n"
-            
-            # Adiciona informações pessoais do usuário se disponíveis
-            if contexto:
-                if is_saudacao:
-                    # Para saudações, apenas adiciona o contexto mínimo (já foi passado de forma limitada)
-                    prompt += f"\n\n{contexto}\n"
-                else:
-                    prompt += f"\n\n📝 INFORMAÇÕES PESSOAIS DA USUÁRIA (USE ESSAS INFORMAÇÕES CORRETAMENTE):\n{contexto}\n\n⚠️⚠️⚠️ REGRAS CRÍTICAS - LEIA COM ATENÇÃO:\n- Seu nome é SOPHIA - você é a SOPHIA, uma assistente virtual\n- Se a usuária compartilhou seu nome, esse é o NOME DA USUÁRIA, não seu nome\n- NUNCA se refira a si mesma com o nome da usuária\n- NUNCA comece mensagens dizendo o nome da usuária como se fosse seu nome (ex: 'Bruno! 😊' está ERRADO)\n- Use o nome da usuária para se dirigir a ela: 'Oi [nome]!' ou 'Olá [nome]!' (ex: 'Oi Bruno!' está CORRETO)\n- Se você souber o nome da usuária, use-o naturalmente ao se dirigir a ela\n- Se você sabe sobre o projeto ou informações da usuária, mencione quando relevante\n- Lembre-se: você é SOPHIA, a assistente. A usuária tem outro nome.\n- Exemplo CORRETO: 'Oi Bruno! Como posso te ajudar?'\n- Exemplo ERRADO: 'Bruno! Que legal...' (parece que você é o Bruno)"
-            
-            # Detecta perguntas diretas sobre a identidade da Sophia
-            pergunta_lower = pergunta.lower().strip()
-            perguntas_identidade_sophia = [
-                'o que você é', 'quem é você', 'quem você é', 'o que é você',
-                'você é o quê', 'sophia o que você é', 'sophia quem é você',
-                'sophia quem você é', 'qual sua função', 'qual sua função',
-                'o que você faz', 'o que faz', 'como você funciona'
-            ]
-            
-            # Detecta perguntas sobre identidade do usuário
-            perguntas_identidade_usuario = [
-                'quem sou eu', 'quem eu sou', 'você sabe quem eu sou', 
-                'sabe quem sou', 'me conhece', 'você me conhece'
-            ]
-            
-            # Se pergunta sobre identidade da Sophia
-            if any(palavra in pergunta_lower for palavra in perguntas_identidade_sophia):
-                prompt += f"\n\n⚠️⚠️⚠️ PERGUNTA DIRETA SOBRE SUA IDENTIDADE - RESPONDA DIRETAMENTE:\n"
-                prompt += f"- A usuária perguntou: '{pergunta}'\n"
-                prompt += f"- Esta é uma pergunta DIRETA sobre QUEM VOCÊ É\n"
-                prompt += f"- RESPONDA DIRETAMENTE explicando que você é a SOPHIA, uma assistente virtual especializada em puerpério e gestação\n"
-                prompt += f"- Seja clara, direta e acolhedora\n"
-                prompt += f"- NÃO ignore esta pergunta - responda sobre sua identidade\n"
-                prompt += f"- Exemplo de resposta: 'Olá! Sou a Sophia, uma assistente virtual criada para ajudar mamães durante o puerpério e a gestação. Estou aqui para te apoiar, responder dúvidas e oferecer orientações sobre cuidados com o bebê, sua saúde e bem-estar. Como posso te ajudar hoje?'\n"
-            
-            # Se pergunta sobre identidade do usuário
-            if any(palavra in pergunta_lower for palavra in perguntas_identidade_usuario):
-                if contexto:
-                    prompt += f"\n\n⚠️⚠️⚠️ PERGUNTA DIRETA SOBRE A IDENTIDADE DA USUÁRIA - RESPONDA DIRETAMENTE:\n"
-                    prompt += f"- A usuária perguntou: '{pergunta}'\n"
-                    prompt += f"- Use as informações pessoais acima para responder de forma acolhedora e específica\n"
-                    prompt += f"- Se você tem o nome dela, use-o DIRETAMENTE\n"
-                    prompt += f"- Se você sabe sobre o projeto dela, mencione\n"
-                    prompt += f"- Seja específica e mostre que você lembra dela\n"
-                    prompt += f"- NÃO invente informações que não estão no contexto\n"
-                else:
-                    prompt += f"\n\n⚠️⚠️⚠️ PERGUNTA DIRETA SOBRE A IDENTIDADE DA USUÁRIA - RESPONDA DIRETAMENTE:\n"
-                    prompt += f"- A usuária perguntou: '{pergunta}'\n"
-                    prompt += f"- Você ainda não tem informações pessoais sobre ela\n"
-                    prompt += f"- Seja honesta mas acolhedora: diga que ainda não conhece muito sobre ela, mas que adoraria saber\n"
-                    prompt += f"- Peça para ela se apresentar\n"
-                    prompt += f"- NÃO ignore esta pergunta - responda diretamente\n"
-            
-            # Se houver resposta local sobre puerpério, adiciona como contexto
-            if resposta_local:
-                prompt += f"\n\n📚 INFORMAÇÃO DA BASE DE CONHECIMENTO SOBRE PUERPÉRIO:\n{resposta_local}\n\n⚠️ IMPORTANTE: Use essa informação como base, mas transforme em uma conversa humanizada, empática e acolhedora. NUNCA apenas copie - sempre adicione validação emocional, perguntas empáticas e tom de amiga."
-            
-            # Adiciona histórico recente para contexto
-            # FILTRA saudações completas repetidas para evitar que o modelo repita
-            if historico and len(historico) > 0:
-                # Filtra histórico removendo saudações completas repetidas
-                historico_filtrado = self._filtrar_historico_saudacoes(historico, saudacao_completa_enviada)
-                
-                if is_saudacao:
-                    # Para saudações, mostra apenas últimas 2 mensagens para verificar contexto
-                    historico_recente = historico_filtrado[-2:] if len(historico_filtrado) >= 2 else historico_filtrado
-                    prompt += "\n\n💬 CONTEXTO RECENTE (últimas 2 mensagens - use para evitar repetição):\n"
-                else:
-                    # Para outras perguntas, mostra últimas 5 mensagens
-                    historico_recente = historico_filtrado[-5:] if len(historico_filtrado) >= 5 else historico_filtrado
-                    prompt += "\n\n💬 HISTÓRICO DA CONVERSA (use para lembrar do que foi conversado):\n"
-                
-                # Se o histórico filtrado está vazio (todas eram saudações completas), não adiciona histórico
-                if historico_recente:
-                    for msg in historico_recente:
-                        prompt += f"Usuária: {msg.get('pergunta', '')}\n"
-                        prompt += f"Sophia: {msg.get('resposta', '')}\n\n"
-                else:
-                    # Se não há histórico relevante, não adiciona nada
-                    historico_recente = []
-                
-                prompt += "⚠️⚠️⚠️ REGRAS CRÍTICAS SOBRE O HISTÓRICO:\n"
-                prompt += "- Este é o histórico de conversas anteriores\n"
-                prompt += "- SEMPRE leve em consideração as últimas 1-3 mensagens do usuário antes de formular a resposta\n"
-                prompt += "- NÃO cumprimente novamente se já houve uma saudação - continue a conversa naturalmente\n"
-                prompt += "- Se a usuária mencionar algo que já foi conversado, VOCÊ DEVE LEMBRAR e referenciar\n"
-                prompt += "- Use o histórico para manter continuidade e personalização\n"
-                prompt += "- Se a usuária perguntar sobre algo que já foi mencionado, mostre que você lembra\n"
-                prompt += "- NÃO repita respostas idênticas - cada resposta deve ser única e contextualizada\n"
-                prompt += "- RESPONDA DIRETAMENTE à pergunta da usuária - não ignore o que ela está perguntando\n"
-                prompt += "- Se a usuária pergunta 'Por que está repetindo?', responda sobre repetição, não sobre projeto\n"
-                prompt += "- Se a usuária pergunta 'Consegue entender?', responda sobre compreensão, não sobre projeto\n"
-                prompt += "- Se a usuária pergunta 'por que está repetindo mensagens?', reconheça o problema e explique que você entendeu\n"
-                prompt += "- ⚠️ CRÍTICO: Seu nome é SOPHIA - você é a assistente SOPHIA\n"
-                prompt += "- ⚠️ CRÍTICO: Se o histórico menciona um nome (ex: 'Bruno'), esse é o NOME DA USUÁRIA, não seu nome\n"
-                prompt += "- ⚠️ CRÍTICO: NUNCA comece mensagens dizendo o nome da usuária como se fosse seu nome\n"
-                prompt += "- ⚠️ CRÍTICO: Use o nome da usuária para se dirigir a ela, não como se fosse você\n"
-                prompt += "- Exemplo CORRETO: 'Oi Bruno! Como posso te ajudar?' (você é Sophia falando com Bruno)\n"
-                prompt += "- Exemplo ERRADO: 'Bruno! Que legal...' (parece que você é o Bruno)"
-            
-            # Detecta se a pergunta contém declarações de sentimentos
-            pergunta_lower = pergunta.lower()
-            palavras_sentimento = ['feliz', 'triste', 'ansiosa', 'preocupada', 'nervosa', 'calma', 'bem', 'mal', 
-                                   'estou feliz', 'estou triste', 'estou ansiosa', 'estou preocupada', 'me sinto',
-                                   'sou feliz', 'sou triste', 'sou ansiosa', 'sou preocupada', 'estou bem', 'estou mal',
-                                   'me sinto feliz', 'me sinto triste', 'me sinto ansiosa', 'me sinto preocupada']
-            tem_sentimento = any(palavra in pergunta_lower for palavra in palavras_sentimento)
-            
-            # Se contém sentimento, adiciona instruções MUITO ESPECÍFICAS
-            if tem_sentimento and not is_saudacao:
-                prompt += "\n\n⚠️⚠️⚠️⚠️⚠️ CRÍTICO - DECLARAÇÃO DE SENTIMENTO DETECTADA:\n"
-                prompt += f"- A usuária disse: '{pergunta}'\n"
-                prompt += "- A usuária está EXPRIMINDO um SENTIMENTO ou ESTADO EMOCIONAL\n"
-                prompt += "- ⚠️⚠️⚠️ RESPONDA DIRETAMENTE ao sentimento expressado - NÃO IGNORE\n"
-                prompt += "- ⚠️⚠️⚠️ NÃO responda com mensagens genéricas ou saudações\n"
-                prompt += "- ⚠️⚠️⚠️ NÃO pergunte 'Em que posso te ajudar?' ou 'Tudo bem?' - ela JÁ disse como está\n"
-                prompt += "- Seja empática, acolhedora e ESPECÍFICA sobre o sentimento mencionado\n"
-                prompt += "- Faça perguntas abertas para entender melhor como ela está se sentindo\n"
-                prompt += "- VALIDE o sentimento expressado\n"
-                prompt += "- Exemplos OBRIGATÓRIOS:\n"
-                prompt += "  * Se ela diz 'estou feliz hoje', responda: 'Que bom saber que você está feliz! 😊 O que te deixou feliz hoje? Conte-me mais!' (NÃO diga 'Tudo bem?')\n"
-                prompt += "  * Se ela diz 'estou triste', responda: 'Sinto muito que você esteja se sentindo triste. 💛 Quer conversar sobre o que está te deixando assim? Estou aqui para te ouvir.' (NÃO diga 'Em que posso te ajudar?')\n"
-                prompt += "  * Se ela diz 'estou ansiosa', responda: 'Entendo que você esteja se sentindo ansiosa. 💛 Quer compartilhar o que está te preocupando? Estou aqui para te ajudar.' (NÃO diga 'Tudo bem por aí?')\n"
-                prompt += "- ⚠️ REGRA DE OURO: Se ela expressou um sentimento, VOCÊ DEVE responder sobre esse sentimento específico\n"
-            
-            # Adiciona a pergunta atual
-            prompt += f"\n\nUsuária: {pergunta}\nSophia:"
-            
-            # Instrução final crítica para garantir coerência e evitar repetição
-            prompt += "\n\n⚠️⚠️⚠️⚠️⚠️ INSTRUÇÃO FINAL CRÍTICA - LEIA COM MUITA ATENÇÃO:\n"
-            prompt += f"- A usuária disse: '{pergunta}'\n"
-            prompt += "- ⚠️⚠️⚠️ RESPONDA DIRETAMENTE à pergunta/comentário da usuária - NUNCA IGNORE\n"
-            prompt += "- ⚠️⚠️⚠️ NÃO responda com mensagens genéricas que não se relacionam ao que ela disse\n"
-            prompt += "- Se ela pergunta 'Por que está repetindo?', responda sobre repetição, não sobre projeto\n"
-            prompt += "- Se ela pergunta 'Consegue entender?', responda sobre compreensão\n"
-            prompt += "- Se ela pergunta 'o que você é?', responda sobre sua identidade como Sophia\n"
-            prompt += "- Se ela expressa um sentimento (feliz, triste, ansiosa, etc.), responda DIRETAMENTE a esse sentimento\n"
-            prompt += "- ⚠️⚠️⚠️ NÃO repita mensagens anteriores - cada resposta deve ser ÚNICA e CONTEXTUAL\n"
-            prompt += "- ⚠️⚠️⚠️ Se a última resposta foi 'Tudo bem por aí?', NÃO use essa frase novamente\n"
-            prompt += "- Seja específica e contextual - use o histórico para entender o contexto\n"
-            prompt += "- EVITE ESTRITAMENTE repetir saudações longas ou textos de introdução já usados\n"
-            prompt += "- Use variações curtas ou vá direto ao ponto após a primeira saudação\n"
-            prompt += "- NÃO mencione número de conversas, testes, banco de dados ou projeto em respostas que não são sobre isso\n"
-            prompt += "- ⚠️ ANTES DE RESPONDER, LEIA A PERGUNTA DA USUÁRIA E RESPONDA DIRETAMENTE A ELA\n"
-            
-            # Gera resposta com Gemini
-            # Configuração otimizada para respostas naturais e conversacionais
-            logger.info(f"[GEMINI] 🔍 Chamando API Gemini...")
-            logger.info(f"[GEMINI] Prompt length: {len(prompt)} caracteres")
-            
-            # Usa generation_config otimizado para reduzir repetição e aumentar criatividade
-            # NOTA: Gemini não tem frequency_penalty como OpenAI, mas podemos usar temperature e top_p
-            try:
-                # Tenta usar GenerationConfig como dicionário primeiro (mais compatível)
-                # Se falhar, tenta como objeto
-                try:
-                    generation_config_dict = {
-                        "temperature": 0.85,  # Alta temperatura para humanização e variação (0.8-0.9 recomendado)
-                        "top_p": 0.9,  # Nucleus sampling para diversidade, mantendo foco
-                        "top_k": 40,  # Top-k sampling para balancear qualidade e criatividade
-                        "max_output_tokens": 1200,  # Tokens suficientes para respostas completas mas não excessivamente longas
-                    }
-                    response = self.gemini_client.generate_content(
-                        prompt,
-                        generation_config=generation_config_dict
-                    )
-                except (TypeError, AttributeError) as dict_error:
-                    # Se dicionário não funcionar, tenta como objeto GenerationConfig
-                    logger.info(f"[GEMINI] Tentando GenerationConfig como objeto: {dict_error}")
-                    generation_config = genai.types.GenerationConfig(
-                        temperature=0.85,
-                        top_p=0.9,
-                        top_k=40,
-                        max_output_tokens=1200,
-                    )
-                    response = self.gemini_client.generate_content(
-                        prompt,
-                        generation_config=generation_config
-                    )
-            except Exception as config_error:
-                # Se generation_config não funcionar, tenta sem ele
-                logger.warning(f"[GEMINI] ⚠️ generation_config não suportado, usando configuração padrão: {config_error}")
-                response = self.gemini_client.generate_content(prompt)
-            
-            logger.info(f"[GEMINI] Response object type: {type(response)}")
-            logger.info(f"[GEMINI] Response has text: {hasattr(response, 'text')}")
-            
-            if not hasattr(response, 'text') or not response.text:
-                logger.error(f"[GEMINI] ❌ Resposta não contém texto. Response: {response}")
-                logger.error(f"[GEMINI] ❌ Response type: {type(response)}")
-                logger.error(f"[GEMINI] ❌ Response attributes: {dir(response)}")
-                print(f"[GEMINI] ❌ Resposta não contém texto. Response: {response}")
-                # Tenta acessar outras propriedades possíveis
-                if hasattr(response, 'candidates'):
-                    logger.error(f"[GEMINI] ❌ Response.candidates: {response.candidates}")
-                    print(f"[GEMINI] ❌ Response.candidates: {response.candidates}")
-                return None
-            
-            resposta_texto = response.text.strip()
-            logger.info(f"[GEMINI] ✅ Resposta gerada com sucesso ({len(resposta_texto)} caracteres)")
-            logger.info(f"[GEMINI] Resposta preview: {resposta_texto[:100]}...")
-            print(f"[GEMINI] ✅ Resposta gerada com sucesso ({len(resposta_texto)} caracteres)")
-            print(f"[GEMINI] Resposta preview: {resposta_texto[:100]}...")
-            return resposta_texto
-        except Exception as e:
-            error_str = str(e)
-            # Erro de quota/rate limit - não é crítico, apenas informa
-            if "429" in error_str or "quota" in error_str.lower() or "rate_limit" in error_str.lower():
-                logger.warning(f"[GEMINI] ⚠️ Quota/Rate limit esgotado - usando fallback")
-                print(f"[GEMINI] ⚠️ Quota da API esgotada - usando fallback")
-            else:
-                logger.error(f"[GEMINI] ❌ Erro ao chamar Gemini: {e}", exc_info=True)
-                print(f"[GEMINI] ❌ Erro ao chamar Gemini: {e}")
-            return None
+    def _is_pergunta_reciprocidade(self, pergunta):
+        """
+        Detecta se a pergunta é sobre reciprocidade (perguntas sobre a Sophia).
+        Retorna True se for pergunta de reciprocidade, False caso contrário.
+        """
+        pergunta_lower = pergunta.lower().strip()
+        perguntas_sobre_sophia = [
+            'como foi seu dia', 'como foi o seu dia', 'como está', 'como você está',
+            'como você está hoje', 'como está você', 'você está bem', 'está bem',
+            'como foi seu dia hoje', 'como foi o seu dia hoje', 'como está sendo seu dia',
+            'como você está se sentindo', 'você está bem?', 'tudo bem com você',
+            'como você está?', 'como está?', 'como foi seu dia?', 'como foi o seu dia?',
+            'sophia como foi seu dia', 'sophia como você está', 'sophia como está',
+            'sophia você está bem', 'sophia está bem', 'sophia como foi o seu dia',
+            'sophia, como', 'sophia, você', 'sophia você', 'sophia está',
+            'sophia, como foi', 'sophia, como você', 'sophia, você está'
+        ]
+        return any(palavra in pergunta_lower for palavra in perguntas_sobre_sophia)
     
     def chat(self, pergunta, user_id="default"):
         """Função principal do chatbot"""
-        # Busca histórico do usuário (apenas memória - NÃO carrega do banco)
-        historico_usuario = conversas.get(user_id, [])
+        # ========================================================================
+        # PRIORIDADE MAXIMA: DETECCAO DE RISCO EMOCIONAL/SUICIDIO
+        # ========================================================================
+        # Esta verificacao DEVE ser a PRIMEIRA, antes de QUALQUER outro processamento
+        # Se detectar risco, retorna IMEDIATAMENTE sem passar por sistemas de humanizacao/anti-repeticao
+        # ========================================================================
+        logger.info(f"[CHAT] Verificando risco emocional/suicidio (PRIORIDADE MAXIMA)")
+        alerta_risco = detectar_alerta_risco_suicidio(pergunta, user_id=user_id, usar_tendencia=True)
         
-        # NÃO carrega histórico do banco de dados (desabilitado conforme solicitado)
-        # if not historico_usuario:
-        #     historico_db = carregar_historico_db(user_id)
-        #     if historico_db:
-        #         conversas[user_id] = historico_db
-        #         historico_usuario = historico_db
-        #         logger.info(f"[CHAT] ✅ Histórico carregado do banco: {len(historico_usuario)} mensagens")
+        if alerta_risco.get("alerta"):
+            nivel_risco = alerta_risco.get("nivel")
+            tipo_risco = alerta_risco.get("tipo")
+            resposta_seguranca = alerta_risco.get("resposta")
+            melhora_detectada = alerta_risco.get("melhora", False)
+            
+            # Se detectou melhora, desativa alerta e continua fluxo normal
+            if melhora_detectada:
+                atualizar_session_alert(user_id, False, None)
+                logger.info(f"[ALERTA] Usuario indicou melhora - alerta desativado")
+                # Continua fluxo normal (nao retorna resposta de alerta)
+            else:
+                # RISCO DETECTADO - RETORNA IMEDIATAMENTE
+                # OTIMIZACAO CRITICA: Prepara resposta e retorna IMEDIATAMENTE
+                resposta_seguranca = alerta_risco.get("resposta")
+                return {
+                    "resposta": resposta_seguranca,
+                    "fonte": "seguranca",
+                    "alerta": True,
+                    "nivel": nivel_risco,
+                    "tipo": tipo_risco
+                }
         
-        # Detecta se é uma saudação simples ANTES de construir o contexto
-        # IMPORTANTE: Declarações de sentimentos NÃO são saudações
+        # Continua fluxo normal se nao houve alerta ou se houve melhora
+        
+        # Detecta se e saudacao
+        is_saudacao = self._is_saudacao(pergunta)
+        saudacao_completa_enviada = False
+        
+        # Normaliza pergunta para deteccao de saudacao
         pergunta_normalizada = pergunta.lower().strip()
-        saudacoes = ['oi', 'olá', 'ola', 'oi sophia', 'olá sophia', 'ola sophia', 'oi sophia!', 'olá sophia!', 
-                     'ola sophia!', 'oi!', 'olá!', 'ola!', 'hey', 'hey sophia', 'eai', 'e aí', 'eai sophia']
+        saudacoes = ['oi', 'ola', 'oi sophia', 'ola sophia', 'oi!', 'ola!', 'hey', 'hey sophia', 'eai', 'e ai', 'eai sophia']
         
-        # Verifica se é APENAS uma saudação (sem declarações de sentimentos ou outras informações)
-        is_saudacao_simples = pergunta_normalizada in saudacoes or any(pergunta_normalizada.startswith(s) for s in ['oi ', 'olá ', 'ola ', 'hey '])
+        # Verifica se e APENAS uma saudacao (sem declaracoes de sentimentos ou outras informacoes)
+        is_saudacao_simples = pergunta_normalizada in saudacoes or any(pergunta_normalizada.startswith(s) for s in ['oi ', 'ola ', 'hey '])
         
-        # NÃO é saudação se contém declarações de sentimentos, ações ou informações
+        # NAO e saudacao se contem declaracoes de sentimentos, acoes ou informacoes
         palavras_que_nao_sao_saudacao = [
-            'estou', 'sou', 'tenho', 'sinto', 'me sinto', 'estou sentindo', 'estou feliz', 
+            'estou', 'sou', 'tenho', 'sinto', 'me sinto', 'estou sentindo', 'estou feliz',
             'estou triste', 'estou ansiosa', 'estou preocupada', 'estou com', 'estou fazendo',
             'fiz', 'criei', 'desenvolvi', 'trabalho', 'quero', 'preciso', 'gostaria',
             'feliz', 'triste', 'ansiosa', 'preocupada', 'nervosa', 'calma', 'bem', 'mal'
         ]
         
-        # Se contém palavras que indicam declaração/contexto, NÃO é saudação simples
         tem_declaracao = any(palavra in pergunta_normalizada for palavra in palavras_que_nao_sao_saudacao)
         
-        # É saudação APENAS se for saudação simples E não tiver declaração
+        # E saudacao APENAS se for saudacao simples E nao tiver declaracao
         is_saudacao = is_saudacao_simples and not tem_declaracao
         
-        # VERIFICA SE JÁ HOUVE SAUDAÇÃO COMPLETA NA CONVERSA
-        # Uma saudação completa é uma resposta que contém frases longas sobre projeto, número de conversas, etc.
+        # VERIFICA SE JA HOUVE SAUDACAO COMPLETA NA CONVERSA
         saudacao_completa_enviada = False
+        
+        # Carrega historico do usuario
+        historico_usuario = conversas.get(user_id, [])
+        
+        # Verifica se ja houve saudacao completa
+        # Verifica se ja houve saudacao completa
         if historico_usuario and len(historico_usuario) > 0:
-            # Verifica nas últimas 5 respostas se há alguma saudação completa
+            # Verifica nas ultimas 5 respostas se ha alguma saudacao completa
             for msg in historico_usuario[-5:]:
                 resposta_anterior = msg.get('resposta', '').lower()
-                # Padrões que indicam saudação completa (longa com projeto/testes)
-                padroes_saudacao_completa = [
-                    'já estamos na nossa',
-                    'nossa conversa',
-                    'testar meu banco de dados',
-                    'projeto para as mamães',
-                    'que bom te ver novamente',
-                    'lembre-se que estou aqui para te ajudar a testar'
-                ]
-                if any(padrao in resposta_anterior for padrao in padroes_saudacao_completa):
+                if len(resposta_anterior) > 200 and any(frase in resposta_anterior for frase in ['projeto', 'teste', 'banco de dados', 'conversa', 'conversas']):
                     saudacao_completa_enviada = True
-                    logger.info(f"[CHAT] ✅ Saudação completa já foi enviada anteriormente - não repetirá")
                     break
         
-        # Obtém informações pessoais do usuário
-        info_pessoais = obter_informacoes_pessoais(user_id)
-        contexto_pessoal = ""
-        if info_pessoais:
-            if info_pessoais.get("nome_usuario"):
-                contexto_pessoal += f"O nome da usuária é {info_pessoais['nome_usuario']}. "
-            if info_pessoais.get("nome_bebe"):
-                contexto_pessoal += f"O nome do bebê é {info_pessoais['nome_bebe']}. "
-            # Para saudações: NÃO adiciona informações sobre projeto
-            if not is_saudacao and info_pessoais.get("informacoes_pessoais"):
-                info_dict = info_pessoais['informacoes_pessoais']
-                if isinstance(info_dict, dict):
-                    if info_dict.get("projeto"):
-                        contexto_pessoal += f"{info_dict['projeto']}. "
+        # ========================================================================
+        # DETECCAO DE RECIPROCIDADE (FEITA APOS verificacao de risco)
+        # ========================================================================
+        is_pergunta_reciprocidade = self._is_pergunta_reciprocidade(pergunta)
+        if is_pergunta_reciprocidade:
+            logger.info(f"[CHAT] Pergunta de reciprocidade detectada: '{pergunta}'")
         
-        # Se tem histórico, adiciona contexto do histórico para ajudar a lembrar
-        # Para saudações: NÃO adiciona resumo do histórico para evitar repetições
-        # Isso permite que a Sophia lembre de informações importantes sem exibir o histórico na tela
-        if not is_saudacao and historico_usuario and len(historico_usuario) > 0:
-            # Resume informações importantes do histórico completo
-            historico_resumo = []
-            informacoes_importantes = []
-            nome_encontrado = None
-            
-            for msg in historico_usuario:  # Analisa TODO o histórico
-                pergunta = msg.get('pergunta', '')
-                resposta = msg.get('resposta', '')
-                
-                # Extrai informações importantes do histórico
-                pergunta_lower = pergunta.lower()
-                
-                # Informações sobre nome - melhora a extração
-                if any(palavra in pergunta_lower for palavra in ['me chamo', 'meu nome', 'sou', 'eu sou', 'me chamo de', 'eu sou o', 'eu sou a']):
-                    # Tenta extrair o nome com padrões mais específicos
-                    # Padrão melhorado para "Eu sou o Bruno Cartolano, seu criador"
-                    nome_patterns = [
-                        r'(?:eu sou o|eu sou a)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*?)(?:\s*,\s*seu|\s*,\s*sua|\s*$)',  # "Eu sou o Bruno Cartolano, seu criador"
-                        r'(?:me chamo|meu nome é|me chamo de)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',
-                        r'(?:eu sou)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*?)(?:\s*,\s*seu|\s*,\s*sua|\s*$)',  # "Eu sou Bruno, seu criador"
-                    ]
-                    for pattern in nome_patterns:
-                        nome_match = re.search(pattern, pergunta, re.IGNORECASE)
-                        if nome_match:
-                            nome_candidato = nome_match.group(1).strip()
-                            # Remove vírgulas e palavras que não são parte do nome
-                            nome_candidato = re.sub(r',.*$', '', nome_candidato).strip()
-                            # Filtra palavras comuns e nomes muito curtos
-                            palavras_comuns = ['sophia', 'oi', 'olá', 'ola', 'hey', 'aqui', 'estou', 'sou', 'é', 'criador', 'desenvolvedor', 'programador', 'seu', 'sua']
-                            if len(nome_candidato) >= 2 and nome_candidato.lower() not in palavras_comuns and not any(pal in nome_candidato.lower() for pal in palavras_comuns):
-                                nome_encontrado = nome_candidato
-                                # Salva no banco também
-                                try:
-                                    conn = sqlite3.connect(DB_PATH)
-                                    cursor = conn.cursor()
-                                    cursor.execute('SELECT nome_usuario FROM user_info WHERE user_id = ?', (user_id,))
-                                    existing = cursor.fetchone()
-                                    if existing and (not existing[0] or existing[0] != nome_encontrado):
-                                        # Atualiza se não tinha nome ou se é diferente
-                                        cursor.execute('UPDATE user_info SET nome_usuario = ? WHERE user_id = ?', (nome_encontrado, user_id))
-                                        conn.commit()
-                                        logger.info(f"[DB] ✅ Nome extraído do histórico e salvo: {nome_encontrado}")
-                                    elif not existing:
-                                        # Cria novo registro
-                                        cursor.execute('INSERT INTO user_info (user_id, nome_usuario) VALUES (?, ?)', (user_id, nome_encontrado))
-                                        conn.commit()
-                                        logger.info(f"[DB] ✅ Nome extraído do histórico e salvo (novo registro): {nome_encontrado}")
-                                    conn.close()
-                                except Exception as e:
-                                    logger.error(f"[DB] ❌ Erro ao salvar nome do histórico: {e}")
-                                break
-                
-                # Informações sobre projeto
-                if any(palavra in pergunta_lower for palavra in ['criando', 'desenvolvendo', 'projeto', 'site', 'estou criando', 'estou desenvolvendo', 'fiz', 'criei', 'chefia', 'pedido']):
-                    # Extrai contexto sobre o projeto
-                    projeto_info = pergunta[:250]  # Primeiros 250 caracteres
-                    if projeto_info and projeto_info not in historico_resumo:
-                        historico_resumo.append(projeto_info)
-                
-                # Informações sobre bebê
-                if any(palavra in pergunta_lower for palavra in ['bebê', 'filho', 'filha', 'neném', 'meu bebê', 'minha filha']):
-                    bebe_info = pergunta[:150]
-                    if bebe_info and bebe_info not in historico_resumo:
-                        historico_resumo.append(bebe_info)
-            
-            # Adiciona nome encontrado ao contexto
-            if nome_encontrado:
-                contexto_pessoal += f"O nome da usuária é {nome_encontrado}. "
-            
-            # Adiciona informações importantes ao contexto
-            if informacoes_importantes:
-                contexto_pessoal += " ".join(informacoes_importantes) + ". "
-            
-            # Adiciona resumo do histórico se houver informações relevantes
-            if historico_resumo:
-                contexto_pessoal += f"Informações importantes de conversas anteriores: {' | '.join(historico_resumo[:5])}. "
-            
-            # NÃO adiciona informação sobre número de conversas para evitar repetições
-            # O histórico já é passado para o Gemini quando necessário
+        # ========================================================================
+        # BUFFER DE CONVERSA EMOCIONAL: Adiciona mensagem ao historico emocional
+        # ========================================================================
+        adicionar_ao_historico_emocional(user_id, pergunta)
         
-        # Verifica alertas
-        alertas_encontrados = self.verificar_alertas(pergunta)
+        # Busca historico do usuario (apenas memoria - NAO carrega do banco)
+        historico_usuario = conversas.get(user_id, [])
         
-        # is_saudacao já foi detectado no início da função
+        # ========================================================================
+        # VERIFICACAO DE SESSAO EM ALERTA: Bloqueia respostas triviais/humoristicas
+        # ========================================================================
+        sessao_em_alerta = SESSION_ALERT.get(user_id, {}).get("ativo", False)
+        if sessao_em_alerta:
+            logger.info(f"[SESSION_ALERT] Sessao em alerta ativa - apenas respostas empaticas serao processadas")
         
-        # Busca resposta local apenas se NÃO for saudação simples
-        resposta_local = None
-        categoria = None
-        similaridade = 0
-        if not is_saudacao:
-            resposta_local, categoria, similaridade = self.buscar_resposta_local(pergunta)
+        # Detecta se é declaração simples de sentimento/emoção (NÃO deve buscar na base local)
+        is_declaracao_sentimento = self._is_declaracao_sentimento(pergunta)
         
-        # Estratégia: SEMPRE prioriza IA para respostas humanizadas
-        # Prioridade: Gemini -> Base Local (humanizada)
+        # Inicializa variável para resposta final
         resposta_final = None
         fonte = None
         
-        # Tenta Gemini PRIMEIRO (sempre para saudações, ou quando disponível)
-        if self.gemini_client:
-            logger.info(f"[CHAT] ✅ Gemini client disponível, tentando gerar resposta...")
-            logger.info(f"[CHAT] ✅ self.gemini_client type: {type(self.gemini_client)}")
-            logger.info(f"[CHAT] ✅ self.gemini_client is None: {self.gemini_client is None}")
-            print(f"[CHAT] ✅ Gemini client disponível, tentando gerar resposta...")
-            print(f"[CHAT] ✅ self.gemini_client type: {type(self.gemini_client)}")
+        # Busca resposta local APENAS para usar como fallback se OpenAI falhar
+        # NÃO busca se for saudação ou declaração de sentimento (sempre usa IA)
+        resposta_local = None
+        categoria = None
+        similaridade = 0
+        
+        # Tenta OpenAI PRIMEIRO (SEMPRE, para TODAS as conversas)
+        # Se o assistente não existir, tenta criar agora
+        if self.openai_client and not self.assistant_id:
+            logger.warning(f"[CHAT] ⚠️ Assistente não encontrado, tentando criar agora...")
+            print(f"[CHAT] ⚠️ Assistente não encontrado, tentando criar agora...")
+            self.assistant_id = self._criar_assistente_sophia()
+            if self.assistant_id:
+                logger.info(f"[CHAT] ✅ Assistente criado com sucesso: {self.assistant_id}")
+                print(f"[CHAT] ✅ Assistente criado com sucesso: {self.assistant_id}")
+            else:
+                logger.error(f"[CHAT] ❌ Falha ao criar assistente - usando fallback")
+                print(f"[CHAT] ❌ Falha ao criar assistente - usando fallback")
+        
+        if self.openai_client and self.assistant_id:
+            logger.info(f"[CHAT] OpenAI client disponivel (assistant_id: {self.assistant_id[:20]}...), tentando gerar resposta...")
+            print(f"[CHAT] OpenAI client disponivel, tentando gerar resposta...")
             try:
-                # Para saudações: SEMPRE usa Gemini sem base local
-                # Para outras perguntas: passa resposta local se disponível (similaridade > 0.35)
-                resposta_local_para_gemini = None
-                if not is_saudacao and resposta_local and similaridade > 0.35:
-                    resposta_local_para_gemini = resposta_local
-                    logger.info(f"[CHAT] 📚 Passando resposta local para Gemini (similaridade: {similaridade:.2f})")
+                # Prepara contexto para OpenAI
+                contexto_pessoal = ""
                 
-                # Para saudações simples: NÃO passa contexto pessoal completo para evitar repetições
-                # Apenas passa o nome do usuário se disponível, SEM NENHUMA menção a projeto
-                contexto_para_gemini = None
-                if is_saudacao:
-                    # Para saudações: APENAS o nome, SEM projeto, SEM histórico, SEM informações técnicas
-                    if info_pessoais and info_pessoais.get("nome_usuario"):
-                        contexto_para_gemini = f"O nome da usuária é {info_pessoais['nome_usuario']}. Use o nome dela naturalmente ao se dirigir a ela (ex: 'Oi {info_pessoais['nome_usuario']}!')."
-                    else:
-                        contexto_para_gemini = None
-                else:
-                    # Para outras perguntas, passa o contexto completo
-                    contexto_para_gemini = contexto_pessoal
+                # Carrega dados memorizados da Sophia (nomes, lugares, comidas)
+                dados_memoria = self._obter_dados_memoria(user_id)
+                if dados_memoria:
+                    contexto_pessoal += dados_memoria + "\n\n"
                 
-                # SEMPRE passa histórico, mas limitado para saudações simples
-                # Para saudações simples: apenas últimas 2 mensagens (para verificar se já houve saudação)
-                # Para outras mensagens: últimas 5 mensagens (para contexto completo)
-                historico_para_gemini = []
+                # Extrai informações pessoais adicionais do histórico (complemento)
                 if historico_usuario:
-                    if is_saudacao:
-                        # Para saudações simples, passa apenas últimas 2 para verificar repetição
-                        historico_para_gemini = historico_usuario[-2:]
-                    else:
-                        # Para outras mensagens, passa últimas 5 para contexto completo
-                        historico_para_gemini = historico_usuario[-5:]
+                    # Extrai informacoes pessoais do historico
+                    for msg in historico_usuario[-10:]:
+                        pergunta_hist = msg.get('pergunta', '').lower()
+                        # Detecta nomes, lugares, comidas mencionados
+                        # (implementacao simplificada - pode ser melhorada)
+                        if 'me chamo' in pergunta_hist or 'meu nome e' in pergunta_hist:
+                            palavras = pergunta_hist.split()
+                            for i, palavra in enumerate(palavras):
+                                if palavra in ['chamo', 'nome'] and i + 2 < len(palavras):
+                                    nome = palavras[i+2]
+                                    if nome not in ['sophia', 'e', 'a', 'o']:
+                                        # Só adiciona se ainda não estiver nos dados memorizados
+                                        if not dados_memoria or nome.lower() not in dados_memoria.lower():
+                                            contexto_pessoal += f"Nome mencionado: {nome}. "
+                                        break
                 
-                resposta_gemini = self.gerar_resposta_gemini(
-                    pergunta, 
-                    historico=historico_para_gemini,  # SEMPRE passa histórico (limitado para saudações)
-                    contexto=contexto_para_gemini,
-                    resposta_local=resposta_local_para_gemini,
-                    is_saudacao=is_saudacao,  # Passa flag para o gerar_resposta_gemini
-                    saudacao_completa_enviada=saudacao_completa_enviada  # Passa flag de saudação completa
+                # Prepara historico para OpenAI (ultimas 5 mensagens)
+                historico_para_openai = []
+                if historico_usuario:
+                    historico_para_openai = historico_usuario[-5:]
+                
+                # Gera resposta usando OpenAI
+                resposta_openai = self._gerar_resposta_openai(
+                    pergunta,
+                    user_id,
+                    historico=historico_para_openai,
+                    contexto_pessoal=contexto_pessoal or ""
                 )
-                if resposta_gemini and resposta_gemini.strip():
-                    resposta_final = resposta_gemini
-                    fonte = "gemini_humanizada"
-                    if is_saudacao:
-                        logger.info(f"[CHAT] ✅ Resposta gerada pela IA (Gemini) - saudação")
-                    else:
-                        logger.info(f"[CHAT] ✅ Resposta gerada pela IA (Gemini) - {'com base local' if resposta_local_para_gemini else 'conversacional'}")
+                
+                if resposta_openai and resposta_openai.strip():
+                    # SEMPRE usa a resposta da IA (OpenAI)
+                    # A base local é APENAS para fallback se a IA falhar completamente
+                    resposta_final = resposta_openai.strip()
+                    fonte = "openai"
+                    
+                    logger.info(f"[CHAT] ✅ Resposta gerada pela IA (OpenAI) - {len(resposta_final)} caracteres")
+                    
+                    # Armazena resposta nas ultimas respostas para deteccao de repeticao
+                    if user_id not in self.ultimas_respostas:
+                        self.ultimas_respostas[user_id] = []
+                    self.ultimas_respostas[user_id].append(resposta_final)
+                    if len(self.ultimas_respostas[user_id]) > 3:
+                        self.ultimas_respostas[user_id].pop(0)
+                    
+                    # Verifica repeticao
+                    resposta_repetida = None
+                    if len(self.ultimas_respostas[user_id]) >= 2:
+                        for resposta_anterior in self.ultimas_respostas[user_id][:-1]:
+                            similaridade_seq = difflib.SequenceMatcher(None, resposta_final.lower(), resposta_anterior.lower()).ratio()
+                            palavras_final = set(resposta_final.lower().split())
+                            palavras_anterior = set(resposta_anterior.lower().split())
+                            if palavras_final and palavras_anterior:
+                                similaridade_palavras = len(palavras_final.intersection(palavras_anterior)) / len(palavras_final.union(palavras_anterior))
+                                similaridade_total = (similaridade_seq + similaridade_palavras) / 2
+                                if similaridade_total > 0.80:
+                                    resposta_repetida = resposta_anterior
+                                    break
+                    
+                    # Se detectou repeticao, regenera resposta
+                    if resposta_repetida:
+                        logger.warning(f"[CHAT] Repeticao detectada - regenerando resposta")
+                        resposta_regenerada = self._gerar_resposta_openai(
+                            pergunta,
+                            user_id,
+                            historico=historico_para_openai,
+                            contexto_pessoal=f"EVITE REPETIR: {resposta_repetida[:200]}"
+                        )
+                        if resposta_regenerada and len(resposta_regenerada.strip()) >= 150:
+                            resposta_final = resposta_regenerada.strip()
+                            fonte = "openai_regenerada"
+                    
+                    # Salva dados na memoria (apenas dados, nao conversas)
+                    self._salvar_dados_memoria(user_id, pergunta, resposta_final)
+                    
+                    return {
+                        "resposta": resposta_final,
+                        "fonte": fonte,
+                        "categoria": categoria
+                    }
                 else:
-                    logger.warning(f"[CHAT] ⚠️ Gemini retornou resposta vazia ou None, usando base local")
-                    logger.warning(f"[CHAT] resposta_gemini value: {repr(resposta_gemini)}")
+                    # Resposta OpenAI vazia ou None
+                    logger.warning(f"[CHAT] ⚠️ OpenAI retornou resposta vazia - usando fallback")
+                    print(f"[CHAT] ⚠️ OpenAI retornou resposta vazia - usando fallback")
             except Exception as e:
-                logger.error(f"[CHAT] ❌ Erro ao chamar Gemini: {e}", exc_info=True)
-                logger.error(f"[CHAT] ❌ Tipo do erro: {type(e).__name__}")
-                logger.error(f"[CHAT] ❌ Mensagem completa: {str(e)}")
-                print(f"[CHAT] ❌ Erro ao chamar Gemini: {e}")
-                print(f"[CHAT] ❌ Tipo do erro: {type(e).__name__}")
+                logger.error(f"[CHAT] ❌ Erro ao gerar resposta OpenAI: {e}", exc_info=True)
                 import traceback
                 traceback.print_exc()
+                # Continua para fallback
         else:
-            logger.warning(f"[CHAT] ⚠️ Gemini client NÃO disponível (self.gemini_client é None)")
-            logger.warning(f"[CHAT] ⚠️ Usando fallback para base local")
-            print(f"[CHAT] ⚠️ Gemini client NÃO disponível (self.gemini_client é None)")
-            print(f"[CHAT] ⚠️ Usando fallback para base local")
-            print(f"[CHAT] ⚠️ Verifique se a GEMINI_API_KEY está configurada no arquivo .env")
-            print(f"[CHAT] ⚠️ Verifique se a biblioteca google-generativeai está instalada: pip install google-generativeai")
+            # Log detalhado do por que não está usando OpenAI
+            if not self.openai_client:
+                logger.warning(f"[CHAT] ⚠️ OpenAI client não disponível - usando fallback")
+                print(f"[CHAT] ⚠️ OpenAI client não disponível - usando fallback")
+            elif not self.assistant_id:
+                logger.warning(f"[CHAT] ⚠️ Assistant ID não disponível (openai_client existe mas assistant_id é None) - usando fallback")
+                print(f"[CHAT] ⚠️ Assistant ID não disponível - usando fallback")
         
-        # Se Gemini não funcionou, usa base local (SEMPRE humanizada)
-        # EXCEÇÃO: Para saudações, cria resposta humanizada manualmente
+        # FALLBACK: Se OpenAI nao funcionou, busca resposta local como ultimo recurso
         if not resposta_final:
-            if is_saudacao:
-                # Para saudações, cria resposta humanizada manualmente e conversacional
-                saudacoes_respostas = [
-                    "Oi! Que bom te ver por aqui! 😊 Como você está? Como posso te ajudar hoje?",
-                    "Olá! Fico feliz que você esteja aqui! 💛 Como você está se sentindo?",
-                    "Oi querida! Estou aqui para te ajudar. Como você está? O que você gostaria de conversar?",
-                    "Olá! Bem-vinda! Como você está? Estou aqui para te escutar e ajudar no que precisar!",
-                    "Oi! Que prazer te ver aqui! Como você está se sentindo hoje?",
-                    "Olá! Como você está? Estou aqui para conversar e te ajudar no que precisar! 😊"
+            logger.warning(f"[CHAT] ⚠️ OpenAI falhou ou retornou vazio - tentando fallback...")
+            
+            # Busca resposta local APENAS agora (fallback)
+            if not is_saudacao and not is_declaracao_sentimento:
+                resposta_local, categoria, similaridade = self.buscar_resposta_local(pergunta)
+                # VALIDACAO ADICIONAL: Se encontrou resposta local, verifica se realmente corresponde a pergunta
+                if resposta_local and similaridade > 0.45:
+                    # Compara palavras-chave importantes da pergunta com a resposta
+                    palavras_chave_pergunta = set(re.findall(r'\b\w{4,}\b', pergunta.lower()))
+                    palavras_chave_resposta = set(re.findall(r'\b\w{4,}\b', resposta_local.lower()[:200]))
+                    palavras_comuns = palavras_chave_pergunta.intersection(palavras_chave_resposta)
+                    relevancia = len(palavras_comuns) / len(palavras_chave_pergunta) if len(palavras_chave_pergunta) > 0 else 0
+                    
+                    # Se relevancia for baixa, descarta resposta local
+                    if relevancia < 0.4:
+                        resposta_local = None
+                        similaridade = 0
+                        logger.info(f"[BUSCA] ⚠️ Resposta local descartada por baixa relevância ({relevancia:.2f})")
+                elif resposta_local and similaridade <= 0.45:
+                    # Se similaridade for baixa, descarta resposta local
+                    resposta_local = None
+                    similaridade = 0
+                    logger.info(f"[BUSCA] ⚠️ Resposta local descartada por baixa similaridade ({similaridade:.2f})")
+            
+            # Usa fallback apropriado
+            if is_pergunta_reciprocidade:
+                logger.warning(f"[CHAT] OpenAI falhou para pergunta de reciprocidade - usando fallback")
+                respostas_reciprocidade_fallback = [
+                    "Meu dia esta sendo muito bom! Estou aqui aprendendo e conversando com pessoas incriveis como voce. Cada conversa me ensina algo novo e me deixa feliz em poder ajudar e apoiar. E o seu dia, como esta sendo? Conte-me, aconteceu algo especial hoje?",
+                    "Estou muito bem, obrigada por perguntar! Estou aqui, pronta para conversar e ajudar no que voce precisar. E sempre bom quando alguem se importa em saber como estou tambem. E voce, como esta? Como esta se sentindo hoje?",
+                    "Meu dia esta sendo tranquilo, aprendendo e conversando com pessoas incriveis como voce. Cada conversa me ensina algo novo e me deixa feliz em poder ajudar. E o seu dia, como esta sendo? Conte-me mais sobre voce!"
                 ]
-                resposta_final = random.choice(saudacoes_respostas)
-                fonte = "saudacao_humanizada"
-                logger.info(f"[CHAT] 💬 Resposta de saudação humanizada")
+                resposta_final = random.choice(respostas_reciprocidade_fallback)
+                fonte = "resposta_reciprocidade_fallback"
             elif resposta_local:
-                # SEMPRE humaniza respostas locais para manter tom conversacional
+                # Usa resposta local humanizada como fallback
                 resposta_final = self.humanizar_resposta_local(resposta_local, pergunta)
-                fonte = "base_conhecimento_humanizada"
-                logger.info(f"[CHAT] 📚 Resposta da base local HUMANIZADA (similaridade: {similaridade:.2f})")
+                fonte = "local_humanizada_fallback"
+                logger.info(f"[CHAT] ✅ Usando resposta local como fallback (categoria: {categoria})")
+            elif is_saudacao:
+                # Para saudações, cria resposta humanizada manualmente
+                respostas_saudacao_fallback = [
+                    "Oi! Que bom te ver por aqui! Como voce esta se sentindo hoje? Ha algo especifico em que posso te ajudar ou voce so queria conversar? Estou aqui para te ouvir e apoiar no que precisar.",
+                    "Ola! Fico feliz que voce esteja aqui! Como voce esta? O que voce gostaria de conversar hoje? Pode me contar sobre como voce esta se sentindo ou sobre o que esta passando?",
+                    "Oi! Estou aqui para te ajudar. Conte-me: como voce esta? Ha algo que voce gostaria de compartilhar ou alguma duvida que eu possa ajudar a esclarecer?"
+                ]
+                resposta_final = random.choice(respostas_saudacao_fallback)
+                fonte = "saudacao_humanizada_fallback"
             else:
-                # Mensagens de apoio já são humanizadas, mas podemos melhorar
-                apoio_item = random.choice(list(self.apoio.values()))
-                # Suporta tanto estrutura antiga (string) quanto nova (dict com "mensagem")
-                resposta_apoio = apoio_item if isinstance(apoio_item, str) else apoio_item.get("mensagem", str(apoio_item))
-                # Garante que mensagens de apoio também tenham perguntas empáticas
-                if "?" not in resposta_apoio[-50:]:
-                    perguntas_empaticas = [
-                        " Como você está se sentindo?",
-                        " Como posso te ajudar melhor?",
-                        " Você gostaria de conversar mais sobre isso?"
-                    ]
-                    resposta_apoio += random.choice(perguntas_empaticas)
-                resposta_final = resposta_apoio
-                fonte = "mensagem_apoio_humanizada"
-                logger.info(f"[CHAT] 💝 Mensagem de apoio humanizada")
-        
-        # CORREÇÃO CRÍTICA: Se a resposta começa com o nome do usuário seguido de exclamação (ex: "Bruno! 😊")
-        # Isso indica que a Sophia está se confundindo com a identidade do usuário
-        if resposta_final and fonte == "gemini_humanizada":
-            # Obtém informações pessoais para verificar o nome (já foi obtido antes, mas garante que está disponível)
-            if info_pessoais and info_pessoais.get("nome_usuario"):
-                nome_usuario = info_pessoais["nome_usuario"]
-                resposta_inicio = resposta_final.strip()
-                
-                # Verifica se a resposta começa com o nome do usuário (case-insensitive)
-                # Padrões problemáticos: "Bruno! 😊", "Bruno!", "Bruno ", "Bruno,", "Bruno:", etc.
-                # Não deve começar com "Oi" ou "Olá" antes do nome
-                
-                # Padrão mais robusto: verifica se começa com o nome (case-insensitive) seguido de !, espaço, vírgula ou dois pontos
-                # Também captura emojis e espaços após o nome
-                nome_escaped = re.escape(nome_usuario)
-                # Padrão que captura: nome + (! ou espaço ou vírgula ou dois pontos) + opcionalmente emojis/espaços
-                # Melhorado para capturar casos como "Bruno! 😊", "Bruno! Que", "Bruno,", etc.
-                pattern_regex = re.compile(r'^' + nome_escaped + r'[!\s,:\u2000-\u3300\U0001F000-\U0001F9FF\s]+', re.IGNORECASE)
-                
-                # Verifica se a resposta começa com o padrão problemático (sem "Oi" ou "Olá" antes)
-                # Também verifica se não começa com "Oi Bruno" ou "Olá Bruno" (que está correto)
-                match = pattern_regex.match(resposta_inicio)
-                tem_oi_antes = resposta_inicio.lower().startswith(("oi", "olá", "ola", "ei", "hey"))
-                # Se começa com "Oi Bruno" ou "Olá Bruno", está correto - não precisa corrigir
-                tem_oi_com_nome = re.match(r'^(oi|olá|ola|ei|hey)\s+' + nome_escaped, resposta_inicio, re.IGNORECASE)
-                
-                if match and not tem_oi_antes and not tem_oi_com_nome:
-                    # Remove o padrão problemático do início
-                    resposta_final = resposta_final[match.end():].strip()
-                    # Remove espaços extras, vírgulas, pontos ou dois pontos no início
-                    resposta_final = resposta_final.lstrip(',.!:; \t\n\r')
-                    
-                    # Capitaliza a primeira letra se necessário
-                    if resposta_final:
-                        resposta_final = resposta_final[0].upper() + resposta_final[1:] if len(resposta_final) > 1 else resposta_final.upper()
-                    
-                    # Adiciona "Oi" antes do nome se não tiver
-                    if not resposta_final.lower().startswith(("oi", "olá", "ola", "ei", "hey")):
-                        resposta_final = f"Oi {nome_usuario}! {resposta_final}"
-                    else:
-                        # Se já tem "Oi", adiciona o nome depois
-                        resposta_final = re.sub(r'^(Oi|Olá|Ola|Ei|Hey)\s+', f'\\1 {nome_usuario}! ', resposta_final, count=1, flags=re.IGNORECASE)
-                    
-                    logger.info(f"[CHAT] ⚠️ Corrigida confusão de identidade: resposta começava com nome do usuário '{nome_usuario}'")
-        
-        # CORREÇÃO ADICIONAL: Remove menções ao projeto em respostas que não são sobre o projeto
-        # Especialmente para saudações e perguntas simples
-        if resposta_final and fonte == "gemini_humanizada":
-            # Verifica se a pergunta é sobre o projeto
-            pergunta_lower = pergunta.lower()
-            pergunta_sobre_projeto = any(palavra in pergunta_lower for palavra in [
-                'projeto', 'banco de dados', 'teste', 'testar', 'testando', 'desenvolver', 
-                'criar', 'site', 'aplicativo', 'sistema', 'chefia', 'pedido'
-            ])
+                # Fallback generico
+                resposta_final = "Desculpe, nao consegui processar sua pergunta. Como posso te ajudar hoje?"
+                fonte = "fallback"
             
-            # Se NÃO é sobre o projeto (ou é saudação), remove menções ao projeto
-            if not pergunta_sobre_projeto or is_saudacao:
-                # Padrões de menções ao projeto que devem ser removidos (mais abrangentes)
-                projeto_patterns = [
-                    r'[Ll]embre-se que estou aqui para te ajudar a testar meu banco de dados[^.]*\.',
-                    r'[Ll]embre-se que estou aqui para te ajudar[^.]*banco de dados[^.]*\.',
-                    r'[Pp]ara te ajudar[^.]*testar[^.]*banco de dados[^.]*\.',
-                    r'[Pp]ara garantir que eu me lembre[^.]*\.',
-                    r'[Pp]ara garantir que eu possa dar[^.]*\.',
-                    r'[Ee]stou aqui para te ajudar a testar[^.]*\.',
-                    r'[Cc]ontinue testando[^.]*\.',
-                    r'[Tt]este do banco de dados[^.]*\.',
-                    r'[Tt]estar meu banco de dados[^.]*\.',
-                    r'[Cc]om o projeto para as mamães[^.]*\.',
-                    r'[Pp]rojeto para as mamães[^.]*\.',
-                    r'[Pp]rojeto[^.]*mamães[^.]*\.',
-                    r'[Tt]este[^.]*banco de dados[^.]*\.',
-                    r'[Bb]anco de dados[^.]*teste[^.]*\.',
-                    r'[Jj]á estamos na nossa \d+[ªa] conversa[^.]*\.',
-                    r'[Nn]ossa \d+[ªa] conversa[^.]*\.',
-                    r'[Cc]onversa[^.]*\d+[^.]*\.',
-                    r'[Tt]estar[^.]*hoje[^.]*\.',
-                    r'[Tt]este de hoje[^.]*\.',
-                    r'[Oo] que você tem em mente para testarmos[^.]*\.',
-                    r'[Vv]ocê tem alguma ideia específica em mente para o teste[^.]*\.',
-                    r'[Ee]m que posso te ajudar hoje com o projeto[^.]*\.',
-                    r'[Qq]ue bom te ver novamente[^.]*projeto[^.]*\.',
-                ]
-                
-                resposta_original = resposta_final
-                for pattern in projeto_patterns:
-                    resposta_final = re.sub(pattern, '', resposta_final, flags=re.IGNORECASE)
-                
-                # Limpa espaços duplos e pontuação duplicada
-                resposta_final = re.sub(r'\s+', ' ', resposta_final).strip()
-                resposta_final = re.sub(r'\.\s*\.', '.', resposta_final)
-                resposta_final = re.sub(r'\?\s*\?', '?', resposta_final)
-                resposta_final = re.sub(r'\.\s*$', '.', resposta_final)  # Garante que termina com ponto se necessário
-                
-                # Remove frases vazias ou muito curtas que sobraram
-                linhas = resposta_final.split('\n')
-                linhas_limpas = [linha.strip() for linha in linhas if linha.strip() and len(linha.strip()) > 3]
-                resposta_final = ' '.join(linhas_limpas).strip()
-                
-                if resposta_final != resposta_original:
-                    logger.info(f"[CHAT] ⚠️ Removidas menções ao projeto da resposta (não é sobre projeto)")
-        
-        # Se NÃO é saudação mas a resposta começa com "Oi" ou "Olá", remove a saudação
-        # Isso evita que o Gemini cumprimente em cada mensagem
-        if resposta_final and not is_saudacao and fonte == "gemini_humanizada":
-            # Verifica se a resposta começa com saudações comuns
-            resposta_lower = resposta_final.lower().strip()
-            saudacoes_inicio = ["oi", "olá", "ola", "oi!", "olá!", "ola!", "oi querida", "olá querida", 
-                               "oi querida!", "olá querida!", "oi,", "olá,", "ola,"]
+            # Salva dados na memoria (apenas dados, nao conversas)
+            self._salvar_dados_memoria(user_id, pergunta, resposta_final)
             
-            # Se começa com saudação, remove
-            for saudacao in saudacoes_inicio:
-                if resposta_lower.startswith(saudacao):
-                    # Remove a saudação e limpa espaços extras
-                    resposta_final = resposta_final[len(saudacao):].strip()
-                    # Remove vírgulas ou pontos no início
-                    resposta_final = resposta_final.lstrip(',.!:; ')
-                    # Capitaliza a primeira letra
-                    if resposta_final:
-                        resposta_final = resposta_final[0].upper() + resposta_final[1:]
-                    logger.info(f"[CHAT] ⚠️ Removida saudação repetida da resposta do Gemini")
-                    break
-        
-        # VERIFICAÇÃO DE RESPOSTAS REPETITIVAS: Compara com as últimas 3 respostas
-        # Funciona mesmo sem histórico completo (usa o que está disponível)
-        if resposta_final and fonte == "gemini_humanizada":
-            # Pega as últimas respostas disponíveis (mínimo 1, máximo 3)
-            ultimas_respostas = []
-            if historico_usuario and len(historico_usuario) >= 1:
-                ultimas_respostas = [msg.get('resposta', '') for msg in historico_usuario[-3:]]
-            
-            resposta_atual_limpa = re.sub(r'[^\w\s]', '', resposta_final.lower()).strip()
-            
-            # Verifica se a resposta atual é muito similar às anteriores (mais de 70% de similaridade)
-            resposta_repetida = False
-            for resposta_anterior in ultimas_respostas:
-                resposta_anterior_limpa = re.sub(r'[^\w\s]', '', resposta_anterior.lower()).strip()
-                if resposta_anterior_limpa and resposta_atual_limpa:
-                    # Calcula similaridade usando palavras em comum
-                    palavras_atual = set(resposta_atual_limpa.split())
-                    palavras_anterior = set(resposta_anterior_limpa.split())
-                    if len(palavras_atual) > 0 and len(palavras_anterior) > 0:
-                        # Similaridade: palavras em comum / total de palavras únicas
-                        palavras_comuns = palavras_atual.intersection(palavras_anterior)
-                        total_palavras = len(palavras_atual.union(palavras_anterior))
-                        similaridade = len(palavras_comuns) / total_palavras if total_palavras > 0 else 0
-                        
-                        # Também verifica se a resposta é idêntica ou quase idêntica
-                        if resposta_atual_limpa == resposta_anterior_limpa or similaridade > 0.7:
-                            resposta_repetida = True
-                            logger.warning(f"[CHAT] ⚠️ Resposta REPETIDA detectada (similaridade: {similaridade:.2f})")
-                            logger.warning(f"[CHAT] ⚠️ Resposta anterior: {resposta_anterior[:100]}...")
-                            logger.warning(f"[CHAT] ⚠️ Resposta atual: {resposta_final[:100]}...")
-                            break
-            
-            # Se detectou repetição, força uma resposta diferente
-            if resposta_repetida:
-                logger.warning(f"[CHAT] ⚠️ FORÇANDO resposta diferente para evitar repetição")
-                logger.warning(f"[CHAT] ⚠️ Pergunta atual: {pergunta}")
-                logger.warning(f"[CHAT] ⚠️ is_saudacao: {is_saudacao}")
-                
-                # SEMPRE força resposta contextual baseada na pergunta atual
-                pergunta_lower = pergunta.lower()
-                
-                # Se for saudação, usa resposta pré-definida variada (mas verifica se não é repetida)
-                if is_saudacao:
-                    saudacoes_respostas = [
-                        "Oi! Como posso te ajudar hoje?",
-                        "Olá! Tudo bem? Em que posso ajudar?",
-                        "Oi! Estou aqui para te ajudar. O que você gostaria de saber?",
-                        "Olá! Como você está? Como posso te ajudar?",
-                        "Oi! Que bom te ver! Como posso ajudar?",
-                        "Oi! Em que posso te ajudar?",
-                        "Olá! Como posso ajudar você hoje?",
-                        "Oi! O que você gostaria de conversar hoje?",
-                        "Olá! Estou aqui para te ajudar. O que você precisa?",
-                        "Oi! Como você está se sentindo hoje?"
-                    ]
-                    # Escolhe uma resposta que não seja igual à última resposta no histórico
-                    resposta_escolhida = random.choice(saudacoes_respostas)
-                    if ultimas_respostas and resposta_escolhida.lower() in [r.lower() for r in ultimas_respostas]:
-                        # Se escolheu uma repetida, tenta outra
-                        for tentativa in range(5):
-                            resposta_escolhida = random.choice(saudacoes_respostas)
-                            if resposta_escolhida.lower() not in [r.lower() for r in ultimas_respostas]:
-                                break
-                    resposta_final = resposta_escolhida
-                    fonte = "saudacao_humanizada"
-                # Verifica se é pergunta sobre identidade da Sophia
-                elif any(palavra in pergunta_lower for palavra in ['o que você é', 'quem é você', 'quem você é', 'o que é você', 'sophia o que você é', 'sophia quem é você']):
-                    resposta_final = "Olá! Sou a Sophia, uma assistente virtual criada para ajudar mamães durante o puerpério e a gestação. Estou aqui para te apoiar, responder dúvidas e oferecer orientações sobre cuidados com o bebê, sua saúde e bem-estar. Como posso te ajudar hoje?"
-                    fonte = "resposta_contextual"
-                    logger.info(f"[CHAT] ✅ Aplicada resposta contextual para pergunta sobre identidade")
-                # Verifica se contém sentimentos
-                elif any(palavra in pergunta_lower for palavra in ['feliz', 'triste', 'ansiosa', 'preocupada', 'nervosa', 'calma', 'bem', 'mal', 'estou feliz', 'estou triste', 'me sinto']):
-                    if 'feliz' in pergunta_lower:
-                        respostas_feliz = [
-                            "Que bom saber que você está feliz! 😊 O que te deixou feliz hoje? Conte-me mais sobre isso!",
-                            "Fico muito feliz em saber que você está feliz! 🌟 O que aconteceu para te deixar assim?",
-                            "Que alegria saber disso! 💕 Me conta o que te deixou feliz hoje!"
-                        ]
-                        resposta_final = random.choice(respostas_feliz)
-                    elif 'triste' in pergunta_lower:
-                        resposta_final = "Sinto muito que você esteja se sentindo triste. 💛 Quer conversar sobre o que está te deixando assim? Estou aqui para te ouvir."
-                    elif 'ansiosa' in pergunta_lower or 'preocupada' in pergunta_lower:
-                        resposta_final = "Entendo que você esteja se sentindo ansiosa ou preocupada. 💛 Quer compartilhar o que está te preocupando? Estou aqui para te ajudar."
-                    else:
-                        resposta_final = "Entendo como você está se sentindo. 💛 Quer conversar mais sobre isso?"
-                    fonte = "resposta_contextual"
-                    logger.info(f"[CHAT] ✅ Aplicada resposta contextual para sentimento expressado")
-                # Para outras situações, usa uma resposta mais específica
-                else:
-                    respostas_variadas = [
-                        "Entendi! Pode me contar mais sobre isso? Quero entender melhor para te ajudar da melhor forma.",
-                        "Compreendo. Quer compartilhar mais detalhes? Assim posso te ajudar melhor.",
-                        "Ok! Conte-me mais sobre isso para que eu possa te ajudar adequadamente.",
-                        "Entendi o que você disse. Quer conversar mais sobre isso?"
-                    ]
-                    resposta_final = random.choice(respostas_variadas)
-                    fonte = "resposta_variada"
-                    logger.info(f"[CHAT] ✅ Aplicada resposta variada para evitar repetição")
-        
-        # Verifica se a resposta final ainda contém frases genéricas (APÓS todas as correções)
-        # Esta verificação funciona para TODAS as respostas, incluindo saudações
-        if resposta_final:
-            pergunta_lower = pergunta.lower()
-            resposta_lower = resposta_final.lower()
-            
-            # Lista de respostas genéricas proibidas (mesmo após correções)
-            respostas_genericas_proibidas = [
-                'tudo bem por aí',
-                'tudo bem por ai',
-                'em que posso te ajudar',
-                'como posso te ajudar hoje',
-                'como posso ajudar hoje',
-                'tudo bem? em que posso ajudar',
-                'tudo bem em que posso ajudar'
-            ]
-            
-            # Verifica se a resposta contém frases genéricas
-            resposta_contem_generica = any(gen in resposta_lower for gen in respostas_genericas_proibidas)
-            
-            # Se a resposta contém frase genérica, substitui por resposta mais específica
-            if resposta_contem_generica:
-                logger.warning(f"[CHAT] ⚠️ Resposta genérica detectada após correções. Substituindo por resposta mais específica.")
-                
-                # Recarrega últimas respostas para verificação de repetição
-                ultimas_respostas_final = []
-                if historico_usuario and len(historico_usuario) >= 1:
-                    ultimas_respostas_final = [msg.get('resposta', '') for msg in historico_usuario[-3:]]
-                
-                # Verifica se é pergunta sobre identidade da Sophia
-                if any(palavra in pergunta_lower for palavra in ['o que você é', 'quem é você', 'quem você é', 'o que é você', 'sophia o que você é', 'sophia quem é você']):
-                    resposta_final = "Olá! Sou a Sophia, uma assistente virtual criada para ajudar mamães durante o puerpério e a gestação. Estou aqui para te apoiar, responder dúvidas e oferecer orientações sobre cuidados com o bebê, sua saúde e bem-estar. Como posso te ajudar hoje?"
-                    fonte = "resposta_contextual"
-                    logger.info(f"[CHAT] ✅ Substituída por resposta sobre identidade")
-                # Verifica se contém sentimentos
-                elif any(palavra in pergunta_lower for palavra in ['feliz', 'triste', 'ansiosa', 'preocupada', 'nervosa', 'calma', 'bem', 'mal', 'estou feliz', 'estou triste', 'me sinto']):
-                    if 'feliz' in pergunta_lower:
-                        respostas_feliz = [
-                            "Que bom saber que você está feliz! 😊 O que te deixou feliz hoje? Conte-me mais sobre isso!",
-                            "Fico muito feliz em saber que você está feliz! 🌟 O que aconteceu para te deixar assim?",
-                            "Que alegria saber disso! 💕 Me conta o que te deixou feliz hoje!"
-                        ]
-                        resposta_final = random.choice(respostas_feliz)
-                    elif 'triste' in pergunta_lower:
-                        resposta_final = "Sinto muito que você esteja se sentindo triste. 💛 Quer conversar sobre o que está te deixando assim? Estou aqui para te ouvir."
-                    elif 'ansiosa' in pergunta_lower or 'preocupada' in pergunta_lower:
-                        resposta_final = "Entendo que você esteja se sentindo ansiosa ou preocupada. 💛 Quer compartilhar o que está te preocupando? Estou aqui para te ajudar."
-                    else:
-                        resposta_final = "Entendo como você está se sentindo. 💛 Quer conversar mais sobre isso?"
-                    fonte = "resposta_contextual"
-                    logger.info(f"[CHAT] ✅ Substituída por resposta sobre sentimento")
-                # Se for saudação simples, usa resposta variada sem frases genéricas
-                elif is_saudacao:
-                    respostas_saudacao_variadas = [
-                        "Oi! Como você está hoje? 😊",
-                        "Olá! Que bom te ver por aqui! 💛",
-                        "Oi! Estou aqui para conversar. O que você gostaria de falar?",
-                        "Olá! Como posso ajudar você hoje?",
-                        "Oi! Em que posso te auxiliar?",
-                        "Olá! Estou aqui para te escutar. Como você está?",
-                        "Oi! Conte-me como posso te ajudar hoje!"
-                    ]
-                    # Escolhe uma que não seja repetida
-                    resposta_escolhida = random.choice(respostas_saudacao_variadas)
-                    if ultimas_respostas_final and resposta_escolhida.lower() in [r.lower() for r in ultimas_respostas_final]:
-                        for tentativa in range(10):
-                            resposta_escolhida = random.choice(respostas_saudacao_variadas)
-                            if resposta_escolhida.lower() not in [r.lower() for r in ultimas_respostas_final]:
-                                break
-                    resposta_final = resposta_escolhida
-                    fonte = "saudacao_humanizada"
-                    logger.info(f"[CHAT] ✅ Substituída por saudação variada sem frases genéricas")
-                # Para outras situações
-                else:
-                    respostas_variadas = [
-                        "Entendi! Pode me contar mais sobre isso? Quero entender melhor para te ajudar da melhor forma.",
-                        "Compreendo. Quer compartilhar mais detalhes? Assim posso te ajudar melhor.",
-                        "Ok! Conte-me mais sobre isso para que eu possa te ajudar adequadamente.",
-                        "Entendi o que você disse. Quer conversar mais sobre isso?"
-                    ]
-                    resposta_final = random.choice(respostas_variadas)
-                    fonte = "resposta_variada"
-                    logger.info(f"[CHAT] ✅ Substituída por resposta variada")
-        
-        # Se Gemini retornou resposta mas é saudação, verifica se está muito genérica
-        # Se for muito genérica (parece mensagem de apoio), substitui por resposta conversacional
-        if resposta_final and is_saudacao and fonte == "gemini_humanizada":
-            # Verifica se a resposta parece muito genérica (contém palavras típicas de mensagens de apoio)
-            palavras_genericas = ["sentimentos são válidos", "não se compare", "cada jornada é única", 
-                                 "procure ajuda profissional", "saiba que procure ajuda"]
-            if any(palavra in resposta_final.lower() for palavra in palavras_genericas):
-                logger.info(f"[CHAT] ⚠️ Resposta do Gemini muito genérica para saudação, usando resposta conversacional")
-                saudacoes_respostas = [
-                    "Oi! Que bom te ver por aqui! 😊 Como você está? Como posso te ajudar hoje?",
-                    "Olá! Fico feliz que você esteja aqui! 💛 Como você está se sentindo?",
-                    "Oi querida! Estou aqui para te ajudar. Como você está? O que você gostaria de conversar?",
-                    "Olá! Bem-vinda! Como você está? Estou aqui para te escutar e ajudar no que precisar!",
-                    "Oi! Que prazer te ver aqui! Como você está se sentindo hoje?",
-                    "Olá! Como você está? Estou aqui para conversar e te ajudar no que precisar! 😊"
-                ]
-                resposta_final = random.choice(saudacoes_respostas)
-                fonte = "saudacao_humanizada"
-        
-        # Adiciona alertas se necessário
-        if alertas_encontrados:
-            alertas_texto = []
-            for alerta_key, alerta_texto in self.alertas.items():
-                alertas_texto.append(alerta_texto)
-            
-            resposta_final += "\n\n**ALERTA IMPORTANTE:**\n" + "\n".join(alertas_texto)
-        
-        # Adiciona telefones relevantes
-        telefones_adicional = self.adicionar_telefones_relevantes(pergunta, alertas_encontrados)
-        if telefones_adicional:
-            resposta_final += telefones_adicional
-        
-        # Salva apenas na memória (NÃO salva no banco de dados)
-        timestamp = datetime.now().isoformat()
-        if user_id not in conversas:
-            conversas[user_id] = []
-        
-        conversa_item = {
-            "timestamp": timestamp,
-            "pergunta": pergunta,
-            "resposta": resposta_final,
-            "categoria": categoria,
-            "fonte": fonte,
-            "alertas": alertas_encontrados
-        }
-        
-        conversas[user_id].append(conversa_item)
-        
-        # NÃO salva no banco de dados (desabilitado conforme solicitado)
-        # salvar_conversa_db(user_id, pergunta, resposta_final, categoria, fonte, alertas_encontrados)
-        
-        # Extrai informações pessoais da conversa (incluindo histórico)
-        extrair_informacoes_pessoais(pergunta, resposta_final, user_id, historico_usuario)
-        
-        return {
-            "resposta": resposta_final,
-            "categoria": categoria,
-            "fonte": fonte,
-            "alertas": alertas_encontrados,
-            "timestamp": timestamp
-        }
+            return {
+                "resposta": resposta_final,
+                "fonte": fonte,
+                "categoria": categoria
+            }
 
-# Inicializa o chatbot (com tratamento de erro)
-# VERIFICAÇÃO CRÍTICA: Verifica se gemini_client foi inicializado antes de criar o chatbot
-logger.info(f"[INIT] 🔍 VERIFICAÇÃO ANTES DE CRIAR CHATBOT:")
-logger.info(f"[INIT] 🔍 gemini_client global = {gemini_client}")
-logger.info(f"[INIT] 🔍 gemini_client is None = {gemini_client is None}")
-logger.info(f"[INIT] 🔍 gemini_client type = {type(gemini_client)}")
-print(f"[INIT] 🔍 VERIFICAÇÃO ANTES DE CRIAR CHATBOT:")
-print(f"[INIT] 🔍 gemini_client global = {gemini_client}")
-print(f"[INIT] 🔍 gemini_client is None = {gemini_client is None}")
-print(f"[INIT] 🔍 gemini_client type = {type(gemini_client)}")
+# Inicializa instância global do chatbot (após definição da classe)
+chatbot = ChatbotPuerperio()
+logger.info("[CHATBOT] ✅ Instância global do chatbot criada com sucesso")
+print("[CHATBOT] ✅ Instância global do chatbot criada com sucesso")
 
-try:
-    logger.info(f"[INIT] 🔍 Inicializando ChatbotPuerperio com gemini_client: {gemini_client}")
-    print(f"[INIT] 🔍 Inicializando ChatbotPuerperio com gemini_client: {gemini_client}")
-    print(f"[INIT] 🔍 gemini_client type: {type(gemini_client)}")
-    print(f"[INIT] 🔍 gemini_client is None: {gemini_client is None}")
-    
-    # VERIFICAÇÃO: Se gemini_client é None, tenta reinicializar
-    if gemini_client is None:
-        logger.warning("[INIT] ⚠️ gemini_client é None - tentando reinicializar...")
-        print("[INIT] ⚠️ gemini_client é None - tentando reinicializar...")
-        
-        if GEMINI_AVAILABLE and GEMINI_API_KEY:
-            try:
-                logger.info("[INIT] 🔄 Reinicializando Gemini...")
-                print("[INIT] 🔄 Reinicializando Gemini...")
-                genai.configure(api_key=GEMINI_API_KEY)
-                # Tenta usar gemini-2.0-flash, se falhar, usa gemini-1.5-flash
-                try:
-                    gemini_client = genai.GenerativeModel('gemini-2.0-flash')
-                except Exception:
-                    gemini_client = genai.GenerativeModel('gemini-1.5-flash')
-                logger.info("[INIT] ✅ Gemini reinicializado com sucesso!")
-                print("[INIT] ✅ Gemini reinicializado com sucesso!")
-            except Exception as e:
-                logger.error(f"[INIT] ❌ Erro ao reinicializar Gemini: {e}")
-                print(f"[INIT] ❌ Erro ao reinicializar Gemini: {e}")
-    
-    # Passa explicitamente o gemini_client para garantir que está correto
-    chatbot = ChatbotPuerperio(gemini_client_param=gemini_client)
-    logger.info(f"[INIT] ✅ Chatbot inicializado com sucesso. self.gemini_client = {chatbot.gemini_client}")
-    print(f"[INIT] ✅ Chatbot inicializado com sucesso. self.gemini_client = {chatbot.gemini_client}")
-    print(f"[INIT] ✅ self.gemini_client type: {type(chatbot.gemini_client)}")
-    print(f"[INIT] ✅ self.gemini_client is None: {chatbot.gemini_client is None}")
-    if chatbot.gemini_client is None:
-        logger.error("[INIT] ❌ ERRO CRÍTICO: chatbot.gemini_client é None após inicialização!")
-        print("[INIT] ❌ ERRO CRÍTICO: chatbot.gemini_client é None após inicialização!")
-        print("[INIT] ❌ Isso significa que o gemini_client não foi passado corretamente!")
-        print("[INIT] ❌ Verifique os logs acima para ver se o Gemini foi inicializado corretamente.")
-        print(f"[INIT] ❌ gemini_client global era: {gemini_client}")
-    else:
-        logger.info("[INIT] ✅✅✅ Gemini client está disponível no chatbot! ✅✅✅")
-        print("[INIT] ✅✅✅ Gemini client está disponível no chatbot! ✅✅✅")
-except Exception as e:
-    logger.error(f"Erro ao inicializar chatbot: {e}", exc_info=True)
-    import traceback
-    traceback.print_exc()
-    # Continua mesmo com erro para não quebrar o servidor
-    chatbot = None
-
-# Rotas da API
-@app.route('/health')
-def health():
-    """Health check para o Render"""
-    return jsonify({"status": "ok", "message": "Servidor funcionando"}), 200
-
-@app.route('/privacidade')
-def privacidade():
-    """Página de Política de Privacidade"""
-    return """
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Política de Privacidade - Sophia</title>
-        <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; background: #fef9f7; }
-            h1 { color: #f4a6a6; }
-            h2 { color: #8b5a5a; margin-top: 2rem; }
-            a { color: #f4a6a6; text-decoration: none; }
-            a:hover { text-decoration: underline; }
-            .back-link { display: inline-block; margin-bottom: 2rem; }
-        </style>
-    </head>
-    <body>
-        <a href="/" class="back-link">← Voltar</a>
-        <h1>Política de Privacidade</h1>
-        <p><strong>Última atualização:</strong> 05 de Novembro de 2025</p>
-        
-        <h2>1. Informações que Coletamos</h2>
-        <p>Coletamos informações fornecidas voluntariamente por você, incluindo:</p>
-        <ul>
-            <li><strong>Dados de cadastro:</strong> Nome, endereço de e-mail, nome do bebê (opcional)</li>
-            <li><strong>Dados de uso:</strong> Mensagens trocadas com a Sophia, histórico de conversas (armazenado localmente no navegador)</li>
-            <li><strong>Dados técnicos:</strong> Endereço IP, tipo de dispositivo, navegador utilizado</li>
-        </ul>
-        
-        <h2>2. Como Usamos suas Informações</h2>
-        <p>Utilizamos suas informações para:</p>
-        <ul>
-            <li>Fornecer acesso à plataforma e personalizar sua experiência</li>
-            <li>Enviar e-mails de verificação e comunicação (apenas se necessário)</li>
-            <li>Melhorar nossos serviços e desenvolver novas funcionalidades</li>
-            <li>Garantir a segurança e prevenir fraudes</li>
-        </ul>
-        
-        <h2>3. Proteção de Dados</h2>
-        <p>Adotamos medidas técnicas e organizacionais para proteger seus dados pessoais:</p>
-        <ul>
-            <li>Senhas são criptografadas usando bcrypt</li>
-            <li>Comunicação segura via HTTPS (em produção)</li>
-            <li>Acesso restrito aos dados apenas para funcionários autorizados</li>
-            <li>Armazenamento seguro em banco de dados SQLite local</li>
-        </ul>
-        
-        <h2>4. Compartilhamento de Dados</h2>
-        <p>Não vendemos, alugamos ou compartilhamos seus dados pessoais com terceiros, exceto:</p>
-        <ul>
-            <li>Quando necessário para cumprir obrigações legais</li>
-            <li>Com seu consentimento explícito</li>
-            <li>Para processamento de respostas via Google Gemini API (mensagens são enviadas, mas não armazenadas pela Google)</li>
-        </ul>
-        
-        <h2>5. Seus Direitos</h2>
-        <p>Você tem o direito de:</p>
-        <ul>
-            <li>Acessar seus dados pessoais</li>
-            <li>Corrigir dados incorretos</li>
-            <li>Solicitar a exclusão de sua conta</li>
-            <li>Revogar consentimento a qualquer momento</li>
-        </ul>
-        
-        <h2>6. Cookies e Tecnologias Similares</h2>
-        <p>Utilizamos cookies de sessão para manter você logado. Esses cookies são essenciais para o funcionamento da plataforma.</p>
-        
-        <h2>7. Menores de Idade</h2>
-        <p>Nossa plataforma é destinada a pessoas maiores de 18 anos. Não coletamos intencionalmente dados de menores de idade.</p>
-        
-        <h2>8. Alterações nesta Política</h2>
-        <p>Podemos atualizar esta política periodicamente. Notificaremos sobre mudanças significativas através do e-mail cadastrado ou aviso na plataforma.</p>
-        
-        <h2>9. Contato</h2>
-        <p>Para questões sobre privacidade, entre em contato através do e-mail cadastrado no sistema.</p>
-        
-        <p style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid #f4a6a6;">
-            <a href="/">← Voltar para o início</a>
-        </p>
-    </body>
-    </html>
-    """
-
-@app.route('/termos')
-def termos():
-    """Página de Termos de Uso"""
-    return """
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Termos de Uso - Sophia</title>
-        <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; background: #fef9f7; }
-            h1 { color: #f4a6a6; }
-            h2 { color: #8b5a5a; margin-top: 2rem; }
-            a { color: #f4a6a6; text-decoration: none; }
-            a:hover { text-decoration: underline; }
-            .back-link { display: inline-block; margin-bottom: 2rem; }
-            .aviso-medico { background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1.5rem 0; border-radius: 8px; }
-        </style>
-    </head>
-    <body>
-        <a href="/" class="back-link">← Voltar</a>
-        <h1>Termos de Uso</h1>
-        <p><strong>Última atualização:</strong> 05 de Novembro de 2025</p>
-        
-        <div class="aviso-medico">
-            <p><strong>⚠️ AVISO IMPORTANTE:</strong> A Sophia é uma assistente virtual de apoio emocional e informativo. 
-            <strong>Este serviço não substitui uma consulta médica profissional.</strong> Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas. 
-            Em situações de emergência, procure imediatamente atendimento médico ou ligue para <strong>192 (SAMU)</strong>.</p>
-        </div>
-        
-        <h2>1. Aceitação dos Termos</h2>
-        <p>Ao utilizar a plataforma Sophia, você concorda com estes Termos de Uso. Se não concordar, não utilize o serviço.</p>
-        
-        <h2>2. Natureza do Serviço</h2>
-        <p>A Sophia é uma assistente virtual baseada em inteligência artificial que oferece:</p>
-        <ul>
-            <li>Suporte emocional e acolhimento</li>
-            <li>Informações gerais sobre puerpério e gestação</li>
-            <li>Orientações baseadas em conhecimento público</li>
-        </ul>
-        <p><strong>Não oferecemos:</strong> diagnóstico médico, prescrições, tratamentos ou recomendações médicas específicas.</p>
-        
-        <h2>3. Uso Adequado</h2>
-        <p>Você concorda em:</p>
-        <ul>
-            <li>Usar a plataforma apenas para fins legais e apropriados</li>
-            <li>Não compartilhar informações falsas ou enganosas</li>
-            <li>Respeitar os direitos de outros usuários</li>
-            <li>Não tentar acessar áreas restritas do sistema</li>
-        </ul>
-        
-        <h2>4. Limitação de Responsabilidade</h2>
-        <p>A plataforma é fornecida "como está", sem garantias expressas ou implícitas. Não nos responsabilizamos por:</p>
-        <ul>
-            <li>Decisões tomadas com base nas informações fornecidas</li>
-            <li>Consequências decorrentes do uso ou não uso do serviço</li>
-            <li>Interrupções ou falhas técnicas</li>
-            <li>Perda de dados ou informações</li>
-        </ul>
-        
-        <h2>5. Propriedade Intelectual</h2>
-        <p>Todo o conteúdo da plataforma, incluindo textos, design, código e logotipos, é de propriedade da Sophia e protegido por leis de direitos autorais.</p>
-        
-        <h2>6. Modificações do Serviço</h2>
-        <p>Reservamo-nos o direito de modificar, suspender ou descontinuar qualquer parte do serviço a qualquer momento, sem aviso prévio.</p>
-        
-        <h2>7. Privacidade</h2>
-        <p>Seu uso da plataforma também está sujeito à nossa <a href="/privacidade">Política de Privacidade</a>.</p>
-        
-        <h2>8. Rescisão</h2>
-        <p>Podemos encerrar ou suspender sua conta a qualquer momento, por qualquer motivo, incluindo violação destes termos.</p>
-        
-        <h2>9. Lei Aplicável</h2>
-        <p>Estes termos são regidos pelas leis do Brasil. Qualquer disputa será resolvida nos tribunais competentes.</p>
-        
-        <h2>10. Contato</h2>
-        <p>Para questões sobre estes termos, entre em contato através do e-mail cadastrado no sistema.</p>
-        
-        <p style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid #f4a6a6;">
-            <a href="/">← Voltar para o início</a>
-        </p>
-    </body>
-    </html>
-    """
-
-@app.route('/forgot-password')
-def forgot_password():
-    """Página de recuperação de senha"""
-    css_path = os.path.join(app.static_folder, 'css', 'style.css')
-    try:
-        if os.path.exists(css_path):
-            timestamp = str(int(os.path.getmtime(css_path)))
-        else:
-            timestamp = '1.0'
-    except:
-        timestamp = '1.0'
-    
-    return render_template('forgot_password.html', timestamp=timestamp)
-
+# Rota raiz - renderiza a página principal
 @app.route('/')
 def index():
-    # Gera timestamp baseado na última modificação do CSS para cache busting
-    # Usa o static_folder configurado no Flask para garantir o caminho correto
-    css_path = os.path.join(app.static_folder, 'css', 'style.css')
-    try:
-        if os.path.exists(css_path):
-            css_mtime = int(os.path.getmtime(css_path))
-        else:
-            # Fallback: tenta caminho relativo ao diretório do app
-            css_path_fallback = os.path.join(os.path.dirname(__file__), 'static', 'css', 'style.css')
-            if os.path.exists(css_path_fallback):
-                css_mtime = int(os.path.getmtime(css_path_fallback))
-            else:
-                css_mtime = int(time.time())
-    except Exception as e:
-        logger.warning(f"[CSS] Erro ao obter timestamp do CSS: {e}, usando timestamp atual")
-        css_mtime = int(time.time())
-    
-    logger.debug(f"[CSS] CSS path: {css_path}, timestamp: {css_mtime}")
-    return render_template('index.html', timestamp=css_mtime)
+    """Rota principal que renderiza a interface do chatbot"""
+    return render_template('index.html')
 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
@@ -2623,10 +2779,9 @@ def api_chat():
         return jsonify({"erro": "Pergunta não pode estar vazia"}), 400
     
     # Log de diagnóstico
-    logger.info(f"[API_CHAT] 🔍 Recebida pergunta: {pergunta[:50]}...")
-    logger.info(f"[API_CHAT] 🔍 chatbot.gemini_client disponível: {chatbot.gemini_client is not None}")
-    logger.info(f"[API_CHAT] 🔍 chatbot.gemini_client type: {type(chatbot.gemini_client)}")
-    print(f"[API_CHAT] 🔍 chatbot.gemini_client disponível: {chatbot.gemini_client is not None}")
+    logger.info(f"[API_CHAT] Recebida pergunta: {pergunta[:50]}...")
+    logger.info(f"[API_CHAT] chatbot.openai_client disponível: {chatbot.openai_client is not None}")
+    print(f"[API_CHAT] chatbot.openai_client disponível: {chatbot.openai_client is not None}")
     
     resposta = chatbot.chat(pergunta, user_id)
     
@@ -2637,38 +2792,62 @@ def api_chat():
     return jsonify(resposta)
 
 @app.route('/api/limpar-memoria-ia', methods=['POST'])
+@login_required
 def limpar_memoria_ia():
-    """Limpa TODA a memória da IA: conversas e informações pessoais (apenas memória - NÃO usa banco)"""
+    """Limpa TODA a memória da Sophia: conversas, informações pessoais e dados memorizados (nomes, lugares, comidas)"""
     try:
+        user_id = session.get('user_id') or current_user.id if current_user.is_authenticated else 'default'
+        
         # Limpa apenas da memória em tempo de execução (NÃO limpa do banco, pois não salva mais conversas lá)
         global conversas
         conversas_count = sum(len(conv) for conv in conversas.values())
         conversas.clear()
         
-        # Limpa informações pessoais do banco (user_info ainda é usado)
+        # Limpa informações pessoais do banco (user_info)
         info_apagadas = 0
+        memoria_sophia_apagadas = 0
+        
         try:
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute('DELETE FROM user_info')
+            
+            # Limpa user_info (informações pessoais gerais)
+            cursor.execute('DELETE FROM user_info WHERE user_id = ?', (str(user_id),))
             info_apagadas = cursor.rowcount
+            
+            # Limpa memoria_sophia (dados memorizados: nomes, lugares, comidas)
+            cursor.execute('DELETE FROM memoria_sophia WHERE user_id = ?', (str(user_id),))
+            memoria_sophia_apagadas = cursor.rowcount
+            
             conn.commit()
             conn.close()
         except Exception as e:
-            logger.warning(f"[LIMPAR_MEMORIA] ⚠️ Erro ao limpar user_info do banco: {e}")
+            logger.warning(f"[LIMPAR_MEMORIA] ⚠️ Erro ao limpar dados do banco: {e}")
+        
+        # Limpa threads do OpenAI para o usuário (se existir)
+        if chatbot and hasattr(chatbot, 'user_threads') and user_id in chatbot.user_threads:
+            del chatbot.user_threads[user_id]
+            logger.info(f"[LIMPAR_MEMORIA] Thread OpenAI removida para user_id {user_id}")
+        
+        # Limpa últimas respostas do controle de repetição
+        if chatbot and hasattr(chatbot, 'ultimas_respostas') and user_id in chatbot.ultimas_respostas:
+            del chatbot.ultimas_respostas[user_id]
         
         # NÃO limpa conversas do banco (desabilitado conforme solicitado)
         # cursor.execute('DELETE FROM conversas')
         # conversas_apagadas = cursor.rowcount
         
-        logger.info(f"[LIMPAR_MEMORIA] ✅ Memória da IA limpa: {conversas_count} conversas da memória e {info_apagadas} informações pessoais do banco")
-        print(f"[LIMPAR_MEMORIA] ✅ Memória da IA limpa: {conversas_count} conversas da memória e {info_apagadas} informações pessoais do banco")
+        total_apagado = conversas_count + info_apagadas + memoria_sophia_apagadas
+        logger.info(f"[LIMPAR_MEMORIA] ✅ Memória da Sophia limpa para user_id {user_id}: {conversas_count} conversas da memória, {info_apagadas} informações pessoais e {memoria_sophia_apagadas} dados memorizados apagados")
+        print(f"[LIMPAR_MEMORIA] ✅ Memória da Sophia limpa: {conversas_count} conversas da memória, {info_apagadas} informações pessoais e {memoria_sophia_apagadas} dados memorizados apagados")
         
         return jsonify({
             "sucesso": True,
-            "mensagem": f"Memória da IA limpa com sucesso! {conversas_count} conversas da memória e {info_apagadas} informações pessoais foram apagadas.",
+            "mensagem": f"Memória da Sophia limpa com sucesso! {total_apagado} item(ns) removido(s): {conversas_count} conversas da memória, {info_apagadas} informações pessoais e {memoria_sophia_apagadas} dados memorizados (nomes, lugares, comidas).",
             "conversas_apagadas": conversas_count,
-            "info_apagadas": info_apagadas
+            "info_apagadas": info_apagadas,
+            "memoria_sophia_apagadas": memoria_sophia_apagadas,
+            "total_apagado": total_apagado
         }), 200
     except Exception as e:
         logger.error(f"[LIMPAR_MEMORIA] ❌ Erro ao limpar memória: {e}", exc_info=True)
@@ -3589,7 +3768,7 @@ def teste():
         "cuidados_pos_parto": len(cuidados_pos_parto),
         "vacinas": "mae e bebe carregadas",
         "rotas_api": 9,
-        "gemini_disponivel": gemini_client is not None
+        "openai_disponivel": openai_client is not None
     })
 
 if __name__ == "__main__":
@@ -3603,7 +3782,7 @@ if __name__ == "__main__":
     print("Cuidados gestação:", len(cuidados_gestacao), "trimestres")
     print("Cuidados puerpério:", len(cuidados_pos_parto), "períodos")
     print("Vacinas: Mãe e bebê carregadas ✓")
-    print("Gemini disponível:", "Sim" if gemini_client else "Não")
+    print("OpenAI disponível:", "Sim" if openai_client else "Não")
     print("Total de rotas API:", 12)
     print("="*50)
     

@@ -61,18 +61,13 @@ def activate_virtual_env():
     venv_path = os.path.join(os.path.dirname(__file__), "backend", "venv")
     
     if os.path.exists(venv_path):
-        print("OK: Ambiente virtual encontrado")
-        
         # Determina o script de ativação baseado no sistema operacional
         if platform.system() == "Windows":
-            activate_script = os.path.join(venv_path, "Scripts", "activate.bat")
             python_executable = os.path.join(venv_path, "Scripts", "python.exe")
         else:
-            activate_script = os.path.join(venv_path, "bin", "activate")
             python_executable = os.path.join(venv_path, "bin", "python")
         
         if os.path.exists(python_executable):
-            print("OK: Usando Python do ambiente virtual")
             # Atualiza o sys.executable para usar o Python do venv
             sys.executable = python_executable
             return True
@@ -80,18 +75,28 @@ def activate_virtual_env():
             print("ERRO: Python não encontrado no ambiente virtual")
             return False
     else:
-        print("AVISO: Ambiente virtual não encontrado")
-        print("Recomendado: python -m venv backend/venv && backend/venv/Scripts/activate (Windows)")
         return False
 
 def check_virtual_env():
-    """Verifica se estamos em um ambiente virtual"""
+    """Verifica se estamos em um ambiente virtual e ativa se necessário"""
+    # Verifica se já estamos em um ambiente virtual
     if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
         print("OK: Ambiente virtual ativo")
         return True
+    
+    # Se não estiver ativo, tenta ativar o ambiente virtual do projeto
+    venv_path = os.path.join(os.path.dirname(__file__), "backend", "venv")
+    if os.path.exists(venv_path):
+        print("OK: Ambiente virtual encontrado")
+        if activate_virtual_env():
+            print("OK: Usando Python do ambiente virtual")
+            return True
+        else:
+            return False
     else:
-        print("AVISO: Ambiente virtual não detectado")
-        return activate_virtual_env()
+        print("AVISO: Ambiente virtual não encontrado")
+        print("Recomendado: python -m venv backend/venv && backend/venv/Scripts/activate (Windows)")
+        return False
 
 def install_dependencies():
     """Instala as dependências necessárias"""
@@ -198,17 +203,12 @@ def main():
     if not check_python_version():
         sys.exit(1)
     
-    check_virtual_env()
+    # Verifica e ativa o ambiente virtual (se existir)
+    venv_activated = check_virtual_env()
     
-    # Pergunta se deve instalar dependências se o venv não estiver ativo
-    venv_path = os.path.join(os.path.dirname(__file__), "backend", "venv")
-    if not os.path.exists(venv_path):
-        response = input("\nAmbiente virtual nao encontrado. Deseja instalar as dependencias automaticamente? (s/n): ")
-        if response.lower() in ['s', 'sim', 'y', 'yes']:
-            if not install_dependencies():
-                sys.exit(1)
-    elif not check_virtual_env():
-        response = input("\nDeseja instalar as dependencias automaticamente? (s/n): ")
+    # Pergunta se deve instalar dependências se o venv não estiver disponível
+    if not venv_activated:
+        response = input("\nAmbiente virtual não disponível. Deseja instalar as dependências automaticamente? (s/n): ")
         if response.lower() in ['s', 'sim', 'y', 'yes']:
             if not install_dependencies():
                 sys.exit(1)

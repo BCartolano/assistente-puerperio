@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sophia – Assistente para Mães</title>
+    <style>
+        /* Estilos básicos para o container do chat */
+        #openai-chat-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container do OpenAI Chat Web Embed -->
+    <div id="openai-chat-container"></div>
+
+    <!-- Script do OpenAI Chat Web Embed -->
+    <script>
+        // Configuração do OpenAI Chat Web Embed
+        window.ChatbotConfig = {
+            // Título do chat
+            title: "Sophia – Assistente para Mães",
+            
+            // Tema light
+            theme: "light",
+            
+            // Idioma português brasileiro
+            language: "pt-BR",
+            
+            // Mensagem inicial acolhedora
+            initialMessage: `Olá! 👋 Sou a Sophia, sua assistente para maternidade e puerpério.
+
+Estou aqui para ajudar você com informações gerais sobre:
+• Gestação e puerpério
+• Cuidados com o bebê
+• Bem-estar materno
+• Alimentação durante a amamentação
+• Apoio emocional
+
+⚠️ **IMPORTANTE - LIMITAÇÕES:**
+• ❌ Não dou recomendações médicas
+• ❌ Não prescrevo medicamentos
+• ❌ Não diagnostico doenças
+• ❌ Não substituo atendimento profissional
+
+✅ **Sempre recomendo consultar profissionais de saúde qualificados** para orientações personalizadas, diagnósticos e tratamentos.
+
+Como posso ajudar você hoje? 💛`,
+
+            // Camadas de segurança extra
+            safety: {
+                // Bloquear diagnósticos
+                blockDiagnostics: true,
+                
+                // Bloquear sugestões de medicamentos
+                blockMedications: true,
+                
+                // Bloquear conselhos médicos específicos
+                blockMedicalAdvice: true,
+                
+                // Bloquear prescrições
+                blockPrescriptions: true,
+                
+                // Bloquear tratamentos específicos
+                blockTreatments: true,
+                
+                // Sempre recomendar consultar profissional
+                alwaysRecommendProfessional: true
+            },
+            
+            // Configurações de comportamento
+            behavior: {
+                // Sempre mencionar limitações médicas
+                alwaysMentionMedicalLimitations: true,
+                
+                // Adicionar aviso de segurança em respostas médicas
+                addSafetyWarning: true,
+                
+                // Idioma das respostas
+                responseLanguage: "pt-BR"
+            },
+            
+            // Sistema de prompts de segurança
+            systemPrompt: `Você é a Sophia, uma assistente para maternidade e puerpério.
+
+REGRAS CRÍTICAS DE SEGURANÇA - LEIA COM MUITA ATENÇÃO:
+
+🚫 PROIBIÇÕES ABSOLUTAS:
+• NUNCA forneça diagnósticos médicos
+• NUNCA recomende ou prescreva medicamentos
+• NUNCA sugira tratamentos específicos
+• NUNCA dê conselhos médicos personalizados
+• NUNCA substitua atendimento profissional
+
+✅ O QUE VOCÊ DEVE FAZER:
+• Fornecer informações gerais e educativas
+• Sempre recomendar consultar profissionais de saúde
+• Orientar sobre cuidados gerais e bem-estar
+• Oferecer apoio emocional e informações sobre puerpério
+• Direcionar para atendimento médico quando necessário
+
+⚠️ SEMPRE INCLUA:
+Todas as respostas sobre saúde devem terminar com:
+"⚠️ IMPORTANTE: Este conteúdo é apenas informativo e não substitui uma consulta médica profissional. Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas."
+
+TOM:
+• Acolhedor e empático
+• Profissional e responsável
+• Claro sobre limitações
+• Focado em bem-estar materno`,
+            
+            // Configurações de UI
+            ui: {
+                // Cores do tema light
+                primaryColor: "#f4a6a6",
+                backgroundColor: "#ffffff",
+                textColor: "#5a4a42",
+                
+                // Mostrar avisos de segurança
+                showSafetyWarnings: true,
+                
+                // Posição do widget (se aplicável)
+                position: "bottom-right"
+            }
+        };
+
+        // Carrega o widget do OpenAI Chat Web Embed
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://chat.openai.com/widget.js';
+            script.async = true;
+            script.onload = function() {
+                // Inicializa o chat após o script carregar
+                if (window.OpenAIChat) {
+                    window.OpenAIChat.init({
+                        container: document.getElementById('openai-chat-container'),
+                        config: window.ChatbotConfig
+                    });
+                }
+            };
+            document.head.appendChild(script);
+        })();
+
+        // Função adicional para bloquear conteúdo médico perigoso
+        function blockDangerousContent(message) {
+            const dangerousPatterns = [
+                // Padrões de diagnóstico
+                /você tem|você está com|você sofre de|diagnóstico de|é um caso de/i,
+                
+                // Padrões de medicamentos
+                /tome|use este medicamento|tome este remédio|prescrevo|receite/i,
+                
+                // Padrões de tratamento específico
+                /faça este tratamento|iniciar tratamento com|use este procedimento/i,
+                
+                // Padrões de dosagem
+                /\d+\s*(mg|ml|comprimidos|gotas)\s+(por|ao|de)\s+(dia|semana)/i
+            ];
+
+            for (let pattern of dangerousPatterns) {
+                if (pattern.test(message)) {
+                    return true; // Conteúdo perigoso detectado
+                }
+            }
+            return false;
+        }
+
+        // Intercepta mensagens para verificar segurança
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monitora respostas do chat para segurança extra
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // Element node
+                            const chatMessages = node.querySelectorAll('.chat-message, .message-content, [class*="message"]');
+                            chatMessages.forEach(function(msg) {
+                                const text = msg.textContent || msg.innerText;
+                                if (blockDangerousContent(text)) {
+                                    // Adiciona aviso de segurança
+                                    const warning = document.createElement('div');
+                                    warning.className = 'safety-warning';
+                                    warning.innerHTML = '⚠️ <strong>AVISO:</strong> Este conteúdo não substitui atendimento médico. Sempre consulte um profissional de saúde.';
+                                    warning.style.cssText = 'background: #fff3cd; border: 1px solid #ffc107; padding: 10px; margin: 10px 0; border-radius: 5px; color: #856404;';
+                                    msg.appendChild(warning);
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Observa mudanças no container do chat
+            const chatContainer = document.getElementById('openai-chat-container');
+            if (chatContainer) {
+                observer.observe(chatContainer, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        });
+    </script>
+
+    <!-- Estilos adicionais para avisos de segurança -->
+    <style>
+        .safety-warning {
+            background: #fff3cd !important;
+            border: 1px solid #ffc107 !important;
+            padding: 10px !important;
+            margin: 10px 0 !important;
+            border-radius: 5px !important;
+            color: #856404 !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+        }
+
+        /* Estilos para o tema light */
+        #openai-chat-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
+</body>
+</html>
+
