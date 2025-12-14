@@ -16,7 +16,7 @@ Este guia explica como fazer deploy do Chatbot Puerpério no Railway.
 2. Clique em **"New Project"**
 3. Selecione **"Deploy from GitHub repo"**
 4. Autorize o Railway a acessar seus repositórios (se necessário)
-5. Selecione o repositório `Cartolanoo/assistente-puerperio`
+5. Selecione o repositório `BCartolano/assistente-puerperio`
 
 ### 2. Configurar Variáveis de Ambiente
 

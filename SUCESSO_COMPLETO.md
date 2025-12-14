@@ -85,7 +85,7 @@
 
 ## 🌐 **Repositório GitHub**
 
-**URL:** https://github.com/Cartolanoo/assistente-puerperio
+**URL:** https://github.com/BCartolano/assistente-puerperio
 
 **Branch:** main
 

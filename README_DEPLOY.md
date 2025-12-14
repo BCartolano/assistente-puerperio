@@ -7,7 +7,7 @@
 - ✅ 27 arquivos modificados/criados
 - ✅ 3434 linhas de código adicionadas
 - ✅ Push realizado com sucesso
-- ✅ Repositório: https://github.com/Cartolanoo/assistente-puerperio
+- ✅ Repositório: https://github.com/BCartolano/assistente-puerperio
 
 ---
 
