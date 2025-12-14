@@ -172,3 +172,6 @@ users.db
 # NGROK (executável não deve ser commitado)
 ngrok.exe
 ngrok
+
+# BMAD-METHOD (submódulo com mudanças locais - não rastrear)
+BMAD-METHOD-v5/
