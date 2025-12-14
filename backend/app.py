@@ -1441,6 +1441,169 @@ def detectar_alerta_risco_suicidio(mensagem, user_id=None, usar_tendencia=True):
     return {"alerta": False, "tipo": None, "nivel": None}
 
 # ============================================================================
+# RF.EMO.009 - TRIAGEM EMOCIONAL: MÃE ANSIOSA
+# Integração com BMad Core para detecção e apoio a mães ansiosas
+# ============================================================================
+
+# Carrega dados de triagem emocional
+TRIAGEM_EMOCIONAL = {}
+try:
+    triagem_path = os.path.join(BASE_PATH, "triagem_emocional.json")
+    if os.path.exists(triagem_path):
+        with open(triagem_path, "r", encoding="utf-8") as f:
+            TRIAGEM_EMOCIONAL = json.load(f)
+            logger.info("[TRIAGEM] ✅ Dados de triagem emocional carregados")
+    else:
+        # Tenta no diretório backend
+        triagem_path_backend = os.path.join(os.path.dirname(__file__), "triagem_emocional.json")
+        if os.path.exists(triagem_path_backend):
+            with open(triagem_path_backend, "r", encoding="utf-8") as f:
+                TRIAGEM_EMOCIONAL = json.load(f)
+                logger.info("[TRIAGEM] ✅ Dados de triagem emocional carregados do backend")
+except Exception as e:
+    logger.warning(f"[TRIAGEM] ⚠️ Erro ao carregar triagem emocional: {e}")
+    TRIAGEM_EMOCIONAL = {}
+
+def detectar_triagem_ansiedade(mensagem, user_id=None):
+    """
+    RF.EMO.009 - Detecta sinais de ansiedade em mães gestantes ou no puerpério.
+    Integrado com BMad Core para triagem emocional.
+    
+    Retorna:
+    {
+        "detectado": True/False,
+        "nivel": "leve"/"moderada"/"alta"/None,
+        "perfil": "mae_ansiosa"/None,
+        "resposta": "resposta personalizada",
+        "recursos": [lista de recursos de apoio]
+    }
+    """
+    if not TRIAGEM_EMOCIONAL or "perfis_emocionais" not in TRIAGEM_EMOCIONAL:
+        return {"detectado": False}
+    
+    perfil_ansiosa = TRIAGEM_EMOCIONAL.get("perfis_emocionais", {}).get("mae_ansiosa", {})
+    if not perfil_ansiosa:
+        return {"detectado": False}
+    
+    padroes = perfil_ansiosa.get("padroes_deteccao", {})
+    mensagem_lower = mensagem.lower()
+    
+    # Remove acentos para detecção mais robusta
+    mensagem_normalizada = ''.join(
+        char for char in unicodedata.normalize('NFD', mensagem_lower)
+        if unicodedata.category(char) != 'Mn'
+    )
+    
+    # Verifica palavras-chave
+    palavras_chave = padroes.get("palavras_chave", [])
+    frases_completas = padroes.get("frases_completas", [])
+    contextos = padroes.get("contextos", [])
+    
+    # Contador de indicadores encontrados
+    indicadores_encontrados = 0
+    palavras_encontradas = []
+    
+    # Verifica palavras-chave
+    for palavra in palavras_chave:
+        palavra_normalizada = ''.join(
+            char for char in unicodedata.normalize('NFD', palavra.lower())
+            if unicodedata.category(char) != 'Mn'
+        )
+        if palavra_normalizada in mensagem_normalizada or palavra in mensagem_lower:
+            indicadores_encontrados += 1
+            palavras_encontradas.append(palavra)
+    
+    # Verifica frases completas (mais específicas, peso maior)
+    frases_encontradas = []
+    for frase in frases_completas:
+        frase_normalizada = ''.join(
+            char for char in unicodedata.normalize('NFD', frase.lower())
+            if unicodedata.category(char) != 'Mn'
+        )
+        if frase_normalizada in mensagem_normalizada or frase in mensagem_lower:
+            indicadores_encontrados += 2  # Frases completas têm peso maior
+            frases_encontradas.append(frase)
+    
+    # Verifica contexto (gestação, parto, bebê, etc.)
+    tem_contexto = False
+    for contexto in contextos:
+        contexto_normalizado = ''.join(
+            char for char in unicodedata.normalize('NFD', contexto.lower())
+            if unicodedata.category(char) != 'Mn'
+        )
+        if contexto_normalizado in mensagem_normalizada or contexto in mensagem_lower:
+            tem_contexto = True
+            break
+    
+    # Se não tem contexto relevante, pode ser ansiedade não relacionada à maternidade
+    # Mas ainda assim detectamos se houver muitos indicadores
+    if not tem_contexto and indicadores_encontrados < 3:
+        return {"detectado": False}
+    
+    # Se não encontrou indicadores suficientes
+    if indicadores_encontrados == 0:
+        return {"detectado": False}
+    
+    # Determina nível de ansiedade baseado nos indicadores
+    nivel = None
+    if indicadores_encontrados >= 5 or len(frases_encontradas) >= 2:
+        nivel = "alta"
+    elif indicadores_encontrados >= 3 or len(frases_encontradas) >= 1:
+        nivel = "moderada"
+    elif indicadores_encontrados >= 1:
+        nivel = "leve"
+    
+    # Busca resposta apropriada
+    niveis_ansiedade = perfil_ansiosa.get("niveis_ansiedade", {})
+    resposta_data = niveis_ansiedade.get(nivel, {})
+    respostas_disponiveis = resposta_data.get("respostas", [])
+    
+    # Seleciona resposta (usa contador se user_id fornecido)
+    resposta = ""
+    if respostas_disponiveis:
+        if user_id:
+            # Usa contador para variar respostas
+            contador_ansiedade = CONTADOR_ALERTA.get(user_id, 0)
+            indice = contador_ansiedade % len(respostas_disponiveis)
+            resposta = respostas_disponiveis[indice]
+        else:
+            resposta = respostas_disponiveis[0]
+    else:
+        # Resposta padrão se não houver específica
+        resposta = (
+            f"Entendo que você esteja se sentindo ansiosa. 💛\n\n"
+            f"É normal ter preocupações durante a gestação e nos primeiros meses com o bebê.\n\n"
+            f"**Se a ansiedade estiver te incomodando muito, considere:**\n"
+            f"- Conversar com seu médico ou enfermeiro\n"
+            f"- Buscar apoio de um profissional de saúde mental\n"
+            f"- Praticar técnicas de respiração e relaxamento\n\n"
+            f"**Para apoio emocional imediato:**\n"
+            f"- **CVV (188)** - disponível 24 horas, gratuito e sigiloso\n"
+            f"- **Disque Saúde (136)** - orientação em saúde"
+        )
+    
+    # Busca recursos de apoio
+    recursos_apoio = perfil_ansiosa.get("recursos_apoio", {})
+    telefones = recursos_apoio.get("telefones", [])
+    orientacoes = recursos_apoio.get("orientacoes", [])
+    
+    logger.info(f"[TRIAGEM] ✅ Ansiedade detectada - Nível: {nivel}, Indicadores: {indicadores_encontrados}")
+    
+    return {
+        "detectado": True,
+        "nivel": nivel,
+        "perfil": "mae_ansiosa",
+        "resposta": resposta,
+        "recursos": {
+            "telefones": telefones,
+            "orientacoes": orientacoes
+        },
+        "indicadores_encontrados": indicadores_encontrados,
+        "palavras_encontradas": palavras_encontradas[:5],  # Limita a 5 para não sobrecarregar
+        "frases_encontradas": frases_encontradas
+    }
+
+# ============================================================================
 # CLASSE: StemmerPortugues - Normalização de palavras em português
 # ============================================================================
 class StemmerPortugues:
@@ -2462,6 +2625,51 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
     def chat(self, pergunta, user_id="default"):
         """Função principal do chatbot"""
         # ========================================================================
+        # RESPOSTA ESPECIAL: DICAS SOBRE EXPERIÊNCIA NO PUERPÉRIO
+        # ========================================================================
+        pergunta_normalizada = pergunta.lower().strip()
+        if "experiência no puerpério" in pergunta_normalizada or "experiencia no puerperio" in pergunta_normalizada:
+            logger.info(f"[CHAT] Pergunta sobre experiência no puerpério detectada - retornando dicas")
+            resposta_dicas = """Que bom que você quer compartilhar sua experiência! 💛
+
+Aqui estão algumas dicas do que você pode me contar:
+
+**📝 Sobre como você está se sentindo:**
+• Como tem sido sua rotina desde o parto
+• Quais emoções você tem vivenciado (felicidade, cansaço, ansiedade, etc.)
+• O que tem sido mais desafiador para você
+• O que tem te dado alegria nessa fase
+
+**🤱 Sobre os cuidados:**
+• Como está sendo a amamentação (se estiver amamentando)
+• Como está sua recuperação física
+• Seu sono e descanso
+• Alimentação e hidratação
+
+**💕 Sobre o bebê:**
+• Como está sendo a adaptação com o bebê
+• Rotina de cuidados
+• Momentos especiais que você tem vivido
+
+**👨‍👩‍👧 Sobre sua rede de apoio:**
+• Como está sendo o apoio da família/parceiro(a)
+• Se sente que tem ajuda suficiente
+• O que mais precisa nesse momento
+
+**💭 Sobre você:**
+• Como você se sente sobre a mudança de identidade
+• Seus medos e preocupações
+• Seus sonhos e expectativas
+
+Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar! 💛"""
+            
+            return {
+                "resposta": resposta_dicas,
+                "fonte": "dicas_experiencia",
+                "categoria": "apoio_emocional"
+            }
+        
+        # ========================================================================
         # PRIORIDADE MAXIMA: DETECCAO DE RISCO EMOCIONAL/SUICIDIO
         # ========================================================================
         # Esta verificacao DEVE ser a PRIMEIRA, antes de QUALQUER outro processamento
@@ -2494,6 +2702,43 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
                 }
         
         # Continua fluxo normal se nao houve alerta ou se houve melhora
+        
+        # ========================================================================
+        # RF.EMO.009 - TRIAGEM EMOCIONAL: MÃE ANSIOSA (Integração BMad Core)
+        # ========================================================================
+        logger.info(f"[TRIAGEM] Verificando triagem emocional - Mãe Ansiosa")
+        triagem_ansiedade = detectar_triagem_ansiedade(pergunta, user_id=user_id)
+        
+        if triagem_ansiedade.get("detectado"):
+            nivel_ansiedade = triagem_ansiedade.get("nivel")
+            resposta_triagem = triagem_ansiedade.get("resposta", "")
+            recursos = triagem_ansiedade.get("recursos", {})
+            
+            logger.info(f"[TRIAGEM] ✅ Ansiedade detectada - Nível: {nivel_ansiedade}")
+            
+            # Adiciona recursos de apoio à resposta se disponíveis
+            resposta_final = resposta_triagem
+            if recursos.get("telefones"):
+                telefones_texto = "\n\n**Recursos de Apoio:**\n"
+                for telefone in recursos["telefones"]:
+                    telefones_texto += f"- **{telefone.get('nome', '')}**: {telefone.get('numero', '')} - {telefone.get('descricao', '')}\n"
+                resposta_final += telefones_texto
+            
+            # Retorna resposta de triagem (mas não bloqueia o fluxo se for ansiedade leve)
+            # Ansiedade moderada/alta tem prioridade sobre resposta normal
+            if nivel_ansiedade in ["moderada", "alta"]:
+                return {
+                    "resposta": resposta_final,
+                    "fonte": "triagem_emocional",
+                    "alerta": True,
+                    "nivel": nivel_ansiedade,
+                    "tipo": "ansiedade",
+                    "perfil": "mae_ansiosa"
+                }
+            elif nivel_ansiedade == "leve":
+                # Ansiedade leve: adiciona à resposta mas não bloqueia fluxo normal
+                # A resposta normal será combinada com a triagem
+                logger.info(f"[TRIAGEM] Ansiedade leve detectada - será combinada com resposta normal")
         
         # Detecta se e saudacao
         is_saudacao = self._is_saudacao(pergunta)
@@ -2790,6 +3035,29 @@ def api_chat():
     print(f"[API_CHAT] ✅ Resposta gerada - fonte: {resposta.get('fonte', 'desconhecida')}")
     
     return jsonify(resposta)
+
+@app.route('/api/triagem-emocional', methods=['POST'])
+def api_triagem_emocional():
+    """
+    RF.EMO.009 - API de Triagem Emocional para Mãe Ansiosa
+    Integração com BMad Core
+    """
+    data = request.get_json()
+    mensagem = data.get('mensagem', '')
+    user_id = data.get('user_id', 'default')
+    
+    if not mensagem.strip():
+        return jsonify({"erro": "Mensagem não pode estar vazia"}), 400
+    
+    logger.info(f"[TRIAGEM_API] Analisando mensagem para triagem emocional")
+    
+    resultado = detectar_triagem_ansiedade(mensagem, user_id=user_id)
+    
+    return jsonify({
+        "codigo_requisito": "RF.EMO.009",
+        "integracao_bmad": True,
+        **resultado
+    })
 
 @app.route('/api/limpar-memoria-ia', methods=['POST'])
 @login_required

@@ -22,7 +22,7 @@ html {
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Poppins', 'Nunito', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: linear-gradient(180deg, #fff5f7 0%, #fde6ea 50%, #f8f4f0 100%);
+    background: #f8f4f0; /* Cor sólida simples em vez de gradiente */
     height: 100vh;
     overflow: hidden !important;
     position: fixed;
@@ -69,12 +69,12 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, #f8f4f0 0%, #e8d5d1 50%, #d4c5c0 100%);
+    background: #f8f4f0; /* Cor sólida simples */
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10000;
-    animation: fadeIn 0.5s ease;
+    /* Animação removida para melhor performance */
 }
 
 .login-screen.hidden {
@@ -87,8 +87,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     padding: 3rem;
     max-width: 450px;
     width: 90%;
-    box-shadow: 0 10px 40px rgba(244, 166, 166, 0.3);
-    animation: slideUp 0.5s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
+    /* Animação removida para melhor performance */
     box-sizing: border-box;
     overflow: visible;
     overflow-y: auto;
@@ -266,7 +266,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 .btn-login-main {
     width: 100%;
     max-width: 100%;
-    background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%);
+    background: #f4a6a6; /* Cor sólida simples */
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -274,8 +274,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(244, 166, 166, 0.3);
+    transition: background 0.2s ease; /* Transição simplificada */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
     margin-top: 0.5rem;
     display: inline-flex;
     align-items: center;
@@ -292,8 +292,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 }
 
 .btn-login-main:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(244, 166, 166, 0.4);
+    background: #e89494; /* Escurece ligeiramente no hover */
+    /* Transform e sombra pesada removidos */
 }
 
 .forgot-password-link {
@@ -547,8 +547,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     max-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #fff5f7 0%, #ffeef2 20%, #ffe5eb 40%, #f8d5e0 60%, #f0c5d5 80%, #e8b5ca 100%);
-    background-attachment: fixed;
+    background: #fff5f7; /* Cor sólida simples em vez de gradiente complexo */
     overflow: hidden !important; /* SEM scroll - scroll apenas nas áreas internas */
     overflow-x: hidden !important; /* Sempre sem scroll horizontal */
     overflow-y: hidden !important; /* Sempre sem scroll vertical */
@@ -562,36 +561,22 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     -webkit-overflow-scrolling: auto !important;
 }
 
-.container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(244, 166, 166, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(232, 180, 184, 0.06) 0%, transparent 50%),
-        radial-gradient(circle at 40% 20%, rgba(255, 192, 203, 0.05) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-}
+/* Removido container::before com radial-gradients pesados para melhor performance */
 
 /* Header */
 .header {
-    background: linear-gradient(135deg, #f4a6a6 0%, #e8b4b8 100%) !important; /* Garante que o fundo está correto */
+    background: #f4a6a6 !important; /* Cor sólida simples em vez de gradiente */
     color: #8b5a5a;
     padding: 1.2rem 2rem;
     padding-top: max(1.2rem, calc(1.2rem + env(safe-area-inset-top))) !important; /* Suporte para safe area (notch iOS) */
-    box-shadow: 0 6px 30px rgba(244, 166, 166, 0.35), 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra mais destacada */
-    border-bottom: 2px solid rgba(255, 255, 255, 0.4); /* Borda mais visível */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Borda simples */
     position: relative;
     z-index: 1000 !important; /* Z-index alto para ficar acima de tudo */
     width: 100%;
     box-sizing: border-box;
     /* Otimizações de performance */
     contain: layout style paint;
-    /* transform: translateZ(0); */ /* Removido - otimização desnecessária */
 }
 
 .header-content {
@@ -1057,12 +1042,12 @@ body.device-mobile .chat-messages {
 
 .status-online {
     color: #a8d5a8;
-    text-shadow: 0 1px 2px rgba(168, 213, 168, 0.3);
+    /* text-shadow removido para melhor performance */
 }
 
 .status-offline {
     color: #f4a6a6;
-    text-shadow: 0 1px 2px rgba(244, 166, 166, 0.3);
+    /* text-shadow removido para melhor performance */
 }
 
 /* Chat Container */
@@ -1078,25 +1063,12 @@ body.device-mobile .chat-messages {
     margin: 0 auto;
     box-sizing: border-box;
     height: 100%;
-    /* Gradiente suave de fundo */
-    background: linear-gradient(135deg, rgba(255, 245, 247, 0.3) 0%, rgba(255, 238, 242, 0.2) 50%, rgba(248, 213, 224, 0.3) 100%);
-    background-attachment: fixed;
+    /* Fundo sólido simples em vez de gradiente */
+    background: rgba(255, 245, 247, 0.5);
 }
 
-/* Elementos decorativos no chat-container */
-.chat-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        radial-gradient(circle at 15% 25%, rgba(255, 182, 193, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 85% 75%, rgba(255, 192, 203, 0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-}
+/* Elementos decorativos removidos para melhor performance */
+/* chat-container::before com radial-gradients removido */
 
 /* Sidebar */
 .sidebar {
@@ -1328,10 +1300,9 @@ body.device-mobile .chat-messages {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    background: linear-gradient(135deg, #fff5f7 0%, #ffeef2 25%, #ffe5eb 50%, #f8d5e0 75%, #f0c5d5 100%) !important;
-    background-attachment: scroll !important; /* Mudado de fixed para scroll - melhor performance */
+    background: #fff5f7 !important; /* Cor sólida simples */
     z-index: 10 !important;
-    animation: fadeIn 0.8s ease-in-out;
+    /* Animação removida para melhor performance */
     overflow-y: auto !important; /* ÚNICO scroll permitido - apenas aqui */
     overflow-x: hidden !important;
     padding: 1rem 0 !important;
@@ -1346,36 +1317,8 @@ body.device-mobile .chat-messages {
     overscroll-behavior: contain !important;
 }
 
-/* Elementos decorativos de fundo */
-.welcome-message::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        radial-gradient(circle at 20% 30%, rgba(255, 182, 193, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(255, 192, 203, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(255, 218, 225, 0.1) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.welcome-message::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background-image: 
-        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50m-40 0a40 40 0 1 1 80 0a40 40 0 1 1 -80 0' fill='none' stroke='%23ffb6c1' stroke-width='0.5' opacity='0.1'/%3E%3C/svg%3E");
-    background-size: 150px 150px;
-    /* animation: backgroundMove 20s linear infinite; */ /* Desabilitado para melhor performance */
-    pointer-events: none;
-    z-index: 0;
-}
+/* Elementos decorativos removidos para melhor performance */
+/* welcome-message::before e ::after removidos */
 
 @keyframes backgroundMove {
     0% { transform: translate(0, 0); }
@@ -1449,19 +1392,14 @@ body.device-mobile .chat-messages {
 .welcome-icon-wrapper i {
     position: relative;
     z-index: 2;
+    font-size: 3rem; /* Garante que o ícone seja visível */
+    color: #f4a6a6; /* Cor do ícone */
+    display: block; /* Garante que o ícone seja exibido */
 }
 
 .icon-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, rgba(255, 107, 157, 0.3) 0%, rgba(255, 107, 157, 0.1) 50%, transparent 70%);
-    border-radius: 50%;
-    z-index: 1;
-    /* animation: pulseGlow 3s ease-in-out infinite; */ /* Desabilitado para melhor performance */
+    /* Removido completamente - estava criando o efeito de borrão */
+    display: none;
 }
 
 @keyframes fadeIn {
@@ -2337,6 +2275,11 @@ body.device-mobile .rotating-message {
     /* backdrop-filter: blur(10px); */ /* Removido para melhor performance - muito pesado */
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    white-space: nowrap; /* Garante que o texto não quebre */
+    overflow: visible; /* Garante que o texto não seja cortado */
+    width: auto; /* Largura automática para acomodar o texto */
+    max-width: calc(100% - 2rem); /* Não ultrapassa a largura disponível */
+    flex-wrap: nowrap; /* Não permite quebra de linha */
 }
 
 .typing-indicator.show {
@@ -2373,15 +2316,14 @@ body.device-mobile .rotating-message {
 
 /* Input Area */
 .input-area {
-    background: rgba(255, 252, 248, 0.95);
+    background: rgba(255, 252, 248, 0.98); /* Mais opaco para não precisar de blur */
     border-top: 1px solid rgba(244, 166, 166, 0.2);
     padding: 1.2rem;
-    backdrop-filter: blur(15px);
+    /* backdrop-filter removido para melhor performance */
     position: relative;
     z-index: 999 !important; /* Abaixo do header, mas acima do conteúdo */
     /* Otimizações de performance */
     contain: layout style paint;
-    /* transform: translateZ(0); */ /* Removido - otimização desnecessária */
 }
 
 /* Mobile: Ajusta tamanho do input area e botões para diferentes tamanhos de tela */
@@ -2746,23 +2688,23 @@ body.device-mobile #send-button {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #a8d5a8, #8bc34a);
+    background: #8bc34a; /* Cor sólida simples */
     color: white;
-    box-shadow: 0 4px 12px rgba(168, 213, 168, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #e8b4b8, #f4a6a6);
+    background: #f4a6a6; /* Cor sólida simples */
     color: white;
-    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
 }
 
 .btn-send {
-    background: linear-gradient(135deg, #f4a6a6, #e8b4b8);
+    background: #f4a6a6; /* Cor sólida simples */
     color: white;
     width: 48px;
     height: 48px;
-    box-shadow: 0 6px 15px rgba(244, 166, 166, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
     margin-left: 0.2rem;
 }
 
@@ -9178,6 +9120,14 @@ body.device-mobile .welcome-message .welcome-content {
     .typing-indicator {
         margin: 0.5rem 0.75rem !important;
         font-size: 0.85rem !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        max-width: calc(100% - 1.5rem) !important;
+    }
+    
+    .typing-indicator span {
+        white-space: nowrap !important;
+        overflow: visible !important;
     }
 
     /* PREVENIR ZOOM EM INPUTS NO iOS */

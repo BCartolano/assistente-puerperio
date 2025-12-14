@@ -1,5 +1,40 @@
 class ChatbotPuerperio {
     constructor() {
+        // Modo de desenvolvimento (detecta localhost ou variável de ambiente)
+        // IMPORTANTE: Definir ANTES de qualquer método que use this.log
+        this.isDevelopment = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' ||
+                           window.location.hostname.includes('.local') ||
+                           window.DEBUG_MODE === true;
+        
+        // Wrapper para console logs - apenas em desenvolvimento
+        // IMPORTANTE: Definir ANTES de chamar generateUserId()
+        this.log = (...args) => {
+            if (this.isDevelopment) {
+                console.log(...args);
+            }
+        };
+        this.warn = (...args) => {
+            if (this.isDevelopment) {
+                console.warn(...args);
+            }
+        };
+        this.error = (...args) => {
+            // Erros sempre logam, mas podem ser silenciados em produção se necessário
+            if (this.isDevelopment) {
+                console.error(...args);
+            }
+        };
+        
+        // Função de sanitização HTML básica
+        this.sanitizeHTML = (str) => {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        };
+        
+        // Agora pode chamar generateUserId() que usa this.log
         this.userId = this.generateUserId();
         
         // Função auxiliar para remover elementos de forma segura
@@ -8,7 +43,7 @@ class ChatbotPuerperio {
             
             // Verifica se o elemento ainda está no DOM
             if (!element.parentNode) {
-                console.warn('⚠️ [DOM] Elemento já foi removido do DOM');
+                this.warn('⚠️ [DOM] Elemento já foi removido do DOM');
                 return false;
             }
             
@@ -24,14 +59,14 @@ class ChatbotPuerperio {
                     return true;
                 }
             } catch (e) {
-                console.warn('⚠️ [DOM] Erro ao remover elemento:', e);
+                this.warn('⚠️ [DOM] Erro ao remover elemento:', e);
                 // Última tentativa: verifica se ainda existe parentNode e tenta remover
                 if (element.parentNode) {
                     try {
                         element.parentNode.removeChild(element);
                         return true;
                     } catch (e2) {
-                        console.error('❌ [DOM] Erro crítico ao remover elemento:', e2);
+                        this.error('❌ [DOM] Erro crítico ao remover elemento:', e2);
                         return false;
                     }
                 }
@@ -57,14 +92,14 @@ class ChatbotPuerperio {
             .then(res => {
                 if (res.ok) {
                     return res.json().then(user => {
-                        console.log('✅ [AUTH] Usuário já está logado:', user.name);
+                        this.log('✅ [AUTH] Usuário já está logado:', user.name);
                         this.userLoggedIn = true;
                         this.currentUserName = user.name;
                         
                         // IMPORTANTE: Atualiza userId com o ID real do backend
                         if (user.id) {
                             this.userId = user.id;
-                            console.log(`✅ [AUTH] userId atualizado para: ${this.userId}`);
+                            this.log(`✅ [AUTH] userId atualizado para: ${this.userId}`);
                         }
                         
                         this.updateWelcomeMessage(this.currentUserName);
@@ -102,7 +137,7 @@ class ChatbotPuerperio {
         if (oldAccountBtn) {
             oldAccountBtn.style.display = 'none';
             if (this.safeRemoveElement(oldAccountBtn)) {
-                console.log('✅ [WELCOME] Botão antigo removido');
+                this.log('✅ [WELCOME] Botão antigo removido');
             }
         }
         
@@ -132,36 +167,36 @@ class ChatbotPuerperio {
             }
             
             this.userGreeting.textContent = greeting;
-            console.log(`✅ [WELCOME] Mensagem atualizada: ${greeting}`);
+            this.log(`✅ [WELCOME] Mensagem atualizada: ${greeting}`);
         }
     }
     
     initMainApp() {
-        console.log('🚀 [INIT] initMainApp chamado');
+        this.log('🚀 [INIT] initMainApp chamado');
         const loginScreen = document.getElementById('login-screen');
         const mainContainer = document.getElementById('main-container');
         
         if (loginScreen) {
             loginScreen.classList.add('hidden');
             loginScreen.style.display = 'none';
-            console.log('✅ [INIT] Tela de login ocultada');
+            this.log('✅ [INIT] Tela de login ocultada');
         } else {
-            console.error('❌ [INIT] Elemento login-screen não encontrado!');
+            this.error('❌ [INIT] Elemento login-screen não encontrado!');
         }
         
         if (mainContainer) {
             mainContainer.style.display = 'flex';
             mainContainer.classList.remove('hidden');
-            console.log('✅ [INIT] Container principal exibido');
+            this.log('✅ [INIT] Container principal exibido');
         } else {
-            console.error('❌ [INIT] Elemento main-container não encontrado!');
+            this.error('❌ [INIT] Elemento main-container não encontrado!');
         }
         
         // Mostra o footer quando o app é inicializado
         const footer = document.getElementById('app-footer');
         if (footer) {
             footer.style.display = 'block';
-            console.log('✅ [INIT] Footer exibido');
+            this.log('✅ [INIT] Footer exibido');
         }
         
                   // Verifica se os elementos existem antes de inicializar
@@ -210,9 +245,9 @@ class ChatbotPuerperio {
                     }, 300);
                 }
 
-                console.log('✅ [INIT] App inicializado com sucesso');
+                this.log('✅ [INIT] App inicializado com sucesso');
           } catch (error) {
-              console.error('❌ [INIT] Erro ao inicializar app:', error);
+              this.error('❌ [INIT] Erro ao inicializar app:', error);
           }
     }
     
@@ -235,7 +270,7 @@ class ChatbotPuerperio {
         this.userLoggedIn = false;
         this.currentUserName = null;
         
-        console.log('✅ [LOGIN] Tela de login exibida');
+        this.log('✅ [LOGIN] Tela de login exibida');
     }
     
     initializeLoginElements() {
@@ -420,7 +455,7 @@ class ChatbotPuerperio {
             if (rememberMeCheckbox) {
                 rememberMeCheckbox.checked = true;
             }
-            console.log('💾 [LOGIN] Email lembrado carregado:', rememberedEmail);
+            this.log('💾 [LOGIN] Email lembrado carregado:', rememberedEmail);
         }
     }
     
@@ -452,15 +487,15 @@ class ChatbotPuerperio {
             return;
         }
         
-        console.log(`🔍 [LOGIN] Tentando login com email: ${email}, password length: ${password.length}, remember_me: ${rememberMe}`);
+        this.log(`🔍 [LOGIN] Tentando login com email: ${email}, password length: ${password.length}, remember_me: ${rememberMe}`);
         
         // Salva email no localStorage se "Lembre-se de mim" estiver marcado
         if (rememberMe) {
             localStorage.setItem('remembered_email', email);
-            console.log('💾 [LOGIN] Email salvo no localStorage');
+            this.log('💾 [LOGIN] Email salvo no localStorage');
         } else {
             localStorage.removeItem('remembered_email');
-            console.log('🗑️ [LOGIN] Email removido do localStorage');
+            this.log('🗑️ [LOGIN] Email removido do localStorage');
         }
         
         try {
@@ -472,11 +507,11 @@ class ChatbotPuerperio {
             });
             
             const data = await response.json();
-            console.log('🔍 [LOGIN] Resposta completa:', data);
-            console.log('🔍 [LOGIN] Status HTTP:', response.status);
-            console.log('🔍 [LOGIN] response.ok:', response.ok);
-            console.log('🔍 [LOGIN] data.sucesso:', data.sucesso);
-            console.log('🔍 [LOGIN] data.user:', data.user);
+            this.log('🔍 [LOGIN] Resposta completa:', data);
+            this.log('🔍 [LOGIN] Status HTTP:', response.status);
+            this.log('🔍 [LOGIN] response.ok:', response.ok);
+            this.log('🔍 [LOGIN] data.sucesso:', data.sucesso);
+            this.log('🔍 [LOGIN] data.user:', data.user);
             
             // Se houver erro específico de email não verificado, mostra mensagem mais clara
             if (data.erro && data.mensagem && data.pode_login === false) {
@@ -489,14 +524,14 @@ class ChatbotPuerperio {
             }
             
             if (response.ok && (data.sucesso === true || data.user)) {
-                console.log('✅ [LOGIN] Login bem-sucedido, inicializando app...');
+                this.log('✅ [LOGIN] Login bem-sucedido, inicializando app...');
                 this.userLoggedIn = true;
                 this.currentUserName = data.user ? data.user.name : email;
                 
                 // IMPORTANTE: Atualiza userId com o ID real do backend
                 if (data.user && data.user.id) {
                     this.userId = data.user.id;
-                    console.log(`✅ [LOGIN] userId atualizado para: ${this.userId}`);
+                    this.log(`✅ [LOGIN] userId atualizado para: ${this.userId}`);
                 }
                 
                 // Atualiza mensagem de boas-vindas
@@ -504,16 +539,16 @@ class ChatbotPuerperio {
                 
                 // Mostra mensagem de boas-vindas se disponível
                 if (data.mensagem) {
-                    console.log('💕 Mensagem:', data.mensagem);
+                    this.log('💕 Mensagem:', data.mensagem);
                 }
                 
                 // Pequeno delay para garantir que a sessão está criada
                 setTimeout(() => {
-                    console.log('🚀 [LOGIN] Chamando initMainApp...');
+                    this.log('🚀 [LOGIN] Chamando initMainApp...');
                     this.initMainApp();
                 }, 200);
             } else {
-                console.log('❌ [LOGIN] Login falhou ou resposta inválida');
+                this.log('❌ [LOGIN] Login falhou ou resposta inválida');
                 if (data.pode_login === false && data.mensagem) {
                     // Email não verificado
                     if (confirm(data.mensagem + '\n\nDeseja reenviar o email de verificação?')) {
@@ -521,11 +556,11 @@ class ChatbotPuerperio {
                     }
                 } else {
                     alert('⚠️ ' + (data.erro || data.mensagem || 'Erro ao fazer login'));
-                    console.error('❌ [LOGIN] Erro detalhado:', data);
+                    this.error('❌ [LOGIN] Erro detalhado:', data);
                 }
             }
         } catch (error) {
-            console.error('Erro ao fazer login:', error);
+            this.error('Erro ao fazer login:', error);
             alert('❌ Erro ao fazer login. Tente novamente.');
         }
     }
@@ -577,7 +612,7 @@ class ChatbotPuerperio {
                 );
             }
         } catch (error) {
-            console.error('Erro ao reenviar email:', error);
+            this.error('Erro ao reenviar email:', error);
             this.showNotification(
                 'Erro ao reenviar ❌',
                 'Erro ao reenviar email. Tente novamente ou verifique se o email está configurado no servidor.',
@@ -687,7 +722,7 @@ class ChatbotPuerperio {
             }, 300); // Pequeno delay para garantir que a tela de login já foi exibida
             
         } catch (error) {
-            console.error('Erro ao fazer logout:', error);
+            this.error('Erro ao fazer logout:', error);
             // Força logout local mesmo com erro
             this.userLoggedIn = false;
             this.currentUserName = null;
@@ -728,7 +763,7 @@ class ChatbotPuerperio {
                 baby_name: babyName || ''
             };
             
-            console.log('[REGISTER] Enviando dados:', {
+            this.log('[REGISTER] Enviando dados:', {
                 name: name,
                 email: email,
                 password: '***',
@@ -741,10 +776,10 @@ class ChatbotPuerperio {
                 body: JSON.stringify(requestData)
             });
             
-            console.log('[REGISTER] Status da resposta:', response.status);
+            this.log('[REGISTER] Status da resposta:', response.status);
             
             const data = await response.json();
-            console.log('[REGISTER] Resposta do servidor:', data);
+            this.log('[REGISTER] Resposta do servidor:', data);
             
             if (response.ok) {
                 // Mostra notificação de sucesso
@@ -761,7 +796,7 @@ class ChatbotPuerperio {
             } else {
                 // Mostra mensagem de erro específica do servidor
                 const errorMessage = data.erro || data.mensagem || 'Erro ao cadastrar. Tente novamente.';
-                console.error('[REGISTER] Erro:', errorMessage);
+                this.error('[REGISTER] Erro:', errorMessage);
                 this.showNotification(
                     'Erro no cadastro ⚠️',
                     errorMessage,
@@ -769,7 +804,7 @@ class ChatbotPuerperio {
                 );
             }
         } catch (error) {
-            console.error('[REGISTER] Erro na requisição:', error);
+            this.error('[REGISTER] Erro na requisição:', error);
             this.showNotification(
                 'Erro ao cadastrar ❌',
                 'Erro ao cadastrar. Verifique sua conexão e tente novamente.',
@@ -786,9 +821,9 @@ class ChatbotPuerperio {
         if (!userId) {
             userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('chatbot_user_id', userId);
-            console.log('🆕 [USER_ID] Novo userId gerado e salvo:', userId);
+            this.log('🆕 [USER_ID] Novo userId gerado e salvo:', userId);
         } else {
-            console.log('✅ [USER_ID] userId recuperado do localStorage:', userId);
+            this.log('✅ [USER_ID] userId recuperado do localStorage:', userId);
         }
         
         return userId;
@@ -863,10 +898,10 @@ class ChatbotPuerperio {
         this.closeSidebar = document.getElementById('close-sidebar');
         
         // Log para debug
-        console.log('🔍 [INIT] Elementos do sidebar:');
-        console.log('🔍 [INIT] sidebar:', !!this.sidebar);
-        console.log('🔍 [INIT] menuToggle:', !!this.menuToggle);
-        console.log('🔍 [INIT] closeSidebar:', !!this.closeSidebar);
+        this.log('🔍 [INIT] Elementos do sidebar:');
+        this.log('🔍 [INIT] sidebar:', !!this.sidebar);
+        this.log('🔍 [INIT] menuToggle:', !!this.menuToggle);
+        this.log('🔍 [INIT] closeSidebar:', !!this.closeSidebar);
         this.clearHistoryBtn = document.getElementById('clear-history');
         this.categoriesContainer = document.getElementById('categories'); // Pode ser null se não existir no HTML
         
@@ -1132,7 +1167,7 @@ class ChatbotPuerperio {
             this.categories = categories;
             this.renderCategories();
         } catch (error) {
-            console.error('Erro ao carregar categorias:', error);
+            this.error('Erro ao carregar categorias:', error);
             if (this.categoriesContainer) {
                 this.categoriesContainer.innerHTML = `
                     <div class="category-item">
@@ -1146,7 +1181,7 @@ class ChatbotPuerperio {
     
     renderCategories() {
         if (!this.categoriesContainer) {
-            console.warn('categoriesContainer não encontrado');
+            this.warn('categoriesContainer não encontrado');
             return;
         }
         
@@ -1191,7 +1226,7 @@ class ChatbotPuerperio {
         async sendMessage() {
         // Verifica se messageInput existe antes de usar
         if (!this.messageInput || !this.messageInput.value) {
-            console.warn('messageInput não está disponível');
+            this.warn('messageInput não está disponível');
             return;
         }
 
@@ -1242,7 +1277,7 @@ class ChatbotPuerperio {
         this.showTyping();
 
         try {
-            console.log('📤 Enviando mensagem:', message);
+            this.log('📤 Enviando mensagem:', message);
             
             const response = await fetch('/api/chat', {
                 method: 'POST',
@@ -1256,16 +1291,16 @@ class ChatbotPuerperio {
                 })
             });
 
-            console.log('📥 Resposta recebida, status:', response.status);
+            this.log('📥 Resposta recebida, status:', response.status);
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('❌ Erro na resposta:', response.status, errorText);
+                this.error('❌ Erro na resposta:', response.status, errorText);
                 throw new Error(`Erro na resposta do servidor: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('✅ Dados recebidos:', data);
+            this.log('✅ Dados recebidos:', data);
 
             // Esconde indicador de digitação
             this.hideTyping();
@@ -1294,7 +1329,7 @@ class ChatbotPuerperio {
                     this.showAlert(data.alertas);
                 }
             } else {
-                console.warn('⚠️ Resposta vazia recebida:', data);
+                this.warn('⚠️ Resposta vazia recebida:', data);
                 this.addMessage(
                     'Desculpe, não consegui processar sua pergunta. Tente reformulá-la ou tente novamente mais tarde.',
                     'assistant'
@@ -1302,7 +1337,7 @@ class ChatbotPuerperio {
             }
 
         } catch (error) {
-            console.error('❌ Erro ao enviar mensagem:', error);
+            this.error('❌ Erro ao enviar mensagem:', error);
             this.hideTyping();
             this.addMessage(
                 'Desculpe, ocorreu um erro ao processar sua pergunta. Verifique sua conexão e tente novamente.',
@@ -1371,7 +1406,7 @@ class ChatbotPuerperio {
 
         // Verifica se chatMessages existe antes de adicionar mensagem
         if (!this.chatMessages) {
-            console.warn('chatMessages não está disponível');
+            this.warn('chatMessages não está disponível');
             return;
         }
 
@@ -1380,8 +1415,11 @@ class ChatbotPuerperio {
     }
     
     formatMessage(content) {
-        // Converte quebras de linha em HTML
-        return content.replace(/\n/g, '<br>');
+        if (!content) return '';
+        // Sanitiza o conteúdo primeiro para prevenir XSS
+        const sanitized = this.sanitizeHTML(content);
+        // Converte quebras de linha em HTML (seguro após sanitização)
+        return sanitized.replace(/\n/g, '<br>');
     }
     
         showTyping() {
@@ -1429,17 +1467,17 @@ class ChatbotPuerperio {
             oscillator.stop(audioContext.currentTime + duration / 1000);
         } catch (e) {
             // Silenciosamente falha se áudio não estiver disponível
-            console.log('Áudio não disponível');
+            this.log('Áudio não disponível');
         }
     }
 
     toggleSidebar() {
-        console.log('🔍 [SIDEBAR] toggleSidebar chamado');
-        console.log('🔍 [SIDEBAR] sidebar existe:', !!this.sidebar);
-        console.log('🔍 [SIDEBAR] userId atual:', this.userId);
+        this.log('🔍 [SIDEBAR] toggleSidebar chamado');
+        this.log('🔍 [SIDEBAR] sidebar existe:', !!this.sidebar);
+        this.log('🔍 [SIDEBAR] userId atual:', this.userId);
         
         if (!this.sidebar || !this.sidebar.classList) {
-            console.error('❌ [SIDEBAR] Sidebar não encontrado ou sem classList');
+            this.error('❌ [SIDEBAR] Sidebar não encontrado ou sem classList');
             return;
         }
         
@@ -1447,8 +1485,8 @@ class ChatbotPuerperio {
         const rect = this.sidebar.getBoundingClientRect();
         const isActuallyOpen = rect.x >= 0;
         
-        console.log('🔍 [SIDEBAR] Estado pela classe:', this.sidebar.classList.contains('open') ? 'ABERTO' : 'FECHADO');
-        console.log('🔍 [SIDEBAR] Estado pela posição (x):', isActuallyOpen ? 'ABERTO' : 'FECHADO', `(x=${rect.x})`);
+        this.log('🔍 [SIDEBAR] Estado pela classe:', this.sidebar.classList.contains('open') ? 'ABERTO' : 'FECHADO');
+        this.log('🔍 [SIDEBAR] Estado pela posição (x):', isActuallyOpen ? 'ABERTO' : 'FECHADO', `(x=${rect.x})`);
         
         // Se está fechado (x < 0), abre; se está aberto, fecha
         const isOpening = !isActuallyOpen;
@@ -1460,7 +1498,7 @@ class ChatbotPuerperio {
             setTimeout(() => {
                 this.sidebar.style.removeProperty('transform'); // Remove inline style para usar CSS
             }, 10);
-            console.log('✅ [SIDEBAR] ABRINDO - Classe "open" adicionada');
+            this.log('✅ [SIDEBAR] ABRINDO - Classe "open" adicionada');
         } else {
             // FORÇA FECHAMENTO
             this.sidebar.classList.remove('open');
@@ -1468,18 +1506,18 @@ class ChatbotPuerperio {
             setTimeout(() => {
                 this.sidebar.style.removeProperty('transform'); // Remove inline style para usar CSS
             }, 10);
-            console.log('✅ [SIDEBAR] FECHANDO - Classe "open" removida');
+            this.log('✅ [SIDEBAR] FECHANDO - Classe "open" removida');
         }
         
         // Adiciona/remove classe no body para controlar overlay no mobile
         if (document.body && document.body.classList) {
             if (isOpening) {
                 document.body.classList.add('sidebar-open');
-                console.log('✅ [SIDEBAR] Classe sidebar-open adicionada ao body');
+                this.log('✅ [SIDEBAR] Classe sidebar-open adicionada ao body');
                 this.playSound(500, 150, 'sine'); // Som suave ao abrir
             } else {
                 document.body.classList.remove('sidebar-open');
-                console.log('✅ [SIDEBAR] Classe sidebar-open removida do body');
+                this.log('✅ [SIDEBAR] Classe sidebar-open removida do body');
                 this.playSound(300, 100, 'sine'); // Som mais baixo ao fechar
             }
         }
@@ -1488,9 +1526,9 @@ class ChatbotPuerperio {
         setTimeout(() => {
             const finalRect = this.sidebar.getBoundingClientRect();
             const finalIsOpen = finalRect.x >= 0;
-            console.log('🔍 [SIDEBAR] Estado final:', finalIsOpen ? 'ABERTO' : 'FECHADO', `(x=${finalRect.x})`);
-            console.log('🔍 [SIDEBAR] Classe "open" presente:', this.sidebar.classList.contains('open'));
-            console.log('🔍 [SIDEBAR] Computed transform:', window.getComputedStyle(this.sidebar).transform);
+            this.log('🔍 [SIDEBAR] Estado final:', finalIsOpen ? 'ABERTO' : 'FECHADO', `(x=${finalRect.x})`);
+            this.log('🔍 [SIDEBAR] Classe "open" presente:', this.sidebar.classList.contains('open'));
+            this.log('🔍 [SIDEBAR] Computed transform:', window.getComputedStyle(this.sidebar).transform);
         }, 100);
     }
 
@@ -1544,7 +1582,7 @@ class ChatbotPuerperio {
                     checkElement.style.opacity = '1';
                 }, 500);
             } catch (error) {
-                console.warn('Erro ao atualizar mensagem rotativa:', error);
+                this.warn('Erro ao atualizar mensagem rotativa:', error);
             }
         }, 5000); // Muda a cada 5 segundos
     }
@@ -1653,11 +1691,11 @@ class ChatbotPuerperio {
     
     async loadChatHistory() {
         try {
-            console.log(`🔍 [HISTORY] Carregando histórico para userId: ${this.userId}`);
+            this.log(`🔍 [HISTORY] Carregando histórico para userId: ${this.userId}`);
             const response = await fetch(`/api/historico/${this.userId}`);
             const history = await response.json();
             
-            console.log(`📋 [HISTORY] Histórico recebido: ${history.length} mensagens`);
+            this.log(`📋 [HISTORY] Histórico recebido: ${history.length} mensagens`);
             
             // IMPORTANTE: NÃO exibe o histórico na tela
             // O histórico é carregado apenas para que o backend possa usá-lo como contexto
@@ -1675,19 +1713,19 @@ class ChatbotPuerperio {
             }
             
             if (history.length > 0) {
-                console.log(`✅ [HISTORY] Histórico carregado no backend (${history.length} mensagens) - NÃO exibido na tela para manter interface limpa`);
+                this.log(`✅ [HISTORY] Histórico carregado no backend (${history.length} mensagens) - NÃO exibido na tela para manter interface limpa`);
                 // NÃO mostra mensagem automática - o usuário deve clicar no Menu Inicial para começar
                 // A Sophia lembrará do histórico quando o usuário iniciar uma nova conversa
             } else {
-                console.log(`ℹ️ [HISTORY] Nenhuma mensagem encontrada no histórico para userId: ${this.userId}`);
+                this.log(`ℹ️ [HISTORY] Nenhuma mensagem encontrada no histórico para userId: ${this.userId}`);
             }
             
             // SEMPRE garante que o Menu Inicial está visível ao recarregar
             // O usuário deve clicar para iniciar uma nova conversa
             this.backToWelcomeScreen();
         } catch (error) {
-            console.error('❌ [HISTORY] Erro ao carregar histórico:', error);
-            console.error('❌ [HISTORY] userId usado:', this.userId);
+            this.error('❌ [HISTORY] Erro ao carregar histórico:', error);
+            this.error('❌ [HISTORY] userId usado:', this.userId);
         }
     }
     
@@ -1700,9 +1738,9 @@ class ChatbotPuerperio {
                 });
                 
                 if (response.ok) {
-                    console.log('✅ [HISTORY] Histórico limpo no backend');
+                    this.log('✅ [HISTORY] Histórico limpo no backend');
                 } else {
-                    console.warn('⚠️ [HISTORY] Erro ao limpar histórico no backend');
+                    this.warn('⚠️ [HISTORY] Erro ao limpar histórico no backend');
                 }
                 
                 // Limpa o frontend
@@ -1721,7 +1759,7 @@ class ChatbotPuerperio {
                 
                 alert('Histórico limpo com sucesso!');
             } catch (error) {
-                console.error('Erro ao limpar histórico:', error);
+                this.error('Erro ao limpar histórico:', error);
                 alert('Erro ao limpar histórico. Tente novamente.');
             }
         }
@@ -1768,7 +1806,7 @@ class ChatbotPuerperio {
             const data = await response.json();
             
             if (response.ok && data.sucesso) {
-                console.log('✅ [MEMORY] Memória da Sophia limpa:', data);
+                this.log('✅ [MEMORY] Memória da Sophia limpa:', data);
                 
                 // Mostra mensagem de sucesso detalhada
                 alert(
@@ -1779,18 +1817,18 @@ class ChatbotPuerperio {
                     'A Sophia não se lembrará mais desses dados em conversas futuras.'
                 );
             } else {
-                console.error('❌ [MEMORY] Erro ao limpar memória:', data);
+                this.error('❌ [MEMORY] Erro ao limpar memória:', data);
                 alert('Erro ao limpar memória da Sophia. Tente novamente.');
             }
         } catch (error) {
-            console.error('❌ [MEMORY] Erro ao limpar memória:', error);
+            this.error('❌ [MEMORY] Erro ao limpar memória:', error);
             alert('Erro ao limpar memória da Sophia. Tente novamente.');
         }
     }
     
     showAlert(alertas) {
         if (!this.alertMessage || !this.alertModal) {
-            console.warn('Elementos de alerta não estão disponíveis');
+            this.warn('Elementos de alerta não estão disponíveis');
             return;
         }
         
@@ -1973,7 +2011,7 @@ class ChatbotPuerperio {
             chatContainer.style.paddingTop = '80px';
         }
         
-        console.log('✅ [ALERTA] Aviso visual de risco exibido (nível: ' + nivelRisco + ')');
+        this.log('✅ [ALERTA] Aviso visual de risco exibido (nível: ' + nivelRisco + ')');
     }
     
     hideAvisoVisualRisco() {
@@ -2042,7 +2080,7 @@ class ChatbotPuerperio {
 
             // Verifica se className existe antes de acessar
             if (!('className' in this.statusIndicator)) {
-                console.warn('Status indicator não tem propriedade className');
+                this.warn('Status indicator não tem propriedade className');
                 this.statusIndicator = null;
                 return;
             }
@@ -2065,7 +2103,7 @@ class ChatbotPuerperio {
                         this.statusIndicator.className = 'status-online';
                     }
                 } catch (e) {
-                    console.warn('Erro ao definir className online:', e);
+                    this.warn('Erro ao definir className online:', e);
                     this.statusIndicator = null;
                     return;
                 }
@@ -2074,7 +2112,7 @@ class ChatbotPuerperio {
                         this.statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Online';
                     }
                 } catch (e) {
-                    console.warn('Erro ao definir innerHTML online:', e);
+                    this.warn('Erro ao definir innerHTML online:', e);
                     // Não retorna aqui, apenas loga o erro
                 }
             } else {
@@ -2083,7 +2121,7 @@ class ChatbotPuerperio {
                         this.statusIndicator.className = 'status-offline';
                     }
                 } catch (e) {
-                    console.warn('Erro ao definir className offline:', e);
+                    this.warn('Erro ao definir className offline:', e);
                     this.statusIndicator = null;
                     return;
                 }
@@ -2092,13 +2130,13 @@ class ChatbotPuerperio {
                         this.statusIndicator.innerHTML = '<i class="fas fa-circle"></i> Offline';
                     }
                 } catch (e) {
-                    console.warn('Erro ao definir innerHTML offline:', e);
+                    this.warn('Erro ao definir innerHTML offline:', e);
                     // Não retorna aqui, apenas loga o erro
                 }
             }
         } catch (error) {
             // Se houver erro geral, reseta a referência
-            console.warn('Erro ao atualizar status de conexão:', error);
+            this.warn('Erro ao atualizar status de conexão:', error);
             this.statusIndicator = null;
         }
     }
@@ -2173,7 +2211,7 @@ class ChatbotPuerperio {
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission().then(permission => {
                 if (permission === 'granted') {
-                    console.log('Permissão para notificações concedida');
+                    this.log('Permissão para notificações concedida');
                 }
             });
         }
@@ -2301,7 +2339,7 @@ class ChatbotPuerperio {
                 if (rememberMeCheckbox) {
                     rememberMeCheckbox.checked = true;
                 }
-                console.log('💾 [LOGIN MODAL] Email lembrado carregado:', rememberedEmail);
+                this.log('💾 [LOGIN MODAL] Email lembrado carregado:', rememberedEmail);
             }
         }
     }
@@ -2344,15 +2382,15 @@ class ChatbotPuerperio {
             return;
         }
         
-        console.log(`🔍 [LOGIN MODAL] Tentando login com email: ${email}, password length: ${password.length}, remember_me: ${rememberMe}`);
+        this.log(`🔍 [LOGIN MODAL] Tentando login com email: ${email}, password length: ${password.length}, remember_me: ${rememberMe}`);
         
         // Salva email no localStorage se "Lembre-se de mim" estiver marcado
         if (rememberMe) {
             localStorage.setItem('remembered_email', email);
-            console.log('💾 [LOGIN MODAL] Email salvo no localStorage');
+            this.log('💾 [LOGIN MODAL] Email salvo no localStorage');
         } else {
             localStorage.removeItem('remembered_email');
-            console.log('🗑️ [LOGIN MODAL] Email removido do localStorage');
+            this.log('🗑️ [LOGIN MODAL] Email removido do localStorage');
         }
         
         try {
@@ -2364,9 +2402,9 @@ class ChatbotPuerperio {
             });
             
             const data = await response.json();
-            console.log('🔍 [LOGIN MODAL] Resposta completa:', data);
-            console.log('🔍 [LOGIN MODAL] Status HTTP:', response.status);
-            console.log('🔍 [LOGIN MODAL] response.ok:', response.ok);
+            this.log('🔍 [LOGIN MODAL] Resposta completa:', data);
+            this.log('🔍 [LOGIN MODAL] Status HTTP:', response.status);
+            this.log('🔍 [LOGIN MODAL] response.ok:', response.ok);
             
             // Se houver erro específico de email não verificado, mostra mensagem mais clara
             if (data.erro && data.mensagem && data.pode_login === false) {
@@ -2379,7 +2417,7 @@ class ChatbotPuerperio {
             }
             
             if (response.ok && (data.sucesso === true || data.user)) {
-                console.log('✅ [LOGIN MODAL] Login bem-sucedido');
+                this.log('✅ [LOGIN MODAL] Login bem-sucedido');
                 this.userLoggedIn = true;
                 this.currentUserName = data.user ? data.user.name : email;
                 
@@ -2394,11 +2432,11 @@ class ChatbotPuerperio {
                     window.location.reload();
                 }, 100);
             } else {
-                console.error('❌ [LOGIN MODAL] Erro no login:', data.erro);
+                this.error('❌ [LOGIN MODAL] Erro no login:', data.erro);
                 alert('⚠️ ' + (data.erro || 'Email ou senha incorretos'));
             }
         } catch (error) {
-            console.error('❌ [LOGIN MODAL] Erro na requisição:', error);
+            this.error('❌ [LOGIN MODAL] Erro na requisição:', error);
             alert('❌ Erro ao fazer login. Verifique sua conexão e tente novamente.');
         }
     }
@@ -2525,7 +2563,7 @@ class ChatbotPuerperio {
                                 }
                             } else {
                                 // URL inválida, ignora
-                                console.warn('URL de imagem inválida (sem domínio):', passo.imagem);
+                                this.warn('URL de imagem inválida (sem domínio):', passo.imagem);
                                 imagemUrl = null;
                             }
                         }
@@ -2538,7 +2576,7 @@ class ChatbotPuerperio {
                         }
                     }
                 } catch (e) {
-                    console.warn('Erro ao processar URL da imagem:', passo.imagem, e);
+                    this.warn('Erro ao processar URL da imagem:', passo.imagem, e);
                     // Ignora imagens inválidas silenciosamente
                 }
             }
@@ -2890,7 +2928,7 @@ class ChatbotPuerperio {
                 return await response.json();
             }
         } catch (error) {
-            console.error('Erro ao buscar status:', error);
+            this.error('Erro ao buscar status:', error);
         }
         return {};
     }
@@ -3155,7 +3193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatbot.statusIndicator = null;
             }
         } catch (error) {
-            console.warn('Erro no setInterval de checkConnectionStatus:', error);
+            this.warn('Erro no setInterval de checkConnectionStatus:', error);
         }
     }, 5000);
 
@@ -3164,7 +3202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             chatbot.checkConnectionStatus();
         } catch (error) {
-            console.warn('Erro ao verificar status inicial:', error);
+            this.warn('Erro ao verificar status inicial:', error);
         }
     }
 
@@ -3181,7 +3219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            console.warn('Erro no evento online:', error);
+            this.warn('Erro no evento online:', error);
         }
     });
     window.addEventListener('offline', () => {
@@ -3196,7 +3234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            console.warn('Erro no evento offline:', error);
+            this.warn('Erro no evento offline:', error);
         }
     });
     

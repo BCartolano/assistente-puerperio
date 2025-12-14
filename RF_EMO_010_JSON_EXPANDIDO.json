@@ -1,0 +1,138 @@
+{
+  "perfis_emocionais": {
+    "mae_ansiosa": {
+      "_nota": "Perfil existente - RF.EMO.009 - Manter como está"
+    },
+    "mae_isolada_sobrecarga": {
+      "nome": "Mãe Isolada/Sobrecarga",
+      "descricao": "Perfil de mãe que apresenta sinais de isolamento social e sobrecarga emocional (burnout materno)",
+      "codigo": "RF.EMO.010",
+      "padroes_deteccao": {
+        "palavras_chave": [
+          "sozinha", "sozinho", "isolada", "isolado", "solitária", "solitário",
+          "ninguém me ajuda", "ninguem me ajuda", "sem ajuda", "sem apoio",
+          "abandonada", "abandonado", "esquecida", "esquecido",
+          "não tenho ninguém", "nao tenho ninguem", "sem ninguém", "sem ninguem",
+          "me sinto sozinha", "me sinto sozinho", "estou sozinha", "estou sozinho",
+          "ninguém entende", "ninguem entende", "ninguém me entende",
+          "sem rede de apoio", "sem suporte", "sem companhia",
+          "não aguento mais", "nao aguento mais", "não aguento", "nao aguento",
+          "sobrecarregada", "sobrecarregado", "sobrecarga", "sobrecarregar",
+          "exausta", "exausto", "exaustão", "exaustao", "esgotada", "esgotado",
+          "cansada demais", "cansado demais", "muito cansada", "muito cansado",
+          "sem forças", "sem forcas", "sem energia", "sem disposição",
+          "desmotivada", "desmotivado", "sem motivação", "sem motivacao",
+          "sem vontade", "sem ânimo", "sem animo", "sem esperança",
+          "não tenho forças", "nao tenho forcas", "sem forças para",
+          "burnout", "burn out", "esgotamento", "esgotamento mental",
+          "não consigo mais", "nao consigo mais", "não consigo lidar",
+          "muito trabalho", "muita responsabilidade", "tudo sozinha",
+          "fazer tudo sozinha", "fazer tudo sozinho", "carregar tudo sozinha"
+        ],
+        "frases_completas": [
+          "estou muito cansada",
+          "ninguém me ajuda",
+          "me sinto sozinha",
+          "não tenho ninguém para ajudar",
+          "estou sobrecarregada",
+          "faço tudo sozinha",
+          "me sinto isolada",
+          "não tenho apoio",
+          "não aguento mais essa rotina",
+          "estou completamente esgotada",
+          "me sinto isolada de tudo",
+          "não tenho forças para continuar",
+          "estou em burnout",
+          "não consigo mais lidar com tudo",
+          "me sinto abandonada",
+          "ninguém entende o que estou passando",
+          "estou fazendo tudo sozinha e não aguento mais"
+        ],
+        "contextos": [
+          "gestação", "gravidez", "grávida", "gestante",
+          "parto", "pós-parto", "pos parto", "puerpério",
+          "bebê", "recém-nascido", "neném", "filho", "filha",
+          "maternidade", "mãe", "mamãe", "mamae",
+          "cuidados", "cuidar", "rotina", "dia a dia",
+          "casa", "trabalho", "família", "responsabilidades"
+        ]
+      },
+      "niveis": {
+        "leve": {
+          "descricao": "Sentimentos de dúvida e cansaço - sobrecarga leve",
+          "indicadores": [
+            "cansaço frequente",
+            "sentimentos de solidão ocasionais",
+            "dificuldade em pedir ajuda",
+            "sobrecarga de tarefas"
+          ],
+          "respostas": [
+            "Entendo que você esteja se sentindo sobrecarregada. 💛 É muito comum sentir isso na maternidade, especialmente quando parece que tudo recai sobre você.\n\n**Você não está sozinha nessa.** Muitas mães passam por momentos parecidos.\n\n**Algumas sugestões que podem ajudar:**\n- Peça ajuda à família e amigos - você não precisa fazer tudo sozinha\n- Priorize o que é realmente essencial\n- Reserve alguns minutos para você, mesmo que sejam poucos\n- Converse com outras mães - grupos de apoio podem ajudar muito\n- Lembre-se: pedir ajuda não é fraqueza, é sabedoria\n\n**Se precisar de apoio emocional:**\n- **CVV (188)** - disponível 24 horas, gratuito e sigiloso\n- **Disque Saúde (136)** - orientação em saúde\n\nVocê está fazendo um trabalho incrível. 💛",
+            "Percebo que você está se sentindo sobrecarregada e talvez um pouco isolada. 💛 Isso pode ser muito difícil.\n\n**É importante lembrar:** Você não precisa fazer tudo sozinha. Pedir ajuda é um ato de autocuidado.\n\n**Algumas ideias:**\n- Identifique pessoas que podem ajudar (família, amigos, vizinhos)\n- Aceite ajuda quando oferecida\n- Considere grupos de mães na sua região ou online\n- Reserve tempo para você, mesmo que sejam 10 minutos por dia\n- Não se culpe por não conseguir fazer tudo\n\n**Recursos de apoio:**\n- **CVV (188)** - 24 horas\n- **Disque Saúde (136)**\n\nVocê merece apoio e cuidado também. 💛"
+          ]
+        },
+        "moderada": {
+          "descricao": "Exaustão e isolamento profundo - burnout materno",
+          "indicadores": [
+            "exaustão física e emocional intensa",
+            "isolamento social significativo",
+            "sentimentos de desesperança",
+            "dificuldade extrema em lidar com responsabilidades",
+            "sintomas de burnout"
+          ],
+          "respostas": [
+            "Vejo que você está passando por um momento muito difícil de exaustão e isolamento. 💛 Isso é sério e precisa de atenção.\n\n**Burnout materno é real e tratável.** Você não precisa enfrentar isso sozinha.\n\n**Por favor, busque ajuda:**\n- **Fale com seu médico ou vá ao posto de saúde** - eles podem te orientar\n- **Busque um psicólogo** - especialista em saúde mental materna\n- **Procure grupos de apoio** - outras mães podem entender o que você passa\n- **Peça ajuda prática** - família, amigos, ou serviços de apoio\n\n**Apoio imediato:**\n- **CVV (188)** - 24 horas, gratuito e sigiloso\n- **Disque Saúde (136)** - orientação\n- **SAMU (192)** - se for urgente\n\n**Lembre-se:**\n- Você não está sozinha\n- Muitas mães passam por isso\n- Há ajuda disponível\n- Buscar apoio é um ato de coragem\n\n**Por favor, não hesite em buscar ajuda profissional.** Sua saúde e bem-estar são fundamentais. 💛",
+            "Percebo que você está em sofrimento profundo com exaustão e isolamento. 💛 Isso precisa de cuidado profissional.\n\n**Burnout materno pode ser tratado e você não precisa sofrer sozinha.**\n\n**Ações imediatas:**\n1. **Se for urgente:** SAMU 192 ou UPA mais próxima\n2. **Para acompanhamento:** Seu médico, posto de saúde ou psicólogo\n3. **Apoio emocional:** CVV (188) - 24 horas\n\n**Recursos de apoio:**\n- **CVV (188)** - apoio emocional 24h\n- **Disque Saúde (136)** - orientação\n- **Grupos de apoio materno** - busque na sua região\n- **Serviços de apoio domiciliar** - alguns municípios oferecem\n\n**Você não está sozinha.** Há pessoas e serviços prontos para te ajudar. Por favor, não hesite em buscar apoio. Você merece cuidado e suporte. 💛"
+          ]
+        }
+      },
+      "recursos_apoio": {
+        "telefones": [
+          {
+            "nome": "CVV - Centro de Valorização da Vida",
+            "numero": "188",
+            "descricao": "Apoio emocional 24 horas, gratuito e sigiloso",
+            "horario": "24 horas por dia"
+          },
+          {
+            "nome": "Disque Saúde",
+            "numero": "136",
+            "descricao": "Orientação em saúde",
+            "horario": "Segunda a Sexta, 8h às 18h"
+          }
+        ],
+        "orientacoes": [
+          "Pedir ajuda não é fraqueza - é autocuidado",
+          "Grupos de mães podem oferecer apoio emocional e prático",
+          "Reservar tempo para si mesma é essencial",
+          "Dividir responsabilidades com parceiro/família pode aliviar sobrecarga",
+          "Serviços de apoio domiciliar podem ajudar em tarefas práticas",
+          "Terapia pode ajudar a lidar com sentimentos de isolamento",
+          "Estabelecer limites é importante para evitar burnout"
+        ]
+      }
+    }
+  },
+  "integracao_bmad": {
+    "codigos_requisitos": ["RF.EMO.009", "RF.EMO.010"],
+    "nome": "Integração com BMad Core - Sistema de Triagem Emocional",
+    "descricao": "Sistema de triagem emocional integrado ao BMad Core para identificar e apoiar mães em diferentes situações emocionais",
+    "versao": "2.0.0",
+    "data_criacao": "2025-01-27",
+    "perfis_disponiveis": [
+      {
+        "id": "mae_ansiosa",
+        "codigo": "RF.EMO.009",
+        "nome": "Mãe Ansiosa",
+        "niveis": ["leve", "moderada", "alta"]
+      },
+      {
+        "id": "mae_isolada_sobrecarga",
+        "codigo": "RF.EMO.010",
+        "nome": "Mãe Isolada/Sobrecarga",
+        "niveis": ["leve", "moderada"]
+      }
+    ]
+  }
+}
+

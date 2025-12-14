@@ -1,0 +1,131 @@
+{
+  "perfis_emocionais": {
+    "mae_ansiosa": {
+      "nome": "Mãe Ansiosa",
+      "descricao": "Perfil de mãe que apresenta sinais de ansiedade relacionados à gestação, parto ou cuidados com o bebê",
+      "codigo": "RF.EMO.009",
+      "padroes_deteccao": {
+        "palavras_chave": [
+          "ansiosa", "ansiedade", "preocupada", "preocupação", "nervosa", "nervosismo",
+          "medo", "com medo", "tenho medo", "estou com medo", "com muito medo",
+          "preocupada com", "preocupada que", "preocupada se", "preocupada porque",
+          "não consigo parar de pensar", "pensando demais", "pensamentos ruins",
+          "não durmo", "não consigo dormir", "insônia", "dormindo mal",
+          "sinto que algo vai dar errado", "algo vai dar errado", "vai dar errado",
+          "e se", "e se o bebê", "e se eu", "e se acontecer",
+          "muito preocupada", "muito ansiosa", "extremamente ansiosa",
+          "coração acelerado", "coração batendo forte", "palpitação",
+          "suor", "suando", "suor frio", "mãos trêmulas", "tremendo",
+          "não consigo relaxar", "não consigo me acalmar", "não consigo parar",
+          "pânico", "ataque de pânico", "crise de ansiedade",
+          "preocupada com o parto", "medo do parto", "ansiosa para o parto",
+          "preocupada com o bebê", "medo de machucar", "medo de fazer errado",
+          "não sei se estou fazendo certo", "será que estou fazendo certo",
+          "preocupada com a saúde", "medo de algo estar errado",
+          "preocupada com amamentação", "medo de não conseguir amamentar",
+          "preocupada com cuidados", "medo de não saber cuidar"
+        ],
+        "frases_completas": [
+          "estou muito ansiosa",
+          "tenho muita ansiedade",
+          "não consigo parar de me preocupar",
+          "estou preocupada demais",
+          "tenho medo de tudo",
+          "não consigo relaxar",
+          "meu coração não para de bater forte",
+          "estou tendo crises de ansiedade",
+          "não consigo dormir de preocupação",
+          "pensando demais em tudo",
+          "tenho medo de fazer algo errado",
+          "preocupada que algo vá dar errado",
+          "não sei se estou fazendo certo",
+          "tenho muito medo do parto",
+          "ansiosa demais para o parto",
+          "preocupada com a saúde do bebê",
+          "medo de não conseguir cuidar direito",
+          "não consigo parar de pensar no que pode dar errado"
+        ],
+        "contextos": [
+          "gestação", "gravidez", "grávida", "gestante",
+          "parto", "dar à luz", "nascer",
+          "bebê", "recém-nascido", "neném",
+          "amamentação", "amamentar", "mamar",
+          "cuidados", "cuidar", "cuidado com o bebê",
+          "puerpério", "pós-parto", "depois do parto"
+        ]
+      },
+      "niveis_ansiedade": {
+        "leve": {
+          "descricao": "Ansiedade leve - preocupações normais da gestação/maternidade",
+          "indicadores": [
+            "preocupações pontuais",
+            "ansiedade em situações específicas",
+            "não interfere significativamente no dia a dia"
+          ],
+          "respostas": [
+            "Entendo que você esteja se preocupando. 💛 É normal ter algumas preocupações durante a gestação e nos primeiros meses com o bebê.\n\n**Lembre-se:** Você não está sozinha nessa jornada. Muitas mães passam por sentimentos parecidos.\n\n**Algumas dicas que podem ajudar:**\n- Respire fundo quando sentir ansiedade\n- Compartilhe suas preocupações com pessoas de confiança\n- Faça atividades que te ajudem a relaxar\n- Lembre-se que é normal ter dúvidas e aprender com o tempo\n\nSe a ansiedade estiver muito intensa ou atrapalhando seu dia a dia, considere conversar com um profissional de saúde mental ou ligue para o **CVV (188)** para apoio emocional.",
+            "É compreensível que você esteja se sentindo assim. 💛 A gestação e a maternidade trazem muitas mudanças e é natural ter preocupações.\n\n**Você não precisa ter todas as respostas agora.** Cada mãe aprende no seu próprio ritmo.\n\n**Se a ansiedade estiver te incomodando muito:**\n- Tente técnicas de respiração (inspire por 4 segundos, segure por 4, expire por 4)\n- Faça uma caminhada leve se possível\n- Converse com outras mães ou profissionais de saúde\n- Lembre-se que é normal ter dúvidas\n\n**Se precisar de apoio emocional imediato, o CVV (188) está disponível 24 horas.**"
+          ]
+        },
+        "moderada": {
+          "descricao": "Ansiedade moderada - preocupações frequentes que podem afetar o bem-estar",
+          "indicadores": [
+            "preocupações frequentes",
+            "dificuldade para relaxar",
+            "pode afetar sono ou alimentação",
+            "pensamentos recorrentes"
+          ],
+          "respostas": [
+            "Vejo que você está passando por um momento de muita ansiedade. 💛 Isso pode ser muito desgastante.\n\n**É importante cuidar da sua saúde emocional também.** A ansiedade intensa pode afetar seu bem-estar e o do bebê.\n\n**Recomendo fortemente:**\n- Conversar com seu médico ou enfermeiro sobre como você está se sentindo\n- Buscar apoio de um profissional de saúde mental (psicólogo ou psiquiatra)\n- Praticar técnicas de relaxamento regularmente\n- Não hesitar em pedir ajuda à família e amigos\n\n**Para apoio emocional imediato:**\n- **CVV (188)** - disponível 24 horas, gratuito e sigiloso\n- **Disque Saúde (136)** - orientação em saúde\n\nVocê não precisa enfrentar isso sozinha. Há ajuda disponível. 💛",
+            "Percebo que a ansiedade está te afetando bastante. 💛 Isso é sério e merece atenção.\n\n**A saúde mental da mãe é fundamental para o bem-estar de ambos.**\n\n**Por favor, considere:**\n- Falar com seu médico sobre sua ansiedade\n- Buscar acompanhamento psicológico (muitos postos de saúde oferecem)\n- Praticar exercícios de respiração e relaxamento\n- Não se culpar por se sentir assim - é comum e tratável\n\n**Apoio emocional disponível:**\n- **CVV (188)** - 24 horas, gratuito e sigiloso\n- **Disque Saúde (136)** - orientação\n\n**Não hesite em buscar ajuda profissional.** Você merece se sentir bem. 💛"
+          ]
+        },
+        "alta": {
+          "descricao": "Ansiedade alta - sintomas intensos que podem indicar transtorno de ansiedade",
+          "indicadores": [
+            "sintomas físicos intensos (palpitação, suor, tremores)",
+            "ataques de pânico",
+            "dificuldade extrema para relaxar",
+            "interfere significativamente no dia a dia",
+            "pensamentos obsessivos"
+          ],
+          "respostas": [
+            "Vejo que você está passando por um momento muito difícil com ansiedade intensa. 💛 Isso precisa de atenção profissional.\n\n**Por favor, busque ajuda médica o quanto antes.** A ansiedade intensa durante a gestação ou pós-parto pode ser tratada e você não precisa sofrer sozinha.\n\n**Ações imediatas:**\n1. **Fale com seu médico ou vá ao posto de saúde** - eles podem te ajudar\n2. **Busque um psicólogo ou psiquiatra** - especialistas em saúde mental materna\n3. **Se for urgente, ligue para o SAMU (192)** ou vá a uma UPA\n\n**Apoio emocional 24 horas:**\n- **CVV (188)** - gratuito e sigiloso\n- **Disque Saúde (136)** - orientação\n\n**Sua saúde mental importa muito.** Por favor, não hesite em buscar ajuda profissional. Você merece se sentir bem. 💛",
+            "Percebo que você está em sofrimento com ansiedade muito intensa. 💛 Isso é sério e precisa de cuidado profissional.\n\n**A ansiedade intensa pode ser tratada e você não precisa enfrentar isso sozinha.**\n\n**Por favor, busque ajuda AGORA:**\n- **Se for urgente:** SAMU 192 ou UPA mais próxima\n- **Para acompanhamento:** Seu médico, posto de saúde ou profissional de saúde mental\n- **Apoio emocional:** CVV (188) - 24 horas, gratuito e sigiloso\n\n**Lembre-se:**\n- Você não está sozinha\n- Muitas mães passam por isso\n- Há tratamento eficaz disponível\n- Buscar ajuda é um ato de coragem e cuidado\n\n**Por favor, não hesite em buscar ajuda profissional.** Sua saúde e bem-estar são muito importantes. 💛"
+          ]
+        }
+      },
+      "recursos_apoio": {
+        "telefones": [
+          {
+            "nome": "CVV - Centro de Valorização da Vida",
+            "numero": "188",
+            "descricao": "Apoio emocional 24 horas, gratuito e sigiloso",
+            "horario": "24 horas por dia"
+          },
+          {
+            "nome": "Disque Saúde",
+            "numero": "136",
+            "descricao": "Orientação em saúde",
+            "horario": "Segunda a Sexta, 8h às 18h"
+          }
+        ],
+        "orientacoes": [
+          "Técnicas de respiração podem ajudar em momentos de ansiedade",
+          "Exercícios leves (com orientação médica) podem reduzir ansiedade",
+          "Conversar com outras mães pode ajudar a normalizar os sentimentos",
+          "Buscar informações confiáveis pode reduzir preocupações desnecessárias",
+          "Estabelecer rotinas pode trazer sensação de controle"
+        ]
+      }
+    }
+  },
+  "integracao_bmad": {
+    "codigo_requisito": "RF.EMO.009",
+    "nome": "Integração com BMad Core - Triagem Emocional Mãe Ansiosa",
+    "descricao": "Sistema de triagem emocional integrado ao BMad Core para identificar e apoiar mães ansiosas",
+    "versao": "1.0.0",
+    "data_criacao": "2025-01-27"
+  }
+}
+

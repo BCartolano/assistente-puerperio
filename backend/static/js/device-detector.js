@@ -101,15 +101,15 @@
                 mainContainer.classList.add(`device-${this.deviceType}`, `orientation-${this.orientation}`);
             }
 
-            // Log para debug (remover em produção se necessário)
-            const deviceInfo = {
-                width: this.width,
-                height: this.height,
-                orientation: this.orientation,
-                deviceType: this.deviceType,
-                screenSize: this.screenSize
-            };
-            console.log("📱 [Device Detector]", JSON.stringify(deviceInfo, null, 2));
+            // Log para debug removido em produção para melhorar score do Lighthouse
+            // const deviceInfo = {
+            //     width: this.width,
+            //     height: this.height,
+            //     orientation: this.orientation,
+            //     deviceType: this.deviceType,
+            //     screenSize: this.screenSize
+            // };
+            // console.log("📱 [Device Detector]", JSON.stringify(deviceInfo, null, 2));
         }
 
         /**
