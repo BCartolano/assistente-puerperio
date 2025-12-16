@@ -175,3 +175,12 @@ ngrok
 
 # BMAD-METHOD (submódulo com mudanças locais - não rastrear)
 BMAD-METHOD-v5/
+
+# Arquivos minificados (podem ser regenerados)
+*.min.js
+*.min.css
+
+# Documentação temporária de debug
+SOLUCAO_*.md
+CORRECAO_*.md
+DEBUG_*.md
