@@ -42,7 +42,7 @@ import string
 import logging
 import unicodedata
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, render_template, session, url_for
+from flask import Flask, request, jsonify, render_template, session, url_for, redirect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
@@ -205,6 +205,18 @@ app.config['SESSION_COOKIE_SECURE'] = is_production  # True em produção (HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Permite cookies entre localhost e IP, funciona melhor em mobile
 
+# Compressão Gzip/Brotli para melhorar performance
+try:
+    from flask_compress import Compress
+    compress = Compress()
+    compress.init_app(app)
+    logger.info("[PERFORMANCE] ✅ Compressão Gzip/Brotli ativada")
+    print("[PERFORMANCE] ✅ Compressão Gzip/Brotli ativada")
+except ImportError:
+    logger.warning("[PERFORMANCE] ⚠️ flask-compress não instalado - compressão desabilitada")
+    print("[PERFORMANCE] ⚠️ flask-compress não instalado - compressão desabilitada")
+    compress = None
+
 # Headers de cache e performance para recursos estáticos
 @app.after_request
 def add_cache_headers(response):
@@ -234,9 +246,23 @@ def add_cache_headers(response):
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     
-    # Compressão (se disponível via servidor proxy/reverse proxy)
-    if request.path.endswith(('.css', '.js', '.html', '.json')):
+    # Compressão e encoding
+    if request.path.endswith(('.css', '.js', '.html', '.json', '.xml', '.txt')):
         response.headers['Vary'] = 'Accept-Encoding'
+        # Força compressão se disponível
+        if compress is None and 'gzip' in request.headers.get('Accept-Encoding', ''):
+            # Compressão manual básica se flask-compress não estiver disponível
+            import gzip
+            if response.content_length and response.content_length > 1024:  # Só comprime arquivos > 1KB
+                try:
+                    content = response.get_data()
+                    compressed = gzip.compress(content)
+                    if len(compressed) < len(content):
+                        response.set_data(compressed)
+                        response.headers['Content-Encoding'] = 'gzip'
+                        response.headers['Content-Length'] = len(compressed)
+                except:
+                    pass  # Se falhar, retorna sem compressão
     
     return response
 
@@ -3028,7 +3054,31 @@ print("[CHATBOT] ✅ Instância global do chatbot criada com sucesso")
 @app.route('/')
 def index():
     """Rota principal que renderiza a interface do chatbot"""
-    return render_template('index.html')
+    # Gera timestamp para cache busting baseado na última modificação do CSS
+    css_path = os.path.join(app.static_folder, 'css', 'style.css')
+    timestamp = None
+    if os.path.exists(css_path):
+        timestamp = str(int(os.path.getmtime(css_path)))
+    
+    # Verifica se arquivos minificados existem
+    css_min_path = os.path.join(app.static_folder, 'css', 'style.min.css')
+    js_min_path = os.path.join(app.static_folder, 'js', 'chat.min.js')
+    # TEMPORARIAMENTE DESABILITADO: Minificação está quebrando o código
+    # has_minified = os.path.exists(css_min_path) and os.path.exists(js_min_path)
+    has_minified = False  # Usar versão não-minificada até corrigir o script de minificação
+    
+    return render_template('index.html', timestamp=timestamp, has_minified=has_minified)
+
+@app.route('/forgot-password')
+def forgot_password():
+    """Rota para página de recuperação de senha"""
+    # Gera timestamp para cache busting
+    css_path = os.path.join(app.static_folder, 'css', 'style.css')
+    timestamp = None
+    if os.path.exists(css_path):
+        timestamp = str(int(os.path.getmtime(css_path)))
+    
+    return render_template('forgot_password.html', timestamp=timestamp)
 
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
@@ -3577,6 +3627,46 @@ def api_forgot_password():
             "sucesso": True,
             "mensagem": "Token gerado. Em desenvolvimento, verifique os logs do servidor."
         }), 200
+
+@app.route('/reset-password')
+def reset_password():
+    """Rota para página de redefinição de senha com token"""
+    token = request.args.get('token', '')
+    
+    if not token:
+        # Se não tem token, redireciona para forgot-password
+        return redirect(url_for('forgot_password'))
+    
+    # Gera timestamp para cache busting
+    css_path = os.path.join(app.static_folder, 'css', 'style.css')
+    timestamp = None
+    if os.path.exists(css_path):
+        timestamp = str(int(os.path.getmtime(css_path)))
+    
+    # Verifica se token é válido (não expirado)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id, email, reset_password_expires 
+        FROM users 
+        WHERE reset_password_token = ?
+    ''', (token,))
+    user = cursor.fetchone()
+    conn.close()
+    
+    token_valid = False
+    if user:
+        user_id, email, expires_str = user
+        if expires_str:
+            try:
+                expires = datetime.fromisoformat(expires_str)
+                if datetime.now() <= expires:
+                    token_valid = True
+            except:
+                pass
+    
+    # Usa o mesmo template, mas passa informações do token
+    return render_template('forgot_password.html', timestamp=timestamp, token=token, token_valid=token_valid)
 
 @app.route('/api/reset-password', methods=['POST'])
 def api_reset_password():

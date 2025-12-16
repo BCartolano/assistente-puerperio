@@ -100,17 +100,33 @@ Um chatbot **COMPLETO** especializado em oferecer apoio e informações sobre ge
    ```
 
 5. **Execute o aplicativo**:
-   ```bash
-   # Opção 1: Usando wsgi (recomendado para produção)
-   python wsgi.py
-   
-   # Opção 2: Direto pelo backend (desenvolvimento)
-   cd backend && python app.py
-   ```
 
-6. **Acesse no navegador**:
+   **Opção A: Desenvolvimento Local (Recomendado)**
+   ```bash
+   # Usando script PowerShell (Windows)
+   .\iniciar-servidor.ps1
+   
+   # OU usando script batch
+   .\iniciar-servidor.bat
+   
+   # OU manualmente
+   python start.py
    ```
-   http://localhost:5000
+   Acesse: `http://localhost:5000`
+
+   **Opção B: Desenvolvimento com NGROK (Para compartilhar/publicar)**
+   ```bash
+   # Usando script PowerShell (Windows)
+   .\iniciar-com-ngrok.ps1
+   
+   # OU usando script batch
+   .\iniciar-com-ngrok.bat
+   ```
+   Isso criará um link público temporário (ex: `https://abc123.ngrok-free.app`)
+   
+   **Opção C: Produção (WSGI)**
+   ```bash
+   python wsgi.py
    ```
 
 ## 📁 Estrutura do Projeto
@@ -226,9 +242,45 @@ Modifique `dados/mensagens_apoio.json` para adicionar novas mensagens empáticas
 - Sanitização de mensagens
 - Histórico local (não persistente)
 
-## 🚀 Deploy
+## 🚀 Deploy e Desenvolvimento
 
-### Render.com (✅ RECOMENDADO - Já Configurado!)
+### 🔵 NGROK (Desenvolvimento Local - RECOMENDADO)
+
+Para desenvolvimento e testes locais com acesso público temporário:
+
+1. **Instale o NGROK**:
+   - Baixe de: https://ngrok.com/download
+   - Coloque `ngrok.exe` na pasta do projeto OU adicione ao PATH
+
+2. **Inicie com NGROK**:
+   ```bash
+   # Windows PowerShell
+   .\iniciar-com-ngrok.ps1
+   
+   # Windows Batch
+   .\iniciar-com-ngrok.bat
+   ```
+
+3. **Acesse o link público**:
+   - O NGROK mostrará um link como: `https://abc123.ngrok-free.app`
+   - Este link funciona de qualquer lugar na internet!
+   - ⚠️ Link temporário (expira após algumas horas)
+
+**Quando usar NGROK:**
+- ✅ Desenvolvimento local
+- ✅ Testes rápidos
+- ✅ Demonstrações temporárias
+- ✅ Testar em dispositivos móveis
+- ✅ Compartilhar com equipe/clientes temporariamente
+
+Veja guias completos:
+- **`COMO_INSTALAR_NGROK.md`** - Instalação passo a passo
+- **`INICIO_RAPIDO_NGROK.md`** - Guia rápido de uso
+- **`USAR_APENAS_NGROK.md`** - Guia completo
+
+---
+
+### 🌐 Render.com (Deploy em Produção - RECOMENDADO)
 
 O projeto está **totalmente configurado** para deploy automático no Render:
 
@@ -247,7 +299,9 @@ PORT=5000 (automático)
 
 Veja instruções completas em: **`README_DEPLOY.md`**
 
-### Outras Opções de Deploy
+---
+
+### 🔗 Outras Opções de Deploy
 
 - **Railway.app**: Conecte GitHub, deploy automático
 - **Fly.io**: Instale CLI, `fly launch`

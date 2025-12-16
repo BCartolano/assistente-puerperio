@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -15,12 +15,33 @@
     <meta name="description" content="Espaço acolhedor para o puerpério — apoio, acolhimento e conversas humanizadas com Sophia.">
     <title>Sophia - Sua Amiga do Puerpério 🤱</title>
     
-    <!-- Preload recursos críticos -->
-    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}?v={{ timestamp if timestamp else '1.0' }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ timestamp if timestamp else '1.0' }}"></noscript>
+    <!-- Resource Hints Otimizados -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Configuração de fallbacks (gerado pelo Jinja2, não é JavaScript) -->
+    {% if has_minified and timestamp %}
+    <script type="application/json" id="app-config">{"fallbacks":{"css":"{{ url_for('static', filename='css/style.css')|e }}?v={{ timestamp|e }}","js":"{{ url_for('static', filename='js/chat.js')|e }}?v={{ timestamp|e }}"}}</script>
+    {% endif %}
+    
+    <!-- Preload recursos críticos (usar minificado se disponível) -->
+    {% if has_minified and timestamp %}
+    <link rel="preload" href="{{ url_for('static', filename='css/style.min.css') }}?v={{ timestamp }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/style.min.css') }}?v={{ timestamp }}"></noscript>
+    {% elif timestamp %}
+    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}?v={{ timestamp }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ timestamp }}"></noscript>
+    {% else %}
+    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}?v=1.0" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0"></noscript>
+    {% endif %}
+    
+    <!-- Preload JavaScript crítico -->
+    <link rel="preload" href="{{ url_for('static', filename='js/device-detector.js') }}" as="script">
+    <!-- chat.js não precisa de preload - carrega com defer após DOM -->
     
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
@@ -146,15 +167,129 @@
         }
     </style>
     
-    <!-- Fontes (carregamento otimizado - apenas pesos essenciais) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
+    <!-- Fontes (OTIMIZADO: Apenas Poppins, pesos 400 e 600, display=swap) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"></noscript>
+    <style>
+        /* Fallback para fontes do sistema enquanto carrega */
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    </style>
     
-    <!-- Font Awesome (carregamento otimizado - lazy load) -->
+    <!-- Font Awesome (carregamento otimizado - lazy load após load da página) -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    <script>
+        // Função auxiliar para login (evita problemas com caracteres especiais no onclick)
+        function handleLoginClick() {
+            // Aguarda até 3 segundos para chatApp estar disponível
+            var attempts = 0;
+            var maxAttempts = 30; // 30 tentativas x 100ms = 3 segundos
+            
+            function tryLogin() {
+                if (window.chatApp && typeof window.chatApp.handleInitialLogin === 'function') {
+                    console.log('✅ [LOGIN] chatApp disponível, chamando handleInitialLogin...');
+                    window.chatApp.handleInitialLogin();
+                    return false;
+                } else if (attempts < maxAttempts) {
+                    attempts++;
+                    if (attempts === 1) {
+                        console.log('⏳ [LOGIN] Aguardando chatApp estar disponível...');
+                    }
+                    setTimeout(tryLogin, 100);
+                } else {
+                    console.error('❌ [LOGIN] chatApp nao disponivel apos 3 segundos');
+                    console.error('❌ [LOGIN] window.chatApp:', typeof window.chatApp);
+                    console.error('❌ [LOGIN] Verifique se chat.js foi carregado corretamente');
+                    alert('Erro: JavaScript nao carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a pagina.');
+                }
+                return false;
+            }
+            
+            return tryLogin();
+        }
+        
+        // Função auxiliar para registro
+        function handleRegisterClick() {
+            // Aguarda até 3 segundos para chatApp estar disponível
+            var attempts = 0;
+            var maxAttempts = 30; // 30 tentativas x 100ms = 3 segundos
+            
+            function tryRegister() {
+                if (window.chatApp && typeof window.chatApp.handleInitialRegister === 'function') {
+                    console.log('✅ [REGISTER] chatApp disponível, chamando handleInitialRegister...');
+                    window.chatApp.handleInitialRegister();
+                    return false;
+                } else if (attempts < maxAttempts) {
+                    attempts++;
+                    if (attempts === 1) {
+                        console.log('⏳ [REGISTER] Aguardando chatApp estar disponível...');
+                    }
+                    setTimeout(tryRegister, 100);
+                } else {
+                    console.error('❌ [REGISTER] chatApp nao disponivel apos 3 segundos');
+                    console.error('❌ [REGISTER] window.chatApp:', typeof window.chatApp);
+                    console.error('❌ [REGISTER] Verifique se chat.js foi carregado corretamente');
+                    alert('Erro: JavaScript nao carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a pagina.');
+                }
+                return false;
+            }
+            
+            return tryRegister();
+        }
+        
+        // Fallback para carregar Font Awesome se onload não funcionar
+        (function() {
+            var link = document.querySelector('link[href*="font-awesome"]');
+            if (link && link.rel === 'preload') {
+                setTimeout(function() {
+                    if (link.rel === 'preload') {
+                        link.rel = 'stylesheet';
+                    }
+                }, 100);
+            }
+        })();
+        
+        // Configuração de fallbacks para recursos minificados
+        // URLs são lidas de um elemento JSON separado (gerado pelo Jinja2)
+        (function() {
+            function setupFallbacks() {
+                var configElement = document.getElementById('app-config');
+                if (!configElement) return;
+                
+                try {
+                    var config = JSON.parse(configElement.textContent);
+                    if (!config.fallbacks) return;
+                    
+                    // Fallback para CSS
+                    var cssLink = document.querySelector('link[href*="style.min.css"]');
+                    if (cssLink && config.fallbacks.css) {
+                        cssLink.addEventListener('error', function() {
+                            this.onerror = null;
+                            this.href = config.fallbacks.css;
+                            this.rel = 'stylesheet';
+                        });
+                    }
+                    
+                    // Fallback para JS
+                    var jsScript = document.querySelector('script[src*="chat.min.js"]');
+                    if (jsScript && config.fallbacks.js) {
+                        jsScript.addEventListener('error', function() {
+                            this.onerror = null;
+                            this.src = config.fallbacks.js;
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Erro ao carregar configuração de fallbacks:', e);
+                }
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupFallbacks);
+            } else {
+                setupFallbacks();
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Login Screen (shown first) -->
@@ -179,7 +314,7 @@
                 </div>
                 
                 <div class="login-forms">
-                    <form class="login-form active" id="initial-login-form">
+                    <form class="login-form active" id="initial-login-form" onsubmit="return false;" action="javascript:void(0);">
                         <div class="form-group">
                             <label for="initial-login-email">
                                 <i class="fas fa-envelope"></i>
@@ -203,17 +338,17 @@
                                 </span>
                             </label>
                         </div>
-                        <button type="submit" class="btn btn-login-main">
+                        <button type="button" class="btn btn-login-main" id="initial-login-submit" onclick="return handleLoginClick();">
                             <i class="fas fa-sign-in-alt"></i>
                             Entrar
                         </button>
-                        <a href="#" class="forgot-password-link" id="forgot-password-link">
+                        <a href="/forgot-password" class="forgot-password-link" id="forgot-password-link">
                             <i class="fas fa-key"></i>
                             Esqueci minha senha
                         </a>
                     </form>
                     
-                    <form class="login-form" id="initial-register-form">
+                    <form class="login-form" id="initial-register-form" onsubmit="return false;" action="javascript:void(0);">
                         <div class="form-group">
                             <label for="initial-register-name">
                                 <i class="fas fa-user"></i>
@@ -242,7 +377,7 @@
                             </label>
                             <input type="text" id="initial-register-baby" name="baby_name" autocomplete="off" placeholder="Nome do bebê (opcional)">
                         </div>
-                        <button type="submit" class="btn btn-login-main">
+                        <button type="button" class="btn btn-login-main" id="initial-register-submit" onclick="return handleRegisterClick();">
                             <i class="fas fa-user-plus"></i>
                             Criar Conta
                         </button>
@@ -655,7 +790,44 @@
 
     <!-- Scripts otimizados (defer para não bloquear renderização) -->
     <script src="{{ url_for('static', filename='js/device-detector.js') }}" defer></script>
+    {% if has_minified and timestamp %}
+    <!-- Usar versão minificada se disponível -->
+    <script src="{{ url_for('static', filename='js/chat.min.js') }}?v={{ timestamp }}" defer></script>
+    {% elif timestamp %}
+    <script src="{{ url_for('static', filename='js/chat.js') }}?v={{ timestamp }}" defer></script>
+    {% else %}
     <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+    {% endif %}
+    
+    <!-- Silenciar erros de extensões do navegador (não afetam o funcionamento do site) -->
+    <script>
+        // Handler global para silenciar erros conhecidos de extensões do navegador
+        window.addEventListener('error', function(event) {
+            // Silencia erros de extensões do Chrome/Edge que tentam interceptar mensagens
+            if (event.message && (
+                event.message.includes('listener indicated an asynchronous response') ||
+                event.message.includes('message channel closed') ||
+                event.message.includes('Extension context invalidated')
+            )) {
+                event.preventDefault();
+                return false;
+            }
+        }, true);
+        
+        // Silencia erros de Promise rejeitadas de extensões
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && (
+                event.reason.message && (
+                    event.reason.message.includes('listener indicated an asynchronous response') ||
+                    event.reason.message.includes('message channel closed') ||
+                    event.reason.message.includes('Extension context invalidated')
+                )
+            )) {
+                event.preventDefault();
+                return false;
+            }
+        });
+    </script>
     
     <!-- Prefetch para recursos não críticos (após carregamento inicial) -->
     <script>
@@ -693,6 +865,13 @@
     ">
         <p style="margin: 0; line-height: 1.4;">
             A Sophia não substitui atendimento profissional. 
+            Em caso de crise, ligue <strong>188 (CVV)</strong>.
+        </p>
+    </footer>
+</body>
+</html>
+
+bstitui atendimento profissional. 
             Em caso de crise, ligue <strong>188 (CVV)</strong>.
         </p>
     </footer>

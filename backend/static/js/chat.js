@@ -413,29 +413,69 @@ class ChatbotPuerperio {
         // Preenche email automaticamente se estiver salvo
         this.loadRememberedEmail();
         
-        // Login form submission
+        // Login form submission - Previne submit padrão e adiciona handler no botão
         if (this.initialLoginForm) {
+            // Previne submit padrão do formulário (Enter no input)
             this.initialLoginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.handleInitialLogin();
+                return false;
             });
+            
+            // Handler no botão também (backup)
+            const loginSubmitBtn = document.getElementById('initial-login-submit');
+            if (loginSubmitBtn) {
+                this.log('✅ [EVENTS] Event listener anexado ao botão de login');
+                // Remove qualquer handler onclick existente para evitar duplicação
+                loginSubmitBtn.onclick = null;
+                loginSubmitBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.log('🔍 [EVENTS] Botão de login clicado, chamando handleInitialLogin...');
+                    this.handleInitialLogin();
+                    return false;
+                });
+            } else {
+                this.error('❌ [EVENTS] Botão initial-login-submit não encontrado!');
+            }
         }
         
-        // Register form submission
+        // Register form submission - Previne submit padrão e adiciona handler no botão
         if (this.initialRegisterForm) {
+            // Previne submit padrão do formulário (Enter no input)
             this.initialRegisterForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.handleInitialRegister();
+                return false;
             });
+            
+            // Handler no botão também (backup)
+            const registerSubmitBtn = document.getElementById('initial-register-submit');
+            if (registerSubmitBtn) {
+                registerSubmitBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.handleInitialRegister();
+                    return false;
+                });
+            }
         }
         
         // Forgot password link
         const forgotPasswordLink = document.getElementById('forgot-password-link');
         if (forgotPasswordLink) {
+            this.log('✅ [EVENTS] Event listener anexado ao link "Esqueci minha senha"');
             forgotPasswordLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
+                this.log('🔍 [EVENTS] Link "Esqueci minha senha" clicado, redirecionando...');
                 this.handleForgotPassword();
+                return false;
             });
+        } else {
+            this.warn('⚠️ [EVENTS] Link forgot-password-link não encontrado (pode não estar na página atual)');
         }
     }
     
@@ -478,9 +518,23 @@ class ChatbotPuerperio {
     }
     
     async handleInitialLogin() {
-        const email = document.getElementById('initial-login-email').value.trim().toLowerCase();
-        const password = document.getElementById('initial-login-password').value.trim(); // Remove espaços
-        const rememberMe = document.getElementById('initial-remember-me').checked;
+        // Log sempre (mesmo em produção) para debug
+        console.log('🔍 [LOGIN] handleInitialLogin chamado');
+        this.log('🔍 [LOGIN] handleInitialLogin chamado');
+        
+        const emailInput = document.getElementById('initial-login-email');
+        const passwordInput = document.getElementById('initial-login-password');
+        const rememberMeCheckbox = document.getElementById('initial-remember-me');
+        
+        if (!emailInput || !passwordInput) {
+            this.error('❌ [LOGIN] Campos de email ou senha não encontrados!');
+            alert('Erro: Campos de login não encontrados. Recarregue a página.');
+            return;
+        }
+        
+        const email = emailInput.value.trim().toLowerCase();
+        const password = passwordInput.value.trim(); // Remove espaços
+        const rememberMe = rememberMeCheckbox ? rememberMeCheckbox.checked : false;
         
         if (!email || !password) {
             alert('Por favor, preencha todos os campos! 💕');
@@ -525,6 +579,8 @@ class ChatbotPuerperio {
             
             if (response.ok && (data.sucesso === true || data.user)) {
                 this.log('✅ [LOGIN] Login bem-sucedido, inicializando app...');
+                this.log('🔍 [LOGIN] Dados recebidos:', JSON.stringify(data));
+                
                 this.userLoggedIn = true;
                 this.currentUserName = data.user ? data.user.name : email;
                 
@@ -542,20 +598,38 @@ class ChatbotPuerperio {
                     this.log('💕 Mensagem:', data.mensagem);
                 }
                 
+                // IMPORTANTE: Esconde tela de login ANTES de chamar initMainApp
+                const loginScreen = document.getElementById('login-screen');
+                if (loginScreen) {
+                    loginScreen.style.display = 'none';
+                    loginScreen.classList.add('hidden');
+                    this.log('✅ [LOGIN] Tela de login ocultada');
+                }
+                
                 // Pequeno delay para garantir que a sessão está criada
                 setTimeout(() => {
                     this.log('🚀 [LOGIN] Chamando initMainApp...');
-                    this.initMainApp();
+                    try {
+                        this.initMainApp();
+                    } catch (error) {
+                        this.error('❌ [LOGIN] Erro ao chamar initMainApp:', error);
+                        // Tenta recarregar a página como fallback
+                        window.location.reload();
+                    }
                 }, 200);
             } else {
                 this.log('❌ [LOGIN] Login falhou ou resposta inválida');
+                this.log('🔍 [LOGIN] Resposta completa:', JSON.stringify(data));
+                this.log('🔍 [LOGIN] Status HTTP:', response.status);
+                
                 if (data.pode_login === false && data.mensagem) {
                     // Email não verificado
                     if (confirm(data.mensagem + '\n\nDeseja reenviar o email de verificação?')) {
                         await this.resendVerificationEmail(email);
                     }
                 } else {
-                    alert('⚠️ ' + (data.erro || data.mensagem || 'Erro ao fazer login'));
+                    const errorMsg = data.erro || data.mensagem || 'Erro ao fazer login';
+                    alert('⚠️ ' + errorMsg);
                     this.error('❌ [LOGIN] Erro detalhado:', data);
                 }
             }
@@ -3172,81 +3246,101 @@ class ChatbotPuerperio {
 }
 
 // Inicializa o chatbot quando a página carrega
-document.addEventListener('DOMContentLoaded', () => {
-    const chatbot = new ChatbotPuerperio();
-    
+// Tenta inicializar imediatamente se DOM já está pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeChatApp);
+} else {
+    // DOM já está pronto, inicializa imediatamente
+    initializeChatApp();
+}
+
+function initializeChatApp() {
+    console.log('🚀 [INIT] Inicializando ChatbotPuerperio...');
+    try {
+        const chatbot = new ChatbotPuerperio();
+        // Expõe globalmente para handlers inline
+        window.chatApp = chatbot;
+        console.log('✅ [INIT] chatApp exposto globalmente:', typeof window.chatApp);
+        console.log('✅ [INIT] chatApp.handleInitialLogin disponível:', typeof window.chatApp.handleInitialLogin);
+        
         // Verifica status da conexão periodicamente (apenas se já estiver logado)
-    setInterval(() => {
-        try {
-            // Verifica se o chatbot existe e está logado
-            if (!chatbot || !chatbot.userLoggedIn) {
-                return;
+        setInterval(() => {
+            try {
+                // Verifica se o chatbot existe e está logado
+                if (!chatbot || !chatbot.userLoggedIn) {
+                    return;
+                }
+                // Verifica se o elemento ainda existe no DOM antes de chamar
+                if (!chatbot.statusIndicator) {
+                    chatbot.statusIndicator = document.getElementById('status-indicator');
+                }
+                if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
+                    chatbot.checkConnectionStatus();
+                } else {
+                    // Se o elemento não existe, limpa a referência
+                    chatbot.statusIndicator = null;
+                }
+            } catch (error) {
+                console.warn('Erro no setInterval de checkConnectionStatus:', error);
             }
-            // Verifica se o elemento ainda existe no DOM antes de chamar
-            if (!chatbot.statusIndicator) {
-                chatbot.statusIndicator = document.getElementById('status-indicator');
-            }
-            if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
+        }, 5000);
+
+        // Verifica status inicial apenas se estiver logado
+        if (chatbot.userLoggedIn) {
+            try {
                 chatbot.checkConnectionStatus();
-            } else {
-                // Se o elemento não existe, limpa a referência
-                chatbot.statusIndicator = null;
+            } catch (error) {
+                console.warn('Erro ao verificar status inicial:', error);
             }
-        } catch (error) {
-            this.warn('Erro no setInterval de checkConnectionStatus:', error);
         }
-    }, 5000);
 
-    // Verifica status inicial apenas se estiver logado
-    if (chatbot.userLoggedIn) {
-        try {
-            chatbot.checkConnectionStatus();
-        } catch (error) {
-            this.warn('Erro ao verificar status inicial:', error);
+        // Adiciona evento de online/offline
+        window.addEventListener('online', () => {
+            try {
+                if (chatbot && chatbot.userLoggedIn) {
+                    // Verifica se o elemento existe antes de chamar
+                    if (!chatbot.statusIndicator) {
+                        chatbot.statusIndicator = document.getElementById('status-indicator');
+                    }
+                    if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
+                        chatbot.checkConnectionStatus();
+                    }
+                }
+            } catch (error) {
+                console.warn('Erro no evento online:', error);
+            }
+        });
+        window.addEventListener('offline', () => {
+            try {
+                if (chatbot && chatbot.userLoggedIn) {
+                    // Verifica se o elemento existe antes de chamar
+                    if (!chatbot.statusIndicator) {
+                        chatbot.statusIndicator = document.getElementById('status-indicator');
+                    }
+                    if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
+                        chatbot.checkConnectionStatus();
+                    }
+                }
+            } catch (error) {
+                console.warn('Erro no evento offline:', error);
+            }
+        });
+        
+        // Foca no input quando a página carrega (apenas se não estiver na tela de login)
+        const messageInput = document.getElementById('message-input');
+        if (messageInput && chatbot.userLoggedIn) {
+            messageInput.focus();
         }
+
+        // Inicializa o carrossel de features
+        if (typeof initFeatureCarousel === 'function') {
+            initFeatureCarousel();
+        }
+    } catch (error) {
+        console.error('❌ [INIT] Erro ao inicializar ChatbotPuerperio:', error);
+        window.chatApp = null;
     }
-
-    // Adiciona evento de online/offline
-    window.addEventListener('online', () => {
-        try {
-            if (chatbot && chatbot.userLoggedIn) {
-                // Verifica se o elemento existe antes de chamar
-                if (!chatbot.statusIndicator) {
-                    chatbot.statusIndicator = document.getElementById('status-indicator');
-                }
-                if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
-                    chatbot.checkConnectionStatus();
-                }
-            }
-        } catch (error) {
-            this.warn('Erro no evento online:', error);
-        }
-    });
-    window.addEventListener('offline', () => {
-        try {
-            if (chatbot && chatbot.userLoggedIn) {
-                // Verifica se o elemento existe antes de chamar
-                if (!chatbot.statusIndicator) {
-                    chatbot.statusIndicator = document.getElementById('status-indicator');
-                }
-                if (chatbot.statusIndicator && document.body && document.body.contains(chatbot.statusIndicator)) {
-                    chatbot.checkConnectionStatus();
-                }
-            }
-        } catch (error) {
-            this.warn('Erro no evento offline:', error);
-        }
-    });
-    
-    // Foca no input quando a página carrega (apenas se não estiver na tela de login)
-    const messageInput = document.getElementById('message-input');
-    if (messageInput && chatbot.userLoggedIn) {
-        messageInput.focus();
-    }
-
-    // Inicializa o carrossel de features
-    initFeatureCarousel();
-});
+}
 
 /**
  * Inicializa o carrossel de botões de recursos
