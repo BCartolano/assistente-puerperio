@@ -180,7 +180,43 @@ BMAD-METHOD-v5/
 *.min.js
 *.min.css
 
-# Documentação temporária de debug
+# Documentação temporária de debug e guias
 SOLUCAO_*.md
 CORRECAO_*.md
 DEBUG_*.md
+GUIA_*.md
+COMO_*.md
+COMO-*.md
+INSTRUCOES_*.md
+INICIO_*.md
+INICIAR_*.md
+CONFIGURAR_*.md
+ALERTA_*.md
+ANALISE_*.md
+EXPANSAO_*.md
+FUNCIONALIDADES_*.md
+IMPLEMENTADO_*.md
+MELHORIAS_*.md
+OTIMIZACAO_*.md
+OTIMIZACOES_*.md
+PLANO_*.md
+PROGRESSO_*.md
+RELATORIO_*.md
+RESULTADOS_*.md
+RESUMO_*.md
+RF_*.md
+STATUS_*.md
+SUCESSO_*.md
+TAREFAS_*.md
+TESTAR_*.md
+TRABALHAR-*.md
+URLS_*.md
+USAR_*.md
+VALIDACAO_*.md
+WORKFLOW-*.md
+COMPLETO_*.md
+DEPLOY_*.md
+BMAD-*.md
+IMAGENS_*.md
+task.md
+tasks.md
