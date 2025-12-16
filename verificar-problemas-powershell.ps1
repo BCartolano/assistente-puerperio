@@ -93,9 +93,37 @@ foreach ($arquivo in $arquivosNecessarios) {
 }
 Write-Host ""
 
-# Verificacao 5: Scripts PowerShell
-Write-Host "5. Verificando scripts PowerShell..." -ForegroundColor Yellow
-$scriptsPS = @("iniciar-servidor.ps1", "iniciar-com-ngrok.ps1", "testar-encoding.ps1")
+# Verificacao 5: Git
+Write-Host "5. Verificando Git..." -ForegroundColor Yellow
+try {
+    $gitVersion = git --version 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $sucessos += "Git esta instalado: $gitVersion"
+        Write-Host "  OK Git: $gitVersion" -ForegroundColor Green
+        
+        # Verifica credential helper
+        $credentialHelper = git config --global credential.helper 2>&1
+        if ($credentialHelper -and $credentialHelper -notmatch "error") {
+            $sucessos += "Git credential helper configurado: $credentialHelper"
+            Write-Host "  OK Credential helper: $credentialHelper" -ForegroundColor Green
+        } else {
+            $avisos += "Git credential helper nao configurado"
+            Write-Host "  ! Credential helper nao configurado" -ForegroundColor Yellow
+            Write-Host "  Solucao: Execute git config --global credential.helper manager-core" -ForegroundColor Gray
+        }
+    } else {
+        $avisos += "Git nao encontrado (opcional)"
+        Write-Host "  ! Git nao encontrado" -ForegroundColor Yellow
+    }
+} catch {
+    $avisos += "Git nao esta instalado (opcional)"
+    Write-Host "  ! Git nao encontrado" -ForegroundColor Yellow
+}
+Write-Host ""
+
+# Verificacao 6: Scripts PowerShell
+Write-Host "6. Verificando scripts PowerShell..." -ForegroundColor Yellow
+$scriptsPS = @("iniciar-servidor.ps1", "iniciar-com-ngrok.ps1", "testar-encoding.ps1", "configurar-git-terminal.ps1")
 foreach ($script in $scriptsPS) {
     if (Test-Path $script) {
         $sucessos += "Script encontrado: $script"
@@ -107,8 +135,8 @@ foreach ($script in $scriptsPS) {
 }
 Write-Host ""
 
-# Verificacao 6: Teste de caracteres especiais
-Write-Host "6. Testando exibicao de caracteres especiais..." -ForegroundColor Yellow
+# Verificacao 7: Teste de caracteres especiais
+Write-Host "7. Testando exibicao de caracteres especiais..." -ForegroundColor Yellow
 Write-Host "  Acentos: a e i o u a o c" -ForegroundColor White
 Write-Host "  Maiusculas: A E I O U A O C" -ForegroundColor White
 Write-Host "  Emojis: [OK] [ERRO] [AVISO] [INFO]" -ForegroundColor White

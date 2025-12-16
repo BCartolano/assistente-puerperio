@@ -12,6 +12,16 @@ chcp 65001 | Out-Null
 # Define variável de ambiente para Python
 $env:PYTHONIOENCODING = "utf-8"
 
+# Configura Git (se estiver instalado) para evitar alertas do Cursor IDE
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    # Credential helper manager-core é ESSENCIAL para o Cursor IDE
+    git config --global credential.helper manager-core 2>&1 | Out-Null
+    git config --global core.quotepath false 2>&1 | Out-Null
+    git config --global i18n.commitencoding utf-8 2>&1 | Out-Null
+    git config --global i18n.logoutputencoding utf-8 2>&1 | Out-Null
+    git config --global core.autocrlf true 2>&1 | Out-Null
+}
+
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Iniciando Assistente Puerpério" -ForegroundColor Cyan
 Write-Host "Encoding UTF-8 configurado" -ForegroundColor Green
