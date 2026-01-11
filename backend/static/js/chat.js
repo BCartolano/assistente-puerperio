@@ -1,3 +1,9 @@
+// DEBUG_MODE global - controla debug visual em desenvolvimento
+// Para desabilitar debug, definir: window.DEBUG_MODE = false antes de carregar este arquivo
+// Por padrão, DESATIVADO para produção (Beta Fechado)
+const DEBUG_MODE = window.DEBUG_MODE !== undefined ? window.DEBUG_MODE : false; // false = desativado para produção
+window.DEBUG_MODE = DEBUG_MODE;
+
 class ChatbotPuerperio {
     constructor() {
         // Modo de desenvolvimento (detecta localhost ou variável de ambiente)
@@ -78,6 +84,11 @@ class ChatbotPuerperio {
         this.deviceType = this.detectDevice();
         this.userLoggedIn = false;
         this.currentUserName = null;
+        
+        // Controle de debouncing e processamento de mensagens
+        this.lastMessageTime = 0;
+        this.minMessageInterval = 500; // 500ms entre mensagens
+        this.isProcessing = false;
         
         this.initializeLoginElements();
         this.bindInitialLoginEvents();
@@ -171,8 +182,17 @@ class ChatbotPuerperio {
         }
     }
     
-    initMainApp() {
+    async initMainApp() {
         this.log('🚀 [INIT] initMainApp chamado');
+        
+        // Restaura histórico ao inicializar
+        await this.restoreChatHistory();
+        
+        // Atualiza header do chat com contexto
+        await this.updateChatHeader();
+        
+        // Verifica se é primeira visita e mostra mensagem de boas-vindas
+        await this.showWelcomeMessageIfFirstVisit();
         const loginScreen = document.getElementById('login-screen');
         const mainContainer = document.getElementById('main-container');
         
@@ -215,6 +235,11 @@ class ChatbotPuerperio {
               this.loadChatHistory();
               this.requestNotificationPermission();
               this.optimizeForDevice();
+              
+              // Detecção de teclado virtual em mobile
+              if (this.deviceType === 'mobile') {
+                  this.detectKeyboard();
+              }
 
                               // Inicializa o status de conexão após os elementos serem carregados
                 // Pequeno delay para garantir que o DOM está totalmente renderizado
@@ -998,6 +1023,10 @@ class ChatbotPuerperio {
         this.backToWelcome = document.getElementById('back-to-welcome');
         this.backBtn = document.getElementById('back-btn');
         
+        // Chat header fixo (desktop)
+        this.chatHeaderFixed = document.getElementById('chat-header-fixed');
+        this.chatHeaderSubtitle = document.getElementById('chat-header-subtitle');
+        
         // Auth elements
         this.authModal = document.getElementById('auth-modal');
         this.closeAuth = document.getElementById('close-auth');
@@ -1027,14 +1056,14 @@ class ChatbotPuerperio {
         bindEvents() {
         // Envio de mensagem
         if (this.sendButton) {
-            this.sendButton.addEventListener('click', () => this.sendMessage());
+            this.sendButton.addEventListener('click', () => this.handleSendClick());
         }
         
         if (this.messageInput) {
             this.messageInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    this.sendMessage();
+                    this.handleSendClick();
                 }
             });
 
@@ -1131,7 +1160,7 @@ class ChatbotPuerperio {
                     
                     // Define a pergunta e envia
                     this.messageInput.value = question;
-                    this.sendMessage();
+                    this.handleSendClick();
                 }
             }
         });
@@ -1297,7 +1326,32 @@ class ChatbotPuerperio {
         return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
     
-        async sendMessage() {
+    /**
+     * Handler para clique no botão de enviar com debouncing
+     */
+    handleSendClick() {
+        const now = Date.now();
+        
+        // Verifica debouncing - previne envio muito rápido
+        if (now - this.lastMessageTime < this.minMessageInterval) {
+            this.warn('⚠️ Aguarde um momento antes de enviar outra mensagem.');
+            return;
+        }
+        
+        // Previne múltiplas requisições simultâneas
+        if (this.isProcessing) {
+            this.warn('⚠️ Processando mensagem anterior. Aguarde...');
+            return;
+        }
+        
+        // Chama sendMessage
+        this.sendMessage();
+    }
+    
+    /**
+     * Envia mensagem usando APIClient com todas as otimizações de resiliência
+     */
+    async sendMessage() {
         // Verifica se messageInput existe antes de usar
         if (!this.messageInput || !this.messageInput.value) {
             this.warn('messageInput não está disponível');
@@ -1306,12 +1360,16 @@ class ChatbotPuerperio {
 
         const message = this.messageInput.value.trim();
         if (!message) return;
+        
+        // Atualiza timestamp e marca como processando
+        this.lastMessageTime = Date.now();
+        this.isProcessing = true;
 
         // Marca que o usuário já interagiu (para mostrar mensagem de boas-vindas nas próximas vezes)
         localStorage.setItem(`sophia_has_interacted_${this.userId}`, 'true');
 
         // Adiciona mensagem do usuário
-        this.addMessage(message, 'user');
+        await this.addMessage(message, 'user', {}, false); // Sem streaming para mensagens do usuário
         
         if (this.messageInput) {
             this.messageInput.value = '';
@@ -1333,6 +1391,13 @@ class ChatbotPuerperio {
         if (this.chatMessages) {
             this.chatMessages.classList.add('active');
         }
+        
+        // Mostra header fixo do chat (desktop)
+        if (this.chatHeaderFixed && window.innerWidth >= 1024) {
+            this.chatHeaderFixed.style.display = 'block';
+            this.updateChatHeader(); // Atualiza com informações contextuais
+        }
+        
         // Mostra o input do chat (usa .input-area diretamente)
         const inputArea = document.querySelector('.input-area');
         if (inputArea && inputArea.style) {
@@ -1353,27 +1418,24 @@ class ChatbotPuerperio {
         try {
             this.log('📤 Enviando mensagem:', message);
             
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include', // Importante para cookies de sessão
-                body: JSON.stringify({
-                    pergunta: message,
-                    user_id: this.userId
-                })
+            // Verifica se apiClient está disponível
+            if (!window.apiClient) {
+                throw new Error('APIClient não está disponível. Verifique se api-client.js foi carregado.');
+            }
+            
+            // Usa APIClient para requisição resiliente
+            const data = await window.apiClient.post('/api/chat', {
+                pergunta: message,
+                user_id: this.userId,
+                user_name: this.userName || 'Mamãe',
+                baby_name: this.babyName || null
+            }, {
+                timeout: 30000, // 30 segundos
+                retries: 3, // 3 tentativas
+                priority: 'high', // Alta prioridade para mensagens de chat
+                cancelPrevious: true // Cancela requisição anterior se houver
             });
 
-            this.log('📥 Resposta recebida, status:', response.status);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                this.error('❌ Erro na resposta:', response.status, errorText);
-                throw new Error(`Erro na resposta do servidor: ${response.status}`);
-            }
-
-            const data = await response.json();
             this.log('✅ Dados recebidos:', data);
 
             // Esconde indicador de digitação
@@ -1389,14 +1451,15 @@ class ChatbotPuerperio {
                     this.hideAvisoVisualRisco();
                 }
                 
-                // Adiciona resposta do assistente
-                this.addMessage(data.resposta, 'assistant', {
+                // Adiciona resposta do assistente (com streaming)
+                await this.addMessage(data.resposta, 'assistant', {
                     categoria: data.categoria,
                     alertas: data.alertas,
                     fonte: data.fonte,
                     alerta_ativo: data.alerta_ativo,
-                    nivel_risco: data.nivel_risco
-                });
+                    nivel_risco: data.nivel_risco,
+                    contexto_tags: data.contexto_tags || []  // Tags de contexto do backend
+                }, true); // true = usar streaming
 
                 // Mostra alerta médico se necessário (alertas médicos normais)
                 if (data.alertas && data.alertas.length > 0 && !data.alerta_ativo) {
@@ -1404,21 +1467,57 @@ class ChatbotPuerperio {
                 }
             } else {
                 this.warn('⚠️ Resposta vazia recebida:', data);
-                this.addMessage(
-                    'Desculpe, não consegui processar sua pergunta. Tente reformulá-la ou tente novamente mais tarde.',
-                    'assistant'
+                await this.addMessage(
+                    'Desculpe, querida. Não consegui entender direito sua mensagem. Pode tentar reformular? Ou se preferir, me diga o que você está precisando e eu tento te ajudar da melhor forma que conseguir. Estou aqui para te apoiar! 💛',
+                    'assistant',
+                    {},
+                    false // sem streaming para mensagens de erro
                 );
             }
 
         } catch (error) {
             this.error('❌ Erro ao enviar mensagem:', error);
             this.hideTyping();
-            this.addMessage(
-                'Desculpe, ocorreu um erro ao processar sua pergunta. Verifique sua conexão e tente novamente.',
-                'assistant'
+            
+            // Mensagem de erro mais específica baseada no tipo de erro
+            let errorMessage = 'Desculpe, ocorreu um erro ao processar sua pergunta.';
+            let toastMessage = 'Ops, deu um probleminha! Tente novamente em alguns instantes. 💛';
+            
+            if (error.name === 'AbortError' || error.message.includes('cancelada')) {
+                errorMessage = 'Requisição cancelada. Tente novamente.';
+                toastMessage = 'Requisição cancelada. Tente novamente. 💛';
+            } else if (error.message.includes('Timeout') || error.message.includes('timeout')) {
+                errorMessage = 'Tempo de espera esgotado. O servidor está demorando para responder. Tente novamente.';
+                toastMessage = 'A resposta está demorando um pouco mais que o normal. Aguarde mais um instante ou tente novamente. 💛';
+            } else if (error.message.includes('HTTP 5') || error.response?.status === 500) {
+                errorMessage = 'Erro no servidor. Tente novamente em alguns instantes.';
+                toastMessage = 'Ops, deu um probleminha técnico do meu lado. Não se preocupe - não é culpa sua! Pode tentar novamente em alguns instantes? 💛';
+            } else if (error.message.includes('rede') || error.message.includes('network')) {
+                errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+                toastMessage = 'Parece que sua conexão está instável. Verifique sua internet e tente novamente. 💛';
+            } else if (error.message.includes('APIClient')) {
+                errorMessage = 'Erro na inicialização. Recarregue a página.';
+                toastMessage = 'Algo deu errado na inicialização. Recarregue a página, por favor. 💛';
+            }
+            
+            // Mostra toast notification acolhedor para erros (especialmente 500)
+            if (window.toast && typeof window.toast.error === 'function') {
+                window.toast.error(toastMessage, 6000); // 6 segundos de duração
+            } else {
+                // Fallback: mostra no console se toast não estiver disponível
+                console.error('[TOAST] Toast notification não disponível:', toastMessage);
+            }
+            
+            await this.addMessage(
+                errorMessage.replace('Desculpe, ocorreu um erro', 'Opa, deu um probleminha aqui do meu lado 😅. Não se preocupe! Pode tentar novamente? Ou se quiser, me conte de outra forma o que você precisa e eu tento te ajudar. Você não está sozinha - estou aqui! 💛'),
+                'assistant',
+                {},
+                false // sem streaming para mensagens de erro
             );
         } finally {
             // Reabilita o botão e input
+            this.isProcessing = false;
+            
             if (this.sendButton) {
                 this.sendButton.disabled = false;
             }
@@ -1432,7 +1531,7 @@ class ChatbotPuerperio {
         }
     }
     
-    addMessage(content, sender, metadata = {}) {
+    async addMessage(content, sender, metadata = {}, useStreaming = true) {
         const messageElement = document.createElement('div');
         messageElement.className = `message ${sender}`;
         
@@ -1467,25 +1566,93 @@ class ChatbotPuerperio {
                 </div>
             `;
         }
-        
-                messageElement.innerHTML = `
-            <div class="message-avatar">${avatar}</div>
-            <div class="message-content">
-                <div class="message-text">${this.formatMessage(content)}</div>
-                ${categoryBadge}
-                ${alertSection}
-                <div class="message-time">${time}</div>
-            </div>
-        `;
 
         // Verifica se chatMessages existe antes de adicionar mensagem
         if (!this.chatMessages) {
             this.warn('chatMessages não está disponível');
             return;
         }
+        
+        // Renderiza estrutura do message
+        messageElement.innerHTML = `
+            <div class="message-avatar">${avatar}</div>
+            <div class="message-content">
+                <div class="message-text"></div>
+                ${categoryBadge}
+                ${alertSection}
+                <div class="message-time">${time}</div>
+            </div>
+        `;
 
         this.chatMessages.appendChild(messageElement);
+        
+        // Seleciona elemento de texto para streaming
+        const messageTextElement = messageElement.querySelector('.message-text');
+        
+        // Se for assistente e streaming habilitado, usa efeito máquina de escrever
+        if (sender === 'assistant' && useStreaming && content.length > 20) {
+            messageTextElement.classList.add('streaming');
+            // Velocidade adaptativa: mais rápido em mobile para evitar sensação de lentidão no 4G
+            const isMobile = window.innerWidth <= 1023;
+            const streamingSpeed = isMobile ? 15 : 25; // 15ms no mobile, 25ms no desktop
+            await this.typewriterEffect(messageTextElement, content, streamingSpeed);
+            messageTextElement.classList.remove('streaming');
+        } else {
+            // Renderização normal (instantânea)
+            messageTextElement.innerHTML = this.formatMessage(content);
+        }
+        
+        // Salva no histórico após adicionar
+        this.saveChatHistory();
+        
+        // Adiciona Quick Replies após resposta do assistente
+        if (sender === 'assistant' && !metadata.alerta_ativo) {
+            setTimeout(() => {
+                this.showQuickReplies(content, metadata);
+            }, 500);
+        }
+        
         this.scrollToBottom();
+    }
+    
+    async typewriterEffect(element, text, speed = 25) {
+        // Limpa elemento
+        element.textContent = '';
+        
+        // Proteção: verifica se elemento ainda existe (evita race conditions)
+        if (!element || !element.parentNode) {
+            this.warn('⚠️ [STREAMING] Elemento removido durante streaming, abortando');
+            return;
+        }
+        
+        // Adiciona caractere por caractere (usa await para não "atropelar" DOM)
+        for (let i = 0; i < text.length; i++) {
+            // Verifica novamente se elemento ainda existe (proteção adicional)
+            if (!element || !element.parentNode) {
+                this.warn('⚠️ [STREAMING] Elemento removido durante streaming, abortando');
+                break;
+            }
+            
+            // Adiciona caractere (operação atômica)
+            element.textContent += text[i];
+            
+            // Pausa entre caracteres (usa event loop, não bloqueia DOM)
+            if (i < text.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, speed));
+            }
+            
+            // Scroll automático suave durante digitação (a cada 10 caracteres ou ao final)
+            // Usa requestAnimationFrame para melhor performance (se disponível)
+            if (i % 10 === 0 || i === text.length - 1) {
+                if (window.requestAnimationFrame) {
+                    requestAnimationFrame(() => {
+                        this.scrollToBottom(true); // true = scroll suave
+                    });
+                } else {
+                    this.scrollToBottom(true); // Fallback para setTimeout
+                }
+            }
+        }
     }
     
     formatMessage(content) {
@@ -1511,15 +1678,376 @@ class ChatbotPuerperio {
         }
     }
     
-    scrollToBottom() {
+    scrollToBottom(smooth = false) {
         if (!this.chatMessages) {
             return;
         }
+        
+        // Usa scroll suave durante streaming para melhor experiência
+        const scrollBehavior = smooth ? 'smooth' : 'auto';
+        this.chatMessages.style.scrollBehavior = scrollBehavior;
+        
         setTimeout(() => {
             if (this.chatMessages && typeof this.chatMessages.scrollTop !== 'undefined') {
                 this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             }
-        }, 100);
+            // Restaura comportamento padrão após scroll
+            if (smooth) {
+                setTimeout(() => {
+                    this.chatMessages.style.scrollBehavior = '';
+                }, 300);
+            }
+        }, smooth ? 50 : 100);
+    }
+    
+    // Salva histórico no localStorage (últimas 5 mensagens)
+    saveChatHistory() {
+        try {
+            if (!this.chatMessages) return;
+            
+            const messages = Array.from(this.chatMessages.children)
+                .filter(msg => msg.classList.contains('message'))
+                .slice(-5) // Últimas 5 mensagens
+                .map(msgEl => {
+                    const sender = msgEl.classList.contains('user') ? 'user' : 'assistant';
+                    const content = msgEl.querySelector('.message-text')?.textContent || '';
+                    const time = msgEl.querySelector('.message-time')?.textContent || '';
+                    const categoria = msgEl.querySelector('.message-category')?.textContent.replace('📁 ', '').trim() || null;
+                    
+                    return {
+                        content: content,
+                        sender: sender,
+                        timestamp: new Date().toISOString(),
+                        metadata: {
+                            categoria: categoria
+                        }
+                    };
+                });
+            
+            localStorage.setItem('sophia_chat_history', JSON.stringify({
+                chat_history: messages,
+                last_updated: new Date().toISOString()
+            }));
+            
+            this.log('✅ Histórico salvo no localStorage');
+        } catch (error) {
+            this.error('Erro ao salvar histórico:', error);
+        }
+    }
+    
+    // Carrega histórico do localStorage
+    loadChatHistory() {
+        try {
+            const saved = localStorage.getItem('sophia_chat_history');
+            if (!saved) return [];
+            
+            const data = JSON.parse(saved);
+            
+            // Verifica se histórico não é muito antigo (últimas 24h)
+            const lastUpdated = new Date(data.last_updated);
+            const now = new Date();
+            const hoursSinceUpdate = (now - lastUpdated) / (1000 * 60 * 60);
+            
+            if (hoursSinceUpdate > 24) {
+                // Histórico muito antigo, limpa
+                localStorage.removeItem('sophia_chat_history');
+                return [];
+            }
+            
+            return data.chat_history || [];
+        } catch (error) {
+            this.error('Erro ao carregar histórico:', error);
+            return [];
+        }
+    }
+    
+    // Restaura histórico na tela
+    async restoreChatHistory() {
+        const history = this.loadChatHistory();
+        
+        if (history.length === 0) return;
+        
+        // Limpa mensagens atuais (se houver)
+        if (this.chatMessages) {
+            // Não limpa se já houver mensagens visíveis (evita duplicação)
+            if (this.chatMessages.children.length === 0) {
+                // Restaura mensagens (sem streaming, instantâneo)
+                for (const msg of history) {
+                    await this.addMessage(msg.content, msg.sender, msg.metadata || {}, false); // false = sem streaming
+                }
+                
+                // Scroll para o final
+                this.scrollToBottom();
+                
+                this.log(`✅ Histórico restaurado: ${history.length} mensagens`);
+            }
+        }
+    }
+    
+    /**
+     * Mostra mensagem de boas-vindas se for primeira visita
+     * Verifica localStorage para não repetir a mensagem
+     */
+    async showWelcomeMessageIfFirstVisit() {
+        try {
+            // Verifica se já foi enviada a mensagem de boas-vindas
+            const welcomeSent = localStorage.getItem('sophia_welcome_sent');
+            
+            if (welcomeSent === 'true') {
+                this.log('ℹ️ [WELCOME] Mensagem de boas-vindas já foi enviada anteriormente');
+                return;
+            }
+            
+            // Verifica se há histórico de conversas (se já conversou, não mostra welcome)
+            const history = this.loadChatHistory();
+            if (history.length > 0) {
+                this.log('ℹ️ [WELCOME] Usuária já tem histórico de conversas, pulando mensagem de boas-vindas');
+                // Marca como enviada para não mostrar novamente
+                localStorage.setItem('sophia_welcome_sent', 'true');
+                return;
+            }
+            
+            // Verifica se chatMessages está disponível
+            if (!this.chatMessages) {
+                this.warn('⚠️ [WELCOME] chatMessages não disponível, tentando novamente em 500ms');
+                setTimeout(() => this.showWelcomeMessageIfFirstVisit(), 500);
+                return;
+            }
+            
+            // Mensagem de boas-vindas definida pela Mary (Analyst)
+            // Ver docs/MENSAGEM_BOAS_VINDAS_MARY.md
+            const welcomeMessage = `Olá, querida! 💕 Eu sou a Sophia, sua amiga digital do puerpério. 
+
+Estou aqui para te escutar, te apoiar e te ajudar com informações sobre cuidados do bebê, amamentação e, claro, te lembrar das vacinas do seu pequeno através da nossa Agenda de Vacinação! 💉
+
+Lembre-se: eu não substituo profissionais de saúde, mas estou sempre aqui quando você precisar de uma palavra amiga ou uma orientação rápida. 
+
+Como você está se sentindo hoje? 💛`;
+            
+            // Delay de 800ms para parecer uma interação natural
+            setTimeout(async () => {
+                // Esconde welcome message se estiver visível
+                if (this.welcomeMessage) {
+                    this.welcomeMessage.style.display = 'none';
+                }
+                
+                // Mostra chat messages
+                if (this.chatMessages) {
+                    this.chatMessages.classList.add('active');
+                }
+                
+                // Mostra input area
+                const inputArea = document.querySelector('.input-area');
+                if (inputArea) {
+                    inputArea.style.display = 'flex';
+                }
+                
+                // Mostra header fixo do chat (desktop)
+                if (this.chatHeaderFixed && window.innerWidth >= 1024) {
+                    this.chatHeaderFixed.style.display = 'block';
+                    this.updateChatHeader();
+                }
+                
+                // Adiciona mensagem de boas-vindas com typewriter effect
+                await this.addMessage(welcomeMessage, 'assistant', {}, true); // true = usar streaming
+                
+                // Marca como enviada no localStorage
+                localStorage.setItem('sophia_welcome_sent', 'true');
+                
+                this.log('✅ [WELCOME] Mensagem de boas-vindas enviada');
+            }, 800);
+            
+        } catch (error) {
+            this.error('❌ [WELCOME] Erro ao mostrar mensagem de boas-vindas:', error);
+        }
+    }
+    
+    // Atualiza header do chat com informações contextuais
+    async updateChatHeader() {
+        if (!this.chatHeaderFixed) return;
+        
+        const subtitle = document.getElementById('chat-header-subtitle');
+        if (!subtitle) return;
+        
+        try {
+            // Busca contexto do usuário via API
+            const response = await window.apiClient.get('/api/user-data');
+            
+            if (response && response.baby_profile) {
+                const babyName = response.baby_profile.name;
+                subtitle.textContent = `Apoio para a mamãe de ${babyName}`;
+                this.babyName = babyName; // Salva para usar em sendMessage
+            } else if (response && response.user) {
+                this.userName = response.user.name || 'Mamãe';
+                subtitle.textContent = 'Apoio para a mamãe';
+            } else {
+                subtitle.textContent = 'Apoio para a mamãe';
+            }
+            
+            // Mostra header em desktop
+            if (window.innerWidth >= 1024) {
+                this.chatHeaderFixed.style.display = 'block';
+            }
+        } catch (error) {
+            // Em caso de erro, usa texto padrão
+            subtitle.textContent = 'Apoio para a mamãe';
+            if (window.innerWidth >= 1024) {
+                this.chatHeaderFixed.style.display = 'block';
+            }
+        }
+    }
+    
+    // Mostra Quick Replies após resposta do assistente
+    showQuickReplies(responseContent, metadata) {
+        // Remove quick replies anteriores
+        const existingReplies = document.querySelector('.quick-replies-container');
+        if (existingReplies) {
+            existingReplies.remove();
+        }
+        
+        // Define quick replies baseados no contexto
+        let quickReplies = [];
+        
+        // Quick replies padrão
+        if (!metadata.alerta_ativo) {
+            quickReplies = [
+                { text: 'Ver calendário de vacinas', action: () => { if (window.chatApp) window.chatApp.showVacinas(); } },
+                { text: 'Dúvidas sobre amamentação', action: () => { this.sendMessageText('Me fale sobre amamentação'); } },
+                { text: 'Preciso de um incentivo', action: () => { this.sendMessageText('Preciso de um incentivo'); } }
+            ];
+            
+            // Quick replies contextuais baseados em tags de contexto (se disponíveis)
+            const contextoTags = metadata.contexto_tags || [];
+            const contentLower = responseContent.toLowerCase();
+            
+            // Mapeamento de Quick Replies por Tag (definido pela Analyst Mary)
+            const QUICK_REPLIES_MAP = {
+                'cansaço_extremo': [
+                    { text: 'Dicas de descanso rápido', action: () => { this.sendMessageText('Preciso de dicas de descanso rápido'); } },
+                    { text: 'Preciso de um incentivo', action: () => { this.sendMessageText('Preciso de um incentivo'); } }
+                ],
+                'cansaço_extremo_critico': [
+                    { text: 'Dicas de descanso rápido', action: () => { this.sendMessageText('Preciso de dicas de descanso rápido'); } },
+                    { text: 'Preciso de um incentivo', action: () => { this.sendMessageText('Preciso de um incentivo'); } }
+                ],
+                'celebração': [
+                    { text: 'Contar uma conquista', action: () => { this.sendMessageText('Quero compartilhar uma conquista'); } },
+                    { text: 'O que fazer hoje?', action: () => { this.sendMessageText('O que fazer hoje?'); } }
+                ],
+                'ansiedade': [
+                    { text: 'Preciso de apoio emocional', action: () => { this.sendMessageText('Preciso de apoio emocional'); } },
+                    { text: 'Frase de incentivo', action: () => { this.sendMessageText('Preciso de um incentivo'); } }
+                ],
+                'tristeza': [
+                    { text: 'Preciso de apoio emocional', action: () => { this.sendMessageText('Preciso de apoio emocional'); } },
+                    { text: 'Buscar ajuda profissional', action: () => { this.showResources(); } }
+                ],
+                'dúvida_vacina': [
+                    { text: 'Ver calendário completo', action: () => { if (window.chatApp) window.chatApp.showVacinas(); } },
+                    { text: 'Qual a próxima vacina?', action: () => { this.sendMessageText('Qual a próxima vacina?'); } }
+                ],
+                'dúvida_amamentação': [
+                    { text: 'Mais sobre amamentação', action: () => { this.sendMessageText('Me fale mais sobre amamentação'); } },
+                    { text: 'Preciso de ajuda prática', action: () => { this.sendMessageText('Preciso de ajuda com amamentação'); } }
+                ],
+                'busca_orientação': [
+                    { text: 'O que fazer hoje?', action: () => { this.sendMessageText('O que fazer hoje?'); } },
+                    { text: 'Dicas práticas para hoje', action: () => { this.sendMessageText('Preciso de dicas práticas'); } }
+                ],
+                'busca_apoio_emocional': [
+                    { text: 'Preciso de um incentivo', action: () => { this.sendMessageText('Preciso de um incentivo'); } },
+                    { text: 'Como me cuidar melhor?', action: () => { this.sendMessageText('Como cuidar de mim?'); } }
+                ],
+                'crise_emocional': [
+                    { text: 'Buscar ajuda profissional', action: () => { this.showResources(); } },
+                    { text: 'Preciso de apoio urgente', action: () => { this.sendMessageText('Preciso de apoio urgente'); } }
+                ]
+            };
+            
+            // Se houver tags de contexto, usa-as para determinar quick replies
+            if (contextoTags.length > 0) {
+                // Prioriza tags de crise
+                let selectedTag = null;
+                if (contextoTags.includes('crise_emocional')) {
+                    selectedTag = 'crise_emocional';
+                } else if (contextoTags.includes('cansaço_extremo_critico')) {
+                    selectedTag = 'cansaço_extremo_critico';
+                } else if (contextoTags.includes('cansaço_extremo')) {
+                    selectedTag = 'cansaço_extremo';
+                } else if (contextoTags.includes('tristeza')) {
+                    selectedTag = 'tristeza';
+                } else if (contextoTags.includes('ansiedade')) {
+                    selectedTag = 'ansiedade';
+                } else if (contextoTags.includes('celebração')) {
+                    selectedTag = 'celebração';
+                } else if (contextoTags.includes('dúvida_vacina')) {
+                    selectedTag = 'dúvida_vacina';
+                } else if (contextoTags.includes('dúvida_amamentação')) {
+                    selectedTag = 'dúvida_amamentação';
+                } else if (contextoTags.includes('busca_apoio_emocional')) {
+                    selectedTag = 'busca_apoio_emocional';
+                } else if (contextoTags.includes('busca_orientação')) {
+                    selectedTag = 'busca_orientação';
+                }
+                
+                if (selectedTag && QUICK_REPLIES_MAP[selectedTag]) {
+                    quickReplies = QUICK_REPLIES_MAP[selectedTag];
+                }
+            } else if (contentLower.includes('vacina') || metadata.categoria === 'vacinação') {
+                quickReplies = [
+                    { text: 'Ver calendário completo', action: () => { if (window.chatApp) window.chatApp.showVacinas(); } },
+                    { text: 'Qual a próxima vacina?', action: () => { this.sendMessageText('Qual a próxima vacina?'); } },
+                    { text: 'O que fazer hoje?', action: () => { this.sendMessageText('O que fazer hoje?'); } }
+                ];
+            } else if (contentLower.includes('amament') || metadata.categoria === 'amamentação') {
+                quickReplies = [
+                    { text: 'Mais sobre amamentação', action: () => { this.sendMessageText('Me fale mais sobre amamentação'); } },
+                    { text: 'Preciso de ajuda', action: () => { this.sendMessageText('Preciso de ajuda com amamentação'); } },
+                    { text: 'O que fazer hoje?', action: () => { this.sendMessageText('O que fazer hoje?'); } }
+                ];
+            } else if (contentLower.includes('cansada') || contentLower.includes('exausta')) {
+                quickReplies = [
+                    { text: 'Preciso de um incentivo', action: () => { this.sendMessageText('Preciso de um incentivo'); } },
+                    { text: 'Como cuidar de mim?', action: () => { this.sendMessageText('Como cuidar de mim?'); } },
+                    { text: 'Preciso de ajuda', action: () => { this.sendMessageText('Preciso de ajuda'); } }
+                ];
+            }
+            
+            // Cria container de quick replies
+            const repliesContainer = document.createElement('div');
+            repliesContainer.className = 'quick-replies-container';
+            repliesContainer.innerHTML = quickReplies.map(reply => 
+                `<button class="quick-reply-btn" data-action="${reply.text}">${reply.text}</button>`
+            ).join('');
+            
+            // Adiciona ao final das mensagens
+            if (this.chatMessages) {
+                this.chatMessages.appendChild(repliesContainer);
+            }
+            
+            // Adiciona event listeners
+            repliesContainer.querySelectorAll('.quick-reply-btn').forEach((btn, index) => {
+                btn.addEventListener('click', () => {
+                    const reply = quickReplies[index];
+                    if (reply && reply.action) {
+                        reply.action();
+                        repliesContainer.remove();
+                    }
+                });
+            });
+            
+            // Scroll para mostrar quick replies
+            this.scrollToBottom();
+        }
+    }
+    
+    // Helper para enviar mensagem de texto
+    sendMessageText(text) {
+        if (this.messageInput) {
+            this.messageInput.value = text;
+            this.updateCharCount();
+            this.sendMessage();
+        }
     }
     
         playSound(frequency = 400, duration = 100, type = 'sine') {
@@ -1635,40 +2163,52 @@ class ChatbotPuerperio {
         ];
 
         let currentIndex = 0;
+        const intervalMs = 5000;
+        const fadeDuration = 450;
+        let rotationTimeout;
 
-        setInterval(() => {
-            // Verifica se o elemento ainda existe no DOM antes de acessar
+        const rotateMessage = () => {
             const currentElement = document.getElementById('rotating-text');
             if (!currentElement || !document.body.contains(currentElement)) {
-                return; // Elemento foi removido, para o intervalo
+                return; // Elemento removido, não agenda próximo tick
             }
 
             try {
-                currentElement.style.opacity = '0';
+                requestAnimationFrame(() => {
+                    currentElement.style.opacity = '0';
+                });
+
                 setTimeout(() => {
-                    // Verifica novamente dentro do timeout
-                    const checkElement = document.getElementById('rotating-text');
-                    if (!checkElement || !document.body.contains(checkElement)) {
+                    const target = document.getElementById('rotating-text');
+                    if (!target || !document.body.contains(target)) {
                         return;
                     }
                     currentIndex = (currentIndex + 1) % messages.length;
-                    checkElement.textContent = messages[currentIndex];
-                    checkElement.style.opacity = '1';
-                }, 500);
+                    target.textContent = messages[currentIndex];
+
+                    requestAnimationFrame(() => {
+                        target.style.opacity = '1';
+                    });
+
+                    rotationTimeout = setTimeout(rotateMessage, intervalMs);
+                }, fadeDuration);
             } catch (error) {
                 this.warn('Erro ao atualizar mensagem rotativa:', error);
             }
-        }, 5000); // Muda a cada 5 segundos
+        };
+
+        rotationTimeout = setTimeout(rotateMessage, intervalMs);
     }
 
     initFeelingButtons() {
         const feelingButtons = document.querySelectorAll('.feeling-btn');
+        const feelingFeedback = document.getElementById('feeling-feedback');
         const feelingResponses = {
-            'cansada': 'Entendo que você está cansada. O puerpério é realmente exaustivo. Lembre-se de descansar quando possível e aceitar ajuda quando oferecida. Você está fazendo muito mais do que imagina! 💤',
-            'feliz': 'Que alegria saber que você está se sentindo feliz! Aproveite esses momentos de alegria e celebre cada pequena vitória. Você merece sentir-se bem! 😊',
-            'ansiosa': 'A ansiedade no puerpério é muito comum. Você não está sozinha nisso. Respirar fundo e focar no momento presente pode ajudar. Se a ansiedade persistir ou piorar, não hesite em buscar ajuda profissional. 🤗',
+            'cansada': 'Entendo que você está exausta. O puerpério é realmente exaustivo. Lembre-se de descansar quando possível e aceitar ajuda quando oferecida. Você está fazendo muito mais do que imagina! 💤',
+            'feliz': 'Que alegria saber que você está em paz! Aproveite esses momentos de tranquilidade e celebre cada pequena vitória. Você merece sentir-se bem! 😊',
+            'ansiosa': 'Entendo que você está se sentindo sobrecarregada. A ansiedade no puerpério é muito comum. Você não está sozinha nisso. Respirar fundo e focar no momento presente pode ajudar. Se a ansiedade persistir ou piorar, não hesite em buscar ajuda profissional. 🤗',
             'confusa': 'É totalmente normal se sentir confusa nessa fase. Há muitas mudanças acontecendo ao mesmo tempo. Tome um dia de cada vez e lembre-se: não há perguntas bobas. Estou aqui para ajudar! 💭',
-            'triste': 'Sinto muito que você esteja se sentindo triste. Seus sentimentos são válidos e importantes. Se essa tristeza persistir ou interferir no seu dia a dia, considere buscar ajuda profissional. Você merece apoio. 💙',
+            'triste': 'Sinto muito que você esteja se sentindo para baixo. Seus sentimentos são válidos e importantes. Se essa tristeza persistir ou interferir no seu dia a dia, considere buscar ajuda profissional. Você merece apoio. 💙',
             'gratidao': 'Que lindo sentir gratidão! Apreciar os momentos bons é muito importante. Guarde esses sentimentos para quando os dias estiverem mais difíceis. Você está criando memórias preciosas. 🙏'
         };
 
@@ -1677,36 +2217,93 @@ class ChatbotPuerperio {
                 const feeling = btn.dataset.feeling;
                 const response = feelingResponses[feeling];
                 if (response) {
-                    // Esconde welcome message e mostra chat
-                    if (this.welcomeMessage) {
-                        this.welcomeMessage.style.display = 'none';
-                    }
-                    if (this.chatMessages) {
-                        this.chatMessages.classList.add('active');
-                    }
-                    // Mostra o input do chat (usa .input-area diretamente)
-                    const inputArea = document.querySelector('.input-area');
-                    if (inputArea && inputArea.style) {
-                        inputArea.style.display = 'flex';
-                    }
-                    // Foca no input
-                    if (this.messageInput) {
-                        setTimeout(() => {
-                            this.messageInput.focus();
-                        }, 100);
-                    }
-                    // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
-
-                    // Adiciona mensagem do usuário
-                    this.addMessage(`Estou me sentindo ${btn.textContent.trim()}`, 'user');
+                    // Remove seleção anterior
+                    feelingButtons.forEach(b => b.classList.remove('selected'));
+                    // Adiciona seleção ao botão clicado
+                    btn.classList.add('selected');
                     
-                    // Adiciona resposta empática
+                    // Mostra feedback visual
+                    if (feelingFeedback) {
+                        feelingFeedback.style.display = 'flex';
+                        setTimeout(() => {
+                            if (feelingFeedback) {
+                                feelingFeedback.style.display = 'none';
+                            }
+                        }, 3000);
+                    }
+                    
+                    // Esconde welcome message e mostra chat após um breve delay
                     setTimeout(() => {
-                        this.addMessage(response, 'assistant');
-                    }, 500);
+                        if (this.welcomeMessage) {
+                            this.welcomeMessage.style.display = 'none';
+                        }
+                        if (this.chatMessages) {
+                            this.chatMessages.classList.add('active');
+                        }
+                        // Mostra o input do chat
+                        const inputArea = document.querySelector('.input-area');
+                        if (inputArea && inputArea.style) {
+                            inputArea.style.display = 'flex';
+                        }
+                        // Foca no input
+                        if (this.messageInput) {
+                            setTimeout(() => {
+                                this.messageInput.focus();
+                            }, 100);
+                        }
+
+                        // Adiciona mensagem do usuário
+                        this.addMessage(`Estou me sentindo ${btn.textContent.trim()}`, 'user');
+                        
+                        // Adiciona resposta empática
+                        setTimeout(() => {
+                            this.addMessage(response, 'assistant');
+                        }, 500);
+                    }, 800);
                 }
             });
         });
+        
+        // Botão "Escrever com próprias palavras"
+        const writeOwnBtn = document.getElementById('feeling-write-own');
+        if (writeOwnBtn) {
+            writeOwnBtn.addEventListener('click', () => {
+                // Esconde welcome message e mostra chat
+                if (this.welcomeMessage) {
+                    this.welcomeMessage.style.display = 'none';
+                }
+                if (this.chatMessages) {
+                    this.chatMessages.classList.add('active');
+                }
+                // Mostra o input do chat
+                const inputArea = document.querySelector('.input-area');
+                if (inputArea && inputArea.style) {
+                    inputArea.style.display = 'flex';
+                }
+                // Foca no input
+                if (this.messageInput) {
+                    setTimeout(() => {
+                        this.messageInput.focus();
+                    }, 100);
+                }
+            });
+        }
+        
+        // Botão "Prefiro não responder agora"
+        const skipBtn = document.getElementById('feeling-skip');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => {
+                // Apenas esconde a caixa de sentimentos suavemente
+                const feelingBox = document.querySelector('.feeling-box');
+                if (feelingBox) {
+                    feelingBox.style.opacity = '0.5';
+                    feelingBox.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        feelingBox.style.display = 'none';
+                    }, 300);
+                }
+            });
+        }
     }
 
     initSupportLinks() {
@@ -2398,6 +2995,96 @@ class ChatbotPuerperio {
         }
     }
     
+    /**
+     * Detecta quando teclado virtual abre/fecha no mobile
+     * Ajusta posição do input para não ser coberto pelo teclado
+     */
+    detectKeyboard() {
+        const inputArea = document.querySelector('.input-area');
+        if (!inputArea) return;
+        
+        // DEBUG_MODE global (definido no topo do arquivo)
+        const DEBUG_MODE = window.DEBUG_MODE || false;
+        
+        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        let lastHeight = viewportHeight;
+        
+        // Debug: Cria indicador visual apenas em desenvolvimento
+        let debugIndicator = null;
+        if (DEBUG_MODE) {
+            // Remove indicador anterior se existir
+            const existing = document.getElementById('keyboard-debug-indicator');
+            if (existing) existing.remove();
+            
+            debugIndicator = document.createElement('div');
+            debugIndicator.id = 'keyboard-debug-indicator';
+            debugIndicator.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: rgba(255, 0, 0, 0.8);
+                color: white;
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                z-index: 10000;
+                text-align: center;
+                font-weight: bold;
+                display: none;
+            `;
+            debugIndicator.textContent = '🔴 KEYBOARD-OPEN DISPARADO';
+            document.body.appendChild(debugIndicator);
+        }
+        
+        // Usa visualViewport API quando disponível (melhor detecção)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const currentHeight = window.visualViewport.height;
+                const heightDiff = lastHeight - currentHeight;
+                
+                // Se altura diminuiu significativamente (> 150px), teclado abriu
+                if (heightDiff > 150) {
+                    inputArea.classList.add('keyboard-open');
+                    if (DEBUG_MODE && debugIndicator) {
+                        debugIndicator.style.display = 'block';
+                        this.log('🔴 [KEYBOARD] Teclado virtual DETECTADO (heightDiff:', heightDiff, 'px)');
+                    }
+                } else if (heightDiff < -50) {
+                    // Se altura aumentou, teclado fechou
+                    inputArea.classList.remove('keyboard-open');
+                    if (DEBUG_MODE && debugIndicator) {
+                        debugIndicator.style.display = 'none';
+                        this.log('✅ [KEYBOARD] Teclado virtual FECHADO (heightDiff:', heightDiff, 'px)');
+                    }
+                }
+                
+                lastHeight = currentHeight;
+            });
+        } else {
+            // Fallback: usa resize event (menos preciso)
+            window.addEventListener('resize', () => {
+                const currentHeight = window.innerHeight;
+                const heightDiff = lastHeight - currentHeight;
+                
+                if (heightDiff > 150) {
+                    inputArea.classList.add('keyboard-open');
+                    if (DEBUG_MODE && debugIndicator) {
+                        debugIndicator.style.display = 'block';
+                        this.log('🔴 [KEYBOARD] Teclado virtual DETECTADO (heightDiff:', heightDiff, 'px)');
+                    }
+                } else if (heightDiff < -50) {
+                    inputArea.classList.remove('keyboard-open');
+                    if (DEBUG_MODE && debugIndicator) {
+                        debugIndicator.style.display = 'none';
+                        this.log('✅ [KEYBOARD] Teclado virtual FECHADO (heightDiff:', heightDiff, 'px)');
+                    }
+                }
+                
+                lastHeight = currentHeight;
+            });
+        }
+    }
+    
     // Auth functions
     showAuthModal() {
         this.authModal.classList.add('show');
@@ -2945,6 +3632,8 @@ class ChatbotPuerperio {
     }
     
     async showVacinas() {
+        // Mostra timeline de vacinação
+        this.showVaccinationTimeline();
         try {
             const [maeData, bebeData, vacinasStatus] = await Promise.all([
                 fetch('/api/vacinas/mae').then(r => r.json()),
@@ -3218,7 +3907,8 @@ class ChatbotPuerperio {
     
     createConfetti() {
         const colors = ['#f4a6a6', '#e8b4b8', '#ffd89b', '#ff92a4', '#a8e6cf', '#ffaaa5'];
-        const confettiCount = 50;
+        // Reduzido para 20 partículas para melhor performance no mobile (era 50)
+        const confettiCount = 20;
         
         for (let i = 0; i < confettiCount; i++) {
             setTimeout(() => {
