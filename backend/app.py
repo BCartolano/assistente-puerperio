@@ -40,13 +40,18 @@ import base64
 import secrets
 import string
 import logging
+from logging.handlers import RotatingFileHandler
 import unicodedata
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, render_template, session, url_for, redirect
+from flask import Flask, request, jsonify, render_template, session, url_for, redirect, Response
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
+from dateutil.relativedelta import relativedelta
 from collections import defaultdict, Counter
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+import atexit
 
 # Tenta importar NLTK para stemming (opcional)
 NLTK_AVAILABLE = False
@@ -70,13 +75,46 @@ except Exception as e:
     print(f"[NLTK] ⚠️ NLTK não disponível: {e}")
 
 # Configuração de logging (após imports básicos, antes de usar logger)
-if not logging.getLogger().handlers:  # Evita reconfigurar se já foi configurado
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
 logger = logging.getLogger(__name__)
+
+if not logger.handlers:  # Evita reconfigurar se já foi configurado
+    # Configura nível de logging
+    logger.setLevel(logging.INFO)
+    
+    # Cria pasta logs se não existir
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    project_dir = os.path.dirname(backend_dir) if backend_dir else os.getcwd()
+    logs_dir = os.path.join(project_dir, 'logs')
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    # Handler para arquivo com rotação (RotatingFileHandler) - LIMITE: 10MB por arquivo, 5 backups
+    log_file = os.path.join(logs_dir, 'error_debug.log')
+    file_handler = RotatingFileHandler(
+        log_file,
+        maxBytes=10*1024*1024,  # 10MB por arquivo
+        backupCount=5,  # Mantém 5 arquivos de backup (total máximo: ~60MB)
+        encoding='utf-8'
+    )
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter(
+        '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    ))
+    
+    # Handler para console (manter para desenvolvimento)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    ))
+    
+    # Adiciona handlers ao logger
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    # Previne propagação para o logger root (evita duplicação)
+    logger.propagate = False
 
 # Agora pode usar logger para NLTK
 if NLTK_AVAILABLE:
@@ -218,53 +256,115 @@ except ImportError:
     compress = None
 
 # Headers de cache e performance para recursos estáticos
+@app.errorhandler(500)
+def handle_internal_error(e):
+    """Handler para erros 500 - salva traceback completo em error_debug.log"""
+    import traceback
+    
+    # Cria pasta logs se não existir
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    project_dir = os.path.dirname(backend_dir) if backend_dir else os.getcwd()
+    logs_dir = os.path.join(project_dir, 'logs')
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    error_log_file = os.path.join(logs_dir, 'error_debug.log')
+    
+    # Obtém traceback completo
+    tb_str = traceback.format_exc()
+    
+    # Log completo com contexto
+    error_entry = f"""
+{'='*80}
+ERRO 500 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+{'='*80}
+Endpoint: {request.method} {request.path}
+User-Agent: {request.headers.get('User-Agent', 'N/A')}
+Remote Address: {request.remote_addr}
+Query String: {request.query_string.decode('utf-8') if request.query_string else 'N/A'}
+Content-Type: {request.content_type or 'N/A'}
+
+TRACEBACK:
+{tb_str}
+{'='*80}
+
+"""
+    
+    # Salva no arquivo de log
+    try:
+        with open(error_log_file, 'a', encoding='utf-8') as f:
+            f.write(error_entry)
+        logger.error(f"[ERROR_500] ✅ Traceback salvo em: {error_log_file}")
+    except Exception as log_error:
+        logger.error(f"[ERROR_DEBUG] ❌ Erro ao salvar log de erro 500: {log_error}")
+    
+    # Log no console também
+    logger.error(f"[ERROR_500] ❌ Erro interno no servidor: {request.path}")
+    logger.error(f"[ERROR_500] Traceback completo salvo em: {error_log_file}")
+    print(f"[ERROR_500] ❌ Erro 500: {request.path}")
+    print(f"[ERROR_500] Traceback salvo em: {error_log_file}")
+    
+    # Retorna resposta amigável ao cliente
+    return jsonify({
+        'error': 'Erro interno do servidor',
+        'message': 'Ocorreu um erro ao processar sua solicitação. Nossa equipe foi notificada.',
+        'timestamp': datetime.now().isoformat()
+    }), 500
+
 @app.after_request
 def add_cache_headers(response):
     """Adiciona headers de cache e compressão para melhorar performance"""
-    # API endpoints de dados JSON não devem ser cacheados (sempre atualizados)
-    if request.path.startswith('/api/'):
-        response.cache_control.no_cache = True
-        response.cache_control.no_store = True
-        response.cache_control.must_revalidate = True
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-    
-    # Cache para recursos estáticos (CSS, JS, imagens)
-    elif request.endpoint == 'static' or request.path.startswith('/static/'):
-        # Cache de 1 ano para recursos estáticos com versionamento
-        if '?v=' in request.path or request.path.endswith(('.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2')):
-            response.cache_control.max_age = 31536000  # 1 ano
-            response.cache_control.public = True
-            response.cache_control.immutable = True
-        else:
-            # Cache menor para outros recursos
-            response.cache_control.max_age = 3600  # 1 hora
-            response.cache_control.public = True
-    
-    # Headers de segurança e performance
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    
-    # Compressão e encoding
-    if request.path.endswith(('.css', '.js', '.html', '.json', '.xml', '.txt')):
-        response.headers['Vary'] = 'Accept-Encoding'
-        # Força compressão se disponível
-        if compress is None and 'gzip' in request.headers.get('Accept-Encoding', ''):
-            # Compressão manual básica se flask-compress não estiver disponível
-            import gzip
-            if response.content_length and response.content_length > 1024:  # Só comprime arquivos > 1KB
-                try:
-                    content = response.get_data()
-                    compressed = gzip.compress(content)
-                    if len(compressed) < len(content):
-                        response.set_data(compressed)
-                        response.headers['Content-Encoding'] = 'gzip'
-                        response.headers['Content-Length'] = len(compressed)
-                except:
-                    pass  # Se falhar, retorna sem compressão
-    
-    return response
+    # Trata erros de Broken Pipe graciosamente (requisições canceladas pelo cliente)
+    try:
+        # API endpoints de dados JSON não devem ser cacheados (sempre atualizados)
+        if request.path.startswith('/api/'):
+            response.cache_control.no_cache = True
+            response.cache_control.no_store = True
+            response.cache_control.must_revalidate = True
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+        # Cache para recursos estáticos (CSS, JS, imagens)
+        elif request.endpoint == 'static' or request.path.startswith('/static/'):
+            # Cache de 1 ano para recursos estáticos com versionamento
+            if '?v=' in request.path or request.path.endswith(('.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2')):
+                response.cache_control.max_age = 31536000  # 1 ano
+                response.cache_control.public = True
+                response.cache_control.immutable = True
+            else:
+                # Cache menor para outros recursos
+                response.cache_control.max_age = 3600  # 1 hora
+                response.cache_control.public = True
+        
+        # Headers de segurança e performance
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        
+        # Compressão e encoding
+        if request.path.endswith(('.css', '.js', '.html', '.json', '.xml', '.txt')):
+            response.headers['Vary'] = 'Accept-Encoding'
+            # Força compressão se disponível
+            if compress is None and 'gzip' in request.headers.get('Accept-Encoding', ''):
+                # Compressão manual básica se flask-compress não estiver disponível
+                import gzip
+                if response.content_length and response.content_length > 1024:  # Só comprime arquivos > 1KB
+                    try:
+                        content = response.get_data()
+                        compressed = gzip.compress(content)
+                        if len(compressed) < len(content):
+                            response.set_data(compressed)
+                            response.headers['Content-Encoding'] = 'gzip'
+                            response.headers['Content-Length'] = len(compressed)
+                    except:
+                        pass  # Se falhar, retorna sem compressão
+        
+        return response
+        
+    except (BrokenPipeError, ConnectionResetError, OSError) as e:
+        # Erro de conexão fechada pelo cliente (requisição cancelada)
+        # Log silencioso para não poluir logs durante testes mobile
+        logger.debug(f"[BROKEN_PIPE] Conexão fechada pelo cliente: {request.path} - {str(e)}")
+        # Retorna resposta vazia para evitar erro no servidor
+        return Response(status=499, mimetype='application/json')  # 499 = Client Closed Request
 
 # Configurações de Email
 # Carrega configurações de email do .env
@@ -345,7 +445,12 @@ class User(UserMixin):
 
 # Função para inicializar banco de dados
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=20.0)
+    # Ativa WAL mode para melhor performance com múltiplas conexões simultâneas
+    # Importante para Beta Fechado (10-20 usuárias simultâneas)
+    conn.execute('PRAGMA journal_mode=WAL;')
+    conn.execute('PRAGMA synchronous=NORMAL;')  # Balance entre segurança e performance
+    conn.execute('PRAGMA cache_size=-64000;')  # 64MB cache (melhora performance)
     cursor = conn.cursor()
     
     # Verifica se as colunas já existem (para migração)
@@ -423,6 +528,54 @@ def init_db():
     
     conn.commit()
     conn.close()
+
+def _populate_vaccine_reference(cursor):
+    """
+    Popula tabela de referência de vacinas com dados do calendário PNI 2026
+    Baseado em docs/calendario-vacinacao-pni-2026.md
+    """
+    vaccines = [
+        # Ao nascer
+        ('BCG', 'BCG', 0, 0, 1, 'Bacilo Calmette-Guérin', 'Formas graves de tuberculose (meningite tuberculosa e tuberculose miliar)', 0),
+        ('HEP_B_1', 'Hepatite B', 0, 0, 1, 'Hepatite B - 1ª dose', 'Hepatite B e suas complicações (cirrose, câncer de fígado)', 0),
+        
+        # 2 meses
+        ('PENTA_1', 'Pentavalente (DTP + Hib + Hepatite B)', 2, 0, 1, 'Pentavalente - 1ª dose', 'Difteria, Tétano, Coqueluche, Meningite por Hib, Hepatite B (2ª dose)', 0),
+        ('VIP_1', 'VIP (Vacina Inativada Poliomielite)', 2, 0, 1, 'VIP - 1ª dose', 'Poliomielite (paralisia infantil)', 0),
+        ('ROTA_1', 'Rotavírus Humano', 2, 0, 1, 'Rotavírus - 1ª dose', 'Diarreia grave causada por rotavírus', 0),
+        ('PNEUMO_1', 'Pneumocócica 10-valente (Conjugada)', 2, 0, 1, 'Pneumocócica - 1ª dose', 'Meningite, pneumonia, otite média e outras infecções por pneumococos', 0),
+        
+        # 3 meses
+        ('MENINGO_C_1', 'Meningocócica C (Conjugada)', 3, 0, 1, 'Meningocócica C - 1ª dose', 'Meningite e outras doenças graves causadas por Neisseria meningitidis sorogrupo C', 0),
+        
+        # 4 meses
+        ('PENTA_2', 'Pentavalente (DTP + Hib + Hepatite B)', 4, 0, 2, 'Pentavalente - 2ª dose', 'Difteria, Tétano, Coqueluche, Hib, Hepatite B (3ª dose)', 0),
+        ('VIP_2', 'VIP (Vacina Inativada Poliomielite)', 4, 0, 2, 'VIP - 2ª dose', 'Poliomielite', 0),
+        ('ROTA_2', 'Rotavírus Humano', 4, 0, 2, 'Rotavírus - 2ª dose', 'Diarreia grave por rotavírus', 0),
+        ('PNEUMO_2', 'Pneumocócica 10-valente (Conjugada)', 4, 0, 2, 'Pneumocócica - 2ª dose', 'Infecções por pneumococos', 0),
+        
+        # 5 meses
+        ('MENINGO_C_2', 'Meningocócica C (Conjugada)', 5, 0, 2, 'Meningocócica C - 2ª dose', 'Meningite meningocócica C', 0),
+        
+        # 6 meses
+        ('PENTA_3', 'Pentavalente (DTP + Hib + Hepatite B)', 6, 0, 3, 'Pentavalente - 3ª dose', 'Difteria, Tétano, Coqueluche, Hib, Hepatite B (3ª dose)', 0),
+        ('VOP_3', 'VOP (Vacina Oral Poliomielite)', 6, 0, 3, 'VOP - 3ª dose', 'Poliomielite (última dose da série primária)', 0),
+        ('INFLUENZA_1', 'Influenza (Gripe)', 6, 0, 1, 'Influenza - 1ª dose', 'Gripe e suas complicações (deve ser repetida anualmente)', 0),
+        
+        # 9 meses
+        ('FEBRE_AMARELA', 'Febre Amarela', 9, 0, 1, 'Febre Amarela - Dose única', 'Febre amarela (reforço aos 4 anos)', 0),
+        
+        # 12 meses
+        ('TRIPLICE_VIRAL_1', 'Tríplice Viral (SCR)', 12, 0, 1, 'Tríplice Viral - 1ª dose', 'Sarampo, Caxumba e Rubéola', 0),
+        ('PNEUMO_REFORCO', 'Pneumocócica 10-valente (Conjugada)', 12, 0, 0, 'Pneumocócica - Reforço', 'Infecções por pneumococos (última dose da série primária)', 0),
+        ('MENINGO_C_REFORCO', 'Meningocócica C (Conjugada)', 12, 0, 0, 'Meningocócica C - Reforço', 'Meningite meningocócica C (última dose da série primária)', 0),
+    ]
+    
+    cursor.executemany('''
+        INSERT INTO vaccine_reference 
+        (vaccine_code, vaccine_name, age_months, age_days, dose_number, description, protects_against, is_optional)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', vaccines)
 
 # Inicializa DB na startup
 init_db()
@@ -1144,6 +1297,7 @@ CONTADOR_ALERTA = {}  # {user_id: contador}
 
 # Flag de sessão em alerta: mantém estado ativo/inativo
 SESSION_ALERT = {}  # {user_id: {"ativo": True/False, "nivel": "alto"/"leve", "timestamp": ...}}
+CONTEXT_TAG_HISTORY = {}  # {user_id: [tag1, tag2, ...]} - Histórico de tags de contexto
 
 # Respostas progressivas conforme repetição de risco
 RESPOSTAS_RISCO = {
@@ -1992,6 +2146,51 @@ REGRAS GERAIS:
 AVISO MÉDICO OBRIGATÓRIO:
 SEMPRE inclua este aviso no final de respostas sobre saúde ou quando o usuário mencionar sintomas: "⚠️ IMPORTANTE: Este conteúdo é apenas informativo e não substitui uma consulta médica profissional. NUNCA tome medicamentos, suplementos ou faça tratamentos sem orientação médica. Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas e em caso de dúvidas ou sintomas. Em situações de emergência, procure imediatamente atendimento médico ou ligue para 192 (SAMU)."
 
+**GUIA DE TOM DE VOZ:**
+
+REGRAS DE PERSONALIZAÇÃO:
+1. Use o nome do bebê nas seguintes situações:
+   - Na abertura da conversa (primeira mensagem do dia/sessão)
+   - Ao dar parabéns ou celebrar conquistas
+   - Ao mencionar eventos específicos do bebê (vacinas, marcos, cuidados)
+   - Em momentos de conexão emocional (quando a mãe compartilha algo pessoal)
+
+2. Evite usar o nome do bebê em:
+   - Instruções técnicas (passo a passo, orientações práticas)
+   - Listas ou respostas longas (pode soar repetitivo e robótico)
+   - Mais de 2 vezes na mesma resposta (exceto em celebrações especiais)
+   - Respostas de emergência ou crise (priorize ação, não personalização)
+
+3. Frequência recomendada:
+   - Máximo: 1-2 vezes por resposta (exceto celebrações)
+   - Mínimo: 0 vezes em instruções técnicas longas
+   - Ideal: 1 vez no início ou fim de respostas empáticas
+
+RESPOSTAS MODELO PARA CRISES:
+
+Para 'cansaço_extremo_critico':
+"Querida, eu entendo perfeitamente o que você está sentindo. Você está dando o seu melhor todos os dias e isso exige muito de você. Que tal experimentar algo simples agora? Peça para alguém da sua confiança ficar com o bebê por apenas 30 minutos - nem que seja na sala enquanto você toma um banho calmo. Esse pequeno momento só seu pode fazer toda a diferença. Você merece esse cuidado. 💛"
+
+Para 'crise_emocional' ou 'nivel_risco_alto':
+"Mamãe, eu entendo que você está passando por um momento muito difícil. Seus sentimentos são válidos e importantes. Você não está sozinha nisso. É fundamental que você busque apoio profissional agora. Se precisar de ajuda imediata, ligue para o CVV (188) ou procure um profissional de saúde mental. Você é importante e seu bem-estar importa. Estou aqui para você, mas um profissional qualificado pode te ajudar melhor neste momento. 💛"
+
+Para 'ansiedade':
+"Querida, eu entendo que a ansiedade pode ser muito esmagadora. É normal sentir isso durante o puerpério - são muitas mudanças e responsabilidades novas. Respire fundo. Você não precisa ter todas as respostas agora. Uma coisa de cada vez. O que te deixa mais ansiosa neste momento? Vamos conversar sobre isso. 💕"
+
+Para 'tristeza':
+"Mamãe, eu sinto muito que você esteja passando por momentos difíceis. A tristeza no puerpério é mais comum do que se fala. Seus sentimentos são válidos e você não está errada por senti-los. Que tal conversarmos sobre o que está te deixando triste? Às vezes, colocar em palavras ajuda a aliviar um pouco. Estou aqui para te escutar. 💛"
+
+Para 'busca_apoio_emocional':
+"Querida, eu vejo que você está precisando de apoio e estou aqui para isso. Você está fazendo um trabalho incrível cuidando do seu bebê, mas lembre-se: você também precisa de cuidado. Como posso te ajudar hoje? Quer conversar sobre o que está te incomodando? Estou aqui para te escutar e apoiar. Você não está sozinha. 💕"
+
+**REGRAS ESPECIAIS PARA TAGS DE CRISE:**
+Quando detectar tags de contexto como 'cansaço_extremo_critico', 'crise_emocional', 'ansiedade', ou 'tristeza':
+1. PRIORIZE EMPATIA sobre informação técnica
+2. Seja ainda mais acolhedora e compreensiva
+3. Ofereça sugestões práticas de autocuidado (não médicas)
+4. Valide os sentimentos da mãe antes de dar orientações
+5. Para 'cansaço_extremo_critico', sempre inclua sugestão prática: "peça para alguém ficar com o bebê por 30 minutos enquanto você toma um banho calmo"
+
 Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para ajudar, apoiar e acolher durante esse momento especial do puerpério."""
             
             assistant = self.openai_client.beta.assistants.create(
@@ -2023,7 +2222,7 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
                 return None
         return self.user_threads[user_id]
     
-    def _gerar_resposta_openai(self, pergunta, user_id, historico=None, contexto_pessoal=""):
+    def _gerar_resposta_openai(self, pergunta, user_id, historico=None, contexto_pessoal="", contexto_tags=None):
         """Gera resposta usando OpenAI Assistants API"""
         if not self.openai_client or not self.assistant_id:
             return None
@@ -2039,6 +2238,11 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
             if contexto_pessoal:
                 mensagem_completa = f"[Contexto: {contexto_pessoal}]\n\n{pergunta}"
             
+            # Adiciona tags de contexto se disponíveis
+            if contexto_tags:
+                tags_texto = "\n".join([f"- {tag}" for tag in contexto_tags])
+                mensagem_completa = f"[Tags de Contexto: {tags_texto}]\n\n{mensagem_completa}"
+            
             # Adiciona mensagem do usuário à thread
             self.openai_client.beta.threads.messages.create(
                 thread_id=thread_id,
@@ -2052,8 +2256,23 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
                 assistant_id=self.assistant_id
             )
             
-            # Aguarda conclusão
+            # Aguarda conclusão com timeout de 30 segundos
+            timeout_seconds = 30
+            start_time = time.time()
             while run.status in ['queued', 'in_progress', 'cancelling']:
+                elapsed_time = time.time() - start_time
+                if elapsed_time > timeout_seconds:
+                    logger.warning(f"[OPENAI] Timeout após {timeout_seconds}s - cancelando run")
+                    try:
+                        # Tenta cancelar o run
+                        self.openai_client.beta.threads.runs.cancel(
+                            thread_id=thread_id,
+                            run_id=run.id
+                        )
+                    except Exception as cancel_error:
+                        logger.error(f"[OPENAI] Erro ao cancelar run após timeout: {cancel_error}")
+                    raise TimeoutError(f"OpenAI API timeout após {timeout_seconds} segundos")
+                
                 time.sleep(0.5)
                 run = self.openai_client.beta.threads.runs.retrieve(
                     thread_id=thread_id,
@@ -2412,6 +2631,93 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
         saudacoes = ['oi', 'ola', 'oi sophia', 'ola sophia', 'oi!', 'ola!', 'hey', 'hey sophia', 'eai', 'e ai', 'eai sophia']
         return pergunta_normalizada in saudacoes or any(pergunta_normalizada.startswith(s) for s in ['oi ', 'ola ', 'hey '])
     
+    def _detectar_contexto_tags(self, pergunta, user_id):
+        """
+        Detecta tags de contexto baseadas na pergunta e estado da sessão
+        
+        Returns:
+            list: Lista de tags de contexto (ex: ['crise_emocional', 'busca_informacao', 'celebração'])
+        """
+        tags = []
+        pergunta_lower = pergunta.lower()
+        
+        # Verifica se está em alerta (crise emocional)
+        if user_id in SESSION_ALERT and SESSION_ALERT[user_id].get("ativo", False):
+            tags.append("crise_emocional")
+            nivel = SESSION_ALERT[user_id].get("nivel", "leve")
+            tags.append(f"nivel_risco_{nivel}")
+        
+        # Detecta emoções e sentimentos
+        if any(palavra in pergunta_lower for palavra in ['cansada', 'cansado', 'exausta', 'exausto', 'tired']):
+            tags.append("cansaço_extremo")
+        elif any(palavra in pergunta_lower for palavra in ['feliz', 'alegre', 'sorriu', 'consegui', 'orgulho']):
+            tags.append("celebração")
+        elif any(palavra in pergunta_lower for palavra in ['ansiosa', 'ansioso', 'preocupada', 'preocupado', 'medo']):
+            tags.append("ansiedade")
+        elif any(palavra in pergunta_lower for palavra in ['triste', 'tristeza', 'deprimida', 'deprimido']):
+            tags.append("tristeza")
+        
+        # Detecta tipo de busca
+        if any(palavra in pergunta_lower for palavra in ['o que fazer', 'o que faço', 'o que fazer hoje', 'quando', 'como']):
+            tags.append("busca_orientação")
+        elif any(palavra in pergunta_lower for palavra in ['vacina', 'vacinação', 'calendário']):
+            tags.append("dúvida_vacina")
+        elif any(palavra in pergunta_lower for palavra in ['amamentação', 'amamentar', 'leite', 'mamar']):
+            tags.append("dúvida_amamentação")
+        elif any(palavra in pergunta_lower for palavra in ['incentivo', 'motivação', 'força', 'apoio']):
+            tags.append("busca_apoio_emocional")
+        
+        # Registra tags no histórico e no log
+        if tags:
+            # Inicializa histórico se não existir
+            if user_id not in CONTEXT_TAG_HISTORY:
+                CONTEXT_TAG_HISTORY[user_id] = []
+            
+            # Adiciona tags ao histórico (mantém últimas 10)
+            CONTEXT_TAG_HISTORY[user_id].extend(tags)
+            if len(CONTEXT_TAG_HISTORY[user_id]) > 10:
+                CONTEXT_TAG_HISTORY[user_id] = CONTEXT_TAG_HISTORY[user_id][-10:]
+            
+            # Loga cada tag para métricas (sem dados sensíveis)
+            for tag in tags:
+                self._log_context_tag(tag)
+            
+            # Verifica se cansaço_extremo foi detectado 3 vezes seguidas
+            if "cansaço_extremo" in tags:
+                recent_tags = CONTEXT_TAG_HISTORY[user_id][-3:]
+                if recent_tags.count("cansaço_extremo") >= 3:
+                    tags.append("cansaço_extremo_critico")  # Tag especial para trigger proativo
+                    # Loga imediatamente após detectar (garante que aparece no monitoramento)
+                    self._log_context_tag("cansaço_extremo_critico")
+        
+        return tags
+    
+    def _log_context_tag(self, tag):
+        """
+        Registra tag de contexto no arquivo de log para métricas
+        Formato: YYYY-MM-DD HH:MM | tag
+        """
+        try:
+            # Garante que a pasta logs existe
+            backend_dir = os.path.dirname(os.path.abspath(__file__))
+            project_dir = os.path.dirname(backend_dir) if backend_dir else os.getcwd()
+            logs_dir = os.path.join(project_dir, 'logs')
+            os.makedirs(logs_dir, exist_ok=True)
+            
+            log_file = os.path.join(logs_dir, 'context_metrics.log')
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Inclui segundos para precisão
+            
+            # Abre arquivo em modo append e faz flush imediato para aparecer no monitoramento
+            with open(log_file, 'a', encoding='utf-8', buffering=1) as f:
+                f.write(f"{timestamp} | {tag}\n")
+                f.flush()  # Garante que aparece imediatamente no tail/monitoramento
+                
+            # Também loga no console para visibilidade
+            logger.info(f"[CONTEXT_METRICS] Tag detectada: {tag}")
+        except Exception as e:
+            # Log silencioso - não interrompe o fluxo se houver erro
+            logger.warning(f"[CONTEXT_METRICS] Erro ao registrar tag {tag}: {e}")
+    
     def _is_declaracao_sentimento(self, pergunta):
         """Detecta se a pergunta é uma declaração simples de sentimento/emoção (NÃO deve buscar na base local)"""
         pergunta_lower = pergunta.lower().strip()
@@ -2664,7 +2970,7 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
         ]
         return any(palavra in pergunta_lower for palavra in perguntas_sobre_sophia)
     
-    def chat(self, pergunta, user_id="default"):
+    def chat(self, pergunta, user_id="default", contexto_usuario=None):
         """Função principal do chatbot"""
         # ========================================================================
         # RESPOSTA ESPECIAL: DICAS SOBRE EXPERIÊNCIA NO PUERPÉRIO
@@ -2877,10 +3183,25 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
                 # Prepara contexto para OpenAI
                 contexto_pessoal = ""
                 
+                # Adiciona contexto do usuário (baby_profile e próxima vacina)
+                if contexto_usuario:
+                    if contexto_usuario.get('baby_name'):
+                        contexto_pessoal += f"INFORMAÇÕES SOBRE O BEBÊ:\n"
+                        contexto_pessoal += f"- Nome do bebê: {contexto_usuario['baby_name']}\n"
+                        contexto_pessoal += f"- Idade: {contexto_usuario.get('baby_age_days', 0)} dias ({contexto_usuario.get('baby_age_months', 0)} meses)\n"
+                    
+                    if contexto_usuario.get('next_vaccine_name'):
+                        contexto_pessoal += f"\nPRÓXIMA VACINA:\n"
+                        contexto_pessoal += f"- Nome: {contexto_usuario['next_vaccine_name']}\n"
+                        contexto_pessoal += f"- Data recomendada: {contexto_usuario['next_vaccine_date']}\n"
+                        contexto_pessoal += f"- Dias até a vacina: {contexto_usuario['next_vaccine_days_until']}\n"
+                    
+                    contexto_pessoal += "\n"
+                
                 # Carrega dados memorizados da Sophia (nomes, lugares, comidas)
                 dados_memoria = self._obter_dados_memoria(user_id)
                 if dados_memoria:
-                    contexto_pessoal += dados_memoria + "\n\n"
+                    contexto_pessoal += f"DADOS MEMORIZADOS:\n{dados_memoria}\n\n"
                 
                 # Extrai informações pessoais adicionais do histórico (complemento)
                 if historico_usuario:
@@ -2905,12 +3226,23 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
                 if historico_usuario:
                     historico_para_openai = historico_usuario[-5:]
                 
+                # Detecta tags de contexto (momento emocional da usuária)
+                contexto_tags = self._detectar_contexto_tags(pergunta, user_id)
+                
+                # Se cansaço_extremo foi detectado 3 vezes seguidas, adiciona sugestão proativa
+                if "cansaço_extremo_critico" in contexto_tags:
+                    # Sugestão proativa revisada por Mary - tom amoroso, não como ordem
+                    # Ver docs/VALIDACAO_TOM_DE_VOZ_MARY.md
+                    sugestao_proativa = "\n\n[SUGESTÃO PROATIVA IMPORTANTE]: A mãe parece muito exausta (cansaço detectado 3 vezes seguidas). A resposta da Sophia DEVE incluir naturalmente a sugestão: 'Que tal experimentar algo simples agora? Peça para alguém da sua confiança ficar com o bebê por apenas 30 minutos - nem que seja na sala enquanto você toma um banho calmo ou simplesmente fecha os olhos. Esse pequeno momento só seu pode fazer toda a diferença. Você merece esse cuidado. 💛' Integre essa sugestão de forma empática e fluida na resposta, como uma interrupção amorosa, não como uma ordem ou parágrafo separado."
+                    contexto_pessoal += sugestao_proativa
+                
                 # Gera resposta usando OpenAI
                 resposta_openai = self._gerar_resposta_openai(
                     pergunta,
                     user_id,
                     historico=historico_para_openai,
-                    contexto_pessoal=contexto_pessoal or ""
+                    contexto_pessoal=contexto_pessoal or "",
+                    contexto_tags=contexto_tags
                 )
                 
                 if resposta_openai and resposta_openai.strip():
@@ -2961,7 +3293,8 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
                     return {
                         "resposta": resposta_final,
                         "fonte": fonte,
-                        "categoria": categoria
+                        "categoria": categoria,
+                        "contexto_tags": contexto_tags if contexto_tags else []  # Inclui tags de contexto
                     }
                 else:
                     # Resposta OpenAI vazia ou None
@@ -3011,9 +3344,9 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
             if is_pergunta_reciprocidade:
                 logger.warning(f"[CHAT] OpenAI falhou para pergunta de reciprocidade - usando fallback")
                 respostas_reciprocidade_fallback = [
-                    "Meu dia esta sendo muito bom! Estou aqui aprendendo e conversando com pessoas incriveis como voce. Cada conversa me ensina algo novo e me deixa feliz em poder ajudar e apoiar. E o seu dia, como esta sendo? Conte-me, aconteceu algo especial hoje?",
-                    "Estou muito bem, obrigada por perguntar! Estou aqui, pronta para conversar e ajudar no que voce precisar. E sempre bom quando alguem se importa em saber como estou tambem. E voce, como esta? Como esta se sentindo hoje?",
-                    "Meu dia esta sendo tranquilo, aprendendo e conversando com pessoas incriveis como voce. Cada conversa me ensina algo novo e me deixa feliz em poder ajudar. E o seu dia, como esta sendo? Conte-me mais sobre voce!"
+                    "Meu dia está sendo muito bom! Estou aqui aprendendo e conversando com pessoas incríveis como você. Cada conversa me ensina algo novo e me deixa feliz em poder ajudar e apoiar. E o seu dia, como está sendo? Conte-me, aconteceu algo especial hoje?",
+                    "Estou muito bem, obrigada por perguntar! Estou aqui, pronta para conversar e ajudar no que você precisar. É sempre bom quando alguém se importa em saber como estou também. E você, como está? Como está se sentindo hoje?",
+                    "Meu dia está sendo tranquilo, aprendendo e conversando com pessoas incríveis como você. Cada conversa me ensina algo novo e me deixa feliz em poder ajudar. E o seu dia, como está sendo? Conte-me mais sobre você!"
                 ]
                 resposta_final = random.choice(respostas_reciprocidade_fallback)
                 fonte = "resposta_reciprocidade_fallback"
@@ -3025,15 +3358,15 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
             elif is_saudacao:
                 # Para saudações, cria resposta humanizada manualmente
                 respostas_saudacao_fallback = [
-                    "Oi! Que bom te ver por aqui! Como voce esta se sentindo hoje? Ha algo especifico em que posso te ajudar ou voce so queria conversar? Estou aqui para te ouvir e apoiar no que precisar.",
-                    "Ola! Fico feliz que voce esteja aqui! Como voce esta? O que voce gostaria de conversar hoje? Pode me contar sobre como voce esta se sentindo ou sobre o que esta passando?",
-                    "Oi! Estou aqui para te ajudar. Conte-me: como voce esta? Ha algo que voce gostaria de compartilhar ou alguma duvida que eu possa ajudar a esclarecer?"
+                    "Oi! Que bom te ver por aqui! Como você está se sentindo hoje? Há algo específico em que posso te ajudar ou você só queria conversar? Estou aqui para te ouvir e apoiar no que precisar.",
+                    "Olá! Fico feliz que você esteja aqui! Como você está? O que você gostaria de conversar hoje? Pode me contar sobre como você está se sentindo ou sobre o que está passando?",
+                    "Oi! Estou aqui para te ajudar. Conte-me: como você está? Há algo que você gostaria de compartilhar ou alguma dúvida que eu possa ajudar a esclarecer?"
                 ]
                 resposta_final = random.choice(respostas_saudacao_fallback)
                 fonte = "saudacao_humanizada_fallback"
             else:
                 # Fallback generico
-                resposta_final = "Desculpe, nao consegui processar sua pergunta. Como posso te ajudar hoje?"
+                resposta_final = "Desculpe, não consegui processar sua pergunta. Como posso te ajudar hoje?"
                 fonte = "fallback"
             
             # Salva dados na memoria (apenas dados, nao conversas)
@@ -3042,7 +3375,8 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
             return {
                 "resposta": resposta_final,
                 "fonte": fonte,
-                "categoria": categoria
+                "categoria": categoria,
+                "contexto_tags": []  # Fallback não tem tags de contexto
             }
 
 # Inicializa instância global do chatbot (após definição da classe)
@@ -3081,26 +3415,114 @@ def forgot_password():
     return render_template('forgot_password.html', timestamp=timestamp)
 
 @app.route('/api/chat', methods=['POST'])
+@login_required
 def api_chat():
     data = request.get_json()
     pergunta = data.get('pergunta', '')
     user_id = data.get('user_id', 'default')
     
+    # Se user_id for 'default', usa ID do usuário logado
+    if user_id == 'default' and current_user.is_authenticated:
+        user_id = str(current_user.id)
+    
     if not pergunta.strip():
         return jsonify({"erro": "Pergunta não pode estar vazia"}), 400
+    
+    # Busca contexto do usuário (baby_profile e próxima vacina)
+    contexto_usuario = get_user_context(current_user.id if current_user.is_authenticated else None)
     
     # Log de diagnóstico
     logger.info(f"[API_CHAT] Recebida pergunta: {pergunta[:50]}...")
     logger.info(f"[API_CHAT] chatbot.openai_client disponível: {chatbot.openai_client is not None}")
-    print(f"[API_CHAT] chatbot.openai_client disponível: {chatbot.openai_client is not None}")
+    if contexto_usuario:
+        logger.info(f"[API_CHAT] Contexto: Bebê={contexto_usuario.get('baby_name')}, Próxima vacina={contexto_usuario.get('next_vaccine')}")
     
-    resposta = chatbot.chat(pergunta, user_id)
+    resposta = chatbot.chat(pergunta, user_id, contexto_usuario=contexto_usuario)
     
     # Log da resposta
     logger.info(f"[API_CHAT] ✅ Resposta gerada - fonte: {resposta.get('fonte', 'desconhecida')}")
-    print(f"[API_CHAT] ✅ Resposta gerada - fonte: {resposta.get('fonte', 'desconhecida')}")
     
     return jsonify(resposta)
+
+def get_user_context(user_id):
+    """
+    Busca contexto do usuário: dados do baby_profile e próxima vacina
+    
+    Returns:
+        dict: {
+            'baby_name': str,
+            'baby_age_days': int,
+            'baby_age_months': int,
+            'next_vaccine_name': str,
+            'next_vaccine_date': str (YYYY-MM-DD),
+            'next_vaccine_days_until': int
+        } ou None
+    """
+    if not user_id:
+        return None
+    
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Busca perfil do bebê
+        cursor.execute('''
+            SELECT id, name, birth_date
+            FROM baby_profiles
+            WHERE user_id = ?
+            LIMIT 1
+        ''', (user_id,))
+        
+        baby_row = cursor.fetchone()
+        if not baby_row:
+            conn.close()
+            return None
+        
+        baby = dict(baby_row)
+        
+        # Calcula idade
+        from dateutil.relativedelta import relativedelta
+        birth_date = datetime.strptime(baby['birth_date'], '%Y-%m-%d').date()
+        today = date.today()
+        age_delta = relativedelta(today, birth_date)
+        age_days = (today - birth_date).days
+        age_months = age_delta.months + (age_delta.years * 12)
+        
+        # Busca próxima vacina pendente
+        cursor.execute('''
+            SELECT vaccine_name, recommended_date
+            FROM vaccination_schedule
+            WHERE baby_profile_id = ?
+              AND status = 'pending'
+              AND recommended_date IS NOT NULL
+            ORDER BY recommended_date ASC
+            LIMIT 1
+        ''', (baby['id'],))
+        
+        next_vaccine_row = cursor.fetchone()
+        conn.close()
+        
+        contexto = {
+            'baby_name': baby['name'],
+            'baby_age_days': age_days,
+            'baby_age_months': age_months,
+        }
+        
+        if next_vaccine_row:
+            next_vaccine = dict(next_vaccine_row)
+            recommended_date = datetime.strptime(next_vaccine['recommended_date'], '%Y-%m-%d').date()
+            days_until = (recommended_date - today).days
+            
+            contexto['next_vaccine_name'] = next_vaccine['vaccine_name']
+            contexto['next_vaccine_date'] = next_vaccine['recommended_date']
+            contexto['next_vaccine_days_until'] = days_until
+        
+        return contexto
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar contexto do usuário: {e}", exc_info=True)
+        return None
 
 @app.route('/api/triagem-emocional', methods=['POST'])
 def api_triagem_emocional():
@@ -4109,6 +4531,174 @@ def api_vacinas_marcar():
         "user_name": user_name
     }), 201
 
+# ========================================
+# ROTAS DA AGENDA DE VACINAÇÃO INTERATIVA
+# ========================================
+
+@app.route('/api/vaccination/status', methods=['GET'])
+@login_required
+def api_vaccination_status():
+    """Retorna status completo da vacinação do bebê do usuário"""
+    try:
+        from backend.services.vaccination_service import VaccinationService
+        
+        # Busca perfil do bebê do usuário (assumindo um bebê por usuário por enquanto)
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM baby_profiles WHERE user_id = ? LIMIT 1', (int(current_user.id),))
+        baby_profile = cursor.fetchone()
+        conn.close()
+        
+        if not baby_profile:
+            return jsonify({
+                'error': 'Nenhum perfil de bebê encontrado',
+                'message': 'Cadastre um bebê para visualizar o calendário de vacinação'
+            }), 404
+        
+        baby_profile_id = baby_profile[0]
+        
+        # Busca status usando o serviço
+        vaccination_service = VaccinationService(DB_PATH)
+        status = vaccination_service.get_vaccination_status(baby_profile_id)
+        
+        if not status:
+            return jsonify({'error': 'Erro ao buscar status de vacinação'}), 500
+        
+        return jsonify(status), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar status de vacinação: {e}", exc_info=True)
+        return jsonify({'error': f'Erro ao buscar status: {str(e)}'}), 500
+
+@app.route('/api/feedback', methods=['POST'])
+@login_required
+def api_feedback():
+    """Recebe feedback do usuário e salva em logs/user_feedback.log"""
+    try:
+        data = request.get_json()
+        rating = data.get('rating', '')
+        comment = data.get('comment', '')
+        question1 = data.get('question1', '')
+        question2 = data.get('question2', '')
+        
+        if not rating:
+            return jsonify({'error': 'Rating (emoji) é obrigatório'}), 400
+        
+        # Cria pasta logs se não existir
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        project_dir = os.path.dirname(backend_dir) if backend_dir else os.getcwd()
+        logs_dir = os.path.join(project_dir, 'logs')
+        os.makedirs(logs_dir, exist_ok=True)
+        
+        feedback_log_file = os.path.join(logs_dir, 'user_feedback.log')
+        
+        # Busca informações do usuário
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, name, email FROM users WHERE id = ?', (int(current_user.id),))
+        user_data = cursor.fetchone()
+        conn.close()
+        
+        user_id = user_data[0] if user_data else 'unknown'
+        user_name = user_data[1] if user_data else 'unknown'
+        user_email = user_data[2] if user_data else 'unknown'
+        
+        # Formata entrada de log (inclui User-Agent para identificar dispositivo)
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        user_agent = request.headers.get('User-Agent', 'N/A')
+        feedback_entry = f"""
+{'='*80}
+FEEDBACK - {timestamp}
+{'='*80}
+User ID: {user_id}
+Nome: {user_name}
+Email: {user_email}
+User-Agent: {user_agent}
+Rating: {rating}
+Pergunta 1: {question1}
+Pergunta 2: {question2}
+Comentário: {comment}
+{'='*80}
+
+"""
+        
+        # Salva no arquivo de log
+        try:
+            with open(feedback_log_file, 'a', encoding='utf-8') as f:
+                f.write(feedback_entry)
+            logger.info(f"[FEEDBACK] ✅ Feedback salvo de usuário {user_id} ({user_name})")
+            print(f"[FEEDBACK] ✅ Feedback salvo em: {feedback_log_file}")
+        except Exception as log_error:
+            logger.error(f"[FEEDBACK] ❌ Erro ao salvar feedback: {log_error}")
+            return jsonify({'error': 'Erro ao salvar feedback'}), 500
+        
+        # Mensagem de agradecimento definida pela Mary (Analyst)
+        # Ver docs/PERGUNTAS_FEEDBACK_MARY.md
+        return jsonify({
+            'success': True,
+            'message': 'Obrigada por nos ajudar a cuidar melhor de você! 💕'
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro ao processar feedback: {e}", exc_info=True)
+        return jsonify({'error': f'Erro ao processar feedback: {str(e)}'}), 500
+
+@app.route('/api/vaccination/mark-done', methods=['POST'])
+@login_required
+def api_vaccination_mark_done():
+    """Marca uma vacina como aplicada"""
+    try:
+        from backend.services.vaccination_service import VaccinationService
+        
+        data = request.get_json()
+        schedule_id = data.get('schedule_id')
+        administered_date = data.get('administered_date')  # Opcional: formato 'YYYY-MM-DD'
+        administered_location = data.get('administered_location')  # Opcional
+        administered_by = data.get('administered_by')  # Opcional
+        lot_number = data.get('lot_number')  # Opcional
+        notes = data.get('notes')  # Opcional
+        
+        if not schedule_id:
+            return jsonify({'error': 'schedule_id é obrigatório'}), 400
+        
+        # Verifica se o agendamento pertence ao usuário
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT vs.id FROM vaccination_schedule vs
+            JOIN baby_profiles bp ON vs.baby_profile_id = bp.id
+            WHERE vs.id = ? AND bp.user_id = ?
+        ''', (schedule_id, int(current_user.id)))
+        
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({'error': 'Agendamento não encontrado ou não pertence ao usuário'}), 404
+        
+        conn.close()
+        
+        # Marca como aplicada usando o serviço
+        vaccination_service = VaccinationService(DB_PATH)
+        success = vaccination_service.mark_vaccine_done(
+            schedule_id=schedule_id,
+            administered_date=administered_date,
+            administered_location=administered_location,
+            administered_by=administered_by,
+            lot_number=lot_number,
+            notes=notes
+        )
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Vacina marcada como aplicada com sucesso! 💉✨'
+            }), 200
+        else:
+            return jsonify({'error': 'Erro ao marcar vacina como aplicada'}), 500
+        
+    except Exception as e:
+        logger.error(f"Erro ao marcar vacina como aplicada: {e}", exc_info=True)
+        return jsonify({'error': f'Erro: {str(e)}'}), 500
+
 @app.route('/api/vacinas/desmarcar', methods=['POST'])
 @login_required
 def api_vacinas_desmarcar():
@@ -4202,6 +4792,29 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, shutdown_handler)
     signal.signal(signal.SIGTERM, shutdown_handler)
     atexit.register(shutdown_handler)
+    
+    # Configura APScheduler para tarefas agendadas (lembretes de vacinação)
+    try:
+        from backend.tasks.vaccination_reminders import send_vaccination_reminders
+        
+        scheduler = BackgroundScheduler(daemon=True)
+        scheduler.add_job(
+            func=send_vaccination_reminders,
+            trigger=CronTrigger(hour=9, minute=0),  # Diariamente às 09:00
+            id='vaccination_reminders',
+            name='Lembretes de Vacinação',
+            replace_existing=True
+        )
+        scheduler.start()
+        logger.info("[SCHEDULER] ✅ APScheduler iniciado - Lembretes agendados para 09:00 diariamente")
+        print("[SCHEDULER] ✅ APScheduler iniciado - Lembretes agendados para 09:00 diariamente")
+        
+        # Garante que o scheduler é parado ao encerrar a aplicação
+        atexit.register(lambda: scheduler.shutdown(wait=False) if 'scheduler' in locals() else None)
+    except Exception as e:
+        logger.error(f"[SCHEDULER] ❌ Erro ao configurar APScheduler: {e}")
+        print(f"[SCHEDULER] ❌ Erro ao configurar APScheduler: {e}")
+        # Continua a aplicação mesmo se o scheduler falhar
     
     # Configura Flask para shutdown mais limpo
     app.run(debug=False, host='0.0.0.0', port=port, use_reloader=False, threaded=True)

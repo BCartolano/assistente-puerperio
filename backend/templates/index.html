@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Sophia">
-    <meta name="theme-color" content="#f4a6a6">
-    <meta name="msapplication-TileColor" content="#f4a6a6">
+    <meta name="theme-color" content="#ff8fa3">
+    <meta name="msapplication-TileColor" content="#ff8fa3">
     <meta name="format-detection" content="telephone=no">
     <meta name="format-detection" content="address=no">
     <meta name="format-detection" content="email=no">
@@ -39,6 +39,12 @@
     <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0"></noscript>
     {% endif %}
     
+    <!-- CSS Timeline de Vacinação -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vaccination-timeline.css') }}">
+    
+    <!-- CSS Feedback Modal -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback-modal.css') }}">
+    
     <!-- Preload JavaScript crítico -->
     <link rel="preload" href="{{ url_for('static', filename='js/device-detector.js') }}" as="script">
     <!-- chat.js não precisa de preload - carrega com defer após DOM -->
@@ -51,13 +57,13 @@
         *{margin:0;padding:0;box-sizing:border-box}
         html{height:100vh;overflow:hidden}
         body{
-            background:linear-gradient(135deg,#fef9f7,#f8e8e8,#f0e0e0);
+            background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             margin:0;
             padding:0;
             font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
             height:100vh;
             overflow:hidden;
-            color:#5a4a42
+            color:#6b4a3f
         }
         .login-screen{
             position:fixed;
@@ -65,7 +71,7 @@
             left:0;
             right:0;
             bottom:0;
-            background:linear-gradient(135deg,#f8f4f0 0%,#e8d5d1 50%,#d4c5c0 100%);
+            background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             display:flex;
             align-items:center;
             justify-content:center;
@@ -77,7 +83,7 @@
             max-width:100vw;
             margin:0;
             height:100vh;
-            background:linear-gradient(135deg,#f8f4f0 0%,#e8d5d1 50%,#d4c5c0 100%);
+            background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             overflow:hidden;
             position:relative
         }
@@ -96,7 +102,7 @@
             height:100vh;
             display:flex;
             flex-direction:column;
-            background:linear-gradient(135deg,#f8f4f0 0%,#e8d5d1 50%,#d4c5c0 100%);
+            background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             overflow:hidden;
             position:relative
         }
@@ -110,7 +116,7 @@
             flex-direction:column;
             align-items:center;
             justify-content:flex-start;
-            background:linear-gradient(135deg,#fef9f7 0%,#f8e8e8 50%,#f0e0e0 100%);
+            background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             overflow-y:auto;
             overflow-x:hidden;
             padding:1rem 0;
@@ -147,7 +153,7 @@
             padding:3rem;
             max-width:450px;
             width:90%;
-            box-shadow:0 10px 40px rgba(244,166,166,0.3);
+            box-shadow:0 10px 40px rgba(255,143,163,0.3);
             box-sizing:border-box
         }
         .login-header{
@@ -156,13 +162,13 @@
         }
         .login-header h1{
             font-size:2.5rem;
-            color:#8b5a5a;
+            color:#8b6a5a;
             margin:0;
             font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif
         }
         .login-content h2{
             text-align:center;
-            color:#8b5a5a;
+            color:#8b6a5a;
             margin-bottom:1rem
         }
     </style>
@@ -197,10 +203,10 @@
                     }
                     setTimeout(tryLogin, 100);
                 } else {
-                    console.error('❌ [LOGIN] chatApp nao disponivel apos 3 segundos');
+                    console.error('❌ [LOGIN] chatApp não disponível após 3 segundos');
                     console.error('❌ [LOGIN] window.chatApp:', typeof window.chatApp);
                     console.error('❌ [LOGIN] Verifique se chat.js foi carregado corretamente');
-                    alert('Erro: JavaScript nao carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a pagina.');
+                    alert('Erro: JavaScript não carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a página.');
                 }
                 return false;
             }
@@ -226,10 +232,10 @@
                     }
                     setTimeout(tryRegister, 100);
                 } else {
-                    console.error('❌ [REGISTER] chatApp nao disponivel apos 3 segundos');
+                    console.error('❌ [REGISTER] chatApp não disponível após 3 segundos');
                     console.error('❌ [REGISTER] window.chatApp:', typeof window.chatApp);
                     console.error('❌ [REGISTER] Verifique se chat.js foi carregado corretamente');
-                    alert('Erro: JavaScript nao carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a pagina.');
+                    alert('Erro: JavaScript não carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a página.');
                 }
                 return false;
             }
@@ -318,9 +324,9 @@
                         <div class="form-group">
                             <label for="initial-login-email">
                                 <i class="fas fa-envelope"></i>
-                                Email
+                                E-mail
                             </label>
-                            <input type="email" id="initial-login-email" name="email" autocomplete="email" placeholder="Seu email" required>
+                            <input type="email" id="initial-login-email" name="email" autocomplete="email" placeholder="Seu e-mail" required>
                         </div>
                         <div class="form-group">
                             <label for="initial-login-password">
@@ -359,9 +365,9 @@
                         <div class="form-group">
                             <label for="initial-register-email">
                                 <i class="fas fa-envelope"></i>
-                                Email
+                                E-mail
                             </label>
-                            <input type="email" id="initial-register-email" name="email" autocomplete="email" placeholder="Seu email" required>
+                            <input type="email" id="initial-register-email" name="email" autocomplete="email" placeholder="Seu e-mail" required>
                         </div>
                         <div class="form-group">
                             <label for="initial-register-password">
@@ -472,17 +478,69 @@
 
             <!-- Chat Area -->
             <div class="chat-area">
+                <!-- Chat Header Fixo (Desktop) -->
+                <div class="chat-header-fixed" id="chat-header-fixed" style="display: none;">
+                    <div class="chat-header-content">
+                    <div class="chat-header-info">
+                        <span class="chat-header-icon">💬</span>
+                        <div class="chat-header-text">
+                            <h3>
+                                <span class="sophia-status-indicator"></span>
+                                Conversando com Sophia
+                            </h3>
+                            <p class="chat-header-subtitle" id="chat-header-subtitle">Apoio para a mamãe</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
                 <!-- Welcome Message -->
                 <div class="welcome-message" id="welcome-message">
-                    <!-- Elementos decorativos de fundo -->
-                    <div class="decorative-elements">
-                        <div class="decorative-icon icon-1"><i class="fas fa-heart"></i></div>
-                        <div class="decorative-icon icon-2"><i class="fas fa-baby"></i></div>
-                        <div class="decorative-icon icon-3"><i class="fas fa-hands-helping"></i></div>
-                        <div class="decorative-icon icon-4"><i class="fas fa-leaf"></i></div>
+                    <!-- Layout de 3 colunas (Desktop ≥1024px) -->
+                    <!-- Sidebar Esquerda -->
+                    <div class="desktop-sidebar desktop-sidebar-left">
+                        <div class="desktop-side-decorations">
+                            <div class="floating-icon icon-1" aria-hidden="true">💕</div>
+                            <div class="floating-icon icon-2" aria-hidden="true">🌸</div>
+                            <div class="floating-icon icon-3" aria-hidden="true">🤱</div>
+                            <div class="decoration-shape shape-1"></div>
+                            <div class="decoration-shape shape-2"></div>
+                        </div>
+                        
+                        <!-- Card Dica do Dia -->
+                        <div class="sidebar-card tip-card" id="tip-of-the-day-card">
+                            <div class="card-icon">💡</div>
+                            <h3>Dica do Dia</h3>
+                            <div class="tip-content" id="tip-content">
+                                <p class="tip-text" id="tip-text">Carregando dica...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Widget Afirmação Positiva -->
+                        <div class="sidebar-card affirmation-card" id="affirmation-card">
+                            <div class="card-icon">✨</div>
+                            <h3>Afirmação Positiva</h3>
+                            <div class="affirmation-content" id="affirmation-content">
+                                <p class="affirmation-text" id="affirmation-text">Carregando afirmação...</p>
+                            </div>
+                        </div>
+
+                        <!-- Widget Próxima Vacina -->
+                        <div id="next-vaccine-widget">
+                            <!-- Widget será carregado via JavaScript -->
+                        </div>
                     </div>
                     
-                    <div class="welcome-content">
+                    <!-- Conteúdo Central -->
+                    <div class="welcome-content-wrapper">
+                        <!-- Elementos decorativos de fundo (mantidos para compatibilidade) -->
+                        <div class="decorative-elements">
+                            <div class="decorative-icon icon-1"><i class="fas fa-heart"></i></div>
+                            <div class="decorative-icon icon-2"><i class="fas fa-baby"></i></div>
+                            <div class="decorative-icon icon-3"><i class="fas fa-hands-helping"></i></div>
+                            <div class="decorative-icon icon-4"><i class="fas fa-leaf"></i></div>
+                        </div>
+                        
+                        <div class="welcome-content">
                         <div class="welcome-icon-wrapper">
                             <i class="fas fa-baby"></i>
                             <div class="icon-glow"></div>
@@ -494,7 +552,7 @@
                         
                         <!-- Botão Principal: Conversar com a Sophia -->
                         <div class="start-chat-container">
-                            <button class="btn btn-start-chat" id="start-chat-btn" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 20px rgba(255, 107, 157, 0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 157, 0.4)';">
+                            <button class="btn btn-start-chat" id="start-chat-btn">
                                 <i class="fas fa-comments"></i>
                                 <span>Conversar com a Sophia 💬</span>
                             </button>
@@ -537,14 +595,23 @@
                         
                         <!-- Espaço de Escuta -->
                         <div class="feeling-box">
-                            <h2>Como você está se sentindo hoje? 💬</h2>
-                            <div class="feeling-buttons">
-                                <button class="feeling-btn" data-feeling="cansada" aria-label="Estou cansada">😴 Cansada</button>
-                                <button class="feeling-btn" data-feeling="feliz" aria-label="Estou feliz">😊 Feliz</button>
-                                <button class="feeling-btn" data-feeling="ansiosa" aria-label="Estou ansiosa">😰 Ansiosa</button>
-                                <button class="feeling-btn" data-feeling="confusa" aria-label="Estou confusa">😕 Confusa</button>
-                                <button class="feeling-btn" data-feeling="triste" aria-label="Estou triste">😢 Triste</button>
-                                <button class="feeling-btn" data-feeling="gratidao" aria-label="Estou grata">🙏 Grata</button>
+                            <h2 class="gentle-title">Como está seu coração hoje?</h2>
+                            <p class="gentle-subtitle">Escolha a palavra que melhor te acolhe agora.</p>
+                            <div class="feeling-buttons-grid">
+                                <button class="feeling-btn" data-feeling="cansada" aria-label="Estou exausta">Exausta</button>
+                                <button class="feeling-btn" data-feeling="feliz" aria-label="Estou em paz">Em paz</button>
+                                <button class="feeling-btn" data-feeling="ansiosa" aria-label="Estou sobrecarregada">Sobrecarregada</button>
+                                <button class="feeling-btn" data-feeling="confusa" aria-label="Estou confusa">Confusa</button>
+                                <button class="feeling-btn" data-feeling="triste" aria-label="Estou para baixo">Para baixo</button>
+                                <button class="feeling-btn" data-feeling="gratidao" aria-label="Estou grata">Grata</button>
+                            </div>
+                            <div class="feeling-extra-options">
+                                <button class="feeling-extra-btn" id="feeling-write-own">Quero escrever com minhas próprias palavras</button>
+                                <button class="feeling-extra-btn" id="feeling-skip">Prefiro não responder agora</button>
+                            </div>
+                            <div class="feeling-feedback" id="feeling-feedback" style="display: none;">
+                                <span class="feeling-feedback-icon">💗</span>
+                                <span class="feeling-feedback-text">Obrigada por compartilhar</span>
                             </div>
                         </div>
                         
@@ -605,6 +672,49 @@
                         <!-- Mensagem Rotativa de Apoio -->
                         <div class="rotating-message">
                             <p id="rotating-text">Você não está sozinha. 💛</p>
+                        </div>
+
+                        <!-- Container da Timeline de Vacinação -->
+                        <div id="vaccination-timeline-container" style="display: none;">
+                            <!-- Timeline será renderizada via JavaScript -->
+                        </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sidebar Direita -->
+                    <div class="desktop-sidebar desktop-sidebar-right">
+                        <div class="desktop-side-decorations">
+                            <div class="floating-icon icon-4" aria-hidden="true">✨</div>
+                            <div class="floating-icon icon-5" aria-hidden="true">🌙</div>
+                            <div class="floating-icon icon-6" aria-hidden="true">💫</div>
+                            <div class="decoration-shape shape-3"></div>
+                            <div class="decoration-shape shape-4"></div>
+                        </div>
+                        
+                        <!-- Vídeos Recomendados -->
+                        <div class="sidebar-card videos-card">
+                            <div class="card-icon">📹</div>
+                            <h3>Vídeos Recomendados</h3>
+                            <div class="videos-list" id="videos-list">
+                                <!-- Vídeos serão carregados via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal de Vídeo -->
+                    <div class="video-modal" id="video-modal" style="display: none;">
+                        <div class="video-modal-overlay" id="video-modal-overlay"></div>
+                        <div class="video-modal-content">
+                            <button class="video-modal-close" id="video-modal-close" aria-label="Fechar vídeo">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="video-modal-player" id="video-modal-player">
+                                <!-- Player será inserido aqui -->
+                            </div>
+                            <div class="video-modal-info" id="video-modal-info">
+                                <h4 id="video-modal-title"></h4>
+                                <p id="video-modal-description"></p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -674,7 +784,7 @@
                     <!-- Login Form -->
                     <div class="auth-form active" id="login-form">
                         <div class="form-group">
-                            <label for="login-email"><i class="fas fa-envelope"></i> Email</label>
+                            <label for="login-email"><i class="fas fa-envelope"></i> E-mail</label>
                             <input type="email" id="login-email" name="email" autocomplete="email" placeholder="seu@email.com">
                         </div>
                         <div class="form-group">
@@ -703,7 +813,7 @@
                             <input type="text" id="register-name" name="name" autocomplete="name" placeholder="Seu nome">
                         </div>
                         <div class="form-group">
-                            <label for="register-email"><i class="fas fa-envelope"></i> Email</label>
+                            <label for="register-email"><i class="fas fa-envelope"></i> E-mail</label>
                             <input type="email" id="register-email" name="email" autocomplete="email" placeholder="seu@email.com">
                         </div>
                         <div class="form-group">
@@ -790,6 +900,13 @@
 
     <!-- Scripts otimizados (defer para não bloquear renderização) -->
     <script src="{{ url_for('static', filename='js/device-detector.js') }}" defer></script>
+    <!-- APIClient deve carregar ANTES do chat.js pois é dependência -->
+    <script src="{{ url_for('static', filename='js/api-client.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/toast-notification.js') }}" defer></script>
+    <!-- Sidebar Content Manager -->
+    <script src="{{ url_for('static', filename='js/sidebar-content.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vaccination-timeline.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/mobile-navigation.js') }}" defer></script>
     {% if has_minified and timestamp %}
     <!-- Usar versão minificada se disponível -->
     <script src="{{ url_for('static', filename='js/chat.min.js') }}?v={{ timestamp }}" defer></script>
@@ -868,13 +985,29 @@
             Em caso de crise, ligue <strong>188 (CVV)</strong>.
         </p>
     </footer>
-</body>
-</html>
-
-bstitui atendimento profissional. 
-            Em caso de crise, ligue <strong>188 (CVV)</strong>.
-        </p>
-    </footer>
+    
+    <!-- Bottom Navigation (Mobile Only) -->
+    <nav class="bottom-nav" id="bottom-nav" aria-label="Navegação principal">
+        <div class="bottom-nav-container">
+            <button class="bottom-nav-item active" data-section="chat" aria-label="Chat">
+                <span class="bottom-nav-icon">💬</span>
+                <span class="bottom-nav-label">Chat</span>
+            </button>
+            <button class="bottom-nav-item" data-section="vacinas" aria-label="Vacinas">
+                <span class="bottom-nav-icon">📅</span>
+                <span class="bottom-nav-label">Vacinas</span>
+            </button>
+            <button class="bottom-nav-item" data-section="dicas" aria-label="Dicas">
+                <span class="bottom-nav-icon">💡</span>
+                <span class="bottom-nav-label">Dicas</span>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Container Mobile Dicas (Oculto por padrão, aparece quando aba Dicas está ativa) -->
+    <div id="mobile-dicas-container" class="mobile-section">
+        <!-- Conteúdo será preenchido dinamicamente via JavaScript -->
+    </div>
 </body>
 </html>
 

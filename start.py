@@ -78,12 +78,19 @@ def activate_virtual_env():
         # Determina o script de ativação baseado no sistema operacional
         if platform.system() == "Windows":
             python_executable = os.path.join(venv_path, "Scripts", "python.exe")
+            site_packages = os.path.join(venv_path, "Lib", "site-packages")
         else:
             python_executable = os.path.join(venv_path, "bin", "python")
+            site_packages = os.path.join(venv_path, "lib", "python{}.{}".format(*sys.version_info[:2]), "site-packages")
         
         if os.path.exists(python_executable):
             # Atualiza o sys.executable para usar o Python do venv
             sys.executable = python_executable
+            
+            # IMPORTANTE: Adiciona o site-packages do venv ao sys.path ANTES de qualquer importação
+            if os.path.exists(site_packages) and site_packages not in sys.path:
+                sys.path.insert(0, site_packages)
+            
             return True
         else:
             print("ERRO: Python não encontrado no ambiente virtual")

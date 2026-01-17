@@ -10,6 +10,13 @@ import base64
 import sys
 import os
 
+# Configura encoding UTF-8 para Windows
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+
 # Caminho do banco
 DB_PATH = os.path.join(os.path.dirname(__file__), "users.db")
 

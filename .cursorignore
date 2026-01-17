@@ -1,0 +1,53 @@
+# Arquivos e pastas ignorados pelo Cursor para melhor performance
+
+# Logs (podem crescer muito rapidamente)
+logs/
+*.log
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Ambiente virtual
+venv/
+env/
+ENV/
+.venv
+
+# Node modules (se houver)
+node_modules/
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Banco de dados (pode ser grande)
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos de backup
+*.bak
+*.backup
+*.old
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos grandes de dados
+*.csv
+*.json.bak
+*.xml.bak

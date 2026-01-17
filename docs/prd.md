@@ -29,6 +29,10 @@ Esta expansão é crítica para transformar o chatbot de uma ferramenta de infor
 | Date | Version | Description | Author |
 |------|---------|------------|--------|
 | 2025-01-12 | 1.0 | Criação inicial do PRD | PM Agent |
+| 2025-01-08 | 1.1 | Adicionados requisitos de UX/Desktop (FR16-FR18, NFR8.1-8.2) baseado em análise de UX Expert | PO (Sarah) |
+| 2025-01-08 | 1.2 | FR16, FR17, NFR8.1, NFR8.2 marcados como concluídos (Sprint UX-1). Adicionado NFR8.3 (Privacidade conteúdo externo) | UX Expert (Sally) |
+| 2025-01-08 | 1.3 | Fechamento formal Sprint UX-1 e UX-2. Análise de prioridades para próximas fases (Agenda Vacinação vs Personalização Chat) | PO (Sarah) |
+| 2025-01-27 | 1.4 | Épico 6 concluído - V1.0 PROD (DESKTOP). Funcionalidades de Chat Inteligente e Agenda de Vacinação marcadas como V1.0 PROD. Criado Épico 7: Experiência Mobile First. | PO (Sarah) |
 
 ## Requirements
 
@@ -64,6 +68,18 @@ Esta expansão é crítica para transformar o chatbot de uma ferramenta de infor
 
 15. **FR15**: O sistema deve fornecer interface web alternativa para pacientes que preferem não usar WhatsApp, mantendo funcionalidades equivalentes.
 
+16. ✅ **FR16**: O sistema deve apresentar paleta de cores quentes e acolhedoras na interface desktop, utilizando tons vibrantes de rosa coral, pêssego e creme rosado para criar sensação de calor visual e acolhimento. **[V1.0 PROD (DESKTOP) - Sprint UX-1]**
+
+17. ✅ **FR17**: O sistema deve implementar layout de 3 colunas em telas desktop (≥1200px), com painel esquerdo para dicas rápidas e ícones decorativos, conteúdo principal centralizado, e painel direito para vídeos recomendados, testemunhos e ações rápidas. **[V1.0 PROD (DESKTOP) - Sprint UX-2]**
+
+18. ✅ **FR18**: O sistema deve incluir seção de vídeos do YouTube colapsável no conteúdo principal, além de miniaturas de vídeos no painel direito, permitindo acesso ao conteúdo educativo sem poluir a interface principal. **[V1.0 PROD (DESKTOP) - Sprint UX-3]**
+
+19. ✅ **FR19**: O sistema deve implementar Chat Inteligente com contexto personalizado (nome do bebê, idade, próxima vacina), streaming de respostas (typewriter effect), Quick Replies contextuais, e detecção de tags de contexto emocional. **[V1.0 PROD (DESKTOP)]**
+
+20. ✅ **FR20**: O sistema deve implementar Agenda de Vacinação Interativa com timeline visual, cálculo automático de datas baseado no calendário PNI 2026, lembretes por email 2 dias antes, e modal de celebração ao marcar vacina aplicada. **[V1.0 PROD (DESKTOP)]**
+
+21. ✅ **FR21**: O sistema deve detectar cansaço extremo crítico após 3 mensagens consecutivas e sugerir proativamente autocuidado (ex: banho relaxante) de forma empática e integrada à resposta. **[V1.0 PROD (DESKTOP)]**
+
 ### Non Functional
 
 1. **NFR1**: O sistema deve responder a mensagens do WhatsApp em menos de 3 segundos para 95% das requisições, garantindo experiência fluida de conversação.
@@ -80,7 +96,15 @@ Esta expansão é crítica para transformar o chatbot de uma ferramenta de infor
 
 7. **NFR7**: O sistema deve ser desenvolvido de forma a permitir fácil manutenção e expansão, com código modular e documentado.
 
-8. **NFR8**: O sistema deve ter interface responsiva que funcione adequadamente em dispositivos móveis e desktop.
+8. **NFR8**: O sistema deve ter interface responsiva que funcione adequadamente em dispositivos móveis e desktop, com layout otimizado para telas grandes (≥1200px) aproveitando espaço lateral disponível.
+
+8.1. ✅ **NFR8.1**: A interface desktop deve utilizar layout de 3 colunas quando em telas ≥1200px, preenchendo efetivamente o espaço disponível e evitando sensação de conteúdo "soltando" no meio da tela. **[V1.0 PROD (DESKTOP) - Sprint UX-2]**
+
+8.2. ✅ **NFR8.2**: A paleta de cores deve transmitir sensação de calor e acolhimento, utilizando gradientes quentes e elementos visuais decorativos que criem ambiente acolhedor. **[V1.0 PROD (DESKTOP) - Sprint UX-1]**
+
+8.3. ✅ **NFR8.3**: O sistema deve incorporar conteúdo externo (vídeos do YouTube) utilizando modo de privacidade aprimorada (`youtube-nocookie.com`) para minimizar rastreamento de usuários até interação com o conteúdo, e deve informar usuários sobre a presença de conteúdo externo conforme LGPD. **[V1.0 PROD (DESKTOP) - Sprint UX-3]**
+
+8.4. ✅ **NFR8.4**: O sistema deve implementar interface mobile-first responsiva que funcione adequadamente em dispositivos móveis (smartphones e tablets), com layout adaptado para telas pequenas e interações touch-friendly. **[PENDENTE - Épico 7]**
 
 9. **NFR9**: O sistema deve implementar tratamento de erros robusto, fornecendo mensagens claras ao usuário e logs detalhados para desenvolvedores.
 
