@@ -1,343 +1,590 @@
-# 🤱 Assistente Puerpério
+# 🤱 Sophia - Sua Companheira no Puerpério
 
-Um chatbot **COMPLETO** especializado em oferecer apoio e informações sobre gestação, parto e puerpério, desenvolvido com foco na saúde materna e bem-estar das mães e bebês.
+<div align="center">
 
-## ✨ Funcionalidades Principais
+![Sophia Logo](https://img.shields.io/badge/Sophia-IA%20Acolhedora-pink?style=for-the-badge&logo=heart)
+![Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python)
+![Flask](https://img.shields.io/badge/Flask-2.0+-green?style=for-the-badge&logo=flask)
+![Gemini API](https://img.shields.io/badge/Gemini-AI-orange?style=for-the-badge&logo=google)
 
-### 💬 Chat Inteligente
-- **79 categorias** de perguntas e respostas sobre gestação, parto, puerpério, amamentação e cuidados com bebê
-- Sistema de respostas baseado em IA (OpenAI) com fallback inteligente
-- Detecção automática de alertas médicos
-- Mensagens de apoio empáticas e acolhedoras
-- **Telefones úteis incluídos automaticamente** nas respostas
+**Dashboard de saúde materna com inteligência artificial acolhedora**
 
-### 📞 Telefones Úteis Integrados
-- **CVV 188** - Prevenção do suicídio (24h/dia)
-- **Emergências**: SAMU 192, Bombeiros 193, Polícia 190
-- Disque Saúde, Disque Mãe, Disque Amamentação
-- Informações sobre UPAs, Postos de Saúde e Maternidades
-- **Aparecem automaticamente** quando relevante!
+[Features](#-recursos-premium) • [Instalação](#-instalação) • [Compliance](#-compliance-médico) • [Tecnologias](#-tecnologias)
 
-### 🩺 Guias Práticos
-- **7 guias completos** com passos detalhados:
-  - Como aliviar cólicas do bebê (7 técnicas)
-  - Manobra de Heimlich em bebês
-  - RCP (Reanimação cardiopulmonar)
-  - Como ajudar o bebê a arrotar
-  - Como dar banho de forma segura
-  - Troca de fralda preventiva
-  - Posições seguras para dormir
+</div>
 
-### 📅 Cuidados Personalizados
-- **Gestação**: Cuidados por trimestres (1º, 2º, 3º)
-- **Pós-parto**: Guias mensais (1º, 2º, 3º mês e meses 4-6)
-- Desenvolvimento do bebê
-- Exames necessários
-- Sinais de alerta
-- Orientação de amamentação
+---
 
-### 💉 Carteira de Vacinação
-- **Vacinas da mãe**: Pré-natal e pós-parto
-- **Vacinas do bebê**: Calendário completo 0-12 meses
-- Quando e onde vacinar
-- Efeitos colaterais comuns
-- Baseado no Calendário Nacional de Imunizações
+## 📋 Visão Geral
 
-### 🎨 Interface Moderna
-- Design responsivo e intuitivo
-- Funciona perfeitamente em desktop e mobile
-- Perguntas rápidas pré-definidas
-- Histórico de conversas
-- Modal de alertas médicos
+**Sophia - Sua Companheira no Puerpério** é uma plataforma digital completa desenvolvida para oferecer suporte emocional, informativo e educativo durante o período puerperal (pós-parto). A plataforma combina uma interface moderna com design **Glassmorphism**, inteligência artificial baseada na **API do Gemini (Google)**, e recursos premium de saúde materna.
 
-## 🛠️ Tecnologias Utilizadas
+### Características Principais
 
-- **Backend**: Python Flask
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **IA**: OpenAI (obrigatório)
-- **Estilização**: CSS customizado com gradientes e animações
-- **Ícones**: Font Awesome
+- 🤖 **IA Acolhedora (Sophia)**: Assistente virtual com personalidade empática, treinada especificamente para acolher mães no puerpério
+- 📱 **Interface Responsiva**: Design premium adaptado para desktop e mobile com efeitos visuais modernos
+- 🎯 **Recursos Premium**: Calendário de vacinação, timeline de cuidados, gerador de PDF e hub de mídia educativa
+- 🔒 **Compliance Médico**: Conformidade rigorosa com a Lei do Ato Médico e diretrizes do CFM
+- 💾 **Persistência Local**: Armazenamento de preferências e histórico usando LocalStorage
 
-## 🚀 Instalação e Configuração
+---
+
+## 🛠 Tecnologias
+
+### Backend
+- **Python 3.10+**: Linguagem principal
+- **Flask 2.0+**: Framework web minimalista e flexível
+- **Google Generative AI (Gemini)**: Motor de IA para a assistente Sophia
+- **Bcrypt**: Hash seguro de senhas
+- **Flask-Mail**: Sistema de verificação de e-mail e recuperação de senha
+- **SQLite**: Banco de dados para autenticação e persistência de usuários
+- **NLTK (Natural Language Toolkit)**: Processamento de linguagem natural para análise de sentimento
+
+### Frontend
+- **HTML5 / CSS3**: Estrutura e estilização
+- **JavaScript (ES6+)**: Interatividade e lógica de interface
+- **Glassmorphism UI**: Design moderno com efeitos de vidro fosco
+- **FontAwesome**: Biblioteca de ícones
+- **LocalStorage API**: Persistência de dados do usuário no navegador
+
+### Design System
+- **Paleta de Cores**: Tons de rosa acolhedores (#f4a6a6, #e8b4b8, #d63384)
+- **Tipografia**: Nunito (Google Fonts) para legibilidade e empatia
+- **Layout**: Grid System responsivo com breakpoints para múltiplas resoluções
+- **Efeitos Visuais**: Backdrop-filter blur, gradientes suaves, transições fluidas
+
+---
+
+## ✨ Recursos Premium
+
+### 📅 Calendário de Vacinação
+
+Calendário interativo do **Programa Nacional de Imunizações (PNI)** do Brasil, com visualização alternada entre:
+- **Gestante/Puérpera**: Vacinas essenciais (dTpa, Hepatite B, Influenza)
+- **Bebê (0-2 anos)**: Cronograma completo de vacinação infantil
+
+**Características**:
+- Tabelas responsivas com informações detalhadas
+- Alertas de compliance médico integrados
+- Interface Glassmorphism premium
+- Atualização baseada em fontes oficiais (Ministério da Saúde)
+
+### ⏱ Timeline de Cuidados
+
+Linha do tempo interativa com marcos biológicos e cuidados preventivos organizados por:
+
+1. **Gestação** (0-40 semanas)
+   - Ícones semânticos por marco (fa-seedling, fa-heartbeat, fa-baby, fa-stethoscope)
+   - Cuidados preventivos, exames recomendados, sintomas comuns
+   - Alertas para sintomas críticos
+
+2. **Parto** (fases)
+   - Pré-parto, Trabalho de Parto, Nascimento
+   - Sinais e cuidados específicos de cada fase
+
+3. **Pós-Parto** (semanas críticas)
+   - Recuperação física e emocional
+   - Marcos de amamentação e adaptação
+   - Suporte para saúde mental
+
+**Características**:
+- Stepper horizontal com scroll suave (iOS/Android)
+- Navegação por semanas/fases com atualização dinâmica de conteúdo
+- Widget "Minha Semana" na sidebar para acesso rápido
+- Visual premium com ícones coloridos e gradientes
+
+### 📄 Gerador de PDF de Saúde
+
+Sistema completo de geração de documentos para impressão/salvamento:
+
+- **Guia de Autoexame de Mama**: 6 passos ilustrados com checklist
+- **Dicas de Amamentação**: Informações essenciais
+- **Playlist de Vídeos Educativos**: Links para conteúdo oficial (Fiocruz, USP, Ministério da Saúde)
+- **Aviso Legal**: Disclaimer de compliance médico
+
+**Características**:
+- Layout otimizado para impressão (`@media print`)
+- Formatação profissional e legível
+- Integração com `window.print()` do navegador
+- Skeleton screen durante carregamento
+
+### 🎬 Hub de Mídia Educativa
+
+Player de vídeos integrado com:
+
+- **Playlist Lateral**: Navegação entre vídeos sem fechar o modal
+- **Fontes Confiáveis**: Conteúdo curado de Fiocruz, USP e Ministério da Saúde
+- **Interface Elegante**: Design Glassmorphism com controles intuitivos
+- **Responsivo**: Adaptado para desktop e mobile
+
+### 🩺 Guia Visual de Autoexame
+
+Carrossel interativo com 6 passos detalhados:
+
+- Ilustrações de alta qualidade (placeholders)
+- Checklists de verificação
+- Dicas práticas de prevenção
+- Navegação por setas e indicadores
+- Integração com gerador de PDF
+
+### 📱 Sidebar de Controle (ToggleBar)
+
+Painel lateral expansível com:
+
+- **Diário de Sintomas**: Acesso rápido ao chat com contexto de acolhimento
+- **Biblioteca de Mídia**: Link direto para vídeos educativos
+- **Rede de Apoio Local**: Campos para cadastro de contatos (Obstetra, Pediatra)
+- **Botões de Emergência**: 
+  - SAMU 192 com `tel:192` para chamada imediata
+  - Botão "Ligar para Obstetra" com validação de telefone
+  - Áreas de toque mínimas de 48x48px (acessibilidade mobile)
+- **Widget "Minha Semana"**: Exibição da semana atual da gestação/puerpério
+- **Atalhos Rápidos**: Links diretos para Calendário de Vacinas e Timeline
+
+### 🏥 Localizador de Hospitais
+
+Sistema inteligente de busca e localização de hospitais especializados em atendimento obstétrico/maternidade:
+
+#### O que o Localizador Busca
+
+- **Especialização**: Prioriza hospitais com capacidade para atendimento obstétrico (maternidade)
+- **Filtragem de Segurança**: 
+  - **Filtro Duplo Obrigatório**: Validação em duas camadas
+    1. **Tipo de Estabelecimento**: Apenas hospitais reais (exclui UBS, UPAs, Clínicas, Postos de Saúde)
+    2. **Infraestrutura**: Aceita hospitais gerais e hospitais com maternidade explícita; bloqueia hospitais especializados que não atendem parto (lista negra)
+  - Exclui hospitais especializados sem atendimento obstétrico (ex: psiquiátricos, ortopedia)
+  - Validação por tags OSM (`healthcare:speciality`, `healthcare`) e análise de nomes
+
+#### Como Funciona
+
+- **API**: Utiliza Overpass API (OpenStreetMap) para buscar estabelecimentos de saúde
+- **Multi-Server**: Sistema de fallback automático entre múltiplos servidores Overpass para garantir disponibilidade
+- **Busca por Localização**: Requisição de geolocalização do usuário (GPS) ou entrada manual de endereço
+- **Raio de Busca**: Padrão de 50km, configurável
+- **Priorização**: 
+  - Hospitais com palavras-chave de maternidade/obstetrícia no nome (score maior)
+  - Hospitais com confirmação explícita de atendimento obstétrico (tags OSM)
+  - Ordenação final por distância (mais próximo primeiro)
+
+#### O que Mostra nos Cards
+
+Cada hospital exibe um card completo com:
+
+- **Nome Completo do Hospital**
+- **Endereço Detalhado**: 
+  - Rua e número (quando disponível)
+  - Bairro, Cidade e Estado
+- **Telefone de Contato**: Para confirmação de plantão
+- **Distância**: Em metros/quilômetros da localização do usuário
+- **Identificação Público/Privado**: 
+  - Tag "Provável SUS/Público" para: UBS, UPA, Municipal, Estadual, Federal, Santa Casa
+  - Tag "Provável Privado" para demais
+- **Badge de Ala de Maternidade**: Indicação visual quando o hospital possui maternidade confirmada
+- **Aviso de Segurança**: Texto destacado em amarelo/laranja: *"Recomendamos ligar para confirmar se há plantão obstétrico disponível no momento"*
+- **Ações Rápidas**:
+  - **Botão "Ver no Mapa"**: Abre Google Maps com busca pelo nome + endereço completo (evita erros de coordenadas)
+  - **Botão "Ligar"**: Destaque especial com `tel:` para chamada direta
+  - **Botão "Copiar Endereço"**: Copia endereço completo para área de transferência
+
+#### Dados Exibidos
+
+- Apenas hospitais com **dados completos**: Nome, endereço, telefone e coordenadas válidas
+- Remoção automática de duplicatas
+- Filtragem de qualidade para garantir informações confiáveis
+
+### 🩺 Conteúdos Educativos sobre Câncer de Mama e Doação de Leite
+
+Cards interativos no dashboard com recursos educativos oficiais:
+
+#### 1. Saúde Preventiva - Câncer de Mama
+
+- **Card no Dashboard**: Visual com ícone SVG e descrição
+- **Link Oficial**: Redirecionamento para página do Ministério da Saúde sobre câncer de mama
+- **Guia Visual de Autoexame de Mama**: 
+  - Carrossel interativo com 6 passos detalhados
+  - Instruções ilustradas para observação e palpação
+  - Checklists de verificação por etapa
+  - Dicas práticas de prevenção
+  - **Geração de PDF**: Botão "Salvar Resumo de Saúde" para imprimir/salvar o guia completo
+  - **Cláusula Ética**: Avisos de que o autoexame não substitui consulta médica e mamografia
+- **Conteúdo Educacional**: Informações baseadas em diretrizes do Ministério da Saúde
+
+#### 2. Rede de Apoio - Doação de Leite
+
+- **Card no Dashboard**: Visual com ícone SVG e descrição
+- **Link Oficial**: Redirecionamento para Rede Brasileira de Bancos de Leite Humano (Fiocruz)
+- **Informações sobre Doação**:
+  - Importância da doação de leite humano
+  - Benefícios para bebês prematuros e de baixo peso
+  - Requisitos para ser doadora
+  - Processo de doação
+  - Contribuição para saúde pública
+- **Conteúdo Baseado em Evidências**: Referências da Fiocruz e Ministério da Saúde
+
+**Localização**: Ambos os cards aparecem no carrossel de conteúdos educativos da tela principal do dashboard.
+
+### ⚠️ Sinais de Alerta (Triagem de Sintomas)
+
+Sistema inteligente de detecção e triagem de sintomas do puerpério que o usuário está sentindo:
+
+#### Como Funciona
+
+- **Detecção Automática**: Analisa mensagens do usuário durante a conversa com a Sophia
+- **Palavras-chave Críticas**: Sistema identifica menções a sintomas relacionados ao puerpério
+- **Contexto Inteligente**: Filtra falsos positivos usando análise de contexto (ex: "criador" não aciona alerta, mas "estou com sangramento" sim)
+
+#### Sintomas Monitorados
+
+##### Criticidade CRÍTICA (Atendimento Imediato - Vá ao Hospital AGORA)
+
+1. **Dor de cabeça forte** - Possível pré-eclâmpsia pós-parto
+2. **Visão embaçada ou pontos brilhantes** - Pré-eclâmpsia
+3. **Dor abdominal intensa** - Infecção ou hemorragia interna
+4. **Sangramento excessivo** (>1 absorvente por hora) - Hemorragia pós-parto
+5. **Febre alta** (>38°C) - Infecção (endometrite, infecção cirúrgica)
+6. **Dificuldade para respirar** - Possível embolia pulmonar
+7. **Dor no peito** - Problemas cardíacos ou embolia
+
+**Ações Automáticas**: Redirecionamento para "Hospitais Próximos" com prioridade SUS/Maternidade + Botão "Ligar SAMU (192)"
+
+##### Criticidade MÉDIA (Procure Atendimento Médico)
+
+1. **Inchaço no rosto ou mãos** - Possível pré-eclâmpsia
+2. **Dor intensa no períneo** - Infecção ou hematoma
+3. **Secreção com mau cheiro** - Infecção vaginal
+4. **Mama vermelha, quente e dolorida** - Mastite
+5. **Tristeza ou ansiedade intensa** - Baby blues ou depressão pós-parto
+
+**Ações Automáticas**: Redirecionamento para "Hospitais Próximos" ou "Ligar CVV (188)" (para saúde mental)
+
+##### Criticidade BAIXA (Monitore em Casa)
+
+- **Cansaço extremo** - Comum no puerpério, orientação de autocuidado
+
+#### Recursos da Triagem
+
+- **Categorização**: Sintomas organizados por categoria (Pré-eclâmpsia, Infecção, Hemorragia, Saúde Mental, etc.)
+- **Descrições Educativas**: Explicação sobre cada sintoma e sua possível causa
+- **Ações Recomendadas**: Botões de ação rápida baseados na gravidade
+- **Integração com Localizador**: Redirecionamento automático para hospitais próximos quando necessário
+- **Sistema de Alertas**: Interface visual destacada para sintomas críticos
+
+#### Fonte de Dados
+
+Baseado no arquivo `backend/static/data/sintomas_puerperio.json` com 13 sintomas catalogados, suas gravidades e ações recomendadas, seguindo diretrizes médicas oficiais.
+
+---
+
+## ⚖️ Compliance Médico
+
+O projeto **Sophia - Sua Companheira no Puerpério** está rigorosamente alinhado com as diretrizes éticas e legais brasileiras para software de saúde:
+
+### Conformidade Legal
+
+- ✅ **Lei do Ato Médico (Lei 12.842/2013)**: O sistema não realiza diagnóstico, prescrição ou tratamento médico
+- ✅ **Código de Ética Médica (CFM)**: Respeita os limites de atuação de software informativo
+- ✅ **ANVISA RDC 657/2022**: Conformidade com regulamentações de software médico (se aplicável)
+
+### Princípios de Compliance Implementados
+
+1. **Proibição de Diagnóstico**
+   - Sophia nunca diagnostica doenças ou condições
+   - Todas as respostas são informativas e educacionais
+   - Linguagem reforçada: "Este conteúdo é informativo e não substitui consulta médica"
+
+2. **Cláusulas de Barreira para Emergências**
+   - Alertas imediatos para sintomas críticos (sangramento intenso, febre alta, dor severa)
+   - Redirecionamento automático para SAMU 192
+   - Mensagens claras: "Procure atendimento médico imediato"
+
+3. **Fontes Oficiais**
+   - Todo conteúdo médico é referenciado (Ministério da Saúde, Fiocruz, FEBRASGO)
+   - Informações baseadas em guidelines oficiais
+   - Atualização periódica de dados
+
+4. **Evitação de Exercício Ilegal da Medicina**
+   - Linguagem cuidadosa: "Apoio Informativo" ou "Educação em Saúde"
+   - Nenhuma promessa de cura ou garantia de saúde
+   - Disclaimers visíveis em todos os recursos críticos
+
+5. **Transparência**
+   - Rodapé permanente com informações de compliance
+   - Nome oficial do projeto: "Sophia - Sua Companheira no Puerpério"
+   - Referência explícita às normas éticas seguidas
+
+### Rodapé de Compliance
+
+O site inclui um rodapé permanente com:
+- Nome oficial do projeto
+- Declaração de natureza informativa
+- Referência à Lei do Ato Médico e CFM
+- Informações de emergência (SAMU 192)
+
+---
+
+## 🚀 Instalação
 
 ### Pré-requisitos
 
-- Python 3.8 ou superior
+- Python 3.10 ou superior
 - pip (gerenciador de pacotes Python)
+- Git (para clonar o repositório)
 
 ### Passo a Passo
 
-1. **Clone o repositório**:
+1. **Clone o repositório**
    ```bash
    git clone <url-do-repositorio>
    cd chatbot-puerperio
    ```
 
-2. **Crie um ambiente virtual**:
+2. **Crie um ambiente virtual (recomendado)**
    ```bash
-   python -m venv venv
-   
-   # Windows
-   venv\Scripts\activate
-   
-   # Linux/Mac
-   source venv/bin/activate
+   python -m venv backend/venv
    ```
 
-3. **Instale as dependências**:
+3. **Ative o ambiente virtual**
+
+   **Windows:**
+   ```bash
+   backend\venv\Scripts\activate
+   ```
+
+   **Linux/Mac:**
+   ```bash
+   source backend/venv/bin/activate
+   ```
+
+4. **Instale as dependências**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Configure as variáveis de ambiente**:
+   **Nota importante**: Se você encontrar erros relacionados ao `bcrypt` ou outras dependências que requerem compilação:
+   - **Windows**: Certifique-se de ter o Visual C++ Build Tools instalado
+   - **Linux**: Instale `python3-dev` e `build-essential`
+   - **Mac**: Instale Xcode Command Line Tools
+
+5. **Configure as variáveis de ambiente**
+
+   Copie o arquivo de exemplo:
    ```bash
-   # Copie o arquivo de template
-   copy .env.template .env
-   
-   # Edite o arquivo .env e adicione sua chave do OpenAI (obrigatório)
-   OPENAI_API_KEY=sua_chave_openai_aqui
-   USE_AI=true
+   cp env_example.txt .env
    ```
 
-5. **Execute o aplicativo**:
+   Edite o arquivo `.env` e configure:
+   - `GEMINI_API_KEY`: Sua chave da API do Google Gemini
+   - `AI_PROVIDER=gemini`: Define o provedor de IA
+   - `USE_AI=true`: Habilita a IA
+   - Configurações de e-mail (opcional, para recuperação de senha)
 
-   **Opção A: Desenvolvimento Local (Recomendado)**
-   ```bash
-   # Usando script PowerShell (Windows)
+6. **Inicie o servidor**
+
+   **Opção 1: Script PowerShell (Windows)**
+   ```powershell
    .\iniciar-servidor.ps1
-   
-   # OU usando script batch
-   .\iniciar-servidor.bat
-   
-   # OU manualmente
+   ```
+
+   **Opção 2: Script Batch (Windows)**
+   ```batch
+   python-start.bat
+   ```
+
+   **Opção 3: Python direto**
+   ```bash
    python start.py
    ```
-   Acesse: `http://localhost:5000`
 
-   **Opção B: Desenvolvimento com NGROK (Para compartilhar/publicar)**
+   **Opção 4: Flask direto**
    ```bash
-   # Usando script PowerShell (Windows)
-   .\iniciar-com-ngrok.ps1
-   
-   # OU usando script batch
-   .\iniciar-com-ngrok.bat
+   cd backend
+   python app.py
    ```
-   Isso criará um link público temporário (ex: `https://abc123.ngrok-free.app`)
-   
-   **Opção C: Produção (WSGI)**
-   ```bash
-   python wsgi.py
-   ```
+
+7. **Acesse a aplicação**
+
+   Abra seu navegador em: `http://localhost:5000`
+
+### Troubleshooting
+
+#### Erro: "No module named 'bcrypt'"
+```bash
+pip install bcrypt
+```
+
+#### Erro: "NLTK data not found"
+O código baixa automaticamente os recursos necessários. Se persistir:
+```python
+import nltk
+nltk.download('rslp')
+nltk.download('punkt')
+```
+
+#### Erro: "GEMINI_API_KEY not found"
+- Verifique se o arquivo `.env` existe na raiz do projeto
+- Confirme que a chave está correta e completa
+- Certifique-se de que não há espaços extras na chave
+
+#### Erro: "Port 5000 already in use"
+- Altere a porta no arquivo `start.py` ou `backend/app.py`
+- Ou encerre o processo que está usando a porta 5000
+
+---
 
 ## 📁 Estrutura do Projeto
 
 ```
 chatbot-puerperio/
 ├── backend/
-│   ├── app.py                      # Aplicação Flask principal
-│   ├── templates/
-│   │   └── index.html              # Interface web
+│   ├── app.py                 # Aplicação Flask principal
+│   ├── loader.py              # Carregamento de system prompt e persona
+│   ├── check_login.py         # Funções de autenticação
+│   ├── users.db               # Banco de dados SQLite (gerado automaticamente)
 │   ├── static/
 │   │   ├── css/
-│   │   │   └── style.css           # Estilos da interface
-│   │   └── js/
-│   │       └── chat.js             # Lógica do frontend
-│   ├── base_conhecimento.json      # Base sincronizada
-│   ├── mensagens_apoio.json        # Apoio sincronizado
-│   ├── telefones_uteis.json        # Telefones sincronizado
-│   ├── guias_praticos.json         # Guias sincronizado
-│   └── outros JSONs sincronizados
-├── dados/                           # Base de conhecimento
-│   ├── base_conhecimento.json      # 79 perguntas e respostas
-│   ├── mensagens_apoio.json        # 10 mensagens empáticas
-│   ├── alertas.json                # Alertas médicos
-│   ├── telefones_uteis.json        # Telefones úteis
-│   ├── guias_praticos.json         # 7 guias práticos
-│   ├── cuidados_gestacao.json      # Cuidados por trimestre
-│   ├── cuidados_pos_parto.json     # Cuidados por período
-│   ├── vacinas_mae.json            # Vacinas da mãe
-│   └── vacinas_bebe.json           # Vacinas do bebê
-├── wsgi.py                         # Entry point WSGI
-├── Procfile                        # Config Heroku/Render
-├── render.yaml                     # Config Render
-├── runtime.txt                     # Python 3.11
-├── requirements.txt                # Dependências
-├── README.md                       # Este arquivo
-└── README_DEPLOY.md                # Instruções de deploy
+│   │   │   └── style.css      # Estilos Glassmorphism
+│   │   ├── js/
+│   │   │   └── chat.js        # Lógica de interface e interações
+│   │   └── data/
+│   │       ├── calendario_vacinacao.json
+│   │       ├── timeline_cuidados.json
+│   │       ├── guia_autoexame.json
+│   │       └── videos_playlist.json
+│   ├── system/
+│   │   └── system_prompt.md   # Instruções da IA Sophia
+│   └── templates/
+│       └── index.html         # Interface principal
+├── .env                       # Variáveis de ambiente (criar manualmente)
+├── requirements.txt           # Dependências Python
+├── start.py                   # Script de inicialização
+├── README.md                  # Este arquivo
+└── env_example.txt            # Exemplo de configuração
 ```
 
-## 🔧 Configuração da API OpenAI (Obrigatório)
+---
 
-O chatbot utiliza a API da OpenAI para fornecer respostas inteligentes e humanizadas. Para configurar:
+## 🎯 Uso
 
-1. **Acesse [OpenAI Platform](https://platform.openai.com/api-keys)**
-2. **Crie uma conta OpenAI** (se necessário) e adicione créditos
-3. **Gere uma chave de API**
-4. **Adicione no arquivo `.env`**:
-   ```
-   OPENAI_API_KEY=sua_chave_openai_aqui
-   USE_AI=true
-   ```
+### Primeira Execução
 
-**Nota:** O `OPENAI_ASSISTANT_ID` é **opcional**. Se não for configurado, o sistema criará automaticamente um assistente chamado "Sophia" na primeira execução. Se você já tiver um assistente criado, pode adicionar o ID no `.env` para reutilizá-lo:
-```
-OPENAI_ASSISTANT_ID=asst_xxxxx
-```
+1. Acesse `http://localhost:5000`
+2. Crie uma conta ou faça login
+3. Explore o dashboard e converse com a Sophia
+4. Configure seus contatos de emergência na sidebar
+5. Explore os recursos premium (Calendário, Timeline, Vídeos)
 
-## 📊 Base de Conhecimento
+### Funcionalidades Principais
 
-O sistema inclui informações sobre:
+- **Chat com Sophia**: Converse naturalmente sobre cuidados no puerpério
+- **Calendário de Vacinas**: Acompanhe vacinas para mãe e bebê
+- **Timeline de Cuidados**: Navegue por semanas de gestação e pós-parto
+- **Guia de Autoexame**: Aprenda os passos de prevenção ao câncer de mama
+- **Vídeos Educativos**: Assista conteúdo curado de fontes confiáveis
+- **Gerador de PDF**: Salve informações essenciais para consulta offline
 
-- **Identidade**: Mudanças emocionais no puerpério
-- **Alimentação**: Nutrição adequada pós-parto
-- **Baby Blues**: Depressão pós-parto leve
-- **Puerpério**: Conceitos gerais sobre o período
+---
 
-### Adicionando Conteúdo
+## 🎨 Design e UX
 
-Para expandir a base de conhecimento, edite o arquivo `dados/base_conhecimento.json`:
+### Glassmorphism
 
-```json
-{
-  "nova_categoria": {
-    "pergunta": "Sua pergunta aqui?",
-    "resposta": "Resposta detalhada aqui."
-  }
-}
-```
+A interface utiliza o conceito de **Glassmorphism** (vidro fosco), caracterizado por:
+- Efeitos de blur (`backdrop-filter: blur()`)
+- Transparências sutis
+- Bordas delicadas
+- Sombras suaves para profundidade
 
-## 🚨 Sistema de Alertas
+### Responsividade
 
-O sistema detecta automaticamente palavras que indicam necessidade de atenção médica:
+- **Desktop**: Layout amplo com grid de recursos
+- **Tablet**: Adaptação fluida de colunas
+- **Mobile**: Interface otimizada com áreas de toque de 48x48px
+- **Ultrawide**: Containers com `max-width` inteligente
 
-- Sangramento
-- Febre
-- Dor
-- Inchaço
-- Tristeza
-- Depressão
-- Emergência
+### Acessibilidade
 
-Quando detectadas, o sistema exibe alertas e oferece opções para contato médico.
+- Áreas de toque mínimas (48x48px) em botões críticos
+- Contrastes adequados para leitura
+- Navegação por teclado
+- Labels ARIA para leitores de tela
 
-## 🎨 Personalização
-
-### Cores e Tema
-
-Edite o arquivo `backend/static/css/style.css` para personalizar:
-
-- Cores principais
-- Gradientes
-- Tipografia
-- Animações
-
-### Mensagens de Apoio
-
-Modifique `dados/mensagens_apoio.json` para adicionar novas mensagens empáticas.
+---
 
 ## 🔒 Segurança
 
-- Chaves de API são carregadas de variáveis de ambiente
-- Validação de entrada no backend
-- Sanitização de mensagens
-- Histórico local (não persistente)
-
-## 🚀 Deploy e Desenvolvimento
-
-### 🔵 NGROK (Desenvolvimento Local - RECOMENDADO)
-
-Para desenvolvimento e testes locais com acesso público temporário:
-
-1. **Instale o NGROK**:
-   - Baixe de: https://ngrok.com/download
-   - Coloque `ngrok.exe` na pasta do projeto OU adicione ao PATH
-
-2. **Inicie com NGROK**:
-   ```bash
-   # Windows PowerShell
-   .\iniciar-com-ngrok.ps1
-   
-   # Windows Batch
-   .\iniciar-com-ngrok.bat
-   ```
-
-3. **Acesse o link público**:
-   - O NGROK mostrará um link como: `https://abc123.ngrok-free.app`
-   - Este link funciona de qualquer lugar na internet!
-   - ⚠️ Link temporário (expira após algumas horas)
-
-**Quando usar NGROK:**
-- ✅ Desenvolvimento local
-- ✅ Testes rápidos
-- ✅ Demonstrações temporárias
-- ✅ Testar em dispositivos móveis
-- ✅ Compartilhar com equipe/clientes temporariamente
-
-Veja guias completos:
-- **`COMO_INSTALAR_NGROK.md`** - Instalação passo a passo
-- **`INICIO_RAPIDO_NGROK.md`** - Guia rápido de uso
-- **`USAR_APENAS_NGROK.md`** - Guia completo
+- **Senhas**: Hash com bcrypt (sal automático)
+- **Sessões**: Gerenciamento seguro com Flask
+- **SQL Injection**: Prevenção com queries parametrizadas
+- **XSS**: Sanitização de entrada HTML
+- **HTTPS**: Recomendado para produção (use um proxy reverso como Nginx)
 
 ---
 
-### 🌐 Render.com (Deploy em Produção - RECOMENDADO)
+## 📊 Tecnologias de IA
 
-O projeto está **totalmente configurado** para deploy automático no Render:
+### Google Gemini API
 
-1. Acesse [https://render.com](https://render.com)
-2. Conecte seu repositório GitHub
-3. Render detectará automaticamente o `render.yaml`
-4. Deploy automático iniciará em instantes!
-5. URL: `https://assistente-puerperio.onrender.com`
+A Sophia utiliza a **API do Gemini (Google Generative AI)** para gerar respostas contextuais e empáticas. O sistema inclui:
 
-**Variáveis de Ambiente (no Render):**
-```env
-OPENAI_API_KEY=sua_chave_openai (obrigatório)
-USE_AI=true
-PORT=5000 (automático)
-```
+- **System Instruction**: Prompt detalhado definindo a personalidade e limites da Sophia
+- **Contexto de Conversa**: Histórico de mensagens para continuidade
+- **Fallback de Erros**: Tratamento robusto de falhas de API
+- **Rate Limiting**: Gerenciamento de limites de uso
 
-Veja instruções completas em: **`README_DEPLOY.md`**
+### Personalidade da Sophia
+
+A IA é configurada para:
+- Ser empática e acolhedora
+- Fornecer informações educacionais (nunca diagnóstico)
+- Orientar para fontes oficiais
+- Alertar para emergências médicas
+- Conhecer todos os recursos da plataforma
 
 ---
 
-### 🔗 Outras Opções de Deploy
+## 🌟 Recursos Futuros (Roadmap)
 
-- **Railway.app**: Conecte GitHub, deploy automático
-- **Fly.io**: Instale CLI, `fly launch`
-- **Heroku**: Usa Procfile (método antigo)
-- **PythonAnywhere**: Upload manual
+- [ ] Integração com APIs de agendamento médico
+- [ ] Suporte a múltiplos idiomas
+- [ ] Modo offline completo
+- [ ] App mobile nativo (React Native)
+- [ ] Dashboard de estatísticas de uso
+- [ ] Integração com wearables (monitoramento de saúde)
+- [ ] Comunidade de apoio (fórum)
 
-Veja mais detalhes em: **`DEPLOY.md`**
-
-## 🤝 Contribuição
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+---
 
 ## 📝 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## 🆘 Suporte
-
-Para dúvidas ou problemas:
-
-1. Verifique a documentação
-2. Consulte as issues existentes
-3. Crie uma nova issue com detalhes do problema
-
-## 🙏 Agradecimentos
-
-- Comunidade Python/Flask
-- OpenAI pela API
-- Font Awesome pelos ícones
-- Todas as mães que contribuíram com feedback
+Este projeto foi desenvolvido como portfólio técnico e social. Consulte o arquivo `LICENSE` para mais detalhes.
 
 ---
 
-**⚠️ Aviso Importante**: Este chatbot é uma ferramenta de apoio e não substitui o acompanhamento médico profissional. Sempre consulte profissionais de saúde para questões médicas específicas.
+## 👥 Contribuindo
 
+Este é um projeto de portfólio. Sugestões e feedbacks são bem-vindos através de issues ou pull requests.
+
+---
+
+## 📧 Contato
+
+Para questões sobre o projeto, abra uma issue no repositório.
+
+---
+
+## 🙏 Agradecimentos
+
+- **Ministério da Saúde do Brasil**: Dados oficiais de vacinação e cuidados
+- **Fiocruz e USP**: Conteúdo educativo de referência
+- **FEBRASGO**: Diretrizes de cuidado materno-infantil
+- **Google Gemini**: Tecnologia de IA generativa
+
+---
+
+<div align="center">
+
+**Desenvolvido com ❤️ para mães no puerpério**
+
+*"Sua jornada materna, nosso apoio constante."*
+
+</div>
