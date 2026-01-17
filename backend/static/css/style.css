@@ -36,17 +36,26 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* ========================================
+   RESET DE VIEWPORT - CORREÇÃO MOBILE
+   ======================================== */
 html {
     height: 100vh;
     overflow: hidden !important;
+    overflow-x: hidden !important; /* Evita rolagem lateral */
     position: fixed;
     width: 100%;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    /* Suporte para safe areas (notch iOS, barras Android) */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* Suporte para safe areas (notch iOS, barras Android) - REMOVIDO LEFT PARA CORRIGIR FRESTA */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) 0;
+    margin: 0;
+    -webkit-text-size-adjust: 100% !important; /* Evita que o iPhone aumente a fonte sozinho */
+    -moz-text-size-adjust: 100% !important;
+    -ms-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
 }
 
 body {
@@ -62,6 +71,7 @@ body {
     ) !important;
     height: 100vh;
     overflow: hidden !important;
+    overflow-x: hidden !important; /* Evita rolagem lateral */
     position: fixed;
     width: 100%;
     top: 0;
@@ -77,8 +87,13 @@ body {
     /* Otimização mobile: Suaviza fontes */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Otimização mobile: Suporte para safe areas */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* Otimização mobile: Suporte para safe areas - REMOVIDO LEFT PARA CORRIGIR FRESTA */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) 0;
+    margin: 0;
+    -webkit-text-size-adjust: 100% !important; /* Evita que o iPhone aumente a fonte sozinho */
+    -moz-text-size-adjust: 100% !important;
+    -ms-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
 }
 
 /* Permite seleção de texto em áreas de entrada e mensagens */
@@ -107,7 +122,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg, #fff5f9 0%, #ffeef5 25%, #ffe8f0 50%, #ffd6e6 75%, #ffccd5 100%);
-    display: flex;
+    display: none; /* Escondido por padrão - será mostrado apenas se usuário não estiver logado */
     align-items: center;
     justify-content: center;
     z-index: 10000;
@@ -325,7 +340,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 }
 
 .btn-login-main i {
-    font-size: 1rem;
+    font-size: 0.95rem !important; /* Reduzido */
 }
 
 .btn-login-main:hover {
@@ -584,7 +599,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     height: 100vh;
     max-height: 100vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Garante empilhamento vertical */
+    gap: 20px !important; /* Espaço físico real entre os cards. Substitui margins manuais */
     background: #fff5f7; /* Cor sólida simples em vez de gradiente complexo */
     overflow: hidden !important; /* SEM scroll - scroll apenas nas áreas internas */
     overflow-x: hidden !important; /* Sempre sem scroll horizontal */
@@ -597,7 +613,16 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     box-sizing: border-box;
     overscroll-behavior: none !important;
     -webkit-overflow-scrolling: auto !important;
+    padding: 0 !important; /* MOBILE FIRST: Sem padding inicial */
+    padding-bottom: 50px !important; /* Espaço extra no final da página */
 }
+
+/* MOBILE FIRST: Reduz padding excessivo */
+/* ========================================
+   SISTEMA DE BREAKPOINTS MOBILE-FIRST
+   ========================================
+   MOVIDO PARA O FINAL DO ARQUIVO PARA GARANTIR PRIORIDADE
+   ======================================== */
 
 /* Removido container::before com radial-gradients pesados para melhor performance */
 
@@ -650,6 +675,8 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     transform: scale(1.05);
 }
 
+/* Estilos antigos do menu-toggle-header removidos - agora usa .header-icon-btn */
+
 /* Mobile: Centraliza header na TELA do celular (viewport) */
 @media (max-width: 768px) {
     /* Garantir que não há scroll na página em mobile */
@@ -667,38 +694,104 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         height: 100vh !important;
     }
     
-    .container,
-    #main-container {
-        overflow: hidden !important;
-        overflow-x: hidden !important;
-        overflow-y: hidden !important;
-        height: 100vh !important;
-        max-height: 100vh !important;
-        overscroll-behavior: none !important;
-        -webkit-overflow-scrolling: auto !important;
+    /* CORREÇÃO BUG 1: Habilita scroll no mobile */
+    html,
+    body {
+        overflow-y: auto !important; /* Habilita scroll vertical */
+        overflow-x: hidden !important; /* Bloqueia scroll horizontal */
+        height: auto !important; /* Altura automática para permitir scroll */
+        min-height: 100vh !important;
+        position: relative !important; /* Remove position fixed que bloqueia scroll */
     }
     
-    .chat-container {
-        overflow: hidden !important;
+    /* Container Principal - Mobile-First (Garantir largura total e box-sizing) */
+    .container,
+    #main-container.container,
+    .container#main-container {
+        width: 100% !important; /* Largura total do dispositivo */
+        max-width: 100% !important; /* Garante que não ultrapassa */
+        box-sizing: border-box !important; /* Padding não estoura a tela */
+        padding-left: 20px !important; /* Padding lateral confortável */
+        padding-right: 20px !important; /* Padding lateral confortável */
+        /* CORREÇÃO: Permite scroll ao invés de bloquear */
+        overflow: visible !important;
         overflow-x: hidden !important;
-        overflow-y: hidden !important;
+        overflow-y: visible !important;
+        min-height: 100vh !important; /* Altura mínima para cobrir toda a tela */
+        height: auto !important; /* Altura automática para não cortar conteúdo */
+        max-height: none !important; /* Remove limite de altura máximo */
+        position: relative !important; /* Remove position fixed */
+        overscroll-behavior: none !important;
+        -webkit-overflow-scrolling: touch !important; /* Melhora scroll no iOS */
+    }
+    
+    /* CORREÇÃO BUG 2: Z-index do Sidebar e Header no Mobile */
+    .sidebar,
+    .sidebar.open,
+    #sidebar,
+    #sidebar.open {
+        z-index: 2147483647 !important; /* Z-index MÁXIMO para ficar acima de TUDO */
+        position: fixed !important;
+    }
+    
+    /* Header SEMPRE abaixo da sidebar no mobile */
+    .header-modern,
+    header.header-modern,
+    .header-modern-content,
+    .header {
+        z-index: 1 !important; /* MUITO menor que sidebar (2147483647) */
+    }
+    
+    /* Quando sidebar está aberto, header DEVE ficar abaixo */
+    body:has(.sidebar.open) .header-modern,
+    body:has(.sidebar.open) header.header-modern,
+    body:has(.sidebar.open) .header-modern-content,
+    body:has(.sidebar.open) header,
+    body:has(#sidebar.open) .header-modern,
+    body:has(#sidebar.open) header.header-modern,
+    body:has(#sidebar.open) .header-modern-content,
+    .sidebar.open ~ .header-modern,
+    .sidebar.open ~ header.header-modern,
+    .sidebar.open ~ .header-modern-content,
+    .sidebar.open ~ header,
+    #sidebar.open ~ .header-modern,
+    #sidebar.open ~ header.header-modern,
+    #sidebar.open ~ .header-modern-content,
+    body.sidebar-open .header-modern,
+    body.sidebar-open header.header-modern,
+    body.sidebar-open .header-modern-content,
+    body.sidebar-open header {
+        z-index: 1 !important; /* FORÇA z-index baixíssimo quando menu aberto */
+        position: relative !important; /* Remove position fixed/sticky */
+    }
+    
+    /* CORREÇÃO: Chat-container permite scroll quando necessário */
+    .chat-container {
+        overflow: visible !important; /* Permite scroll natural */
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        height: auto !important; /* Altura automática */
+        position: relative !important;
     }
     
     .chat-area {
         overflow-x: hidden !important;
-        overflow-y: hidden !important; /* SEM scroll - scroll apenas em welcome-message e chat-messages */
+        overflow-y: visible !important; /* Permite scroll natural da página */
+        height: auto !important;
     }
     
     .welcome-message {
-        overflow-y: auto !important; /* ÚNICO scroll permitido */
+        overflow-y: auto !important; /* Scroll interno quando necessário */
         overflow-x: hidden !important;
         overscroll-behavior: contain !important;
+        max-height: none !important; /* Remove limite de altura */
     }
     
     .chat-messages {
-        overflow-y: auto !important; /* ÚNICO scroll permitido quando ativo */
+        overflow-y: auto !important; /* Scroll interno quando necessário */
         overflow-x: hidden !important;
         overscroll-behavior: contain !important;
+        max-height: none !important; /* Remove limite de altura */
     }
     
     .header {
@@ -877,6 +970,9 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     #start-chat-btn * {
         box-sizing: border-box !important;
     }
+    /* REGRAS ANTIGAS DO BOTÃO #start-chat-btn REMOVIDAS */
+    /* Estas regras foram movidas para a seção consolidada 9.1 no final do arquivo */
+    /* para evitar conflitos e garantir prioridade máxima na media query final */
     
     .header-right .status-indicator {
         display: none !important; /* Remove completamente o status-indicator */
@@ -1109,32 +1205,90 @@ body.device-mobile .chat-messages {
 /* chat-container::before com radial-gradients removido */
 
 /* Sidebar */
-.sidebar {
+.sidebar,
+#sidebar {
     width: 300px;
-    background: linear-gradient(180deg, #fef9f7 0%, #f8f4f0 100%);
+    background: #ffffff !important; /* FUNDO BRANCO SÓLIDO - NÃO TRANSPARENTE */
+    background-color: #ffffff !important; /* GARANTE BRANCO SÓLIDO */
     border-right: 1px solid rgba(244, 166, 166, 0.2);
     display: flex;
     flex-direction: column;
     transform: translateX(-100%);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 2px 0 15px rgba(244, 166, 166, 0.1);
-    position: relative;
-    z-index: 5;
-    overflow: visible;
-    height: auto;
+    position: fixed !important; /* CRÍTICO: Forçar fixed */
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 2147483647 !important; /* CRÍTICO: Z-index MÁXIMO - acima de TUDO */
+    overflow: hidden;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    isolation: isolate !important; /* Criar novo contexto de empilhamento */
+    margin: 0 !important; /* Remove qualquer margin */
+    padding: 0 !important; /* Remove qualquer padding que crie espaço */
 }
 
-.sidebar.open {
+.sidebar.open,
+#sidebar.open {
     transform: translateX(0) !important;
+    z-index: 2147483647 !important; /* Z-index MÁXIMO - valor máximo permitido */
+    position: fixed !important;
+}
+
+/* CRÍTICO: Reduzir z-index do header quando sidebar está aberto - FORÇA MÁXIMA */
+body:has(.sidebar.open) .header-modern,
+body:has(.sidebar.open) header.header-modern,
+body:has(.sidebar.open) .header-modern-content,
+body:has(#sidebar.open) .header-modern,
+body:has(#sidebar.open) header.header-modern,
+body:has(#sidebar.open) .header-modern-content,
+.sidebar.open ~ * .header-modern,
+.sidebar.open ~ * header.header-modern,
+.sidebar.open ~ * .header-modern-content,
+#sidebar.open ~ * .header-modern,
+#sidebar.open ~ * header.header-modern,
+#sidebar.open ~ * .header-modern-content,
+body.sidebar-open .header-modern,
+body.sidebar-open header.header-modern,
+body.sidebar-open .header-modern-content {
+    z-index: 1 !important; /* MUITO menor que sidebar (2147483647) - FORÇA abaixo */
+    position: relative !important; /* Remove position fixed/sticky */
+}
+
+/* Indicador "Menu" na fresta rosa quando sidebar está aberto */
+.sidebar.open::after {
+    content: 'Menu';
+    position: fixed;
+    left: 300px; /* Logo após o sidebar (300px de largura) */
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: center;
+    background: rgba(244, 166, 166, 0.9);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Nunito', 'Poppins', sans-serif;
+    white-space: nowrap;
+    z-index: 4;
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.3);
+    pointer-events: none;
+    letter-spacing: 0.5px;
 }
 
 .sidebar-header {
     padding: 1.2rem;
-    background: linear-gradient(135deg, #f8e8e8 0%, #f0e0e0 100%);
+    background: #ffffff !important; /* MESMO BACKGROUND DO .sidebar - ELIMINA FAIXA ROSA */
+    background-color: #ffffff !important; /* GARANTE BRANCO SÓLIDO */
+    margin: 0 !important; /* Remove qualquer margin que crie espaço */
+    margin-top: 0 !important; /* Garante que começa no topo */
+    padding-top: 1.2rem !important; /* Mantém padding interno */
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(244, 166, 166, 0.2);
+    flex-shrink: 0; /* Evita que o header encolha */
 }
 
 .sidebar-header h2,
@@ -1183,21 +1337,33 @@ body.device-mobile .chat-messages {
 /* New Sidebar Content Styles */
 .sidebar-content {
     flex: 1;
-    overflow: visible;
-    height: auto;
-    padding: 1rem;
-    padding-bottom: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Altura calculada: 100vh - altura do header - padding */
+    height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
+    padding: 0 1rem 2rem 1rem; /* Remove padding-top para eliminar faixa rosa */
+    background: #ffffff; /* FUNDO BRANCO SÓLIDO - NÃO TRANSPARENTE */
+    /* Garante que o scroll funcione corretamente */
     -webkit-overflow-scrolling: touch;
-    contain: content;
+    overscroll-behavior: contain;
 }
 
 .sidebar-section {
     margin-bottom: 1.5rem;
+    padding-top: 1rem; /* Adiciona padding-top apenas na primeira seção para espaçamento do header */
+    /* CORREÇÃO: Garante que seções da sidebar fiquem acima do input */
+    position: relative !important; /* Permite z-index funcionar */
+    z-index: 1 !important; /* Acima do input (z-index: 0 ou 50) mas dentro da sidebar */
+}
+
+.sidebar-section:first-child {
+    padding-top: 1rem; /* Espaçamento do header para a primeira seção */
 }
 
 .sidebar-section:last-of-type {
     margin-bottom: 0;
-    padding-bottom: 1rem;
+    padding-bottom: 2rem !important; /* Padding extra no final para garantir que todo conteúdo seja visível e não fique coberto pelo input */
 }
 
 .sidebar-section h4 {
@@ -1209,15 +1375,17 @@ body.device-mobile .chat-messages {
     letter-spacing: 0.5px;
 }
 
+/* Sidebar buttons - BRANCO SÓLIDO COM BORDA ROSA */
 .sidebar-btn {
     width: 100%;
-    padding: 0.9rem 1rem; /* Padding consistente */
-    margin-bottom: 0.6rem;
-    background: linear-gradient(135deg, #fff9f7 0%, #fff5f3 100%);
-    border: 2px solid rgba(244, 166, 166, 0.3); /* Borda consistente */
-    border-radius: 12px; /* Borda arredondada consistente */
+    padding: 0.75rem 1rem;
+    margin-bottom: var(--sophia-spacing-xs);
+    background: #ffffff !important; /* FUNDO BRANCO SÓLIDO - NÃO TRANSPARENTE */
+    background-color: #ffffff !important; /* GARANTE BRANCO SÓLIDO */
+    border: 2px solid #F4A6A6; /* BORDA ROSA CLARO */
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transição suave */
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 0.8rem;
@@ -1239,9 +1407,54 @@ body.device-mobile .chat-messages {
     transform: translateX(5px) scale(1.02);
     box-shadow: 0 6px 20px rgba(244, 166, 166, 0.4), 0 3px 10px rgba(0, 0, 0, 0.1); /* Sombra mais pronunciada no hover */
 }
+
+.sidebar-btn:hover i {
+    color: white !important;
+}
+
 .sidebar-btn:focus-visible {
-    outline: 3px solid rgba(244, 166, 166, 0.5);
-    outline-offset: 2px;
+    outline: 3px solid var(--sophia-pink-light) !important;
+    outline-offset: 2px !important;
+}
+
+/* Emergency Button - FORÇA PALETA ROSA PASTEL */
+.emergency-btn {
+    width: 100% !important;
+    padding: 0.75rem 1rem !important; /* Reduzido */
+    margin-bottom: var(--sophia-spacing-xs) !important;
+    background: var(--sophia-bg-gradient) !important;
+    border: 2px solid var(--sophia-pink-medium) !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.7rem !important;
+    color: var(--sophia-text-primary) !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    box-shadow: var(--sophia-shadow-sm) !important;
+    min-height: auto !important;
+    height: auto !important;
+    text-decoration: none !important;
+}
+
+.emergency-btn i {
+    font-size: 1rem !important;
+    color: var(--sophia-pink-primary) !important;
+}
+
+.emergency-btn:hover {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    border-color: var(--sophia-pink-primary) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--sophia-shadow-md) !important;
+}
+
+.emergency-btn:hover i {
+    color: white !important;
 }
 
 .sidebar-btn:hover i {
@@ -1346,7 +1559,7 @@ body.device-mobile .chat-messages {
     /* Animação removida para melhor performance */
     overflow-y: auto !important; /* ÚNICO scroll permitido - apenas aqui */
     overflow-x: hidden !important;
-    padding: 1rem 0 !important;
+    padding: 1rem 0 !important; /* MOBILE FIRST: Padding reduzido */
     box-sizing: border-box !important;
     -webkit-overflow-scrolling: touch !important;
     position: relative !important;
@@ -1356,6 +1569,29 @@ body.device-mobile .chat-messages {
     /* will-change: scroll-position; */ /* Removido - otimização desnecessária */
     /* Garante que o scroll fique apenas aqui */
     overscroll-behavior: contain !important;
+}
+
+/* MOBILE FIRST: Reduz padding excessivo do welcome-message */
+@media (max-width: 768px) {
+    .welcome-message {
+        padding-top: 10px !important; /* Reduzido de 12.8px */
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 20px !important; /* Reduzido de 100px */
+        margin-top: 0 !important;
+    }
+    
+    /* Ajuste de Texto para Leitura em Mobile */
+    .welcome-message p,
+    .welcome-content p,
+    .medical-disclaimer p {
+        font-size: 1rem !important; /* 16px para melhor legibilidade */
+        line-height: 1.5 !important;
+        text-align: left !important; /* Justificado cria "rios" de espaço em branco */
+        max-width: 90% !important; /* Ocupa 90% da largura para conforto */
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
 }
 
 /* Elementos decorativos removidos para melhor performance */
@@ -1459,8 +1695,8 @@ body.device-mobile .chat-messages {
 
 .welcome-content {
     text-align: center !important;
-    padding: 2rem 1.5rem !important; /* Padding aumentado para melhor espaçamento */
-    max-width: 85% !important;
+    padding: 1.5rem 1rem !important; /* MOBILE FIRST: Padding reduzido */
+    max-width: 90% !important; /* MOBILE FIRST: Ocupa 90% da largura */
     margin: 0 auto !important;
     width: auto !important;
     animation: contentFadeIn 1s ease-out 0.3s backwards;
@@ -1478,14 +1714,15 @@ body.device-mobile .chat-messages {
     background: rgba(255, 255, 255, 0.6) !important;
     /* backdrop-filter: blur(10px) !important; */ /* Removido para melhor performance */
     border-radius: 30px !important;
-    box-shadow: 0 8px 32px rgba(244, 166, 166, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    /* Otimizações de performance */
-    contain: layout style;
-    /* transform: translateZ(0); */ /* Removido - otimização desnecessária */
-    /* Previne scroll duplo */
-    overscroll-behavior: none !important;
-    -webkit-overflow-scrolling: auto !important;
+}
+
+/* MOBILE FIRST: Ajustes adicionais para welcome-content */
+@media (max-width: 768px) {
+    .welcome-content {
+        padding: 1rem 0.75rem !important; /* Padding ainda mais reduzido no mobile */
+        max-width: 90% !important; /* Ocupa 90% da largura para conforto */
+        margin-top: 10px !important;
+    }
 }
 
 @keyframes contentFadeIn {
@@ -1541,6 +1778,7 @@ body.device-mobile .chat-messages {
 
 .welcome-content h2 {
     font-size: 1.65rem; /* Aumentado para mais destaque */
+    margin-top: 1.5rem !important; /* Espaço superior para baixar o texto dentro do container */
     margin-bottom: 0.8rem; /* Mais espaço abaixo */
     color: #7a4a4a; /* Tom mais escuro para melhor contraste */
     font-family: 'Nunito', sans-serif;
@@ -1548,6 +1786,11 @@ body.device-mobile .chat-messages {
     text-shadow: 0 3px 10px rgba(244, 166, 166, 0.35), 0 2px 5px rgba(139, 90, 90, 0.25), 0 1px 2px rgba(0, 0, 0, 0.1); /* Sombra mais pronunciada para destaque */    
     animation: titleSlideIn 0.8s ease-out 0.5s backwards;
     line-height: 1.3;
+}
+
+/* Regra específica para .welcome-hero-title dentro do .welcome-content */
+.welcome-content .welcome-hero-title {
+    margin-top: 1.5rem !important; /* Espaço superior para baixar o texto dentro do container */
 }
 
 @keyframes titleSlideIn {
@@ -1651,6 +1894,7 @@ body.device-mobile .chat-messages {
     padding: 10px;
 }
 
+/* ===== FEELING BUTTONS - BOTÕES DE ESTADO EMOCIONAL ===== */
 .feeling-btn {
     display: flex;
     align-items: center;
@@ -1725,8 +1969,31 @@ body.device-mobile .chat-messages {
 }
 
 .feeling-btn:focus-visible {
-    outline: 3px solid rgba(244, 166, 166, 0.5);
-    outline-offset: 2px;
+    outline: 3px solid var(--sophia-pink-light) !important;
+    outline-offset: 2px !important;
+}
+
+/* Feedback visual ao clicar */
+.feeling-btn.clicked {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+    border-color: var(--sophia-pink-primary) !important;
+    box-shadow: 0 0 0 4px var(--sophia-pink-light) !important;
+}
+
+.feeling-extra-btn {
+    background: transparent !important;
+    border: 2px dashed var(--sophia-pink-light) !important;
+    color: var(--sophia-text-secondary) !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.85rem !important;
+}
+
+.feeling-extra-btn:hover {
+    background: var(--sophia-pink-light) !important;
+    border-style: solid !important;
+    border-color: var(--sophia-pink-medium) !important;
+    color: var(--sophia-text-primary) !important;
 }
 
 .feeling-extra-options {
@@ -1875,9 +2142,46 @@ body.device-mobile .support-links {
     outline-offset: 2px;
 }
 
+/* Container de Cards no Welcome Content */
+.welcome-cards-container {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 1.5rem !important;
+    margin: 3rem auto 2rem !important;
+    max-width: 900px !important;
+    width: 100% !important;
+    padding: 0 1rem !important;
+    box-sizing: border-box !important;
+    animation: textFadeIn 0.8s ease-out 0.85s backwards;
+    /* Otimizações de performance */
+    contain: layout style paint;
+}
+
+@media (max-width: 768px) {
+    .welcome-cards-container {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        margin: 2rem auto 1.5rem !important;
+        padding: 0 0.5rem !important;
+    }
+}
+
+body.device-mobile .welcome-cards-container {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin: 2rem auto 1.5rem !important;
+    padding: 0 0.5rem !important;
+}
+
+/* Ajustes dos cards quando estão no welcome-content */
+.welcome-content .sidebar-card {
+    margin-bottom: 0 !important; /* Remove margem inferior padrão */
+    height: 100% !important; /* Garante altura uniforme no grid */
+}
+
 /* Medical Disclaimer */
 .medical-disclaimer {
-    margin: 4rem auto 2rem; /* Aumentado: 64px top - mais respiração após support-links */
+    margin: 4rem auto 2rem; /* Aumentado: 64px top - mais respiração após welcome-cards-container */
     max-width: 650px;
     animation: textFadeIn 0.8s ease-out 0.9s backwards;
     padding: 0 1rem;
@@ -2036,12 +2340,14 @@ body.device-mobile .rotating-message {
 @media (max-width: 1024px) {
     .quick-questions-grid {
         grid-template-columns: repeat(2, 1fr);
+        align-items: stretch !important; /* Garante altura uniforme */
     }
 }
 
 @media (max-width: 768px) {
     .quick-questions-grid {
         grid-template-columns: 1fr;
+        align-items: stretch !important; /* Garante altura uniforme */
     }
 }
 
@@ -2077,8 +2383,8 @@ body.device-mobile .rotating-message {
     justify-content: center !important;
     gap: 0.5rem !important;
     width: 100% !important;
-    min-height: 100px !important;
-    height: 100% !important;
+    height: 100% !important; /* Altura 100% para preencher o grid - altura uniforme */
+    min-height: 120px !important; /* Altura mínima aumentada para acomodar textos maiores */
     box-sizing: border-box !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
@@ -2233,21 +2539,22 @@ body.device-mobile .rotating-message {
 }
 
 .back-to-welcome .btn {
-    border-radius: 25px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    background: rgba(108, 117, 125, 0.9);
-    color: white;
-    border: none;
-    /* backdrop-filter: blur(10px); */ /* Removido para melhor performance - muito pesado */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+    background: var(--sophia-bg-gradient) !important;
+    color: var(--sophia-text-primary) !important;
+    border: 2px solid var(--sophia-pink-medium) !important;
+    box-shadow: var(--sophia-shadow-sm) !important;
+    transition: all 0.3s ease !important;
 }
 
 .back-to-welcome .btn:hover {
-    background: rgba(108, 117, 125, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+    border-color: var(--sophia-pink-primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--sophia-shadow-md) !important;
 }
 
 @keyframes slideInRight {
@@ -2526,7 +2833,8 @@ body.device-mobile .rotating-message {
     padding: 1.2rem;
     /* backdrop-filter removido para melhor performance */
     position: relative;
-    z-index: 999 !important; /* Abaixo do header, mas acima do conteúdo */
+    /* CORREÇÃO CRÍTICA: Z-index MÍNIMO por padrão - SEMPRE abaixo da sidebar (2147483647) */
+    z-index: 50 !important; /* Abaixo do header (1000), MUITO abaixo da sidebar (2147483647) */
     /* Otimizações de performance */
     contain: layout style paint;
 }
@@ -2541,9 +2849,10 @@ body.device-mobile .rotating-message {
         left: 0 !important;
         right: 0 !important;
         width: 100vw !important;
-        z-index: 998 !important; /* Abaixo do header, acima do footer CVV */
+        /* CORREÇÃO CRÍTICA: Z-index SEMPRE menor que sidebar (2147483647) - nunca sobrepor */
+        z-index: 50 !important; /* MUITO menor que sidebar (2147483647) - força abaixo sempre */
         box-shadow: 0 -4px 20px rgba(244, 166, 166, 0.3) !important;
-        transition: bottom 0.3s ease, transform 0.3s ease;
+        transition: bottom 0.3s ease, z-index 0s !important; /* Transição suave mas z-index instantâneo */
         min-height: 70px !important;
         transform: translateY(0); /* Posição normal */
     }
@@ -2770,7 +3079,8 @@ body.device-mobile .input-area {
     left: 0 !important;
     right: 0 !important;
     width: 100vw !important;
-    z-index: 998 !important;
+    /* CORREÇÃO CRÍTICA: Z-index MÍNIMO - SEMPRE abaixo da sidebar (2147483647) */
+    z-index: 50 !important; /* MUITO menor que sidebar (2147483647) - nunca sobrepor */
     min-height: 70px !important;
 }
 
@@ -2798,7 +3108,8 @@ body:has(.cvv-disclaimer-footer[style*="display: block"]) .chat-area {
 }
 
 body.device-mobile .welcome-message {
-    padding-bottom: 100px !important; /* Aumentado de 80px para 100px */
+    padding-bottom: 150px !important; /* Aumentado para cobrir área verde vazia */
+    min-height: calc(100vh - 150px) !important; /* Ocupa mais espaço vertical */
 }
 
 .input-container {
@@ -2913,9 +3224,22 @@ body.device-mobile #send-button {
 }
 
 .btn-primary {
-    background: #8bc34a; /* Cor sólida simples */
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+    border: 2px solid var(--sophia-pink-primary) !important;
+    box-shadow: var(--sophia-shadow-sm) !important;
+    padding: 0.75rem 1.1rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--sophia-pink-dark) 0%, var(--sophia-pink-primary) 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--sophia-shadow-md) !important;
 }
 
 .btn-secondary {
@@ -2962,18 +3286,18 @@ button#start-chat-btn.btn.btn-start-chat,
 #start-chat-btn {
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: center !important;
     margin: 0 auto;
     width: auto;
     min-width: 300px;
     max-width: 90%;
-    text-align: left;
+    text-align: center !important;
     white-space: nowrap;
     padding: 1.5rem 3rem !important;
     font-size: 0.85rem !important;
     font-weight: 600 !important;
     border-radius: 50px !important;
-    gap: 1rem !important;
+    gap: 0.5rem !important;
     background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%) !important;
     color: white !important;
     border: none !important;
@@ -2988,7 +3312,7 @@ button#start-chat-btn.btn.btn-start-chat,
     contain: layout style paint;
 }
 
-/* Ícone dentro do botão - alinhado à esquerda */
+/* Ícone dentro do botão - centralizado */
 button#start-chat-btn.btn.btn-start-chat i,
 #start-chat-btn i {
     font-size: 1rem !important;
@@ -2998,7 +3322,7 @@ button#start-chat-btn.btn.btn-start-chat i,
     flex-shrink: 0 !important;
     margin: 0;
     padding: 0;
-    order: 1 !important;
+    order: 0 !important;
     line-height: 1;
     width: auto;
     height: auto;
@@ -3007,18 +3331,17 @@ button#start-chat-btn.btn.btn-start-chat i,
     color: white !important;
 }
 
-/* Texto dentro do botão - alinhado à direita */
+/* Texto dentro do botão - centralizado */
 button#start-chat-btn.btn.btn-start-chat span,
 #start-chat-btn span {
     display: inline-flex !important;
     align-items: center !important;
-    flex: 1 1 auto !important;
-    text-align: right !important;
-    justify-content: flex-end !important;
+    flex: 0 0 auto !important;
+    text-align: center !important;
+    justify-content: center !important;
     margin: 0;
     padding: 0;
-    padding-left: 0.5rem;
-    order: 2 !important;
+    order: 1 !important;
     white-space: nowrap;
     overflow: visible;
     text-overflow: clip;
@@ -3040,6 +3363,97 @@ button#start-chat-btn.btn.btn-start-chat span *,
     opacity: 1 !important;
 }
 
+/* REGRA DESKTOP DO BOTÃO #start-chat-btn */
+/* ATENÇÃO: Estas regras se aplicam APENAS ao desktop (telas > 768px) */
+/* Para mobile, veja a seção 9.1 na media query @media (max-width: 768px) no final do arquivo */
+@media (min-width: 769px) {
+    /* CORREÇÃO: Especificidade máxima para sobrescrever regras globais */
+    body button#start-chat-btn.btn.btn-start-chat,
+    body #start-chat-btn,
+    .welcome-content button#start-chat-btn,
+    .welcome-content #start-chat-btn {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important; /* CORREÇÃO: Centraliza conteúdo ao invés de space-between */
+        margin: 0 auto !important;
+        width: auto !important;
+        min-width: 300px !important;
+        max-width: 90% !important;
+        text-align: center !important; /* CORREÇÃO: Texto centralizado */
+        white-space: nowrap !important;
+        padding: 1.5rem 3rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        border-radius: 50px !important;
+        gap: 1rem !important;
+        /* CORREÇÃO: Força fundo gradiente rosa (sobrescreve regras globais brancas) */
+        background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%) !important;
+        background-color: transparent !important; /* Remove fundo branco */
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4) !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+        position: relative !important;
+        line-height: 1.4 !important;
+        min-height: 58px !important;
+        height: auto !important;
+        cursor: pointer !important;
+        contain: layout style paint !important;
+    }
+    
+    /* Ícone dentro do botão - alinhado à esquerda - APENAS DESKTOP */
+    body button#start-chat-btn.btn.btn-start-chat i,
+    body #start-chat-btn i,
+    .welcome-content #start-chat-btn i {
+        font-size: 1rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: none !important;
+        vertical-align: middle !important;
+        color: white !important;
+    }
+
+    /* Texto dentro do botão - centralizado - APENAS DESKTOP */
+    body button#start-chat-btn.btn.btn-start-chat span,
+    body #start-chat-btn span,
+    .welcome-content #start-chat-btn span {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important; /* CORREÇÃO: Centraliza o texto */
+        margin: 0 !important;
+        padding: 0 !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        line-height: 1.4 !important;
+        position: static !important;
+        /* CORREÇÃO: Força cor branca (sobrescreve regras globais rosa) */
+        color: white !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        vertical-align: middle !important;
+        max-width: 100% !important;
+    }
+
+    /* Garante que o texto dentro do span seja visível - APENAS DESKTOP */
+    body button#start-chat-btn.btn.btn-start-chat span *,
+    body #start-chat-btn span *,
+    .welcome-content #start-chat-btn span * {
+        color: white !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
+/* Box-sizing para elementos filhos - GLOBAL (fora de media query, sem cor) */
 #start-chat-btn * {
     box-sizing: border-box;
 }
@@ -3690,6 +4104,10 @@ body.device-mobile.orientation-portrait #menu-toggle {
     
     .sidebar-header {
         padding: 1rem;
+        background: #ffffff !important; /* MESMO BACKGROUND DO .sidebar */
+        background-color: #ffffff !important;
+        margin: 0 !important;
+        margin-top: 0 !important;
     }
     
     .sidebar-header h3 {
@@ -3806,6 +4224,7 @@ body.device-mobile.orientation-portrait #menu-toggle {
          grid-template-columns: 1fr !important;
          gap: 0.6rem !important;
          display: grid !important;
+         align-items: stretch !important; /* Garante altura uniforme */
          justify-items: stretch !important;
      }
      
@@ -5107,7 +5526,7 @@ body.device-tablet.orientation-portrait .feature-btn span {
 }
 
 .exame-nome {
-    color: #333;
+    color: var(--sophia-text-primary, #7a4a4a) !important; /* ⚠️ CRÍTICO: Use variável, não #333 */
     font-size: 0.95rem;
     line-height: 1.5;
     flex: 1;
@@ -7759,7 +8178,11 @@ body.device-mobile .welcome-message .welcome-content {
    mas ajustados automaticamente pro tamanho de cada tela.
    ======================================== */
 
-/* ===== VARIÁVEIS CSS PARA SCALING FLUIDO ===== */
+/* ========================================
+   SOPHIA DESIGN SYSTEM - GUIA DE ESTILO
+   ======================================== */
+
+/* ===== VARIÁVEIS CSS - PALETA DE CORES FIXA ===== */
 :root {
     /* Base scaling factors - serão ajustados por media query */
     --scale-factor: 1;
@@ -7767,6 +8190,55 @@ body.device-mobile .welcome-message .welcome-content {
     --spacing-unit: 1rem;
     --border-radius-base: 18px;
     --shadow-blur-base: 12px;
+    
+    /* ===== PALETA DE CORES SOPHIA ===== */
+    /* Rosa Pastel - Ações Primárias */
+    --sophia-pink-primary: #f4a6a6;
+    --sophia-pink-secondary: #f8b8c8;
+    --sophia-pink-light: rgba(244, 166, 166, 0.3);
+    --sophia-pink-medium: rgba(244, 166, 166, 0.4);
+    --sophia-pink-dark: #e89595;
+    
+    /* Fundos - SEMPRE BRANCOS */
+    --sophia-bg-white: #ffffff;
+    --sophia-bg-light: rgba(255, 252, 250, 0.85);
+    --sophia-bg-gradient: #ffffff; /* BRANCO SÓLIDO, NÃO GRADIENTE */
+    
+    /* Textos - Nova Tipografia Moderna */
+    --sophia-text-primary: #C44569; /* ROSA ESCURO para textos principais */
+    --sophia-text-secondary: #8B7A8F;
+    --sophia-text-light: #A89BA5;
+    --sophia-text-dark: #C44569; /* Rosa escuro para títulos */
+    
+    /* Emergências - Cor de Destaque */
+    --sophia-emergency: #e63946;
+    --sophia-emergency-light: rgba(230, 57, 70, 0.1);
+    
+    /* Atenção - Cor de Alerta */
+    /* ⚠️ CRÍTICO: Use apenas para alertas de atenção, NUNCA para botões principais */
+    --sophia-warning: #ffb703;
+    --sophia-warning-light: rgba(255, 183, 3, 0.15);
+    --sophia-warning-dark: #e6a502;
+    
+    /* Bordas */
+    --sophia-border-radius-sm: 12px;
+    --sophia-border-radius-md: 16px;
+    --sophia-border-radius-lg: 24px;
+    
+    /* Sombras */
+    --sophia-shadow-sm: 0 2px 8px rgba(244, 166, 166, 0.15);
+    --sophia-shadow-md: 0 4px 12px rgba(244, 166, 166, 0.2);
+    --sophia-shadow-lg: 0 8px 30px rgba(244, 166, 166, 0.25);
+    
+    /* Espaçamento */
+    --sophia-spacing-xs: 0.5rem;
+    --sophia-spacing-sm: 1rem;
+    --sophia-spacing-md: 1.5rem;
+    --sophia-spacing-lg: 2rem;
+    --sophia-spacing-xl: 3rem;
+    
+    /* Max Width Global */
+    --sophia-container-max: 1100px;
 }
 
 /* ===== MOBILE PORTRAIT (< 480px) ===== */
@@ -9093,19 +9565,19 @@ body.device-mobile .welcome-message .welcome-content {
     #start-chat-btn {
         display: flex !important;
         align-items: center !important;
-        justify-content: space-between !important; /* Separa ícone e texto */
+        justify-content: center !important; /* Centraliza conteúdo */
         margin: 0 auto !important;
         width: auto !important;
         min-width: 300px !important;
         max-width: 90% !important;
-        text-align: left !important;
+        text-align: center !important;
         white-space: normal !important;
         word-wrap: break-word !important;
         padding: 1.5rem 3rem !important; /* Padding maior para encaixar tudo */
         font-size: 0.85rem !important; /* Texto legível */
         font-weight: 600 !important;
         border-radius: 50px !important; /* Sobrescreve border-radius: 50% do .btn */
-        gap: 1rem !important; /* Espaço entre ícone e texto */
+        gap: 0.5rem !important; /* Espaço entre ícone e texto */
         background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%) !important;
         color: white !important;
         border: none !important;
@@ -9121,7 +9593,7 @@ body.device-mobile .welcome-message .welcome-content {
         contain: layout style paint !important;
     }
     
-    /* Ícone dentro do botão - alinhado à esquerda */
+    /* Ícone dentro do botão - centralizado */
     button#start-chat-btn.btn.btn-start-chat i,
     #start-chat-btn i {
         font-size: 1rem !important; /* Ícone proporcional */
@@ -9131,7 +9603,7 @@ body.device-mobile .welcome-message .welcome-content {
         flex-shrink: 0 !important; /* Não encolhe */
         margin: 0 !important;
         padding: 0 !important;
-        order: 1 !important; /* Ícone primeiro (à esquerda) */
+        order: 0 !important; /* Ícone primeiro */
         line-height: 1 !important;
         width: auto !important;
         height: auto !important;
@@ -9140,18 +9612,17 @@ body.device-mobile .welcome-message .welcome-content {
         color: white !important;
     }
     
-    /* Texto dentro do botão - alinhado à direita */
+    /* Texto dentro do botão - centralizado */
     button#start-chat-btn.btn.btn-start-chat span,
     #start-chat-btn span {
         display: inline-flex !important;
         align-items: center !important;
-        flex: 1 1 auto !important; /* Ocupa o espaço restante */
-        text-align: right !important; /* Texto alinhado à direita */
-        justify-content: flex-end !important; /* Alinha texto à direita */
+        flex: 0 0 auto !important; /* Não ocupa espaço extra */
+        text-align: center !important; /* Texto centralizado */
+        justify-content: center !important; /* Centraliza texto */
         margin: 0 !important;
         padding: 0 !important;
-        padding-left: 0.5rem !important; /* Espaço entre ícone e texto */
-        order: 2 !important; /* Texto depois (à direita) */
+        order: 1 !important; /* Texto depois do ícone */
         white-space: nowrap !important;
         overflow: visible !important; /* Mudado para visible */
         text-overflow: clip !important; /* Mudado para clip em vez de ellipsis */
@@ -10078,6 +10549,82 @@ html {
     .welcome-content-wrapper {
         grid-column: 2 !important;
         position: relative !important;
+    }
+}
+
+/* ========================================
+   COMPONENTE DE BOTÃO PADRÃO SOPHIA
+   ========================================
+   ⚠️ REGRA CRÍTICA: NUNCA use cores cinzas (#555, #333) ou hard-code hex
+   ✅ SEMPRE use variáveis CSS --sophia-pink-*
+   📐 Tamanho máximo: padding 0.85rem 1.2rem, font-size 0.95rem
+   📚 Ver documentação: docs/style-guide-sophia.md
+   ======================================== */
+.btn-sophia,
+button:not([class*="emergency"]):not([class*="close"]):not([class*="login"]):not(.feeling-extra-btn),
+.sidebar-btn,
+.premium-card-btn,
+.sintoma-btn-yes,
+.sintoma-btn-no,
+.sintoma-acao-btn,
+.sintoma-voltar-btn {
+    background: var(--sophia-bg-gradient) !important;
+    border: 2px solid var(--sophia-pink-medium) !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    color: var(--sophia-text-primary) !important;
+    padding: 0.75rem 1.1rem !important; /* ⚠️ MÁXIMO: 0.85rem 1.2rem */
+    font-weight: 600 !important;
+    font-size: 0.9rem !important; /* ⚠️ MÁXIMO: 0.95rem */
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: var(--sophia-shadow-sm) !important;
+    font-family: 'Nunito', 'Poppins', sans-serif !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    min-height: auto !important; /* ⚠️ CRÍTICO: Nunca use altura fixa */
+    height: auto !important; /* ⚠️ CRÍTICO: Nunca use altura fixa */
+}
+
+.btn-sophia:hover,
+button:not([class*="emergency"]):not([class*="close"]):not([class*="login"]):not(.feeling-extra-btn):hover,
+.sidebar-btn:hover,
+.premium-card-btn:hover {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    border-color: var(--sophia-pink-primary) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--sophia-shadow-md) !important;
+}
+
+.btn-sophia:active,
+button:not([class*="emergency"]):not([class*="close"]):not([class*="login"]):not(.feeling-extra-btn):active,
+.sidebar-btn:active,
+.premium-card-btn:active {
+    transform: translateY(0) scale(0.98) !important;
+    box-shadow: var(--sophia-shadow-sm) !important;
+}
+
+/* ===== ESTILOS BASE PARA DESKTOP - RESOURCE CARDS E PREMIUM CARDS ===== */
+/* Garantir que os estilos base do desktop sejam preservados */
+@media (min-width: 769px) {
+    /* Container Global com Max-Width */
+    .welcome-content,
+    .resources-grid-section,
+    .conteudos-educativos-section {
+        max-width: var(--sophia-container-max) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding: 0 var(--sophia-spacing-md) !important;
+    }
+    
+    /* Grid de 2-3 colunas para cards no Desktop */
+    .resources-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: var(--sophia-spacing-md) !important;
         max-width: 100% !important;
         margin: 0 auto !important;
     }
@@ -10109,6 +10656,1278 @@ html {
     /* Oculta header fixo do chat em mobile */
     .chat-header-fixed {
         display: none !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .resources-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+.resource-card {
+    background: var(--sophia-bg-gradient) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 2px solid var(--sophia-pink-light) !important;
+    border-radius: var(--sophia-border-radius-lg) !important;
+    box-shadow: var(--sophia-shadow-lg), 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    padding: var(--sophia-spacing-md) var(--sophia-spacing-sm) !important;
+    min-height: auto !important;
+    height: auto !important;
+    transition: all 0.3s ease !important;
+}
+
+.resource-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 40px rgba(244, 166, 166, 0.3), 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+    border-color: var(--sophia-pink-medium) !important;
+}
+
+.premium-card {
+    background: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(244, 166, 166, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(244, 166, 166, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+.premium-card-btn {
+    background: linear-gradient(135deg, rgba(255, 249, 247, 0.95) 0%, rgba(255, 245, 243, 0.9) 100%) !important;
+    border: 2px solid rgba(244, 166, 166, 0.4) !important;
+    color: #7a4a4a !important;
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.premium-card-btn:hover {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    border-color: var(--sophia-pink-primary) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--sophia-shadow-md) !important;
+}
+
+.premium-card-btn i {
+    color: var(--sophia-pink-primary) !important; /* ⚠️ CRÍTICO: Use variável, não #f4a6a6 */
+}
+
+.premium-card-btn:hover i {
+    color: white !important;
+}
+
+/* ===== CORREÃ‡Ã•ES ESPECÃFICAS PARA BLOCOS NO MOBILE ===== */
+@media (max-width: 768px) {
+    .resource-card {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: clamp(1.5rem, 5vw, 2rem) clamp(1rem, 4vw, 1.5rem) !important;
+        min-height: clamp(160px, 25vw, 200px) !important;
+        box-sizing: border-box !important;
+        background: linear-gradient(135deg, rgba(255, 252, 250, 0.85) 0%, rgba(255, 247, 243, 0.75) 100%) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border: 2px solid rgba(244, 166, 166, 0.2) !important;
+        border-radius: 24px !important;
+        color: #6a3a3a !important;
+    }
+    
+    .resource-card span {
+        width: 100% !important;
+        max-width: 100% !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+    
+    .premium-card {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        background: rgba(255, 255, 255, 0.45) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(244, 166, 166, 0.35) !important;
+        box-shadow: 0 4px 16px rgba(244, 166, 166, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    .premium-card-title,
+    .premium-card-subtitle,
+    .premium-card-btn {
+        width: 100% !important;
+        max-width: 100% !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        box-sizing: border-box !important;
+    }
+    
+    .premium-card-btn {
+        background: linear-gradient(135deg, rgba(255, 249, 247, 0.95) 0%, rgba(255, 245, 243, 0.9) 100%) !important;
+        border: 2px solid rgba(244, 166, 166, 0.4) !important;
+        color: #7a4a4a !important;
+        box-shadow: 0 4px 12px rgba(244, 166, 166, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    .premium-card-btn:hover {
+        background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+        border-color: var(--sophia-pink-primary) !important;
+        color: white !important;
+        transform: translateY(-2px) !important;
+        box-shadow: var(--sophia-shadow-md) !important;
+    }
+    
+    .premium-card-btn i {
+        color: var(--sophia-pink-primary) !important; /* ⚠️ CRÍTICO: Use variável, não #f4a6a6 */
+    }
+    
+    .premium-card-btn:hover i {
+        color: white !important;
+    }
+    
+    .resources-grid,
+    .conteudos-educativos-grid {
+        grid-template-columns: 1fr !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Reduzir altura dos cards no mobile */
+    .resource-card {
+        padding: 1.25rem 1rem !important;
+        min-height: auto !important;
+        height: auto !important;
+    }
+}
+
+/* ===== REESTRUTURAÇÃO: DOAÇÃO DE LEITE (DESKTOP) ===== */
+@media (min-width: 769px) {
+    .conteudos-educativos-section {
+        max-width: 1200px !important;
+        margin: 4rem auto 3rem !important;
+        padding: 0 2rem !important;
+    }
+    
+    .conteudos-educativos-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 2rem !important;
+        max-width: 100% !important;
+    }
+    
+    /* Agrupar elementos do card de doação de leite */
+    .premium-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    
+    .premium-card-image {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+        max-height: 200px !important;
+        overflow: hidden !important;
+    }
+    
+    .premium-card-image img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        max-width: 100% !important;
+        max-height: 150px !important; /* ⚠️ CRÍTICO: Máximo 150px (não 200px) */
+    }
+}
+
+/* ===== IMAGENS RESPONSIVAS ===== */
+.premium-card-image img,
+.resource-card img {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+.premium-card-image {
+    background: var(--sophia-bg-white) !important;
+    border-radius: var(--sophia-border-radius-lg) !important;
+    overflow: hidden !important;
+    padding: var(--sophia-spacing-xs) !important;
+}
+
+@media (min-width: 769px) {
+    .premium-card-image img {
+        max-height: 150px !important; /* Reduzido de 200px */
+        width: auto !important;
+        margin: 0 auto !important;
+        display: block !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .premium-card-image img {
+        max-height: 120px !important; /* Reduzido de 150px */
+        width: auto !important;
+        margin: 0 auto !important;
+        display: block !important;
+    }
+}
+
+/* ===== REESTRUTURAÇÃO: MODAL DE EMERGÊNCIA ===== */
+.emergency-number-card {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 2px solid rgba(244, 166, 166, 0.3) !important;
+    border-radius: 16px !important;
+    margin-bottom: 1rem !important;
+}
+
+.emergency-number-info {
+    flex: 1 !important;
+}
+
+.emergency-number-info h5 {
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    color: #7a4a4a !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.emergency-number-info p {
+    font-size: 0.9rem !important;
+    color: #8b6a5a !important;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.5 !important;
+}
+
+.emergency-number-info small {
+    font-size: 0.85rem !important;
+    color: #9a7a6a !important;
+}
+
+.emergency-call-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem 1.25rem !important;
+    background: linear-gradient(135deg, #f4a6a6 0%, #f8b8c8 100%) !important;
+    border: 2px solid #f4a6a6 !important;
+    border-radius: 12px !important;
+    color: white !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.emergency-call-btn:hover {
+    background: linear-gradient(135deg, #e89595 0%, #e8a8b8 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.3) !important;
+}
+
+.emergency-call-btn i {
+    font-size: 1.1rem !important;
+    color: white !important;
+}
+
+/* Footer do modal de emergência */
+.emergency-actions-footer {
+    margin-top: 2rem !important;
+    padding-top: 1.5rem !important;
+    border-top: 2px solid rgba(244, 166, 166, 0.2) !important;
+}
+
+/* Botão "Encontrar Hospitais" com destaque visual */
+.btn-find-hospitals {
+    width: 100% !important;
+    padding: 1.25rem 1.5rem !important;
+    background: linear-gradient(135deg, #f4a6a6 0%, #f8b8c8 100%) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 16px rgba(244, 166, 166, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+}
+
+.btn-find-hospitals:hover {
+    background: linear-gradient(135deg, #e89595 0%, #e8a8b8 100%) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(244, 166, 166, 0.4) !important;
+}
+
+.btn-find-hospitals i {
+    font-size: 1.3rem !important;
+    color: white !important;
+}
+
+/* Alinhar ícones de telefone à esquerda */
+.emergency-number-card .emergency-call-btn {
+    order: -1 !important;
+    margin-right: auto !important;
+}
+
+@media (max-width: 768px) {
+    .emergency-number-card {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    .emergency-call-btn {
+        width: 100% !important;
+        order: 2 !important;
+    }
+}
+
+/* ===== PADRONIZAÇÃO DE CORES E BORDAS ===== */
+/* Remover bordas cinzas e padronizar com rosa */
+button:not([class*="emergency"]):not([class*="close"]):not([class*="login"]),
+.btn:not([class*="emergency"]):not([class*="close"]):not([class*="login"]),
+.sidebar-btn,
+.premium-card-btn,
+.feature-btn {
+    border-color: var(--sophia-pink-medium) !important;
+    background: var(--sophia-bg-gradient) !important;
+}
+
+/* Garantir que todos os botões usem a paleta rosa */
+.btn-primary,
+.btn-login-main {
+    border-color: var(--sophia-pink-medium) !important;
+}
+
+/* Remover estilos padrão de botões do sistema */
+button {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+
+/* Espaçamento e Hierarquia Visual */
+.resources-grid-section,
+.conteudos-educativos-section {
+    margin: var(--sophia-spacing-xl) auto var(--sophia-spacing-lg) !important;
+    padding: 0 var(--sophia-spacing-md) !important;
+}
+
+.resources-grid-section h2,
+.conteudos-educativos-section h2 {
+    margin-bottom: var(--sophia-spacing-md) !important;
+    color: var(--sophia-text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 1.75rem !important;
+}
+
+/* Regra de Proximidade - Agrupar conteúdo relacionado */
+.conteudos-educativos-section {
+    margin-top: var(--sophia-spacing-xl) !important;
+}
+
+.feeling-widget {
+    margin: var(--sophia-spacing-lg) auto !important;
+    padding: var(--sophia-spacing-md) !important;
+}
+
+.feeling-buttons-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: var(--sophia-spacing-sm) !important;
+    justify-content: center !important;
+    margin: var(--sophia-spacing-md) 0 !important;
+}
+
+/* ========================================
+   CARDS DE HOSPITAIS - DESIGN SYSTEM
+   ======================================== */
+
+/* Container de lista de hospitais - Grid System */
+.hospitals-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--sophia-spacing-md) !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: var(--sophia-spacing-md) !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .hospitals-list {
+        padding: var(--sophia-spacing-sm) !important;
+        gap: 1rem !important;
+    }
+}
+
+/* Card de Hospital - Sem alturas fixas */
+.hospital-card {
+    background: var(--sophia-bg-gradient) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 2px solid var(--sophia-pink-light) !important;
+    border-radius: var(--sophia-border-radius-md) !important;
+    padding: 1.25rem !important;
+    box-shadow: var(--sophia-shadow-md) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    height: auto !important;
+    min-height: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+.hospital-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: var(--sophia-shadow-lg) !important;
+    border-color: var(--sophia-pink-medium) !important;
+}
+
+/* Header do Card - Nome e Distância */
+.hospital-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    margin-bottom: var(--sophia-spacing-xs) !important;
+}
+
+.hospital-header-top {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.hospital-header-bottom {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex-wrap: wrap !important;
+}
+
+.hospital-header-tags {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+}
+
+.hospital-name {
+    color: var(--sophia-text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    margin: 0 !important;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.3 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    flex: 1 !important;
+}
+
+.hospital-distance {
+    color: var(--sophia-text-secondary) !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+/* Tags de Público/Privado */
+.hospital-tag-public,
+.hospital-tag-private {
+    display: inline-block !important;
+    padding: 0.3rem 0.6rem !important;
+    border-radius: 4px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+}
+
+.hospital-tag-public {
+    background: #4CAF50 !important;
+    color: white !important;
+}
+
+.hospital-tag-private {
+    background: #FF9800 !important;
+    color: white !important;
+}
+
+/* Badges - Destaque Visual */
+.hospital-badges {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: var(--sophia-spacing-xs) !important;
+    margin-bottom: var(--sophia-spacing-sm) !important;
+}
+
+/* Badge SUS/Gratuito - PRIORIDADE MÁXIMA */
+.hospital-badge-sus {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%) !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.hospital-badge-sus::before {
+    content: '✓' !important;
+    font-size: 1rem !important;
+    font-weight: 900 !important;
+}
+
+/* Badge Maternidade - Ícone Rosa Suave */
+.hospital-badge-maternity {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    box-shadow: var(--sophia-shadow-sm) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.hospital-badge-maternity i {
+    font-size: 0.9rem !important;
+    color: white !important;
+}
+
+/* Badge Pronto Socorro */
+.hospital-badge-emergency {
+    background: linear-gradient(135deg, var(--sophia-emergency) 0%, #c82333 100%) !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.hospital-badge-emergency i {
+    font-size: 0.9rem !important;
+    color: white !important;
+}
+
+/* Informações do Hospital - Hierarquia Visual */
+.hospital-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--sophia-spacing-xs) !important;
+    flex: 1 !important;
+    margin-bottom: var(--sophia-spacing-sm) !important;
+}
+
+.hospital-info p {
+    margin: 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+    color: var(--sophia-text-secondary) !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+.hospital-info i {
+    color: var(--sophia-pink-primary) !important;
+    font-size: 0.9rem !important;
+    margin-top: 0.2rem !important;
+    flex-shrink: 0 !important;
+}
+
+.hospital-info span {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* Links de Telefone e Website */
+.hospital-phone-link,
+.hospital-website-link {
+    color: var(--sophia-text-primary) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: color 0.2s ease !important;
+    word-break: break-all !important;
+}
+
+.hospital-phone-link:hover,
+.hospital-website-link:hover {
+    color: var(--sophia-pink-primary) !important;
+    text-decoration: underline !important;
+}
+
+/* Ações do Card - Botões Alinhados na Base */
+.hospital-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    margin-top: auto !important;
+    padding-top: 0.75rem !important;
+    border-top: 1px solid var(--sophia-pink-light) !important;
+}
+
+/* Botão Sophia Compacto */
+.btn-sophia-compact {
+    padding: 0.6rem 1rem !important;
+    font-size: 0.85rem !important;
+    flex: 1 !important;
+    min-width: 100px !important;
+    text-align: center !important;
+}
+
+.hospital-call-btn {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+    border-color: var(--sophia-pink-primary) !important;
+}
+
+.hospital-call-btn:hover {
+    background: linear-gradient(135deg, var(--sophia-pink-dark) 0%, var(--sophia-pink-primary) 100%) !important;
+}
+
+/* Botão Ligar com Destaque (Primário) */
+.hospital-call-btn-primary {
+    background: var(--sophia-emergency) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    border: 2px solid var(--sophia-emergency) !important;
+    box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3) !important;
+    transform: scale(1.02) !important;
+    flex: 1 !important;
+    min-width: 120px !important;
+}
+
+.hospital-call-btn-primary:hover {
+    background: #c1121f !important;
+    border-color: #c1121f !important;
+    box-shadow: 0 6px 16px rgba(230, 57, 70, 0.4) !important;
+    transform: scale(1.05) !important;
+}
+
+.hospital-call-btn-primary:active {
+    transform: scale(0.98) !important;
+}
+
+/* Aviso de Segurança */
+.hospital-safety-warning {
+    background: #fff3cd !important;
+    border-left: 3px solid var(--sophia-warning) !important;
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 6px !important;
+    animation: pulse-warning 2s ease-in-out infinite !important;
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 183, 3, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(255, 183, 3, 0);
+    }
+}
+
+/* Botão de Copiar Endereço */
+.hospital-copy-btn {
+    background: transparent !important;
+    border: none !important;
+    color: var(--sophia-pink-primary) !important;
+    cursor: pointer !important;
+    padding: 0.25rem 0.5rem !important;
+    margin-left: 0.5rem !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.85rem !important;
+    opacity: 0.7 !important;
+}
+
+.hospital-copy-btn:hover {
+    opacity: 1 !important;
+    background: var(--sophia-pink-light) !important;
+    transform: scale(1.1) !important;
+}
+
+.hospital-copy-btn.copied {
+    color: #28a745 !important;
+    opacity: 1 !important;
+}
+
+.hospital-address {
+    position: relative !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+}
+
+.hospital-address span {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* Feedback Visual de Clique */
+.hospital-call-btn.clicked,
+.hospital-phone-link.clicked {
+    transform: scale(0.95) !important;
+    box-shadow: 0 0 0 4px var(--sophia-pink-light) !important;
+    background: linear-gradient(135deg, var(--sophia-pink-dark) 0%, var(--sophia-pink-primary) 100%) !important;
+}
+
+/* Estado Vazio - Sugestão SAMU */
+.hospital-empty-state {
+    text-align: center !important;
+    padding: var(--sophia-spacing-xl) var(--sophia-spacing-md) !important;
+    background: var(--sophia-bg-gradient) !important;
+    border: 2px solid var(--sophia-pink-light) !important;
+    border-radius: var(--sophia-border-radius-md) !important;
+    max-width: 500px !important;
+    margin: 0 auto !important;
+}
+
+.hospital-empty-icon {
+    font-size: 3rem !important;
+    color: var(--sophia-pink-primary) !important;
+    margin-bottom: var(--sophia-spacing-md) !important;
+}
+
+.hospital-empty-title {
+    color: var(--sophia-text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 1.3rem !important;
+    margin-bottom: var(--sophia-spacing-sm) !important;
+}
+
+.hospital-empty-message {
+    color: var(--sophia-text-secondary) !important;
+    font-size: 1rem !important;
+    margin-bottom: var(--sophia-spacing-lg) !important;
+    line-height: 1.6 !important;
+}
+
+.hospital-empty-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--sophia-spacing-sm) !important;
+    align-items: center !important;
+}
+
+.hospital-emergency-btn {
+    background: linear-gradient(135deg, var(--sophia-emergency) 0%, #c82333 100%) !important;
+    color: white !important;
+    border-color: var(--sophia-emergency) !important;
+    font-size: 1.1rem !important;
+    padding: 1rem 1.5rem !important;
+    font-weight: 700 !important;
+}
+
+.hospital-emergency-btn:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(230, 57, 70, 0.4) !important;
+}
+
+.hospital-retry-btn {
+    background: transparent !important;
+    border: 2px solid var(--sophia-pink-medium) !important;
+    color: var(--sophia-text-primary) !important;
+}
+
+.hospital-retry-btn:hover {
+    background: var(--sophia-bg-gradient) !important;
+}
+
+/* Responsividade - Endereços Longos */
+@media (max-width: 768px) {
+    .hospital-card {
+        padding: var(--sophia-spacing-sm) !important;
+    }
+    
+    .hospital-header {
+        gap: 0.4rem !important;
+    }
+    
+    .hospital-header-bottom {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    
+    .hospital-name {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    .hospital-info p {
+        font-size: 0.85rem !important;
+    }
+    
+    .hospital-actions {
+        flex-direction: column !important;
+    }
+    
+    .btn-sophia-compact {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+    
+    .hospital-empty-state {
+        padding: var(--sophia-spacing-lg) var(--sophia-spacing-sm) !important;
+    }
+}
+
+/* Refinamento Tablet - Botões Maiores para Toque */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .btn-sophia-compact {
+        padding: 0.75rem 1.2rem !important;
+        font-size: 0.9rem !important;
+        min-width: 120px !important;
+    }
+}
+
+/* Suporte Dark Mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* MANTÉM BRANCO MESMO NO DARK MODE - NÃO QUEREMOS CINZA */
+        --sophia-bg-white: rgba(255, 255, 255, 0.95);
+        --sophia-bg-light: rgba(255, 252, 250, 0.85);
+        --sophia-bg-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 249, 247, 0.8) 100%);
+        --sophia-text-primary: #C44569; /* ROSA ESCURO, NÃO CINZA */
+        --sophia-text-secondary: #8B7A8F;
+        --sophia-text-light: #A89BA5;
+    }
+    
+    .hospital-card {
+        background: var(--sophia-bg-gradient) !important;
+        border-color: rgba(244, 166, 166, 0.4) !important;
+    }
+    
+    .hospital-name {
+        color: var(--sophia-text-primary) !important;
+    }
+    
+    .hospital-info p {
+        color: var(--sophia-text-secondary) !important;
+    }
+    
+    .hospital-phone-link,
+    .hospital-website-link {
+        color: var(--sophia-text-primary) !important;
+    }
+    
+    .hospital-empty-state {
+        background: var(--sophia-bg-gradient) !important;
+        border-color: rgba(244, 166, 166, 0.4) !important;
+    }
+    
+    .hospital-empty-title {
+        color: var(--sophia-text-primary) !important;
+    }
+    
+    .hospital-empty-message {
+        color: var(--sophia-text-secondary) !important;
+    }
+}
+
+/* Overflow de Texto - Garantir que badges não sejam atropelados */
+.hospital-header {
+    min-height: auto !important;
+}
+
+.hospital-header-top {
+    width: 100% !important;
+}
+
+.hospital-name {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important; /* Compatibilidade padrão */
+    -webkit-box-orient: vertical !important;
+}
+
+.hospital-badges {
+    margin-top: var(--sophia-spacing-xs) !important;
+    flex-wrap: wrap !important;
+    gap: var(--sophia-spacing-xs) !important;
+}
+
+/* Performance: Otimização de renderização */
+.hospitals-list {
+    contain: layout style paint !important;
+}
+
+.hospital-card {
+    contain: layout style !important;
+    will-change: transform !important;
+}
+
+/* ========================================
+   MÓDULO DE TRIAGEM DE SINTOMAS
+   ======================================== */
+
+.sintomas-triagem-container {
+    max-width: var(--sophia-container-max) !important;
+    margin: 0 auto !important;
+    padding: var(--sophia-spacing-md) !important;
+}
+
+.sintomas-intro {
+    color: var(--sophia-text-secondary) !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: var(--sophia-spacing-lg) !important;
+    text-align: center !important;
+}
+
+.sintomas-section {
+    margin-bottom: var(--sophia-spacing-xl) !important;
+}
+
+.sintomas-section-title {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    margin-bottom: var(--sophia-spacing-md) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--sophia-spacing-xs) !important;
+}
+
+.sintomas-section-title i {
+    font-size: 1.4rem !important;
+}
+
+.sintomas-section-title.sintomas-critico {
+    color: var(--sophia-emergency) !important;
+}
+
+.sintomas-section-title.sintomas-medio {
+    color: var(--sophia-warning) !important;
+}
+
+.sintomas-section-title.sintomas-baixo {
+    color: var(--sophia-text-primary) !important;
+}
+
+.sintomas-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: var(--sophia-spacing-md) !important;
+}
+
+@media (max-width: 768px) {
+    .sintomas-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Card de Sintoma */
+.sintoma-card {
+    background: var(--sophia-bg-gradient) !important;
+    border: 2px solid var(--sophia-pink-light) !important;
+    border-radius: var(--sophia-border-radius-md) !important;
+    padding: var(--sophia-spacing-md) !important;
+    box-shadow: var(--sophia-shadow-sm) !important;
+    transition: all 0.3s ease !important;
+    height: auto !important;
+    min-height: auto !important;
+}
+
+.sintoma-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--sophia-shadow-md) !important;
+    border-color: var(--sophia-pink-medium) !important;
+}
+
+.sintoma-card.sintoma-critico {
+    border-color: var(--sophia-emergency) !important;
+    background: linear-gradient(135deg, rgba(230, 57, 70, 0.05) 0%, rgba(255, 255, 255, 0.8) 100%) !important;
+}
+
+.sintoma-card.sintoma-medio {
+    border-color: var(--sophia-warning) !important;
+    background: linear-gradient(135deg, var(--sophia-warning-light) 0%, rgba(255, 255, 255, 0.8) 100%) !important;
+}
+
+.sintoma-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: var(--sophia-spacing-xs) !important;
+    margin-bottom: var(--sophia-spacing-sm) !important;
+}
+
+.sintoma-titulo {
+    color: var(--sophia-text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    margin: 0 !important;
+    flex: 1 !important;
+    line-height: 1.3 !important;
+}
+
+.sintoma-badge {
+    padding: 0.4rem 0.7rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.sintoma-badge-critico {
+    background: linear-gradient(135deg, var(--sophia-emergency) 0%, #c82333 100%) !important;
+    color: white !important;
+    animation: pulse-urgente 2s ease-in-out infinite !important;
+    will-change: transform !important;
+}
+
+.sintoma-badge-medio {
+    background: linear-gradient(135deg, var(--sophia-warning) 0%, var(--sophia-warning-dark) 100%) !important;
+    color: white !important;
+}
+
+.sintoma-badge-baixo {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+}
+
+@keyframes pulse-urgente {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(230, 57, 70, 0.5);
+    }
+}
+
+.sintoma-pergunta {
+    color: var(--sophia-text-secondary) !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: var(--sophia-spacing-md) !important;
+}
+
+.sintoma-actions {
+    display: flex !important;
+    gap: var(--sophia-spacing-sm) !important;
+    margin-top: var(--sophia-spacing-md) !important;
+}
+
+/* Sintoma buttons já estão definidos no .btn-sophia acima - apenas override específico */
+.sintoma-btn-yes {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+    border-color: var(--sophia-pink-primary) !important;
+}
+
+.sintoma-btn-yes:hover {
+    background: linear-gradient(135deg, var(--sophia-pink-dark) 0%, var(--sophia-pink-primary) 100%) !important;
+    color: white !important;
+}
+
+.sintoma-respondido {
+    opacity: 0.7 !important;
+}
+
+.sintoma-feedback-positivo {
+    color: #28a745 !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    padding: var(--sophia-spacing-sm) !important;
+    margin: 0 !important;
+}
+
+/* Resultado da Triagem */
+.sintoma-resultado {
+    text-align: center !important;
+    padding: var(--sophia-spacing-xl) var(--sophia-spacing-md) !important;
+    background: var(--sophia-bg-gradient) !important;
+    border-radius: var(--sophia-border-radius-md) !important;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+}
+
+.sintoma-resultado-critico {
+    border: 3px solid var(--sophia-emergency) !important;
+    background: linear-gradient(135deg, rgba(230, 57, 70, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%) !important;
+}
+
+.sintoma-resultado-medio {
+    border: 3px solid var(--sophia-warning) !important;
+    background: linear-gradient(135deg, var(--sophia-warning-light) 0%, rgba(255, 255, 255, 0.9) 100%) !important;
+}
+
+.sintoma-resultado-baixo {
+    border: 2px solid var(--sophia-pink-medium) !important;
+}
+
+.sintoma-resultado-icon {
+    font-size: 3rem !important; /* Reduzido de 4rem */
+    margin-bottom: var(--sophia-spacing-md) !important;
+}
+
+.sintoma-resultado-critico .sintoma-resultado-icon {
+    color: var(--sophia-emergency) !important;
+    animation: pulse-urgente 2s ease-in-out infinite !important;
+}
+
+.sintoma-resultado-medio .sintoma-resultado-icon {
+    color: var(--sophia-warning) !important;
+}
+
+.sintoma-resultado-baixo .sintoma-resultado-icon {
+    color: var(--sophia-pink-primary) !important;
+}
+
+.sintoma-resultado-titulo {
+    color: var(--sophia-text-primary) !important;
+    font-weight: 600 !important; /* Reduzido de 700 */
+    font-size: 1.3rem !important; /* Reduzido de 1.5rem */
+    margin-bottom: var(--sophia-spacing-md) !important;
+}
+
+.sintoma-resultado-descricao {
+    color: var(--sophia-text-secondary) !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: var(--sophia-spacing-lg) !important;
+}
+
+.sintoma-resultado-acoes {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--sophia-spacing-sm) !important;
+    margin-bottom: var(--sophia-spacing-md) !important;
+}
+
+.sintoma-acao-btn {
+    width: 100% !important;
+    padding: 0.85rem 1.2rem !important; /* Reduzido */
+    font-size: 0.95rem !important; /* Reduzido */
+    font-weight: 600 !important; /* Reduzido de 700 */
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.sintoma-acao-hospital {
+    background: linear-gradient(135deg, var(--sophia-emergency) 0%, #c82333 100%) !important;
+    color: white !important;
+    border-color: var(--sophia-emergency) !important;
+}
+
+.sintoma-acao-hospital:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4) !important;
+}
+
+.sintoma-acao-telefone {
+    background: linear-gradient(135deg, var(--sophia-pink-primary) 0%, var(--sophia-pink-secondary) 100%) !important;
+    color: white !important;
+    border-color: var(--sophia-pink-primary) !important;
+    text-decoration: none !important;
+}
+
+.sintoma-voltar-btn {
+    background: transparent !important;
+    border: 2px solid var(--sophia-pink-medium) !important;
+    color: var(--sophia-text-primary) !important;
+    margin-top: var(--sophia-spacing-md) !important;
+}
+
+/* Dark Mode para Sintomas */
+@media (prefers-color-scheme: dark) {
+    .sintoma-card {
+        background: var(--sophia-bg-gradient) !important;
+    }
+    
+    .sintoma-resultado {
+        background: var(--sophia-bg-gradient) !important;
+    }
+}
+
+/* Mobile: Título sempre visível e botões proporcionais */
+@media (max-width: 768px) {
+    .sintoma-card {
+        position: relative !important; /* Remove sticky que causa problemas */
+        background: var(--sophia-bg-white) !important;
+        margin-bottom: var(--sophia-spacing-sm) !important;
+        padding: var(--sophia-spacing-sm) !important; /* Reduzido */
+    }
+    
+    .sintoma-titulo {
+        font-size: 0.95rem !important; /* Reduzido */
+        line-height: 1.3 !important;
+    }
+    
+    .sintoma-pergunta {
+        font-size: 0.85rem !important; /* Reduzido */
+    }
+    
+    .sintoma-actions {
+        flex-direction: row !important; /* Mantém lado a lado */
+        gap: var(--sophia-spacing-xs) !important;
+    }
+    
+    .sintoma-btn-yes,
+    .sintoma-btn-no {
+        flex: 1 !important;
+        padding: 0.65rem 0.8rem !important; /* Reduzido */
+        font-size: 0.8rem !important; /* Reduzido */
+        min-height: auto !important;
+    }
+    
+    .sintoma-resultado {
+        padding: var(--sophia-spacing-md) var(--sophia-spacing-sm) !important; /* Reduzido */
+    }
+    
+    .sintoma-resultado-icon {
+        font-size: 2.5rem !important; /* Reduzido */
+    }
+    
+    .sintoma-resultado-titulo {
+        font-size: 1.1rem !important; /* Reduzido */
+    }
+    
+    .sintoma-acao-btn {
+        padding: 0.75rem 1rem !important; /* Reduzido */
+        font-size: 0.85rem !important; /* Reduzido */
     }
 }
 
@@ -10613,6 +12432,7 @@ html {
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -10624,6 +12444,7 @@ html {
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -10860,4 +12681,1687 @@ html {
         width: 95%;
         padding: 1.5rem;
     }
+}
+
+/* ========================================
+   CORREÇÃO DE EMERGÊNCIA: CORES DOS BOTÕES
+   ========================================
+   ⚠️ CRÍTICO: Força TODOS os botões a serem BRANCOS com borda/texto ROSA
+   ✅ Soft UI: Branco/Rosa Claro - NUNCA cinza escuro
+   📚 Sobrescreve qualquer estilo anterior
+   ======================================== */
+
+/* Força TODOS os botões principais a serem Branco com Rosa */
+.btn-sophia,
+.sidebar-btn,
+.hero-grid-card, /* Botões do menu principal (Gestação, etc) */
+.feeling-btn,   /* Botões de sentimento */
+.feeling-btn-modern, /* Botões de sentimento modernos */
+.feeling-extra-btn-modern, /* Botões extras de sentimento */
+.action-btn,    /* Botões de ação rápida */
+.emergency-btn,
+button.modern-pill-btn,
+.resource-card, /* Cards de recursos */
+.premium-card-btn,
+.conteudo-card-btn,
+#start-chat-btn, /* Botão principal de conversar */
+.btn-start-chat {
+    background-color: #ffffff !important; /* FUNDO BRANCO */
+    color: var(--sophia-pink-dark, #C44569) !important; /* TEXTO ROSA ESCURO */
+    border: 2px solid var(--sophia-pink-light, #F4A6A6) !important; /* BORDA ROSA CLARO */
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.15) !important; /* Sombra rosa suave */
+    border-radius: 24px !important; /* Bem arredondado */
+    padding: 12px 15px !important; /* Padding controlado para não ficarem gigantes */
+    font-family: 'Poppins', 'Nunito', sans-serif !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    /* Reseta tamanhos gigantes */
+    width: auto !important; 
+    height: auto !important;
+    min-height: 50px !important; /* Altura mínima confortável */
+    max-height: none !important; /* Remove altura máxima que estica */
+}
+
+/* Efeito Hover (Passar o mouse) - Fica Rosa Claro */
+.btn-sophia:hover,
+.feeling-btn:hover,
+.feeling-btn-modern:hover,
+.feeling-extra-btn-modern:hover,
+.action-btn:hover,
+.resource-card:hover,
+.premium-card-btn:hover,
+.conteudo-card-btn:hover,
+#start-chat-btn:hover,
+.btn-start-chat:hover {
+    background-color: #F4A6A6; /* FUNDO ROSA CLARO */
+    color: #ffffff; /* TEXTO BRANCO */
+    border-color: transparent;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(244, 166, 166, 0.3);
+}
+
+/* Botões de Emergência e Sair (Destaque diferente) */
+.emergency-btn, 
+.sidebar-btn-logout,
+.logout-btn {
+    border: 2px solid var(--sophia-emergency, #e63946) !important;
+    color: var(--sophia-emergency, #e63946) !important;
+    background-color: #ffffff !important;
+}
+
+.emergency-btn:hover, 
+.sidebar-btn-logout:hover,
+.logout-btn:hover {
+    background-color: var(--sophia-emergency, #e63946) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+/* ========================================
+   CORREÇÃO DE EMERGÊNCIA: LAYOUT MOBILE
+   ========================================
+   ⚠️ CRÍTICO: Grid de 2 colunas no mobile
+   ✅ Impede elementos gigantes e desalinhados
+   ======================================== */
+@media (max-width: 768px) {
+    /* 1. Menu Principal (Hero Grid) - Arrumar os blocos enormes */
+    .hero-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important; /* FORÇA 2 COLUNAS LADO A LADO */
+        gap: 12px !important; /* Espaço entre eles */
+        padding: 15px !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
+
+    .hero-grid-card {
+        width: 100% !important;
+        aspect-ratio: 1 !important; /* Cards quadrados */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        gap: 12px !important;
+        padding: 20px !important;
+        background-color: #fff !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 15px rgba(196, 69, 105, 0.15) !important;
+        border: none !important;
+    }
+
+    .hero-grid-card i {
+        font-size: 28px !important;
+        color: #C44569 !important;
+        margin-bottom: 5px !important;
+    }
+
+    .hero-grid-card .hero-card-text,
+    .hero-grid-card span {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        color: #C44569 !important; /* Texto rosa */
+    }
+
+    .hero-grid-card:hover i {
+        color: #C44569 !important;
+    }
+
+    .hero-grid-card:hover .hero-card-text,
+    .hero-grid-card:hover span {
+        color: #C44569 !important; /* Texto rosa no hover também */
+    }
+
+    /* 2. Sentimentos (Como está seu coração) - Arrumar a lista vertical */
+    .feeling-grid-modern,
+    .feeling-buttons-grid,
+    .feelings-grid-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important; /* FORÇA 2 COLUNAS */
+        gap: 10px !important;
+        margin-top: 20px !important;
+        padding: 0 15px !important;
+    }
+    
+    .feeling-btn,
+    .feeling-btn-modern {
+        width: 100% !important;
+        margin: 0 !important; /* Remove margens externas que desalinham */
+        padding: 12px 15px !important;
+        min-height: 50px !important;
+        max-height: none !important;
+    }
+
+    .feeling-extra-btn-modern {
+        width: 100% !important;
+        margin-top: 10px !important;
+        padding: 12px 15px !important;
+        min-height: 50px !important;
+    }
+
+    /* 3. Carrossel Educativo - Altura controlada */
+    .conteudo-card-carousel,
+    .carousel-card {
+        height: auto !important; /* REMOVIDO: max-height e min-height fixos */
+        min-height: auto !important; /* Altura baseada no conteúdo */
+        overflow: hidden !important; /* Garante que o filho não vaze */
+    }
+    
+    .conteudo-card-image img,
+    .carousel-card img {
+        max-height: 140px !important; /* Controla a imagem */
+        object-fit: contain !important;
+    }
+
+    /* 4. Resource Cards - Grid de 2 colunas */
+    .resources-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        padding: 15px !important;
+    }
+
+    .resource-card {
+        min-height: 120px !important;
+        max-height: 180px !important;
+        padding: 15px 12px !important;
+    }
+}
+
+/* ========================================
+   CORREÇÃO DE EMERGÊNCIA: LAYOUT DESKTOP
+   ========================================
+   ⚠️ CRÍTICO: Grid responsivo no desktop
+   ✅ Controle de largura máxima
+   ======================================== */
+@media (min-width: 1024px) {
+    /* Menu principal em linha */
+    .hero-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 20px !important;
+        max-width: 1000px !important; /* Não deixa esticar na tela toda */
+        margin: 0 auto !important;
+        padding: 20px !important;
+    }
+    
+    .hero-grid-card {
+        aspect-ratio: 1 !important; /* Cards quadrados */
+    }
+    
+    .hero-grid-card .hero-card-text,
+    .hero-grid-card span {
+        color: #C44569 !important; /* Texto rosa */
+    }
+    
+    .hero-grid-card:hover .hero-card-text,
+    .hero-grid-card:hover span {
+        color: #C44569 !important; /* Texto rosa no hover também */
+    }
+    
+    /* Sentimentos em 3 colunas */
+    .feeling-grid-modern,
+    .feeling-buttons-grid,
+    .feelings-grid-container {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 15px !important;
+        max-width: 800px !important;
+        margin: 20px auto !important;
+        padding: 0 20px !important;
+    }
+
+    /* Resource Cards em 3 colunas */
+    .resources-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 20px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+    }
+}
+
+/* ==========================================================================
+   ☢️ ÁREA DE EXTERMÍNIO VISUAL - CSS DE EMERGÊNCIA ☢️
+   Estas regras SOBRESCREVEM tudo para corrigir os blocos gigantes e cinzas.
+   NÃO REMOVA até que o layout esteja estabilizado.
+   ========================================================================== */
+
+/* 1. FORÇAR TODOS OS BOTÕES PARA O ESTILO SOFT UI (BRANCO/ROSA)
+   Alvo: Qualquer coisa que pareça um botão, incluindo os do sidebar e conteúdo. */
+button, .btn, .btn-sophia, .sidebar-btn, .action-btn, .feeling-btn, 
+.feeling-btn-modern, .feeling-extra-btn-modern,
+.hero-grid-card, a.btn, .premium-card-btn, .conteudo-card-btn,
+#start-chat-btn, .btn-start-chat {
+    background: #ffffff !important; /* FUNDO BRANCO OBRIGATÓRIO */
+    background-color: #ffffff !important; /* Redundância para garantir */
+    color: var(--sophia-pink-dark, #C44569) !important; /* TEXTO ROSA ESCURO */
+    border: 2px solid var(--sophia-pink-light, #F4A6A6) !important; /* BORDA ROSA CLARO */
+    border-radius: 24px !important; /* BEM ARREDONDADO */
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.2) !important; /* SOMBRA ROSA SUAVE */
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    text-transform: none !important; /* Remove caixa alta se houver */
+    transition: all 0.3s ease !important;
+    /* Reseta tamanhos absurdos */
+    width: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 48px !important;
+}
+
+/* Hover para os botões acima */
+button:hover, .btn:hover, .btn-sophia:hover, .sidebar-btn:hover, 
+.action-btn:hover, .feeling-btn:hover, .feeling-btn-modern:hover,
+.feeling-extra-btn-modern:hover, .hero-grid-card:hover, .premium-card-btn:hover,
+.conteudo-card-btn:hover, #start-chat-btn:hover, .btn-start-chat:hover {
+    background-color: var(--sophia-pink-light, #F4A6A6) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 20px rgba(244, 166, 166, 0.4) !important;
+}
+
+/* Botões de Emergência/Sair (Exceção: Vermelho) */
+.emergency-btn, .logout-btn, .sidebar-btn-logout {
+    border-color: var(--sophia-emergency, #e63946) !important;
+    color: var(--sophia-emergency, #e63946) !important;
+    background-color: #ffffff !important;
+}
+.emergency-btn:hover, .logout-btn:hover, .sidebar-btn-logout:hover {
+    background-color: var(--sophia-emergency, #e63946) !important;
+    color: #ffffff !important;
+}
+
+/* 2. FORÇAR CONTEÚDOS EDUCATIVOS (CÂNCER/LEITE) A SEREM CARDS PEQUENOS E BRANCOS
+   Alvo: Os containers gigantes que aparecem nas imagens 21 e 22.
+   Usamos seletores genéricos para pegar qualquer wrapper que esteja sendo usado. */
+.premium-card, .resource-card, .carousel-card, .conteudo-card-carousel,
+/* Tenta pegar o container pelo contexto se as classes acima falharem */
+.conteudos-educativos-container > div, 
+.conteudos-carousel .conteudo-card-carousel,
+[class*="content-block"] {
+    background: #ffffff !important; /* FUNDO BRANCO PARA O BLOCO INTEIRO */
+    border-radius: 30px !important; /* CANTOS MUITO ARREDONDADOS */
+    border: 1px solid rgba(244, 166, 166, 0.3) !important; /* Borda rosa sutil */
+    box-shadow: 0 10px 30px rgba(244, 166, 166, 0.15) !important; /* Sombra elegante */
+    padding: 30px !important;
+    margin: 0 auto !important; /* Centraliza, mas gap do container cuida do espaçamento */
+    
+    /* CONTROLE DE TAMANHO RÍGIDO */
+    width: 90% !important; /* No mobile, ocupa 90% da tela */
+    max-width: 450px !important; /* No desktop, TRAVA em 450px. FIM DOS BLOCOS GIGANTES. */
+    height: auto !important; /* REMOVIDO: Altura fixa */
+    min-height: auto !important; /* Altura baseada no conteúdo */
+    overflow: hidden !important; /* Garante que o filho não vaze */
+    
+    /* Organização interna */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    
+    /* Z-Index: Remove qualquer z-index negativo */
+    z-index: auto !important;
+    position: relative !important;
+}
+
+/* Controla as imagens dentro desses blocos para não esticarem */
+.premium-card img, .resource-card img, .carousel-card img, 
+.conteudo-card-carousel img, .conteudo-card-image img,
+.conteudo-card-image, [class*="content-block"] img {
+    max-height: 180px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    margin-bottom: 20px !important;
+    background: transparent !important; /* Garante que a imagem não tenha fundo cinza */
+}
+
+/* Força o conteúdo dos cards educativos a ter estilo branco/rosa */
+.conteudo-card-content, .conteudo-card-title, .conteudo-card-subtitle {
+    background: transparent !important;
+    color: var(--sophia-text-primary, #7a4a4a) !important;
+}
+
+.conteudo-card-title {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+    color: var(--sophia-pink-dark, #C44569) !important;
+}
+
+.conteudo-card-subtitle {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 15px !important;
+    color: var(--sophia-text-secondary, #9a6a6a) !important;
+}
+
+/* 3. CORREÇÃO DO GRID DE SENTIMENTOS E MENU PRINCIPAL
+   Força o alinhamento em 2 colunas no mobile e evita que fiquem colados ou gigantes. */
+@media (max-width: 768px) {
+    /* Container dos botões do menu principal e sentimentos */
+    .hero-grid, .feeling-grid-modern, .feelings-grid-container, .quick-actions-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important; /* FORÇA 2 COLUNAS LADO A LADO */
+        gap: 15px !important; /* ESPAÇO OBRIGATÓRIO ENTRE ELES */
+        width: 100% !important;
+        padding: 10px !important;
+        box-sizing: border-box !important;
+    }
+    /* Garante que os botões dentro do grid obedeçam o tamanho da coluna */
+    .hero-grid .btn, .feeling-grid-modern .btn, .feelings-grid-container .btn, 
+    .hero-grid-card, .feeling-btn, .feeling-btn-modern {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    /* Força os cards educativos a serem menores no mobile também */
+    .premium-card, .resource-card, .carousel-card, .conteudo-card-carousel {
+        max-width: 90% !important;
+        padding: 20px !important;
+    }
+}
+
+/* Desktop: Cards educativos centralizados e com tamanho controlado */
+@media (min-width: 769px) {
+    .premium-card, .resource-card, .carousel-card, .conteudo-card-carousel {
+        max-width: 450px !important; /* TRAVA EM 450px NO DESKTOP */
+        margin: 20px auto !important; /* Centraliza */
+    }
+    
+    /* Container do carrossel também deve respeitar o tamanho */
+    .conteudos-carousel, .conteudos-carousel-track {
+        max-width: 100% !important;
+        overflow-x: auto !important;
+    }
+}
+
+/* ========================================
+   MELHORIAS: SEÇÃO DE SENTIMENTOS ACONCHEGANTE
+   ======================================== */
+.feeling-widget-modern {
+    background: rgba(255, 252, 250, 0.6) !important;
+    border-radius: 24px !important;
+    padding: 2rem 1.5rem !important;
+    margin: 2rem auto !important;
+    max-width: 900px !important;
+    box-shadow: 0 8px 24px rgba(244, 166, 166, 0.12) !important;
+    border: 1px solid rgba(244, 166, 166, 0.2) !important;
+}
+
+.feeling-title-modern {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--sophia-pink-dark, #C44569) !important;
+    text-align: center !important;
+    margin-bottom: 0.75rem !important;
+    font-family: 'Nunito', 'Poppins', sans-serif !important;
+    line-height: 1.3 !important;
+}
+
+.feeling-subtitle-modern {
+    font-size: 1rem !important;
+    color: var(--sophia-text-secondary, #9a6a6a) !important;
+    text-align: center !important;
+    margin-bottom: 1.5rem !important;
+    font-family: 'Nunito', 'Poppins', sans-serif !important;
+    font-weight: 500 !important;
+    line-height: 1.5 !important;
+}
+
+.feeling-grid-modern {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 COLUNAS NO DESKTOP */
+    gap: 15px !important;
+    margin: 1.5rem 0 !important;
+    padding: 0 !important;
+}
+
+.feeling-btn-modern {
+    padding: 16px 20px !important;
+    font-size: 0.95rem !important;
+    border-radius: 20px !important;
+    min-height: 56px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.15) !important;
+}
+
+.feeling-btn-modern:hover {
+    transform: translateY(-4px) scale(1.02) !important;
+    box-shadow: 0 8px 20px rgba(244, 166, 166, 0.3) !important;
+}
+
+.feeling-extra-options-modern {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 1.5rem !important;
+    padding-top: 1.5rem !important;
+    border-top: 1px solid rgba(244, 166, 166, 0.15) !important;
+}
+
+.feeling-extra-btn-modern {
+    padding: 14px 20px !important;
+    font-size: 0.9rem !important;
+    border-radius: 18px !important;
+    min-height: 52px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.feeling-extra-btn-modern:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 18px rgba(244, 166, 166, 0.25) !important;
+}
+
+/* Mobile: Ajustes para seção de sentimentos */
+@media (max-width: 768px) {
+    .feeling-widget-modern {
+        padding: 1.5rem 1rem !important;
+        margin: 1.5rem auto !important;
+        border-radius: 20px !important;
+    }
+    
+    .feeling-title-modern {
+        font-size: 1.3rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .feeling-subtitle-modern {
+        font-size: 0.9rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+    
+    .feeling-grid-modern {
+        grid-template-columns: repeat(2, 1fr) !important; /* 2 COLUNAS NO MOBILE */
+        gap: 12px !important;
+    }
+    
+    .feeling-btn-modern {
+        padding: 14px 16px !important;
+        font-size: 0.9rem !important;
+        min-height: 52px !important;
+    }
+    
+    .feeling-extra-btn-modern {
+        padding: 12px 18px !important;
+        font-size: 0.85rem !important;
+        min-height: 48px !important;
+    }
+}
+
+/* Força o container do carrossel a não esticar */
+.conteudos-educativos-section-modern {
+    max-width: 100% !important;
+    padding: 20px !important;
+}
+
+.conteudos-carousel {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 20px !important;
+    padding: 10px !important;
+}
+
+.conteudos-carousel-track {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 COLUNAS LADO A LADO */
+    gap: 20px !important; /* Espaço físico real entre os cards */
+    justify-items: center !important;
+    align-items: start !important; /* Alinha no topo para evitar sobreposição */
+    max-width: 1000px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin-bottom: 20px !important; /* Espaço extra após o carrossel */
+}
+
+/* Mobile: 1 coluna */
+@media (max-width: 768px) {
+    .conteudos-carousel-track {
+        grid-template-columns: 1fr !important; /* 1 COLUNA NO MOBILE */
+        gap: 20px !important; /* Gap maior no mobile para evitar sobreposição */
+        margin-bottom: 20px !important;
+    }
+}
+
+/* ========================================
+   Modal de Perfil (Informações da mãe e do bebê)
+   ======================================== */
+.modal-profile {
+    max-width: 950px !important;
+}
+
+.modal-profile .modal-body {
+    padding: 1.5rem !important;
+    background: var(--sophia-bg-white, #ffffff) !important;
+}
+
+.profile-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+    gap: 16px !important;
+}
+
+.profile-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(244, 166, 166, 0.25) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 28px rgba(244, 166, 166, 0.16) !important;
+    padding: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+
+.profile-card h4 {
+    margin: 0 !important;
+    color: var(--sophia-pink-dark, #C44569) !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+}
+
+.profile-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+}
+
+.profile-label {
+    color: var(--sophia-text-secondary, #8B7A8F) !important;
+    font-weight: 600 !important;
+    font-size: 0.92rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+}
+
+.profile-label input,
+.profile-label select,
+.profile-label textarea {
+    width: 100% !important;
+    padding: 10px 12px !important;
+    border: 1px solid rgba(244, 166, 166, 0.35) !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    font-size: 0.95rem !important;
+    color: var(--sophia-text-primary, #C44569) !important;
+    box-shadow: inset 0 1px 3px rgba(244, 166, 166, 0.08) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.profile-label input:focus,
+.profile-label select:focus,
+.profile-label textarea:focus {
+    outline: none !important;
+    border-color: var(--sophia-pink-primary, #F4A6A6) !important;
+    box-shadow: 0 0 0 3px rgba(244, 166, 166, 0.25) !important;
+}
+
+.profile-label textarea {
+    resize: vertical !important;
+    min-height: 70px !important;
+}
+
+.profile-actions {
+    display: flex !important;
+    gap: 12px !important;
+    justify-content: flex-end !important;
+    margin-top: 16px !important;
+}
+
+.profile-save-btn i,
+.profile-clear-btn i {
+    margin-right: 8px !important;
+}
+
+@media (max-width: 768px) {
+    .modal-profile .modal-body {
+        padding: 1.2rem !important;
+    }
+    .profile-card {
+        border-radius: 18px !important;
+        padding: 16px !important;
+    }
+    .profile-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+}
+
+/* ========================================
+   ALINHAMENTO DO CABEÇALHO COM O GRID
+   ========================================
+   Garante que o header (Lupa, Perfil, Menu) 
+   esteja alinhado com o conteúdo abaixo
+   ======================================== */
+/* ========================================
+   HEADER MODERN - REESTRUTURAÇÃO FLEXBOX RÍGIDA
+   ======================================== */
+.header-modern {
+    background: #ffffff !important;
+    padding: 0.75rem 0 !important;
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.1) !important;
+    position: relative !important;
+    z-index: 1000 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* CRÍTICO: Quando sidebar está aberto, header deve ficar ABAIXO */
+body.sidebar-open .header-modern,
+.sidebar.open ~ .header-modern,
+#sidebar.open ~ .header-modern,
+body:has(.sidebar.open) .header-modern,
+body:has(#sidebar.open) .header-modern {
+    z-index: 1 !important; /* MUITO menor que sidebar - força abaixo */
+    position: relative !important; /* Remove position fixed/sticky */
+}
+
+/* Container principal do header - Flexbox rígido */
+.header-modern-content {
+    display: flex !important;
+    justify-content: space-between !important; /* Separa Esquerda e Direita */
+    align-items: center !important; /* Centraliza tudo verticalmente */
+    width: 100% !important;
+    padding: 10px 15px !important;
+    box-sizing: border-box !important;
+    gap: 0 !important; /* Gap apenas entre os wrappers, não entre elementos internos */
+}
+
+/* Lado Esquerdo: Menu Hambúrguer + Logo */
+.header-modern-content::before {
+    content: '' !important;
+    display: none !important;
+}
+
+/* Lado Esquerdo: Menu Hambúrguer + Logo */
+.header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important; /* Força espaço entre o Menu Hambúrguer e o nome Sophia */
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important; /* CRÍTICO: NÃO usar absolute */
+    left: auto !important;
+    right: auto !important;
+}
+
+.header-logo {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important; /* NÃO pode ser absolute */
+}
+
+.header-logo-text {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: var(--sophia-pink-dark, #C44569) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: 'Nunito', 'Poppins', sans-serif !important;
+    white-space: nowrap !important;
+    position: relative !important; /* NÃO pode ser absolute */
+    left: auto !important;
+    right: auto !important;
+}
+
+/* Lado Direito: Ícones (Lupa, Perfil) */
+.header-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important; /* Espaço entre lupa e perfil */
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important; /* CRÍTICO: NÃO usar absolute */
+    left: auto !important;
+    right: auto !important;
+    margin-left: auto !important; /* Garante que fica à direita */
+}
+
+/* Mantém compatibilidade com .header-icons (caso ainda exista) */
+.header-icons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Menu hambúrguer no lado esquerdo */
+/* Todos os botões de ícone do header - Tamanho fixo para consistência */
+.header-icon-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: rgba(244, 166, 166, 0.1) !important;
+    border: 1px solid rgba(244, 166, 166, 0.2) !important;
+    border-radius: 8px !important;
+    color: var(--sophia-pink-dark, #C44569) !important;
+    font-size: 1.1rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    /* Garantir que sobrescreve estilos inline */
+    line-height: 1 !important;
+}
+
+/* Garantir que o menu-toggle-header herde as propriedades */
+#menu-toggle-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+    /* Garantir que sobrescreve estilos inline */
+    background: rgba(244, 166, 166, 0.1) !important;
+    border: 1px solid rgba(244, 166, 166, 0.2) !important;
+    border-radius: 8px !important;
+    color: var(--sophia-pink-dark, #C44569) !important;
+    font-size: 1.1rem !important;
+}
+
+.header-icon-btn:hover {
+    background: rgba(244, 166, 166, 0.2) !important;
+    transform: scale(1.05) !important;
+}
+
+@media (min-width: 769px) {
+    .header-modern-content {
+        padding: 0 1.5rem !important;
+    }
+    
+    .header-logo-text {
+        font-size: 1.5rem !important;
+    }
+    
+    .header-icon-btn,
+    #menu-toggle-header {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        max-width: 44px !important;
+        max-height: 44px !important;
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .header-modern-content {
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        padding: 0 2rem !important;
+    }
+}
+
+/* Garante que o conteúdo principal também respeite o mesmo alinhamento */
+.welcome-content,
+.hero-grid-section,
+.conteudos-educativos-section-modern {
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+@media (min-width: 1024px) {
+    .welcome-content,
+    .hero-grid-section,
+    .conteudos-educativos-section-modern {
+        max-width: 1200px !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+}
+
+/* ==========================================================================
+   🎨 CORREÇÃO FINAL: BLOCOS QUADRADOS E COLORIDOS CORRETAMENTE
+   ==========================================================================
+   Força blocos do menu a serem QUADRADOS, BRANCOS com ícones ROSAS
+   ou ROSAS com ícones BRANCOS. Remove qualquer cinza.
+   ========================================================================== */
+
+/* 1. BLOCO DO MENU PRINCIPAL (Hero Grid Cards) - QUADRADOS E BRANCOS */
+/* Cards Modernos do Menu Principal - Estilo de Aplicativo */
+.hero-grid-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    background-color: #fff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 15px rgba(196, 69, 105, 0.15) !important;
+    padding: 24px !important;
+    height: 140px !important;
+    width: 100% !important;
+    transition: transform 0.2s !important;
+    cursor: pointer !important;
+    border: none !important;
+    text-align: center !important;
+}
+
+/* Ícones dentro dos cards */
+.hero-grid-card i {
+    font-size: 32px !important;
+    color: #C44569 !important;
+    margin-bottom: 5px !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Texto dentro dos cards */
+.hero-grid-card .hero-card-text,
+.hero-grid-card span {
+    font-weight: 600 !important;
+    color: #555 !important;
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Efeito Hover - Elevação suave */
+.hero-grid-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(196, 69, 105, 0.25) !important;
+}
+
+.hero-grid-card:hover i {
+    color: #C44569 !important;
+    transform: scale(1.05) !important;
+}
+
+.hero-grid-card:hover .hero-card-text,
+.hero-grid-card:hover span {
+    color: #333 !important;
+}
+
+/* 2. BOTÕES DO SIDEBAR - BRANCOS COM ÍCONES ROSAS (SOBRESCREVE REGRA ANTERIOR) */
+.sidebar-btn {
+    background-color: #ffffff; /* FUNDO BRANCO */
+    background: #ffffff; /* FUNDO BRANCO */
+    border: 2px solid #F4A6A6; /* BORDA ROSA CLARO */
+    border-radius: 12px; /* QUADRADO COM CANTOS SUAVES */
+    color: #C44569; /* TEXTO ROSA ESCURO */
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.1);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+    min-height: 48px;
+}
+
+/* Ícones do sidebar - ROSA */
+.sidebar-btn i {
+    color: #F4A6A6; /* ÍCONE ROSA */
+    font-size: 1.1rem;
+}
+
+/* Hover do sidebar: Fica ROSA com ícones BRANCOS */
+.sidebar-btn:hover {
+    background-color: #F4A6A6; /* FUNDO ROSA CLARO */
+    background: #F4A6A6; /* FUNDO ROSA CLARO */
+    border-color: #E8B4B8;
+    color: #ffffff; /* TEXTO BRANCO */
+    transform: translateX(3px);
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.25);
+}
+
+.sidebar-btn:hover i {
+    color: #ffffff; /* ÍCONE BRANCO NO HOVER */
+}
+
+/* 3. BOTÕES DE SENTIMENTO - BRANCOS COM ÍCONES ROSAS */
+.feeling-btn-modern,
+.feeling-btn {
+    background-color: #ffffff !important; /* FUNDO BRANCO */
+    border: 2px solid var(--sophia-pink-light, #F4A6A6) !important; /* BORDA ROSA */
+    border-radius: 12px !important; /* QUADRADO COM CANTOS SUAVES */
+    color: var(--sophia-pink-dark, #C44569) !important; /* TEXTO ROSA ESCURO */
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.1) !important;
+    padding: 12px 20px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    min-height: 48px !important;
+}
+
+/* Hover dos sentimentos: Fica ROSA com texto BRANCO */
+.feeling-btn-modern:hover,
+.feeling-btn:hover {
+    background-color: var(--sophia-pink-light, #F4A6A6) !important; /* FUNDO ROSA */
+    border-color: var(--sophia-pink-medium, #E8B4B8) !important;
+    color: #ffffff !important; /* TEXTO BRANCO */
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(244, 166, 166, 0.25) !important;
+}
+
+/* 4. GRID DO MENU PRINCIPAL - ALINHAMENTO PERFEITO */
+.hero-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 COLUNAS NO DESKTOP */
+    gap: 16px; /* ESPAÇO CONSISTENTE */
+    padding: 20px;
+    align-items: stretch; /* FORÇA TODOS OS BLOCOS A TEREM A MESMA ALTURA */
+    justify-items: stretch;
+}
+
+/* Media query movida para o final do arquivo - consolidada com outras regras mobile */
+
+/* 5. REMOVE QUALQUER COR CINZA DOS BOTÕES - REGRAS ESPECÍFICAS */
+button.hero-grid-card,
+button.sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout),
+button.feeling-btn-modern,
+button.feeling-btn,
+.btn.hero-grid-card,
+.sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout),
+.hero-grid-card,
+.feeling-btn-modern,
+.feeling-btn {
+    background-color: #ffffff;
+    background: #ffffff;
+    /* Remove qualquer gradiente ou cor cinza */
+    background-image: none;
+}
+
+/* Garante que não haja cores cinzas escondidas */
+button.hero-grid-card *,
+button.sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout) *,
+button.feeling-btn-modern *,
+.hero-grid-card *,
+.sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout) * {
+    color: #C44569;
+}
+
+/* ÍCONES ROSAS - Atualizado para novo estilo de cards */
+.hero-grid-card i {
+    color: #C44569 !important;
+    font-size: 32px !important;
+}
+
+/* ==========================================================================
+   REGRA FINAL - GARANTE CORES CORRETAS
+   ========================================================================== */
+.hero-grid button.hero-grid-card,
+button.hero-grid-card,
+.hero-grid .hero-grid-card {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    background-image: none !important;
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 15px rgba(196, 69, 105, 0.15) !important;
+    color: #C44569 !important;
+}
+
+.hero-grid button.hero-grid-card i,
+button.hero-grid-card i {
+    color: #C44569 !important;
+    font-size: 32px !important;
+}
+
+.sidebar .sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout),
+.sidebar-content .sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout) {
+    background-color: #ffffff;
+    background: #ffffff;
+    background-image: none;
+    border: 2px solid #F4A6A6;
+    color: #C44569;
+}
+
+.sidebar .sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout) i,
+.sidebar-content .sidebar-btn:not(.emergency-btn):not(.sidebar-btn-logout) i {
+    color: #F4A6A6;
+}
+
+/* ========================================
+   SISTEMA DE BREAKPOINTS MOBILE-FIRST
+   ========================================
+   PRIORIDADE MÁXIMA: Esta media query está no FINAL do arquivo
+   para sobrescrever todas as regras anteriores.
+   ======================================== */
+
+/* ===== MEDIA QUERY MOBILE - VERSÃO CONSOLIDADA E LIMPA ===== */
+/* PRIORIDADE MÁXIMA: Esta media query está no FINAL do arquivo para sobrescrever todas as regras anteriores */
+/* REFATORAÇÃO MOBILE-FIRST: Todos os elementos se adaptam fluidamente de 320px a 768px */
+@media (max-width: 768px) {
+
+    /* TESTE REMOVIDO - CSS está sendo lido corretamente */
+
+    /* ========================================
+       1. REGRA DE OURO - RESET GLOBAL MOBILE
+       ======================================== */
+    * {
+        box-sizing: border-box !important;
+        max-width: 100vw !important; /* Evita scroll horizontal indesejado */
+    }
+
+    /* Imagens e Ícones - Responsivos */
+    img, svg, .icon, i {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* ========================================
+       2. ESTRUTURA E SCROLL (Prioridade Máxima)
+       ======================================== */
+    html, body {
+        overflow-x: hidden !important;
+        overflow-y: auto !important; /* Habilita o scroll */
+        position: static !important; /* Remove travamentos fixos */
+        height: auto !important;
+        min-height: 100vh;
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+
+    #main-container, .container {
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding: 0 1rem !important; /* Padding proporcional */
+        box-sizing: border-box !important;
+        overflow: visible !important; /* Permite que o conteúdo flua */
+        position: relative !important; /* Remove position fixed */
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+
+    /* ========================================
+       3. Z-INDEX CRÍTICO (Camadas) - CORREÇÃO DO HEADER SOBREPONDO O MENU
+       ======================================== */
+    /* A Sidebar deve ser o elemento mais alto da tela, sem exceção */
+    .sidebar, 
+    .mobile-menu-container, 
+    .sidebar.open,
+    body:has(.sidebar.open) .sidebar,
+    body.sidebar-open .sidebar {
+        z-index: 2147483647 !important; /* Valor máximo permitido pelo navegador */
+        position: fixed !important;
+        /* CORREÇÃO: Permite que o conteúdo interno tenha scroll */
+        overflow: hidden !important; /* Sidebar container não rola */
+        height: 100vh !important;
+        max-height: 100vh !important;
+    }
+    
+    /* CORREÇÃO CRÍTICA: Habilita scroll no conteúdo da sidebar no mobile */
+    .sidebar-content {
+        /* HABILITA SCROLL VERTICAL */
+        overflow-y: auto !important; /* Permite rolar o conteúdo */
+        overflow-x: hidden !important; /* Impede scroll horizontal */
+        /* Altura calculada: 100vh - altura do header (~60px) - altura do input (~100px) para garantir que "Minha Conta" seja visível */
+        height: calc(100vh - 70px) !important;
+        max-height: calc(100vh - 70px) !important;
+        /* Melhora scroll em dispositivos móveis */
+        -webkit-overflow-scrolling: touch !important; /* Scroll suave no iOS */
+        overscroll-behavior: contain !important; /* Impede scroll do body quando sidebar rola */
+        /* Garante que o conteúdo seja scrollável */
+        flex: 1 !important;
+        min-height: 0 !important; /* Permite que o flex funcione corretamente */
+        /* CORREÇÃO CRÍTICA: Padding-bottom EXTRA para garantir que seção "Minha Conta" não fique coberta pelo input */
+        padding: 0 1rem calc(2rem + 100px) 1rem !important; /* Padding-bottom aumentado para acomodar altura do input (~100px) */
+        /* Background branco */
+        background: #ffffff !important;
+        /* CORREÇÃO: Garante que sidebar-content fique acima do input */
+        position: relative !important;
+        z-index: 1 !important; /* Acima do input mas dentro da sidebar (z-index: 2147483647) */
+    }
+    
+    /* CORREÇÃO CRÍTICA: Garante que seções da sidebar fiquem acima do input no mobile */
+    .sidebar-content .sidebar-section {
+        position: relative !important;
+        z-index: 1 !important; /* Acima do input (z-index: 0 ou 1 quando sidebar aberta) */
+    }
+
+    /* O Header deve ficar abaixo da Sidebar - ESPECIALMENTE quando o menu está aberto */
+    .header-modern, 
+    .header-modern-content, 
+    header,
+    .header {
+        z-index: 99 !important; /* Bem menor que a sidebar */
+        position: relative !important; /* Evita que fique 'pregado' por cima de tudo se não for sticky */
+    }
+    
+    /* CORREÇÃO CRÍTICA: Quando sidebar está aberto, header DEVE ficar abaixo */
+    body:has(.sidebar.open) .header-modern,
+    body:has(.sidebar.open) .header-modern-content,
+    body:has(.sidebar.open) header,
+    body:has(.sidebar.open) .header,
+    body.sidebar-open .header-modern,
+    body.sidebar-open .header-modern-content,
+    body.sidebar-open header,
+    body.sidebar-open .header,
+    .sidebar.open ~ .header-modern,
+    .sidebar.open ~ .header-modern-content,
+    .sidebar.open ~ header,
+    .sidebar.open ~ .header {
+        z-index: 50 !important; /* MUITO menor que sidebar (2147483647) */
+        position: relative !important; /* Remove position fixed/sticky quando menu está aberto */
+    }
+    
+    /* CORREÇÃO CRÍTICA: Input do chat DEVE ficar abaixo da sidebar quando ela está aberta */
+    /* REGRA ULTRA ESPECÍFICA com máxima prioridade - sobrescreve TODAS as outras regras */
+    /* PRIORIDADE MÁXIMA: Esta regra deve sobrescrever QUALQUER outra regra de z-index */
+    /* CORRIGE: div.input-area E div.input-container devem ficar ATRÁS da sidebar */
+    body:has(.sidebar.open) .input-area,
+    body.sidebar-open .input-area,
+    body:has(.sidebar.open) body.device-mobile .input-area,
+    body.sidebar-open body.device-mobile .input-area,
+    .sidebar.open ~ .input-area,
+    body:has(#sidebar.open) .input-area,
+    #sidebar.open ~ .input-area,
+    body:has(.sidebar.open) div.input-area,
+    body.sidebar-open div.input-area,
+    .sidebar.open ~ div.input-area,
+    body:has(.sidebar.open) .chat-container .input-area,
+    body.sidebar-open .chat-container .input-area,
+    .sidebar.open ~ .chat-container .input-area,
+    .sidebar.open ~ * .input-area,
+    /* CORREÇÃO: Também corrige div.input-container para ficar atrás da sidebar */
+    body:has(.sidebar.open) .input-container,
+    body.sidebar-open .input-container,
+    body:has(.sidebar.open) div.input-container,
+    body.sidebar-open div.input-container,
+    .sidebar.open ~ .input-container,
+    .sidebar.open ~ div.input-container,
+    body:has(.sidebar.open) .chat-container .input-container,
+    body.sidebar-open .chat-container .input-container,
+    .sidebar.open ~ .chat-container .input-container,
+    /* ESPECIFICIDADE EXTRA: Para garantir que sobrescreva regras body.device-mobile */
+    body.device-mobile body:has(.sidebar.open) .input-area,
+    body.device-mobile body.sidebar-open .input-area,
+    body.device-mobile body:has(.sidebar.open) .input-container,
+    body.device-mobile body.sidebar-open .input-container {
+        z-index: 0 !important; /* Z-index ZERO quando sidebar aberta - FORÇA COMPLETAMENTE atrás da sidebar (2147483647) */
+        /* Garante que NÃO sobreponha NADA da sidebar, incluindo div.sidebar-section "Minha Conta" */
+        /* IMPORTANTE: Z-index 0 é muito menor que sidebar (2147483647) e garante que fique ATRÁS de todas as seções */
+    }
+    
+    /* Se o Header for sticky/fixed, garanta que ele não cubra o menu */
+    .header-modern.sticky, 
+    .header-modern[style*="position: sticky"], 
+    .header-modern[style*="position: fixed"],
+    header[style*="position: sticky"],
+    header[style*="position: fixed"] {
+        z-index: 99 !important;
+    }
+    
+    /* CORREÇÃO EXTRA: Header sticky/fixed quando sidebar aberto */
+    body:has(.sidebar.open) .header-modern.sticky,
+    body:has(.sidebar.open) .header-modern[style*="position: sticky"],
+    body:has(.sidebar.open) .header-modern[style*="position: fixed"],
+    body.sidebar-open .header-modern.sticky,
+    body.sidebar-open .header-modern[style*="position: sticky"],
+    body.sidebar-open .header-modern[style*="position: fixed"] {
+        z-index: 50 !important; /* Força z-index baixo quando menu está aberto */
+    }
+
+    /* ========================================
+       4. TIPOGRAFIA FLUIDA (Clamp) - FIM DOS TEXTOS GIGANTES
+       ======================================== */
+    /* Títulos */
+    h1, .welcome-hero-title, #main-container h1, body #main-container h1 {
+        font-size: clamp(20px, 5vw, 28px) !important;
+        line-height: 1.3 !important;
+        margin-top: 1.5rem !important; /* Espaço superior para baixar o texto dentro do container no mobile */
+    }
+    
+    /* Regra específica para .welcome-hero-title no mobile */
+    .welcome-content .welcome-hero-title,
+    .welcome-hero-card .welcome-hero-title {
+        margin-top: 1.5rem !important; /* Espaço superior para baixar o texto dentro do container no mobile */
+    }
+    
+    h2, .welcome-hero-subtitle, #main-container h2, body #main-container h2 {
+        font-size: clamp(18px, 4vw, 24px) !important;
+        line-height: 1.4 !important;
+    }
+
+    h3, .welcome-hero-subtitle h3, #main-container h3 {
+        font-size: clamp(16px, 3.5vw, 20px) !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Texto geral */
+    p, span, li, a, .welcome-content p, #main-container p, body #main-container p {
+        font-size: clamp(14px, 4vw, 16px) !important;
+        line-height: 1.5 !important;
+    }
+
+    /* Menu items */
+    .menu-item, .sidebar-btn, .sidebar-content a {
+        font-size: clamp(14px, 3.5vw, 16px) !important;
+        line-height: 1.5 !important;
+    }
+    
+    /* Botões - Tipografia fluida */
+    .btn, button, .btn-sophia, .hero-grid-card span, .hero-grid-card .hero-card-text {
+        font-size: clamp(12px, 3vw, 14px) !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Cards - Padding proporcional */
+    .card, .welcome-hero-card, .welcome-content {
+        padding: clamp(12px, 3vw, 20px) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ========================================
+       5. CONTÊINERES E SEÇÕES - 100% RESPONSIVOS
+       ======================================== */
+    /* Container Principal */
+    .container, #main-container, .chat-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 1rem !important; /* Respiro lateral proporcional */
+    }
+
+    /* Cards e Boxes - Nunca tamanho fixo */
+    .card, .box, .welcome-hero-card, .hospital-card, .location-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important; /* Permite que encolha */
+    }
+
+    /* ========================================
+       6. TOGGLEBAR / MENU LATERAL (Sidebar)
+       ======================================== */
+    .sidebar, .mobile-menu-container {
+        max-width: 85vw !important; /* 85% da tela */
+        width: 85vw !important;
+    }
+
+    /* Botões internos da sidebar */
+    .sidebar-btn, .sidebar-content button, .sidebar-content a {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: clamp(14px, 3.5vw, 16px) !important;
+        padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 18px) !important;
+        white-space: normal !important; /* Permite quebra de linha */
+        word-wrap: break-word !important;
+    }
+
+    /* ========================================
+       7. SEÇÃO DE EMERGÊNCIA
+       ======================================== */
+    .emergency-section, .emergency-buttons, .cvv-disclaimer-footer {
+        display: flex !important;
+        flex-direction: column !important; /* Empilha em telas pequenas */
+        gap: clamp(8px, 2vw, 12px) !important;
+        width: 100% !important;
+    }
+
+    /* Botões de emergência */
+    .emergency-btn, .btn-emergency, .emergency-section button, .emergency-section a {
+        width: 100% !important;
+        min-height: 44px !important; /* Tamanho de toque amigável */
+        padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 18px) !important;
+        font-size: clamp(14px, 3.5vw, 16px) !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+    }
+
+    /* ========================================
+       8. LOCALIZADOR E MAPAS
+       ======================================== */
+    /* Cards de endereço */
+    .hospital-card, .location-card, .address-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: clamp(12px, 3vw, 16px) !important;
+        margin-bottom: clamp(12px, 3vw, 16px) !important;
+    }
+
+    /* Informações do hospital/localização */
+    .hospital-info, .location-info, .address-info {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Botões de ação (Ver Rota, Ligar) */
+    .hospital-actions, .location-actions {
+        display: flex !important;
+        flex-wrap: wrap !important; /* Permite empilhar se faltar espaço */
+        gap: clamp(8px, 2vw, 12px) !important;
+        width: 100% !important;
+    }
+
+    .hospital-route-btn, .hospital-map-btn, .hospital-call-btn,
+    .location-route-btn, .location-call-btn {
+        min-height: 44px !important; /* Tamanho de toque amigável */
+        padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 18px) !important;
+        font-size: clamp(12px, 3vw, 14px) !important;
+        flex: 1 1 auto !important; /* Permite que estiquem ou encolham */
+        min-width: calc(50% - 6px) !important; /* Lado a lado se houver espaço */
+        white-space: normal !important;
+        word-wrap: break-word !important;
+    }
+    
+    /* Em telas muito pequenas (< 375px), empilha completamente - Aplicado diretamente */
+    /* NOTA: Media query aninhada removida - regras aplicadas condicionalmente */
+    /* Se a tela for menor que 375px, flex-wrap já força a quebra */
+
+    /* ========================================
+       9. BOTÕES GERAIS - PADDING PROPORCIONAL
+       ======================================== */
+    .btn, button, .btn-sophia, .hero-grid-card {
+        padding: clamp(0.6em, 2vw, 0.8em) clamp(1em, 3vw, 1.5em) !important; /* Padding proporcional */
+        min-height: 44px !important; /* Tamanho de toque amigável */
+        font-size: clamp(12px, 3vw, 14px) !important;
+        white-space: normal !important; /* Permite quebra de linha */
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* ========================================
+       9.1. BOTÃO SOPHIA (#start-chat-btn) - CÓDIGO CONSOLIDADO FINAL
+       ======================================== */
+    /* --- 1. O CONTAINER PAI (Desbloqueia a largura) --- */
+    div.start-chat-container,
+    .start-chat-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* --- 2. O BOTÃO (Estrutura e Posição) - FORÇA MÁXIMA COM !important --- */
+    /* ESPECIFICIDADE MÁXIMA: body + media query + múltiplos seletores + !important */
+    body button#start-chat-btn.btn.btn-start-chat,
+    body #start-chat-btn,
+    body .btn-start-chat,
+    button#start-chat-btn.btn.btn-start-chat,
+    #start-chat-btn,
+    .btn-start-chat {
+        /* CORREÇÃO DE CONTRASTE: Fundo branco */
+        background-color: #ffffff !important; /* Fundo Branco */
+        
+        /* Centralização no elemento pai (botão rosa) */
+        display: flex !important;
+        justify-content: center !important; /* Centraliza horizontalmente */
+        align-items: center !important;     /* Centraliza verticalmente */
+        
+        /* Tamanho (defina no botão, não no texto) */
+        height: 50px !important;
+        width: 100% !important;
+        max-width: 260px !important; /* Largura segura para mobile */
+        
+        /* Posição */
+        margin: 20px auto 30px auto !important; /* Centraliza horizontalmente */
+        
+        /* Reset de espaçamento */
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        font-size: clamp(12px, 3vw, 14px) !important;
+        
+        /* Override qualquer regra anterior que possa estar interferindo */
+        min-width: 0 !important;
+        white-space: normal !important;
+        text-align: center !important;
+    }
+    
+    /* Remove elementos fantasmas que podem interferir */
+    button#start-chat-btn::before, 
+    button#start-chat-btn::after,
+    #start-chat-btn::before,
+    #start-chat-btn::after,
+    .btn-start-chat::before,
+    .btn-start-chat::after {
+        content: none !important;
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* --- 3. O TEXTO (Centralizado Perfeitamente) - ÍCONE REMOVIDO --- */
+    /* ESPECIFICIDADE MÁXIMA: body + media query + múltiplos seletores + !important */
+    body button#start-chat-btn.btn.btn-start-chat span,
+    body #start-chat-btn span,
+    body button#start-chat-btn span,
+    body .btn-start-chat span,
+    #start-chat-btn span,
+    button#start-chat-btn span,
+    .btn-start-chat span {
+        /* CORREÇÃO DE ALINHAMENTO: Centralização perfeita do texto */
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        
+        /* Remove TODAS as margens e paddings que deslocam o conteúdo */
+        margin: 0 !important;
+        padding: 0 !important;
+        
+        /* Propriedades para centralização */
+        flex: 0 0 auto !important;
+        position: static !important;
+        
+        /* Zera interferências */
+        line-height: 1.4 !important;
+        white-space: nowrap !important;
+        color: white !important;
+    }
+    
+    /* CORREÇÃO CRÍTICA: Força cor branca em TODOS os elementos filhos do span também */
+    body #start-chat-btn span *,
+    body button#start-chat-btn span *,
+    #start-chat-btn span *,
+    button#start-chat-btn span * {
+        color: white !important;
+        text-align: center !important;
+    }
+    
+    /* Mostra o ícone e centraliza */
+    #start-chat-btn i,
+    #start-chat-btn svg,
+    button#start-chat-btn i,
+    button#start-chat-btn svg {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: white !important;
+    }
+    
+    /* ========================================
+       9.3. CONTAINER PAI DO CARTÃO (Card/Content)
+       ======================================== */
+    /* Cartão branco onde está o botão - Cria "chão" extra para evitar corte e cobrir área verde */
+    .welcome-content,
+    .welcome-hero-card,
+    .welcome-message .welcome-content,
+    .welcome-message {
+        /* CORREÇÃO: Aumenta padding-bottom para ocupar mais espaço vertical e cobrir área verde vazia */
+        padding-bottom: 120px !important; /* Aumentado de 50px para 120px */
+        
+        /* Garante altura mínima para ocupar mais espaço vertical */
+        min-height: calc(100vh - 200px) !important; /* Ocupa mais espaço vertical */
+        
+        /* Garante que se sobrar conteúdo, cria barra de rolagem */
+        overflow-y: auto !important;
+        
+        /* Se o layout for Flexbox, isso impede que o botão estique infinitamente */
+        align-items: center !important;
+        
+        box-sizing: border-box !important;
+    }
+    
+    /* Se o container já for flexbox, garante o alinhamento */
+    .welcome-content[style*="display: flex"],
+    .welcome-hero-card[style*="display: flex"],
+    .welcome-content:has(#start-chat-btn) {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    /* ========================================
+       10. SIMETRIA DOS BOTÕES DO GRID
+       ======================================== */
+    /* Grid do menu principal - 2 colunas no mobile */
+    .hero-grid {
+        display: grid !important; /* FORÇA GRID */
+        grid-template-columns: repeat(2, 1fr) !important; /* 2 COLUNAS NO MOBILE */
+        gap: clamp(8px, 2vw, 12px) !important;
+        padding: clamp(10px, 2.5vw, 15px) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        /* CORREÇÃO CRÍTICA: Força todos os itens do grid a terem a mesma altura */
+        align-items: stretch !important; /* ESTICA TODOS OS BOTÕES PARA MESMA ALTURA */
+        justify-items: stretch !important; /* ESTICA LARGURA TAMBÉM */
+    }
+    
+    /* Garante que todos os botões do grid tenham a mesma altura - TAMANHO FIXO IGUAL */
+    /* REGRA ULTRA ESPECÍFICA para sobrescrever qualquer regra desktop */
+    .hero-grid .hero-grid-card,
+    button.hero-grid-card,
+    #btn-guias,
+    #btn-gestacao,
+    #btn-posparto,
+    #btn-vacinas {
+        /* CORREÇÃO: Altura fixa igual para TODOS os botões (incluindo "Guias Práticos" com 2 linhas) */
+        height: 85px !important; /* Altura fixa que acomoda 2 linhas de texto */
+        min-height: 85px !important; /* Força altura mínima igual */
+        max-height: 85px !important; /* Força altura máxima igual - TODOS IGUAIS */
+        min-width: 0 !important; /* Permite encolher */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        text-align: center !important;
+        padding: 10px 8px !important; /* Padding reduzido para acomodar conteúdo melhor */
+        box-sizing: border-box !important;
+        /* CRÍTICO: Remove qualquer altura fixa anterior que possa interferir */
+        line-height: 1.2 !important; /* Reduz espaço entre linhas */
+        overflow: hidden !important; /* Evita que conteúdo extra saia do botão */
+    }
+    
+    .hero-grid-card i {
+        font-size: clamp(24px, 6vw, 32px) !important; /* Ícone fluido */
+        color: #C44569 !important;
+    }
+    
+    .hero-grid-card .hero-card-text,
+    .hero-grid-card span {
+        font-size: clamp(11px, 2.5vw, 14px) !important; /* Texto fluido */
+        color: #555 !important;
+        line-height: 1.2 !important; /* Reduzido para acomodar 2 linhas melhor */
+        margin: 0 !important;
+        padding: 0 !important;
+        text-align: center !important;
+        /* Permite quebra de linha mas mantém compacto */
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+}
+
+/* TESTE MOBILE CARREGADO - Se você ver este comentário, o CSS mobile está sendo lido */
+
+/* TESTE FINAL DO ARQUIVO - Se este comentário aparecer no DevTools, o arquivo está sendo lido completamente */
+
+/* TESTE DE SINTAXE - Se houver erro antes desta linha, o navegador não lerá nada abaixo */
+
+/* ========================================
+   MEDIA QUERY PARA TELAS MUITO PEQUENAS (< 375px)
+   ======================================== */
+/* REGRA SEPARADA: Media query não pode ser aninhada dentro de outra */
+@media (max-width: 375px) {
+    /* Em telas muito pequenas, empilha botões de ação completamente */
+    .hospital-actions, .location-actions {
+        flex-direction: column !important;
+    }
+
+    .hospital-route-btn, .hospital-map-btn, .hospital-call-btn,
+    .location-route-btn, .location-call-btn {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+/* ========================================
+   CORREÇÃO FINAL CRÍTICA: Z-INDEX INPUT ATRÁS DA SIDEBAR
+   Máxima especificidade - REGRA FINAL DO ARQUIVO
+   Garante que input-area e input-container SEMPRE fiquem
+   ATRÁS da sidebar quando ela está aberta
+   ======================================== */
+/* PRIORIDADE ABSOLUTA: Esta regra está no FINAL do arquivo para sobrescrever TODAS as outras */
+/* CORRIGE position: fixed + z-index para garantir que fique atrás da sidebar */
+body:has(.sidebar.open) div.input-area[data-form-type="chat"],
+body.sidebar-open div.input-area[data-form-type="chat"],
+body:has(.sidebar.open) div.input-area,
+body.sidebar-open div.input-area,
+body:has(.sidebar.open) div.input-container,
+body.sidebar-open div.input-container,
+body:has(#sidebar.open) div.input-area,
+body:has(#sidebar.open) div.input-container,
+#sidebar.open ~ div.input-area,
+#sidebar.open ~ div.input-container,
+body.device-mobile:has(.sidebar.open) div.input-area,
+body.device-mobile.sidebar-open div.input-area,
+body.device-mobile:has(.sidebar.open) div.input-container,
+body.device-mobile.sidebar-open div.input-container,
+body:has(.sidebar.open) .chat-container div.input-area,
+body.sidebar-open .chat-container div.input-area,
+body:has(.sidebar.open) .chat-container div.input-container,
+body.sidebar-open .chat-container div.input-container,
+/* ESPECIFICIDADE MÁXIMA: Mesmo com position: fixed, z-index deve ser respeitado */
+body:has(.sidebar.open) div.input-area[data-form-type="chat"][style*="position: fixed"],
+body.sidebar-open div.input-area[data-form-type="chat"][style*="position: fixed"] {
+    z-index: 0 !important; /* Z-index ZERO - FORÇA atrás da sidebar (2147483647) */
+    /* IMPORTANTE: Mantém position: fixed para não quebrar layout, mas z-index menor */
+}
+
+/* CORREÇÃO EXTRA: Garante que sidebar-content e sidebar-section SEMPRE fiquem acima do input */
+.sidebar.open .sidebar-content,
+.sidebar.open .sidebar-content .sidebar-section,
+#sidebar.open .sidebar-content,
+#sidebar.open .sidebar-content .sidebar-section,
+body:has(.sidebar.open) .sidebar-content,
+body:has(.sidebar.open) .sidebar-content .sidebar-section,
+body.sidebar-open .sidebar-content,
+body.sidebar-open .sidebar-content .sidebar-section,
+.sidebar.open .sidebar-content .sidebar-section h4,
+body:has(.sidebar.open) .sidebar-content .sidebar-section h4 {
+    position: relative !important;
+    z-index: 2147483646 !important; /* Quase o máximo, mas dentro da sidebar (2147483647) */
 }

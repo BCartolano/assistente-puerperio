@@ -35,21 +35,24 @@ class MobileNavigation {
         this.sections.vacinas.element = document.getElementById('vaccination-timeline-container') || document.querySelector('#vaccination-timeline');
         this.sections.dicas.element = document.getElementById('mobile-dicas-container');
         
-        // Bind eventos dos botões de navegação
+        // Bind eventos dos botões de navegação (se existirem)
         const navItems = document.querySelectorAll('.bottom-nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                const section = e.currentTarget.dataset.section;
-                this.switchSection(section);
+        if (navItems.length > 0) {
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const section = e.currentTarget.dataset.section;
+                    this.switchSection(section);
+                });
             });
-        });
+        }
         
         // Inicializa seção atual
         this.switchSection('chat');
         
         // Listener para resize (caso usuário rotacione tela)
         window.addEventListener('resize', () => {
-            if (window.innerWidth <= 1023 && !document.querySelector('.bottom-nav').style.display) {
+            const bottomNav = document.querySelector('.bottom-nav');
+            if (window.innerWidth <= 1023 && bottomNav && !bottomNav.style.display) {
                 // Força re-inicialização se voltar para mobile
                 this.switchSection(this.currentSection);
             }
@@ -159,13 +162,15 @@ class MobileNavigation {
     
     updateNavButtons(activeSection) {
         const navItems = document.querySelectorAll('.bottom-nav-item');
-        navItems.forEach(item => {
-            if (item.dataset.section === activeSection) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
+        if (navItems.length > 0) {
+            navItems.forEach(item => {
+                if (item.dataset.section === activeSection) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
     }
     
     initChatSection() {

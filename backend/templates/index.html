@@ -12,8 +12,8 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="format-detection" content="address=no">
     <meta name="format-detection" content="email=no">
-    <meta name="description" content="Espaço acolhedor para o puerpério — apoio, acolhimento e conversas humanizadas com Sophia.">
-    <title>Sophia - Sua Amiga do Puerpério 🤱</title>
+    <meta name="description" content="Sophia - Sua Companheira no Puerpério. Espaço acolhedor para o puerpério — apoio, acolhimento e conversas humanizadas com inteligência artificial empática.">
+    <title>Sophia - Sua Companheira no Puerpério 🤱</title>
     
     <!-- Resource Hints Otimizados -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,6 +21,9 @@
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Google Fonts - Playfair Display (Tipografia Serifada) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- Configuração de fallbacks (gerado pelo Jinja2, não é JavaScript) -->
     {% if has_minified and timestamp %}
@@ -51,6 +54,7 @@
     
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <!-- Favicon.ico será servido pela rota /favicon.ico (sem /static/) para evitar 404 -->
     
     <!-- CSS crítico inline para renderização imediata -->
     <style>
@@ -60,7 +64,7 @@
             background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             margin:0;
             padding:0;
-            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+            font-family:'Playfair Display', 'Nunito', -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
             height:100vh;
             overflow:hidden;
             color:#6b4a3f
@@ -87,13 +91,56 @@
             overflow:hidden;
             position:relative
         }
-        .header{
-            position:relative;
-            background:rgba(255,255,255,0.95);
-            backdrop-filter:blur(10px);
+        .header-modern{
+            position:sticky;
+            top:0;
+            background:rgba(255,255,255,0.98);
+            backdrop-filter:blur(20px);
+            -webkit-backdrop-filter:blur(20px);
             padding:1rem 1.5rem;
-            border-bottom:1px solid rgba(244,166,166,0.2);
-            z-index:1000
+            border-bottom:1px solid rgba(244,166,166,0.15);
+            z-index:1000;
+            box-shadow:0 2px 8px rgba(244,166,166,0.08)
+        }
+        .header-modern-content{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            max-width:100%;
+            margin:0 auto;
+            padding:0 1.5rem;
+        }
+        .header-logo-text{
+            font-family:'Playfair Display',serif;
+            font-size:1.5rem;
+            font-weight:700;
+            color:#C44569;
+            margin:0;
+            letter-spacing:-0.02em
+        }
+        .header-icons{
+            display:flex;
+            gap:1rem;
+            align-items:center
+        }
+        .header-icon-btn{
+            background:transparent;
+            border:none;
+            color:#6B5B73;
+            font-size:1.2rem;
+            cursor:pointer;
+            padding:0.5rem;
+            border-radius:50%;
+            transition:all 0.2s ease;
+            width:40px;
+            height:40px;
+            display:flex;
+            align-items:center;
+            justify-content:center
+        }
+        .header-icon-btn:hover{
+            background:rgba(244,166,166,0.1);
+            color:#C44569
         }
         .container{
             width:100%;
@@ -173,17 +220,18 @@
         }
     </style>
     
-    <!-- Fontes (OTIMIZADO: Apenas Poppins, pesos 400 e 600, display=swap) -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"></noscript>
+    <!-- Fontes Sofisticadas: Playfair Display (Serifada) + Montserrat (Sans-Serif) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
     <style>
         /* Fallback para fontes do sistema enquanto carrega */
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     </style>
     
     <!-- Font Awesome (carregamento otimizado - lazy load após load da página) -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"></noscript>
     <script>
         // Função auxiliar para login (evita problemas com caracteres especiais no onclick)
         function handleLoginClick() {
@@ -304,10 +352,10 @@
             <div class="login-header">
                 <i class="fas fa-heart"></i>
                 <h1>Sophia 💕</h1>
-                <span class="login-subtitle">Sua Amiga do Puerpério</span>
+                <span class="login-subtitle">Sua Companheira no Puerpério</span>
             </div>
             <div class="login-content">
-                <h2>Bem-vinda ao Sophia! 👋</h2>
+                <h2>Bem-vinda à Sophia - Sua Companheira no Puerpério! 👋</h2>
                 <p style="color: #8b5a5a; margin-bottom: 2rem;">Faça login ou crie sua conta para começar</p>
                 
                 <div class="login-tabs">
@@ -394,27 +442,26 @@
     </div>
     
     <div class="container" id="main-container" style="display: none;">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <button class="btn btn-icon" id="menu-toggle-header" aria-label="Abrir menu">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="logo">
-                    <i class="fas fa-heart"></i>
-                    <h1>Sophia 💕</h1>
-                    <span class="subtitle">Sua Amiga do Puerpério</span>
+        <!-- Header Moderno - Redesign -->
+        <header class="header-modern">
+            <div class="header-modern-content">
+                <!-- Lado Esquerdo: Menu Hambúrguer + Logo -->
+                <div class="header-left">
+                    <button class="header-icon-btn" id="menu-toggle-header" aria-label="Abrir menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="header-logo">
+                        <h1 class="header-logo-text">Sophia</h1>
+                    </div>
                 </div>
+                <!-- Lado Direito: Ícones (Lupa, Perfil) -->
                 <div class="header-right">
-                    <div class="welcome-message" id="welcome-user">
-                        <span id="user-greeting">Olá, Usuário 👋</span>
-                    </div>
-                    <div class="status-indicator">
-                        <span id="status-indicator" class="status-online">
-                            <i class="fas fa-circle"></i>
-                            Online
-                        </span>
-                    </div>
+                    <button class="header-icon-btn" id="header-search-btn" aria-label="Buscar">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="header-icon-btn" id="header-profile-btn" aria-label="Perfil">
+                        <i class="fas fa-user"></i>
+                    </button>
                 </div>
             </div>
         </header>
@@ -448,6 +495,20 @@
                             <i class="fas fa-syringe"></i>
                             Vacinação
                         </button>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h4>💝 Apoio e Saúde</h4>
+                        <button class="sidebar-btn" id="sidebar-btn-sintomas">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Sinais de Alerta
+                        </button>
+                        <div class="sidebar-contact-emergency">
+                            <button class="emergency-btn" id="btn-emergency-numbers">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>Números de Emergência</span>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="sidebar-section">
@@ -505,24 +566,6 @@
                             <div class="decoration-shape shape-1"></div>
                             <div class="decoration-shape shape-2"></div>
                         </div>
-                        
-                        <!-- Card Dica do Dia -->
-                        <div class="sidebar-card tip-card" id="tip-of-the-day-card">
-                            <div class="card-icon">💡</div>
-                            <h3>Dica do Dia</h3>
-                            <div class="tip-content" id="tip-content">
-                                <p class="tip-text" id="tip-text">Carregando dica...</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Widget Afirmação Positiva -->
-                        <div class="sidebar-card affirmation-card" id="affirmation-card">
-                            <div class="card-icon">✨</div>
-                            <h3>Afirmação Positiva</h3>
-                            <div class="affirmation-content" id="affirmation-content">
-                                <p class="affirmation-text" id="affirmation-text">Carregando afirmação...</p>
-                            </div>
-                        </div>
 
                         <!-- Widget Próxima Vacina -->
                         <div id="next-vaccine-widget">
@@ -542,13 +585,13 @@
                         
                         <div class="welcome-content">
                         <div class="welcome-icon-wrapper">
-                            <i class="fas fa-baby"></i>
+                            <i class="fas fa-heart welcome-hero-icon"></i>
                             <div class="icon-glow"></div>
                         </div>
-                        <h2>Bem-vinda ao seu espaço de apoio! 💛</h2>
-                        <p class="welcome-micro-phrase">Aqui cuidamos de você, enquanto você cuida do seu bebê.</p>
+                        <h2 class="welcome-hero-title">Sophia - Sua Companheira no Puerpério 💛</h2>
+                        <p class="welcome-hero-subtitle">Aqui cuidamos de você, enquanto você cuida do seu bebê.</p>
                         <p class="inclusion-phrase">Cada jornada é única — e todas merecem acolhimento. 🌼</p>
-                        <p>Estou aqui para te acompanhar durante essa fase especial do puerpério. Como posso te ajudar hoje? 🤱</p>
+                        <p class="welcome-hero-description">Olá! Sou a Sophia, sua companheira no puerpério. Estou aqui para te acompanhar durante essa fase especial. Como posso te ajudar hoje? 🤱</p>
                         
                         <!-- Botão Principal: Conversar com a Sophia -->
                         <div class="start-chat-container">
@@ -558,35 +601,84 @@
                             </button>
                         </div>
                         
-                        <div class="feature-sections">
-                            <h2>Recursos Disponíveis 💫</h2>
-                            <div class="feature-carousel-container">
-                                <button class="carousel-btn carousel-prev" id="feature-carousel-prev" aria-label="Anterior">
-                                    <i class="fas fa-chevron-left"></i>
+                        <!-- Hero Grid - Menu Principal (2x2 Mobile / 4x1 Desktop) -->
+                        <div class="hero-grid-section">
+                            <div class="hero-grid">
+                                <button class="hero-grid-card" id="btn-guias">
+                                    <i class="fa-solid fa-book-open-reader"></i>
+                                    <span class="hero-card-text">Guias Práticos</span>
                                 </button>
-                                <div class="feature-carousel">
-                                    <div class="feature-carousel-track" id="feature-carousel-track">
-                                        <button class="feature-btn" id="btn-guias">
-                                            <i class="fas fa-book-medical"></i>
-                                            <span>Guias Práticos</span>
-                                        </button>
-                                        <button class="feature-btn" id="btn-gestacao">
-                                            <i class="fas fa-heart"></i>
-                                            <span>Gestação</span>
-                                        </button>
-                                        <button class="feature-btn" id="btn-posparto">
-                                            <i class="fas fa-baby"></i>
-                                            <span>Pós-Parto</span>
-                                        </button>
-                                        <button class="feature-btn" id="btn-vacinas">
-                                            <i class="fas fa-syringe"></i>
-                                            <span>Vacinação</span>
-                                        </button>
+                                <button class="hero-grid-card" id="btn-gestacao">
+                                    <i class="fa-solid fa-person-pregnant"></i>
+                                    <span class="hero-card-text">Gestação</span>
+                                </button>
+                                <button class="hero-grid-card" id="btn-posparto">
+                                    <i class="fa-solid fa-baby-carriage"></i>
+                                    <span class="hero-card-text">Pós-Parto</span>
+                                </button>
+                                <button class="hero-grid-card" id="btn-vacinas">
+                                    <i class="fa-solid fa-syringe"></i>
+                                    <span class="hero-card-text">Vacinação</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Seção "Como está seu coração hoje?" - Grid Moderno -->
+                        <div class="feeling-widget-modern" id="feeling-widget">
+                            <h2 class="feeling-title-modern">Como você está se sentindo hoje?</h2>
+                            <p class="feeling-subtitle-modern">Escolha a palavra que melhor te acolhe agora.</p>
+                            <div class="feeling-grid-modern">
+                                <button class="feeling-btn-modern" data-feeling="cansada" aria-label="Estou exausta">Exausta</button>
+                                <button class="feeling-btn-modern" data-feeling="feliz" aria-label="Estou em paz">Em paz</button>
+                                <button class="feeling-btn-modern" data-feeling="ansiosa" aria-label="Estou sobrecarregada">Sobrecarregada</button>
+                                <button class="feeling-btn-modern" data-feeling="confusa" aria-label="Estou confusa">Confusa</button>
+                                <button class="feeling-btn-modern" data-feeling="triste" aria-label="Estou para baixo">Para baixo</button>
+                                <button class="feeling-btn-modern" data-feeling="gratidao" aria-label="Estou grata">Grata</button>
+                            </div>
+                            <div class="feeling-extra-options-modern">
+                                <button class="feeling-extra-btn-modern" id="feeling-write-own">Quero escrever com minhas próprias palavras</button>
+                                <button class="feeling-extra-btn-modern" id="feeling-skip">Prefiro não responder agora</button>
+                            </div>
+                            <div class="feeling-feedback" id="feeling-feedback" style="display: none;">
+                                <span class="feeling-feedback-icon">💗</span>
+                                <span class="feeling-feedback-text">Obrigada por compartilhar</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Carrossel de Conteúdos Educativos (Horizontal Scroll Snap) -->
+                        <div class="conteudos-educativos-section-modern">
+                            <h2 class="conteudos-title-modern">📚 Conteúdos Educativos</h2>
+                            <div class="conteudos-carousel">
+                                <div class="conteudos-carousel-track">
+                                    <!-- Saúde Preventiva: Câncer de Mama -->
+                                    <div class="conteudo-card-carousel" id="card-cancer-mama-welcome">
+                                        <div class="conteudo-card-image">
+                                            <img src="{{ url_for('static', filename='images/cancer-mama.svg') }}" alt="Prevenção do Câncer de Mama" loading="lazy">
+                                        </div>
+                                        <div class="conteudo-card-content">
+                                            <h3 class="conteudo-card-title">Saúde Preventiva</h3>
+                                            <p class="conteudo-card-subtitle">Câncer de Mama</p>
+                                            <button class="conteudo-card-btn" onclick="event.stopPropagation(); window.open('https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/c/cancer-de-mama', '_blank', 'noopener,noreferrer');" aria-label="Acessar informações sobre câncer de mama no Ministério da Saúde">
+                                                <i class="fas fa-external-link-alt"></i>
+                                                Ministério da Saúde
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Rede de Apoio: Doação de Leite -->
+                                    <div class="conteudo-card-carousel" id="card-doacao-leite-welcome">
+                                        <div class="conteudo-card-image">
+                                            <img src="{{ url_for('static', filename='images/doacao-leite.svg') }}" alt="Doação de Leite Materno" loading="lazy">
+                                        </div>
+                                        <div class="conteudo-card-content">
+                                            <h3 class="conteudo-card-title">Rede de Apoio</h3>
+                                            <p class="conteudo-card-subtitle">Doação de Leite</p>
+                                            <button class="conteudo-card-btn" onclick="event.stopPropagation(); window.open('https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/d/doacao-de-leite', '_blank', 'noopener,noreferrer');" aria-label="Acessar informações sobre doação de leite no Ministério da Saúde">
+                                                <i class="fas fa-external-link-alt"></i>
+                                                Ministério da Saúde
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <button class="carousel-btn carousel-next" id="feature-carousel-next" aria-label="Próximo">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
                             </div>
                             <div class="carousel-dots" id="feature-carousel-dots">
                                 <!-- Dots serão criados dinamicamente pelo JavaScript -->
@@ -647,13 +739,24 @@
                             </div>
                         </div>
                         
-                        <!-- Páginas de Apoio Rápido -->
-                        <div class="support-links">
-                            <h2>📖 Apoio Rápido</h2>
-                            <div class="support-links-grid">
-                                <a href="#" class="support-link" data-topic="baby-blues-depressao">Quando o baby blues vira depressão pós-parto?</a>
-                                <a href="#" class="support-link" data-topic="pedir-ajuda">Como pedir ajuda sem culpa?</a>
-                                <a href="#" class="support-link" data-topic="redes-apoio">Redes de apoio próximas de mim</a>
+                        <!-- Cards de Apoio (Dica do Dia e Afirmação Positiva) -->
+                        <div class="welcome-cards-container">
+                            <!-- Card Dica do Dia -->
+                            <div class="sidebar-card tip-card" id="tip-of-the-day-card">
+                                <div class="card-icon">💡</div>
+                                <h3>Dica do Dia</h3>
+                                <div class="tip-content" id="tip-content">
+                                    <p class="tip-text" id="tip-text">Carregando dica...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Widget Afirmação Positiva -->
+                            <div class="sidebar-card affirmation-card" id="affirmation-card">
+                                <div class="card-icon">✨</div>
+                                <h3>Afirmação Positiva</h3>
+                                <div class="affirmation-content" id="affirmation-content">
+                                    <p class="affirmation-text" id="affirmation-text">Carregando afirmação...</p>
+                                </div>
                             </div>
                         </div>
                         
@@ -689,15 +792,6 @@
                             <div class="floating-icon icon-6" aria-hidden="true">💫</div>
                             <div class="decoration-shape shape-3"></div>
                             <div class="decoration-shape shape-4"></div>
-                        </div>
-                        
-                        <!-- Vídeos Recomendados -->
-                        <div class="sidebar-card videos-card">
-                            <div class="card-icon">📹</div>
-                            <h3>Vídeos Recomendados</h3>
-                            <div class="videos-list" id="videos-list">
-                                <!-- Vídeos serão carregados via JavaScript -->
-                            </div>
                         </div>
                     </div>
                     
@@ -881,6 +975,54 @@
             </div>
         </div>
 
+        <!-- Emergency Numbers Modal -->
+        <div class="modal" id="emergency-numbers-modal">
+            <div class="modal-content modal-emergency">
+                <div class="modal-header">
+                    <h3><i class="fas fa-phone-alt"></i> Números de Emergência</h3>
+                    <button class="close-modal" id="close-emergency-numbers" aria-label="Fechar números de emergência">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="emergency-numbers-list" id="emergency-numbers-list">
+                        <!-- Números serão inseridos via JavaScript -->
+                    </div>
+                    <div class="emergency-actions-footer">
+                        <button class="btn-find-hospitals" id="btn-find-hospitals">
+                            <i class="fas fa-hospital"></i>
+                            Encontrar Hospitais Maternos Próximos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hospitals Modal -->
+        <div class="modal" id="hospitals-modal">
+            <div class="modal-content modal-hospitals">
+                <div class="modal-header">
+                    <h3><i class="fas fa-hospital"></i> Hospitais Maternos Próximos</h3>
+                    <button class="close-modal" id="close-hospitals" aria-label="Fechar hospitais">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="hospitals-loading" class="hospitals-loading" style="display: none;">
+                        <div class="loading-content">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p class="loading-main">Aguarde um instante...</p>
+                            <p class="loading-sub">Estamos buscando hospitais próximos à sua localização</p>
+                        </div>
+                    </div>
+                    <div id="hospitals-error" class="hospitals-error" style="display: none;"></div>
+                    <div id="hospitals-list" class="hospitals-list">
+                        <!-- Hospitais serão inseridos via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Resources Modal -->
         <div class="modal" id="resources-modal">
             <div class="modal-content modal-resources">
@@ -895,10 +1037,284 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal de Perfil do Usuário -->
+        <div class="modal" id="profile-modal">
+            <div class="modal-content modal-profile">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-circle"></i> Perfil</h3>
+                    <button class="close-modal" id="close-profile-modal" aria-label="Fechar perfil">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="profile-form" class="profile-grid" autocomplete="off">
+                        <div class="profile-card">
+                            <h4>Sobre a mãe</h4>
+                            <label class="profile-label">Nome / Apelido
+                                <input type="text" id="profile-mom-name" placeholder="Ex.: Maria / Mamãe" />
+                            </label>
+                            <label class="profile-label">Fase
+                                <select id="profile-mom-phase">
+                                    <option value="">Selecione</option>
+                                    <option value="puerperio-imediato">Puerpério imediato (0-6 semanas)</option>
+                                    <option value="puerperio-tardio">Puerpério tardio (6 semanas - 6 meses)</option>
+                                    <option value="puerperio-remoto">Puerpério remoto (&gt; 6 meses)</option>
+                                </select>
+                            </label>
+                            <label class="profile-label">Alergias
+                                <input type="text" id="profile-mom-allergies" placeholder="Ex.: Lactose, penicilina" />
+                            </label>
+                            <label class="profile-label">Condições importantes
+                                <textarea id="profile-mom-conditions" rows="2" placeholder="Ex.: Pressão alta na gestação — manter acompanhamento"></textarea>
+                            </label>
+                            <label class="profile-label">Contato de confiança
+                                <input type="text" id="profile-mom-contact" placeholder="Ex.: (11) 99999-9999" />
+                            </label>
+                        </div>
+
+                        <div class="profile-card">
+                            <h4>Sobre o bebê</h4>
+                            <label class="profile-label">Nome / Apelido
+                                <input type="text" id="profile-baby-name" placeholder="Ex.: Bebê / Apelido carinhoso" />
+                            </label>
+                            <label class="profile-label">Data de nascimento
+                                <input type="date" id="profile-baby-birth" />
+                            </label>
+                            <label class="profile-label">Pediatra
+                                <input type="text" id="profile-baby-pediatrician" placeholder="Ex.: Dra. Ana — (11) 98888-8888" />
+                            </label>
+                            <label class="profile-label">Alergias
+                                <input type="text" id="profile-baby-allergies" placeholder="Ex.: Nenhuma informada" />
+                            </label>
+                            <label class="profile-label">Próximas vacinas / lembretes
+                                <textarea id="profile-baby-vaccines" rows="2" placeholder="Ex.: Consulte o calendário — lembrete configurável"></textarea>
+                            </label>
+                        </div>
+
+                        <div class="profile-card">
+                            <h4>Cuidados e documentos</h4>
+                            <label class="profile-label">Plano de parto / Pré-natal
+                                <input type="text" id="profile-doc-plan" placeholder="Ex.: Guardar no celular" />
+                            </label>
+                            <label class="profile-label">Cartão do SUS / Convênio
+                                <input type="text" id="profile-doc-sus" placeholder="Ex.: Manter acessível" />
+                            </label>
+                            <label class="profile-label">Exames recentes
+                                <input type="text" id="profile-doc-exams" placeholder="Ex.: Hemograma, glicemia, pressão" />
+                            </label>
+                            <label class="profile-label">Apoios úteis
+                                <textarea id="profile-doc-support" rows="2" placeholder="Ex.: Banco de leite, grupo de apoio pós-parto"></textarea>
+                            </label>
+                            <label class="profile-label">Instruções de emergência
+                                <textarea id="profile-doc-emergency" rows="2" placeholder="Ex.: Usar Números de Emergência ou Hospitais Próximos"></textarea>
+                            </label>
+                        </div>
+                    </form>
+                    <div class="profile-actions">
+                        <button type="button" class="btn-sophia profile-save-btn" id="profile-save-btn">
+                            <i class="fas fa-save"></i> Salvar dados
+                        </button>
+                        <button type="button" class="btn-sophia profile-clear-btn" id="profile-clear-btn">
+                            <i class="fas fa-undo"></i> Limpar formulário
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Guia Visual de Autoexame -->
+        <div class="modal" id="guia-autoexame-modal">
+            <div class="modal-content modal-guia-autoexame">
+                <div class="modal-header">
+                    <h3><i class="fas fa-ribbon"></i> Sophia - Sua Companheira no Puerpério: Guia Visual de Autoexame de Mama</h3>
+                    <div class="modal-header-actions">
+                        <button class="btn-modal-home" onclick="if (window.chatApp && typeof window.chatApp.backToWelcomeScreen === 'function') { window.chatApp.backToWelcomeScreen(); closeGuiaAutoexame(); }" aria-label="Voltar ao menu principal">
+                            <i class="fas fa-home"></i> Voltar ao Menu
+                        </button>
+                        <button class="close-modal" id="close-guia-autoexame" aria-label="Fechar guia">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body modal-guia-body">
+                    <div class="guia-aviso-medico">
+                        <p><i class="fas fa-exclamation-triangle"></i> <strong>Importante:</strong> O autoexame é uma técnica de autoconhecimento para notar alterações precoces, mas não substitui o exame clínico realizado pelo seu ginecologista ou mastologista. Este guia é para autoconhecimento. O autoexame não substitui o rastreamento clínico profissional. Em caso de alterações, procure seu médico.</p>
+                        <p style="margin-top: 0.5rem;"><i class="fas fa-stethoscope"></i> <strong>Lembre-se:</strong> O autoexame NÃO substitui a consulta médica e a mamografia. Se encontrar qualquer alteração, procure um médico imediatamente.</p>
+                    </div>
+                    
+                    <!-- Carrossel do Guia -->
+                    <div class="guia-carousel-container">
+                        <button class="guia-carousel-btn guia-carousel-prev" id="guia-prev" aria-label="Passo anterior">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        
+                        <div class="guia-carousel-track" id="guia-carousel-track">
+                            <!-- Passos serão gerados dinamicamente -->
+                        </div>
+                        
+                        <button class="guia-carousel-btn guia-carousel-next" id="guia-next" aria-label="Próximo passo">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Indicadores de Passo -->
+                    <div class="guia-indicators" id="guia-indicators">
+                        <!-- Indicadores serão gerados dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Timeline de Cuidados -->
+        <div class="modal" id="timeline-cuidados-modal">
+            <div class="modal-content modal-timeline-cuidados">
+                <div class="modal-header">
+                    <h3><i class="fas fa-route"></i> Sophia - Sua Companheira no Puerpério: Linha do Tempo de Cuidados</h3>
+                    <div class="modal-header-actions">
+                        <button class="btn-modal-home" onclick="if (window.chatApp && typeof window.chatApp.backToWelcomeScreen === 'function') { window.chatApp.backToWelcomeScreen(); closeTimelineCuidadosModal(); }" aria-label="Voltar ao menu principal">
+                            <i class="fas fa-home"></i> Voltar ao Menu
+                        </button>
+                        <button class="close-modal" id="close-timeline-cuidados" aria-label="Fechar timeline">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body modal-timeline-body">
+                    <div class="timeline-aviso-medico">
+                        <p><i class="fas fa-exclamation-triangle"></i> <strong>Importante:</strong> Esta linha do tempo é apenas <strong>informativa e educativa</strong>. Este conteúdo <strong>NÃO substitui consulta médica profissional</strong>. Sempre consulte um profissional de saúde qualificado para orientações personalizadas. <strong>Consulte sempre seu médico para orientações específicas.</strong></p>
+                    </div>
+                    
+                    <!-- Toggle Período -->
+                    <div class="timeline-period-toggle">
+                        <button class="timeline-period-btn active" data-period="gestacao">Gestação</button>
+                        <button class="timeline-period-btn" data-period="parto">Parto</button>
+                        <button class="timeline-period-btn" data-period="pos_parto">Pós-Parto</button>
+                    </div>
+                    
+                    <!-- Timeline Stepper -->
+                    <div class="timeline-stepper-container">
+                        <div class="timeline-stepper" id="timeline-stepper">
+                            <!-- Será preenchido dinamicamente via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Conteúdo da Semana Selecionada -->
+                    <div class="timeline-content" id="timeline-content">
+                        <!-- Será preenchido dinamicamente via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
     <!-- Scripts otimizados (defer para não bloquear renderização) -->
+    <script>
+        // Guia Autoexame Modal Functions
+        function openGuiaAutoexame() {
+            const guiaModal = document.getElementById('guia-autoexame-modal');
+            if (guiaModal) {
+                // Bloqueia scroll do body
+                document.body.classList.add('modal-open');
+                // Scroll para o topo
+                window.scrollTo(0, 0);
+                guiaModal.classList.add('show');
+                // Carrega conteúdo do guia sempre ao abrir para garantir renderização
+                if (window.chatApp && typeof window.chatApp.loadGuiaAutoexame === 'function') {
+                    // Força recarregamento para garantir que o conteúdo seja renderizado
+                    window.chatApp.loadGuiaAutoexame().then(() => {
+                        // Após carregar, garante que o primeiro passo está visível
+                        if (window.chatApp && typeof window.chatApp.goToGuiaStep === 'function') {
+                            window.chatApp.goToGuiaStep(0);
+                        }
+                    });
+                }
+            }
+        }
+        
+        function closeGuiaAutoexame() {
+            const guiaModal = document.getElementById('guia-autoexame-modal');
+            if (guiaModal) {
+                guiaModal.classList.remove('show');
+                // Remove bloqueio de scroll do body
+                document.body.classList.remove('modal-open');
+                // Scroll para o topo
+                window.scrollTo(0, 0);
+                // Gatilho proativo: Sophia envia mensagem após fechar o modal
+                setTimeout(() => {
+                    if (window.chatApp && typeof window.chatApp.sendProactiveMessage === 'function') {
+                        window.chatApp.sendProactiveMessage('Espero que as informações tenham ajudado! Você sabia que pode imprimir ou salvar um resumo desse guia para levar com você?');
+                    }
+                }, 500); // Pequeno delay para a mensagem aparecer após o modal fechar
+            }
+        }
+        
+        // Timeline de Cuidados Modal Functions
+        function openTimelineCuidadosModal() {
+            const timelineModal = document.getElementById('timeline-cuidados-modal');
+            if (timelineModal) {
+                // Bloqueia scroll do body
+                document.body.classList.add('modal-open');
+                // Scroll para o topo
+                window.scrollTo(0, 0);
+                timelineModal.classList.add('show');
+                // Carrega conteúdo da timeline apenas se ainda não foi carregado
+                if (window.chatApp && typeof window.chatApp.loadTimelineCuidados === 'function') {
+                    const timelineStepper = document.getElementById('timeline-stepper');
+                    if (!timelineStepper || timelineStepper.children.length === 0) {
+                        window.chatApp.loadTimelineCuidados();
+                    }
+                }
+            }
+        }
+        
+        function closeTimelineCuidadosModal() {
+            const timelineModal = document.getElementById('timeline-cuidados-modal');
+            if (timelineModal) {
+                timelineModal.classList.remove('show');
+                // Remove bloqueio de scroll do body
+                document.body.classList.remove('modal-open');
+                // Scroll para o topo
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // Close modal handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Guia Autoexame Modal
+            const closeGuiaBtn = document.getElementById('close-guia-autoexame');
+            const guiaModal = document.getElementById('guia-autoexame-modal');
+            
+            if (closeGuiaBtn) {
+                closeGuiaBtn.addEventListener('click', closeGuiaAutoexame);
+            }
+            
+            if (guiaModal) {
+                guiaModal.addEventListener('click', function(e) {
+                    if (e.target === guiaModal) {
+                        closeGuiaAutoexame();
+                    }
+                });
+            }
+            
+            // Timeline de Cuidados Modal
+            const closeTimelineBtn = document.getElementById('close-timeline-cuidados');
+            const timelineModal = document.getElementById('timeline-cuidados-modal');
+            
+            if (closeTimelineBtn) {
+                closeTimelineBtn.addEventListener('click', closeTimelineCuidadosModal);
+            }
+            
+            if (timelineModal) {
+                timelineModal.addEventListener('click', function(e) {
+                    if (e.target === timelineModal) {
+                        closeTimelineCuidadosModal();
+                    }
+                });
+            }
+        });
+    </script>
     <script src="{{ url_for('static', filename='js/device-detector.js') }}" defer></script>
     <!-- APIClient deve carregar ANTES do chat.js pois é dependência -->
     <script src="{{ url_for('static', filename='js/api-client.js') }}" defer></script>
@@ -952,62 +1368,164 @@
         window.addEventListener('load', function() {
             var link = document.createElement('link');
             link.rel = 'prefetch';
-            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-solid-900.woff2';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2';
             document.head.appendChild(link);
             
             var link2 = document.createElement('link');
             link2.rel = 'prefetch';
-            link2.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/webfonts/fa-regular-400.woff2';
+            link2.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-regular-400.woff2';
             document.head.appendChild(link2);
         });
     </script>
     
-    <!-- Rodapé com Aviso de Segurança (oculto por padrão, aparece só durante conversa) -->
-    <footer id="cvv-disclaimer-footer" class="cvv-disclaimer-footer" style="
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-top: 1px solid #e0e0e0;
-        padding: 0.5rem 1rem;
-        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-        text-align: center;
-        font-size: 0.75rem;
-        color: #666;
-        z-index: 997;
-        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
-        display: none;
-    ">
-        <p style="margin: 0; line-height: 1.4;">
-            A Sophia não substitui atendimento profissional. 
-            Em caso de crise, ligue <strong>188 (CVV)</strong>.
-        </p>
-    </footer>
-    
-    <!-- Bottom Navigation (Mobile Only) -->
-    <nav class="bottom-nav" id="bottom-nav" aria-label="Navegação principal">
-        <div class="bottom-nav-container">
-            <button class="bottom-nav-item active" data-section="chat" aria-label="Chat">
-                <span class="bottom-nav-icon">💬</span>
-                <span class="bottom-nav-label">Chat</span>
-            </button>
-            <button class="bottom-nav-item" data-section="vacinas" aria-label="Vacinas">
-                <span class="bottom-nav-icon">📅</span>
-                <span class="bottom-nav-label">Vacinas</span>
-            </button>
-            <button class="bottom-nav-item" data-section="dicas" aria-label="Dicas">
-                <span class="bottom-nav-icon">💡</span>
-                <span class="bottom-nav-label">Dicas</span>
-            </button>
+    <!-- Rodapé de Compliance (sempre visível) -->
+    <footer id="compliance-footer" class="compliance-footer">
+        <div class="compliance-footer-content">
+            <div class="compliance-footer-text">
+                <p class="compliance-project-name">Sophia - Sua Companheira no Puerpério</p>
+                <p class="compliance-disclaimer">
+                    Este site é estritamente <strong>informativo e educativo</strong> e <strong>NÃO substitui</strong> consulta médica profissional, diagnóstico ou tratamento médico. 
+                    Todas as informações fornecidas seguem rigorosamente a <strong>Lei do Ato Médico</strong> (Lei nº 12.842/2013) e o <strong>Código de Ética Médica do CFM</strong>. 
+                    Sempre consulte um profissional de saúde qualificado para orientações personalizadas. 
+                    Em emergências, ligue <strong>192 (SAMU)</strong>.
+                </p>
+            </div>
         </div>
-    </nav>
+    </footer>
     
     <!-- Container Mobile Dicas (Oculto por padrão, aparece quando aba Dicas está ativa) -->
     <div id="mobile-dicas-container" class="mobile-section">
         <!-- Conteúdo será preenchido dinamicamente via JavaScript -->
     </div>
+    
+    <!-- ========================================
+         HACK JAVASCRIPT - Correção Forçada do Botão Sophia
+         ======================================== -->
+    <!-- Este script força a correção do botão #start-chat-btn e container .start-chat-container -->
+    <!-- caso estilos inline ou outros códigos tentem sobrescrever o CSS -->
+    <script>
+        // Função para forçar a correção - PODE SER CHAMADA DE QUALQUER LUGAR
+        function fixSophiaButton() {
+            // Seleciona o container
+            var container = document.querySelector('.start-chat-container');
+            if (container) {
+                container.style.cssText = "width: 100% !important; max-width: 100% !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 0 !important; margin: 0 !important; float: none !important; box-sizing: border-box !important;";
+            }
+
+            // Seleciona o botão
+            var btn = document.querySelector('#start-chat-btn');
+            if (btn) {
+                // CORREÇÃO CRÍTICA: Força centralização e cores via JavaScript inline (prioridade máxima)
+                btn.style.setProperty('width', '100%', 'important');
+                btn.style.setProperty('max-width', '260px', 'important');
+                btn.style.setProperty('height', '50px', 'important');
+                btn.style.setProperty('display', 'flex', 'important');
+                btn.style.setProperty('align-items', 'center', 'important');
+                btn.style.setProperty('justify-content', 'center', 'important');
+                btn.style.setProperty('margin', '20px auto 30px auto', 'important');
+                btn.style.setProperty('padding', '0', 'important');
+                btn.style.setProperty('box-sizing', 'border-box', 'important');
+                btn.style.setProperty('background-color', '#ffffff', 'important');
+                btn.style.setProperty('text-align', 'center', 'important');
+                
+                // CORREÇÃO CRÍTICA: Força a cor rosa no span (texto) via JavaScript inline + centralização
+                var span = btn.querySelector('span');
+                if (span) {
+                    span.style.setProperty('color', '#d68b98', 'important');
+                    span.style.setProperty('display', 'block', 'important');
+                    span.style.setProperty('text-align', 'center', 'important');
+                    span.style.setProperty('line-height', '1.4', 'important');
+                    span.style.setProperty('margin', '0', 'important');
+                    span.style.setProperty('padding', '0', 'important');
+                    span.style.setProperty('width', '100%', 'important');
+                }
+                
+                // Remove qualquer ícone que possa ter sido adicionado
+                var icon = btn.querySelector('i, svg');
+                if (icon) {
+                    icon.remove(); // Remove o ícone completamente
+                }
+            }
+        }
+
+        // Executa quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fixSophiaButton);
+        } else {
+            fixSophiaButton();
+        }
+
+        // Executa quando janela estiver completamente carregada
+        window.addEventListener('load', function() {
+            fixSophiaButton();
+            // Tenta rodar de novo após delays (caso outros scripts interfiram)
+            setTimeout(fixSophiaButton, 500);
+            setTimeout(fixSophiaButton, 1000);
+            setTimeout(fixSophiaButton, 2000);
+            setTimeout(fixSophiaButton, 3000);
+        });
+
+        // Executa quando página estiver totalmente pronta (fallback extra)
+        if (document.readyState === 'complete') {
+            setTimeout(fixSophiaButton, 100);
+        }
+
+        // OBSERVER: Monitora mudanças no DOM e reaplica estilos se necessário
+        var observer = new MutationObserver(function(mutations) {
+            var btn = document.querySelector('#start-chat-btn');
+            if (btn) {
+                // Se o estilo inline foi removido ou alterado, reaplica
+                var hasInlineStyles = btn.style.length > 0;
+                if (!hasInlineStyles || !btn.style.getPropertyValue('justify-content') || 
+                    btn.style.getPropertyValue('justify-content') !== 'center') {
+                    fixSophiaButton();
+                }
+            }
+        });
+
+        // Inicia observação quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                var btn = document.querySelector('#start-chat-btn');
+                if (btn) {
+                    observer.observe(btn, {
+                        attributes: true,
+                        attributeFilter: ['style', 'class'],
+                        childList: true,
+                        subtree: true
+                    });
+                }
+            });
+        } else {
+            var btn = document.querySelector('#start-chat-btn');
+            if (btn) {
+                observer.observe(btn, {
+                    attributes: true,
+                    attributeFilter: ['style', 'class'],
+                    childList: true,
+                    subtree: true
+                });
+            }
+        }
+
+        // Garante execução após chat.js (se existir)
+        if (typeof window.chatApp !== 'undefined') {
+            setTimeout(fixSophiaButton, 100);
+        }
+        
+        // Escuta se chatApp for criado depois
+        var chatAppCheckInterval = setInterval(function() {
+            if (typeof window.chatApp !== 'undefined') {
+                clearInterval(chatAppCheckInterval);
+                setTimeout(fixSophiaButton, 200);
+            }
+        }, 500);
+        
+        // Para o intervalo após 10 segundos
+        setTimeout(function() {
+            clearInterval(chatAppCheckInterval);
+        }, 10000);
+    </script>
 </body>
 </html>
 

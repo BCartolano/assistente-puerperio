@@ -259,9 +259,6 @@ class ChatbotPuerperio {
                 
                 // Inicializa botões de sentimento
                 this.initFeelingButtons();
-                
-                // Inicializa links de apoio rápido
-                this.initSupportLinks();
 
                 // Foca no input de mensagem se existir
                 if (this.messageInput) {
@@ -1009,6 +1006,7 @@ class ChatbotPuerperio {
         this.sidebarBtnGestacao = document.getElementById('sidebar-btn-gestacao');
         this.sidebarBtnPosparto = document.getElementById('sidebar-btn-posparto');
         this.sidebarBtnVacinas = document.getElementById('sidebar-btn-vacinas');
+        this.sidebarBtnSintomas = document.getElementById('sidebar-btn-sintomas');
         this.sidebarBtnClear = document.getElementById('sidebar-btn-clear');
         this.sidebarBtnClearMemory = document.getElementById('sidebar-btn-clear-memory');
         this.sidebarBtnBack = document.getElementById('sidebar-btn-back');
@@ -1048,9 +1046,49 @@ class ChatbotPuerperio {
         this.btnGestacao = document.getElementById('btn-gestacao');
         this.btnPosparto = document.getElementById('btn-posparto');
         this.btnVacinas = document.getElementById('btn-vacinas');
+
+        // Profile modal
+        this.profileModal = document.getElementById('profile-modal');
+        this.closeProfileModalBtn = document.getElementById('close-profile-modal');
+        this.profileForm = document.getElementById('profile-form');
+        this.profileSaveBtn = document.getElementById('profile-save-btn');
+        this.profileClearBtn = document.getElementById('profile-clear-btn');
+
+        // Profile inputs
+        this.profileInputs = {
+            momName: document.getElementById('profile-mom-name'),
+            momPhase: document.getElementById('profile-mom-phase'),
+            momAllergies: document.getElementById('profile-mom-allergies'),
+            momConditions: document.getElementById('profile-mom-conditions'),
+            momContact: document.getElementById('profile-mom-contact'),
+            babyName: document.getElementById('profile-baby-name'),
+            babyBirth: document.getElementById('profile-baby-birth'),
+            babyPediatrician: document.getElementById('profile-baby-pediatrician'),
+            babyAllergies: document.getElementById('profile-baby-allergies'),
+            babyVaccines: document.getElementById('profile-baby-vaccines'),
+            docPlan: document.getElementById('profile-doc-plan'),
+            docSus: document.getElementById('profile-doc-sus'),
+            docExams: document.getElementById('profile-doc-exams'),
+            docSupport: document.getElementById('profile-doc-support'),
+            docEmergency: document.getElementById('profile-doc-emergency')
+        };
         
         // Botão de iniciar conversa
         this.startChatBtn = document.getElementById('start-chat-btn');
+        
+        // Emergency numbers modal elements
+        this.btnEmergencyNumbers = document.getElementById('btn-emergency-numbers');
+        this.emergencyNumbersModal = document.getElementById('emergency-numbers-modal');
+        this.closeEmergencyNumbers = document.getElementById('close-emergency-numbers');
+        this.emergencyNumbersList = document.getElementById('emergency-numbers-list');
+        this.btnFindHospitals = document.getElementById('btn-find-hospitals');
+        
+        // Hospitals modal elements
+        this.hospitalsModal = document.getElementById('hospitals-modal');
+        this.closeHospitals = document.getElementById('close-hospitals');
+        this.hospitalsList = document.getElementById('hospitals-list');
+        this.hospitalsLoading = document.getElementById('hospitals-loading');
+        this.hospitalsError = document.getElementById('hospitals-error');
     }
     
         bindEvents() {
@@ -1121,7 +1159,7 @@ class ChatbotPuerperio {
         });
         this.sidebarBtnClearMemory?.addEventListener('click', () => {
             this.closeSidebarMenu();
-            this.clearMemory();
+            this.limparHistoricoTriagens();
         });
         this.sidebarBtnBack?.addEventListener('click', () => {
             this.closeSidebarMenu();
@@ -1152,11 +1190,7 @@ class ChatbotPuerperio {
                         inputArea.style.display = 'flex';
                     }
                     
-                    // Mostra o aviso do CVV no rodapé (só quando há conversa ativa)
-                    const cvvFooter = document.getElementById('cvv-disclaimer-footer');
-                    if (cvvFooter && cvvFooter.style) {
-                        cvvFooter.style.display = 'block';
-                    }
+                    // Footer CVV removido - código comentado
                     
                     // Define a pergunta e envia
                     this.messageInput.value = question;
@@ -1228,11 +1262,82 @@ class ChatbotPuerperio {
             }
         });
         
-        // Resources buttons
+        // Resources buttons (Hero Grid)
         this.btnGuias?.addEventListener('click', () => this.showGuias());
         this.btnGestacao?.addEventListener('click', () => this.showGestacao());
         this.btnPosparto?.addEventListener('click', () => this.showPosparto());
         this.btnVacinas?.addEventListener('click', () => this.showVacinas());
+        
+        // Header icons
+        const headerSearchBtn = document.getElementById('header-search-btn');
+        const headerProfileBtn = document.getElementById('header-profile-btn');
+        
+        if (headerSearchBtn) {
+            headerSearchBtn.addEventListener('click', () => {
+                // TODO: Implementar busca
+                alert('Funcionalidade de busca em desenvolvimento');
+            });
+        }
+        
+        if (headerProfileBtn) {
+            headerProfileBtn.addEventListener('click', () => {
+                this.openProfileModal();
+            });
+        }
+
+        if (this.closeProfileModalBtn) {
+            this.closeProfileModalBtn.addEventListener('click', () => this.closeProfileModal());
+        }
+
+        if (this.profileModal) {
+            this.profileModal.addEventListener('click', (e) => {
+                if (e.target === this.profileModal) {
+                    this.closeProfileModal();
+                }
+            });
+        }
+
+        if (this.profileSaveBtn) {
+            this.profileSaveBtn.addEventListener('click', () => this.saveProfileData());
+        }
+
+        if (this.profileClearBtn) {
+            this.profileClearBtn.addEventListener('click', () => this.clearProfileForm());
+        }
+        
+        // Footer actions
+        const footerFindHospitals = document.getElementById('footer-find-hospitals');
+        const footerEmergencyNumbers = document.getElementById('footer-emergency-numbers');
+        const footerClearHistory = document.getElementById('footer-clear-history');
+        const footerClearMemory = document.getElementById('footer-clear-memory');
+        
+        if (footerFindHospitals) {
+            footerFindHospitals.addEventListener('click', () => {
+                this.closeSidebarMenu();
+                this.findNearbyHospitals();
+            });
+        }
+        
+        if (footerEmergencyNumbers) {
+            footerEmergencyNumbers.addEventListener('click', () => {
+                this.closeSidebarMenu();
+                this.openEmergencyNumbersModal();
+            });
+        }
+        
+        if (footerClearHistory) {
+            footerClearHistory.addEventListener('click', () => {
+                this.closeSidebarMenu();
+                this.clearHistory();
+            });
+        }
+        
+        if (footerClearMemory) {
+            footerClearMemory.addEventListener('click', () => {
+                this.closeSidebarMenu();
+                this.clearMemory();
+            });
+        }
         
         // Fechar resources modal
         this.closeResources?.addEventListener('click', () => this.hideResourcesModal());
@@ -1241,6 +1346,74 @@ class ChatbotPuerperio {
         this.resourcesModal?.addEventListener('click', (e) => {
             if (e.target === this.resourcesModal) {
                 this.hideResourcesModal();
+            }
+        });
+        
+        // Emergency numbers modal
+        if (this.btnEmergencyNumbers) {
+            this.btnEmergencyNumbers.addEventListener('click', () => this.openEmergencyNumbersModal());
+        }
+        if (this.closeEmergencyNumbers) {
+            this.closeEmergencyNumbers.addEventListener('click', () => this.closeEmergencyNumbersModal());
+        }
+        
+        if (this.emergencyNumbersModal) {
+            this.emergencyNumbersModal.addEventListener('click', (e) => {
+                if (e.target === this.emergencyNumbersModal) {
+                    this.closeEmergencyNumbersModal();
+                }
+            });
+        }
+        if (this.btnFindHospitals) {
+            this.btnFindHospitals.addEventListener('click', () => this.findNearbyHospitals());
+        }
+        
+        // Hospitals modal
+        if (this.closeHospitals) {
+            this.closeHospitals.addEventListener('click', () => this.closeHospitalsModal());
+        }
+        if (this.hospitalsModal) {
+            this.hospitalsModal.addEventListener('click', (e) => {
+                if (e.target === this.hospitalsModal) {
+                    this.closeHospitalsModal();
+                }
+            });
+        }
+        
+        // Sintomas/Alerts button
+        if (this.sidebarBtnSintomas) {
+            this.sidebarBtnSintomas.addEventListener('click', () => {
+                this.closeSidebarMenu();
+                this.showSintomasTriagem();
+            });
+        }
+        
+        // ========================================
+        // EVENT DELEGATION - PADRÃO OBRIGATÓRIO
+        // ========================================
+        // ⚠️ CRÍTICO: Sempre use event delegation para elementos dinâmicos
+        // ✅ Isso garante que botões continuem funcionando mesmo se DOM for atualizado
+        // 📚 Ver documentação: docs/style-guide-sophia.md
+        // ========================================
+        
+        // Event delegation para botões de sintomas (dinâmicos)
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.sintoma-btn-yes, .sintoma-btn-no');
+            if (btn) {
+                const sintomaId = btn.getAttribute('data-sintoma-id');
+                const resposta = btn.getAttribute('data-resposta');
+                if (sintomaId && resposta) {
+                    this.processarRespostaSintoma(sintomaId, resposta);
+                }
+            }
+        });
+        
+        // Event delegation para botões de ação de sintomas (dinâmicos)
+        document.addEventListener('click', (e) => {
+            const acaoBtn = e.target.closest('.sintoma-acao-hospital, .sintoma-voltar-btn');
+            if (acaoBtn && acaoBtn.onclick) {
+                // onclick já está definido no HTML gerado
+                return; // Deixa o onclick nativo funcionar
             }
         });
     }
@@ -1404,11 +1577,7 @@ class ChatbotPuerperio {
             inputArea.style.display = 'flex';
         }
         
-        // Mostra o aviso do CVV no rodapé (só quando há conversa ativa)
-        const cvvFooter = document.getElementById('cvv-disclaimer-footer');
-        if (cvvFooter && cvvFooter.style) {
-            cvvFooter.style.display = 'block';
-        }
+        // Footer CVV removido - código comentado
         
         // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
 
@@ -2117,10 +2286,53 @@ Como você está se sentindo hoje? 💛`;
                 document.body.classList.add('sidebar-open');
                 this.log('✅ [SIDEBAR] Classe sidebar-open adicionada ao body');
                 this.playSound(500, 150, 'sine'); // Som suave ao abrir
+                
+                // CORREÇÃO CRÍTICA: Força z-index do sidebar e reduz do header via JavaScript
+                if (this.sidebar) {
+                    this.sidebar.style.setProperty('z-index', '2147483647', 'important');
+                }
+                const headerModern = document.querySelector('.header-modern, header.header-modern');
+                if (headerModern) {
+                    headerModern.style.setProperty('z-index', '1', 'important');
+                    headerModern.style.setProperty('position', 'relative', 'important');
+                }
+                const headerContent = document.querySelector('.header-modern-content');
+                if (headerContent) {
+                    headerContent.style.setProperty('z-index', '1', 'important');
+                }
+                // CORREÇÃO CRÍTICA: Força z-index do input-area e input-container para ZERO quando sidebar aberta
+                const inputArea = document.querySelector('.input-area, div.input-area');
+                if (inputArea) {
+                    inputArea.style.setProperty('z-index', '0', 'important');
+                }
+                const inputContainer = document.querySelector('.input-container, div.input-container');
+                if (inputContainer) {
+                    inputContainer.style.setProperty('z-index', '0', 'important');
+                }
             } else {
                 document.body.classList.remove('sidebar-open');
                 this.log('✅ [SIDEBAR] Classe sidebar-open removida do body');
                 this.playSound(300, 100, 'sine'); // Som mais baixo ao fechar
+                
+                // Restaura z-index do header quando menu fecha
+                const headerModern = document.querySelector('.header-modern, header.header-modern');
+                if (headerModern) {
+                    headerModern.style.removeProperty('z-index');
+                    headerModern.style.removeProperty('position');
+                }
+                const headerContent = document.querySelector('.header-modern-content');
+                if (headerContent) {
+                    headerContent.style.removeProperty('z-index');
+                }
+                // Restaura z-index do input-area e input-container quando menu fecha
+                const inputArea = document.querySelector('.input-area, div.input-area');
+                if (inputArea) {
+                    inputArea.style.removeProperty('z-index');
+                }
+                const inputContainer = document.querySelector('.input-container, div.input-container');
+                if (inputContainer) {
+                    inputContainer.style.removeProperty('z-index');
+                }
             }
         }
         
@@ -2144,6 +2356,18 @@ Como você está se sentindo hoje? 💛`;
             if (document.body && document.body.classList) {
                 document.body.classList.remove('sidebar-open'); // Remove classe do body
             }
+            
+            // Restaura z-index do header quando menu fecha
+            const headerModern = document.querySelector('.header-modern, header.header-modern');
+            if (headerModern) {
+                headerModern.style.removeProperty('z-index');
+                headerModern.style.removeProperty('position');
+            }
+            const headerContent = document.querySelector('.header-modern-content');
+            if (headerContent) {
+                headerContent.style.removeProperty('z-index');
+            }
+            
             this.playSound(300, 100, 'sine'); // Som ao fechar
         }
     }
@@ -2213,7 +2437,16 @@ Como você está se sentindo hoje? 💛`;
         };
 
         feelingButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                // Feedback visual imediato
+                btn.classList.add('clicked');
+                btn.style.transform = 'scale(0.95)';
+                
+                        setTimeout(() => {
+                    btn.classList.remove('clicked');
+                    btn.style.transform = '';
+                }, 200);
+                
                 const feeling = btn.dataset.feeling;
                 const response = feelingResponses[feeling];
                 if (response) {
@@ -2306,59 +2539,6 @@ Como você está se sentindo hoje? 💛`;
         }
     }
 
-    initSupportLinks() {
-        const supportLinks = document.querySelectorAll('.support-link');
-        
-        supportLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const topic = link.dataset.topic;
-                let message = '';
-
-                switch(topic) {
-                    case 'baby-blues-depressao':
-                        message = 'O baby blues geralmente começa 2-3 dias após o parto e dura até 2 semanas. Quando os sintomas persistem por mais de 2 semanas, são muito intensos, ou incluem pensamentos de machucar a si mesma ou ao bebê, pode ser depressão pós-parto e é essencial buscar ajuda profissional imediatamente. Você não está sozinha e há tratamento eficaz. 💙';
-                        break;
-                    case 'pedir-ajuda':
-                        message = 'Pedir ajuda não é sinal de fraqueza, é sinal de sabedoria e autocuidado. Você pode começar dizendo: "Preciso de ajuda" para alguém de confiança, buscar grupos de apoio, ou procurar um profissional de saúde mental. Lembre-se: cuidar de você também é cuidar do seu bebê. Existe ajuda e esperança. 🤗';
-                        break;
-                    case 'redes-apoio':
-                        message = 'Redes de apoio podem incluir: família, amigos, grupos de mães, profissionais de saúde, psicólogos, psiquiatras, grupos online de puerpério, e linhas de ajuda. Você pode buscar no SUS, CAPS, ou ONGs focadas em saúde materna. Não hesite em pedir ajuda - você merece suporte! 💕';
-                        break;
-                }
-
-                if (message) {
-                    // Esconde welcome message e mostra chat
-                    if (this.welcomeMessage) {
-                        this.welcomeMessage.style.display = 'none';
-                    }
-                    if (this.chatMessages) {
-                        this.chatMessages.classList.add('active');
-                    }
-                    // Mostra o input do chat (usa .input-area diretamente)
-                    const inputArea = document.querySelector('.input-area');
-                    if (inputArea && inputArea.style) {
-                        inputArea.style.display = 'flex';
-                    }
-                    // Foca no input
-                    if (this.messageInput) {
-                        setTimeout(() => {
-                            this.messageInput.focus();
-                        }, 100);
-                    }
-                    // Botão "Voltar ao Menu" removido - usuário pode usar o menu lateral
-
-                    // Adiciona mensagem do usuário
-                    this.addMessage(link.textContent.trim(), 'user');
-                    
-                    // Adiciona resposta
-                    setTimeout(() => {
-                        this.addMessage(message, 'assistant');
-                    }, 500);
-                }
-            });
-        });
-    }
     
     async loadChatHistory() {
         try {
@@ -2826,21 +3006,21 @@ Como você está se sentindo hoje? 💛`;
             inputArea.style.display = 'flex';
         }
         
-        // Mostra o aviso do CVV no rodapé (só quando há conversa ativa)
-        const cvvFooter = document.getElementById('cvv-disclaimer-footer');
-        if (cvvFooter && cvvFooter.style) {
-            cvvFooter.style.display = 'block';
-        }
+        // Footer CVV removido - código comentado
         
-        // Foca no input
-        if (this.messageInput) {
+        // Marca que o usuário já interagiu
+        localStorage.setItem(`sophia_has_interacted_${this.userId}`, 'true');
+        
+        // Sophia faz uma pergunta inicial ao usuário
+        const initialQuestion = "Olá! Como você está se sentindo hoje? Como posso te ajudar nessa jornada do puerpério? 💛";
+        this.addMessage(initialQuestion, 'assistant');
+        
+        // Foca no input para o usuário responder
+        if (this.messageInput && typeof this.messageInput.focus === 'function') {
             setTimeout(() => {
                 this.messageInput.focus();
             }, 100);
         }
-        // Adiciona mensagem de boas-vindas da Sophia
-        const welcomeMsg = "Oi! 🌸 Sou a Sophia! Estou aqui para te ajudar com qualquer dúvida sobre puerpério, gestação ou cuidados com o bebê. Como posso te ajudar hoje?";
-        this.addMessage(welcomeMsg, 'assistant');
     }
     
         backToWelcomeScreen() {
@@ -2867,11 +3047,7 @@ Como você está se sentindo hoje? 💛`;
             inputArea.style.display = 'none';
         }
         
-        // Oculta o aviso do CVV quando volta ao menu inicial
-        const cvvFooter = document.getElementById('cvv-disclaimer-footer');
-        if (cvvFooter && cvvFooter.style) {
-            cvvFooter.style.display = 'none';
-        }
+        // Footer CVV removido - código comentado
         
         // NÃO gera novo userId - mantém o mesmo para preservar histórico
         // O userId é persistente e mantém a memória da Sophia
@@ -3632,8 +3808,6 @@ Como você está se sentindo hoje? 💛`;
     }
     
     async showVacinas() {
-        // Mostra timeline de vacinação
-        this.showVaccinationTimeline();
         try {
             const [maeData, bebeData, vacinasStatus] = await Promise.all([
                 fetch('/api/vacinas/mae').then(r => r.json()),
@@ -3680,7 +3854,8 @@ Como você está se sentindo hoje? 💛`;
             // Bind checkboxes
             this.bindVacinaCheckboxes();
         } catch (error) {
-            alert('❌ Erro ao carregar vacinas');
+            console.error('❌ Erro ao carregar vacinas:', error);
+            alert('❌ Erro ao carregar vacinas. Verifique o console para mais detalhes.');
         }
     }
     
@@ -3933,6 +4108,1441 @@ Como você está se sentindo hoje? 💛`;
         div.textContent = text;
         return div.innerHTML;
     }
+    
+    // Emergency Numbers Modal Functions
+    async openEmergencyNumbersModal() {
+        if (!this.emergencyNumbersModal) return;
+        
+        this.emergencyNumbersModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Carrega os números de emergência
+        await this.loadEmergencyNumbers();
+    }
+    
+    closeEmergencyNumbersModal() {
+        if (this.emergencyNumbersModal) {
+            this.emergencyNumbersModal.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+    }
+
+    // Profile Modal
+    openProfileModal() {
+        if (!this.profileModal) return;
+        this.loadProfileData();
+        this.profileModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeProfileModal() {
+        if (this.profileModal) {
+            this.profileModal.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+    }
+
+    getProfileStorageKey() {
+        return 'sophia_profile_data';
+    }
+
+    loadProfileData() {
+        if (!this.profileInputs) return;
+        try {
+            const stored = localStorage.getItem(this.getProfileStorageKey());
+            if (!stored) return;
+            const data = JSON.parse(stored);
+            Object.entries(this.profileInputs).forEach(([key, el]) => {
+                if (!el) return;
+                el.value = data[key] ?? '';
+            });
+        } catch (error) {
+            this.error('Erro ao carregar perfil:', error);
+        }
+    }
+
+    collectProfileData() {
+        const data = {};
+        Object.entries(this.profileInputs || {}).forEach(([key, el]) => {
+            data[key] = el?.value?.trim() || '';
+        });
+        return data;
+    }
+
+    saveProfileData() {
+        try {
+            const data = this.collectProfileData();
+            localStorage.setItem(this.getProfileStorageKey(), JSON.stringify(data));
+            this.showNotification('Perfil salvo com sucesso!');
+        } catch (error) {
+            this.error('Erro ao salvar perfil:', error);
+            this.showNotification('Não foi possível salvar agora. Tente novamente.');
+        }
+    }
+
+    clearProfileForm() {
+        Object.values(this.profileInputs || {}).forEach((el) => {
+            if (el) el.value = '';
+        });
+    }
+    
+    async loadEmergencyNumbers() {
+        if (!this.emergencyNumbersList) return;
+        
+        try {
+            const response = await fetch('/api/telefones');
+            const data = await response.json();
+            
+            let html = '';
+            
+            // Emergências
+            if (data.emergencias) {
+                html += '<div class="emergency-numbers-section"><h4>🚨 Emergências</h4><div class="emergency-numbers-grid">';
+                for (const key in data.emergencias) {
+                    const item = data.emergencias[key];
+                    html += this.createEmergencyNumberCard(item);
+                }
+                html += '</div></div>';
+            }
+            
+            // Saúde Mental
+            if (data.saude_mental) {
+                html += '<div class="emergency-numbers-section"><h4>💚 Saúde Mental</h4><div class="emergency-numbers-grid">';
+                for (const key in data.saude_mental) {
+                    const item = data.saude_mental[key];
+                    html += this.createEmergencyNumberCard(item);
+                }
+                html += '</div></div>';
+            }
+            
+            this.emergencyNumbersList.innerHTML = html;
+        } catch (error) {
+            this.error('Erro ao carregar números de emergência:', error);
+            if (this.emergencyNumbersList) {
+                this.emergencyNumbersList.innerHTML = '<p>Erro ao carregar números de emergência. Tente novamente.</p>';
+            }
+        }
+    }
+    
+    createEmergencyNumberCard(item) {
+        const freeBadge = item.gratuito ? '<span class="emergency-free">Gratuito</span>' : '';
+        const phoneLink = item.disque ? `tel:${item.disque}` : '#';
+        return `
+            <div class="emergency-number-card">
+                ${item.disque ? `<a href="${phoneLink}" class="emergency-call-btn">
+                    <i class="fas fa-phone"></i>
+                </a>` : ''}
+                <div class="emergency-number-info">
+                    <h5>${item.nome || ''}</h5>
+                    <p>${item.descricao || ''}</p>
+                    ${item.horario ? `<p><small>⏰ ${item.horario}</small></p>` : ''}
+                    ${freeBadge}
+                </div>
+            </div>
+        `;
+    }
+            
+    // Hospitals Modal Functions
+    closeHospitalsModal() {
+        if (this.hospitalsModal) {
+            this.hospitalsModal.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+    }
+    
+    async findNearbyHospitals() {
+        if (!this.hospitalsModal) return;
+        
+        // Fecha o modal de números de emergência
+        this.closeEmergencyNumbersModal();
+        
+        // Abre o modal de hospitais
+        this.hospitalsModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        // Mostra loading
+        if (this.hospitalsLoading) {
+            this.hospitalsLoading.style.display = 'block';
+        }
+        if (this.hospitalsError) {
+            this.hospitalsError.style.display = 'none';
+        }
+        if (this.hospitalsList) {
+            this.hospitalsList.innerHTML = '';
+        }
+        
+        try {
+            // Solicita permissão de geolocalização
+            if (!navigator.geolocation) {
+                throw new Error('Geolocalização não é suportada pelo seu navegador');
+            }
+            
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            });
+            
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // Busca hospitais próximos
+            const hospitals = await this.searchHospitalsNearby(lat, lon);
+            
+            // Esconde loading
+            if (this.hospitalsLoading) {
+                this.hospitalsLoading.style.display = 'none';
+            }
+            
+            // Exibe os hospitais encontrados
+            if (hospitals && hospitals.length > 0) {
+                this.displayHospitals(hospitals);
+                } else {
+                this.showEmptyState();
+            }
+        } catch (error) {
+            if (this.hospitalsLoading) {
+                this.hospitalsLoading.style.display = 'none';
+            }
+            if (this.hospitalsError) {
+                this.hospitalsError.style.display = 'block';
+                this.hospitalsError.innerHTML = `<p>Erro: ${error.message}</p>`;
+            }
+            // Mostra estado vazio mesmo em caso de erro
+            this.showEmptyState();
+            this.error('Erro ao buscar hospitais:', error);
+        }
+    }
+    
+    async searchHospitalsNearby(lat, lon, radius = 50000) {
+        /** 
+         * Busca hospitais próximos usando Overpass API
+         * OTIMIZADO: Query simplificada + filtragem no cliente
+         */
+        
+        // ========================================
+        // QUERY OTIMIZADA: Busca hospitais (filtragem específica no cliente)
+        // ========================================
+        // Busca todos os hospitais. A filtragem e priorização por maternidade/obstetrícia
+        // acontece no cliente, priorizando hospitais com tags ou nomes relacionados.
+        const query = `[out:json][timeout:30];
+(node["amenity"="hospital"](around:${radius},${lat},${lon});
+ way["amenity"="hospital"](around:${radius},${lat},${lon});
+ relation["amenity"="hospital"](around:${radius},${lat},${lon}););
+out center tags;`;
+        
+        // Lista de servidores Overpass para tentar
+        const servers = [
+            'https://overpass-api.de/api/interpreter',
+            'https://overpass.kumi.systems/api/interpreter',
+            'https://overpass.openstreetmap.ru/api/interpreter'
+        ];
+        
+        // Armazena o último erro para exibição ao usuário
+        let lastError = null;
+        
+        // Tenta cada servidor até um funcionar
+        for (let serverIndex = 0; serverIndex < servers.length; serverIndex++) {
+            const server = servers[serverIndex];
+            
+            try {
+                const controller = new AbortController();
+                // Timeout aumentado para 30 segundos (era 20)
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                
+                let response;
+                try {
+                    response = await fetch(server, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `data=${encodeURIComponent(query)}`,
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                } catch (fetchError) {
+                    clearTimeout(timeoutId);
+                    lastError = fetchError;
+                    if (serverIndex < servers.length - 1) {
+                        continue; // Tenta próximo servidor
+                    }
+                    // Se esgotou todos os servidores, lança erro amigável
+                    throw new Error('O servidor de mapas está demorando para responder. Tente novamente em alguns segundos ou reduza o raio de busca.');
+                }
+                
+                // Tratamento de erros HTTP com mensagens amigáveis
+                if (!response.ok) {
+                    if (response.status === 504 || response.status === 500) {
+                        lastError = new Error('O servidor de mapas está demorando para responder. Tente novamente em alguns segundos ou reduza o raio de busca.');
+                        if (serverIndex < servers.length - 1) {
+                            continue; // Tenta próximo servidor
+                        }
+                        // Se esgotou todos os servidores, lança erro
+                        throw lastError;
+                    }
+                    if (response.status === 429) {
+                        lastError = new Error('Muitas solicitações. Aguarde alguns segundos antes de tentar novamente.');
+                        if (serverIndex < servers.length - 1) {
+                            continue; // Tenta próximo servidor
+                        }
+                        throw lastError;
+                    }
+                    if (serverIndex < servers.length - 1) {
+                        continue; // Tenta próximo servidor para outros erros
+                    }
+                    throw new Error(`Erro ao buscar hospitais: ${response.status} ${response.statusText}`);
+                }
+                
+                const responseText = await response.text();
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    if (serverIndex < servers.length - 1) {
+                        continue;
+                    }
+                    return [];
+                }
+                
+                const hospitals = [];
+                
+                if (data.elements && data.elements.length > 0) {
+                    for (const element of data.elements) {
+                        const street = element.tags?.['addr:street'] || '';
+                        const houseNumber = element.tags?.['addr:housenumber'] || '';
+                        const neighborhood = element.tags?.['addr:suburb'] || element.tags?.['addr:neighbourhood'] || '';
+                        const city = element.tags?.['addr:city'] || element.tags?.['addr:town'] || '';
+                        const state = element.tags?.['addr:state'] || '';
+                        
+                        let fullAddress = '';
+                        if (street) {
+                            fullAddress = street;
+                            if (houseNumber) {
+                                fullAddress += `, ${houseNumber}`;
+                            }
+                            if (neighborhood) {
+                                fullAddress += ` - ${neighborhood}`;
+                            }
+                            if (city) {
+                                fullAddress += `, ${city}`;
+                            }
+                            if (state) {
+                                fullAddress += ` - ${state}`;
+                            }
+                        } else if (neighborhood) {
+                            fullAddress = neighborhood;
+                            if (city) {
+                                fullAddress += `, ${city}`;
+                            }
+                        } else if (city) {
+                            fullAddress = city;
+                        }
+                        
+                        let hospitalName = element.tags?.name || 
+                                          element.tags?.['name:pt'] || 
+                                          element.tags?.['official_name'] ||
+                                          element.tags?.['alt_name'] ||
+                                          element.tags?.['short_name'] || '';
+                        
+                        const specialty = (element.tags?.['healthcare:speciality'] || '').toLowerCase();
+                        const healthcare = (element.tags?.['healthcare'] || '').toLowerCase();
+                        const nameLower = (hospitalName || '').toLowerCase();
+                        const emergency = (element.tags?.['emergency'] || '').toLowerCase();
+                        const payment = (element.tags?.['healthcare:payment'] || '').toLowerCase();
+                        const operatorType = (element.tags?.['operator:type'] || '').toLowerCase();
+                        
+                        // ========================================
+                        // FILTRO DUPLO OBRIGATÓRIO DE SEGURANÇA
+                        // ========================================
+                        // REGRA 1: Validar TIPO - Deve ser Hospital (excluir UBS, Clínicas, UPAs, Postos)
+                        const isValidHospitalType = this.validateHospitalType(element.tags, hospitalName);
+                        if (!isValidHospitalType) {
+                            // Rejeita estabelecimentos que não são hospitais
+                            continue;
+                        }
+                        
+                        // REGRA 2: Validar INFRAESTRUTURA - Aceita hospitais gerais, bloqueia especializados que não atendem parto
+                        const infrastructureValidation = this.validateMaternityInfrastructure(element.tags, hospitalName, specialty, healthcare);
+                        if (!infrastructureValidation.accepted) {
+                            // Rejeita hospitais especializados que não atendem parto (lista negra)
+                            continue;
+                        }
+                        
+                        // Se chegou aqui, passou no filtro duplo obrigatório
+                        // ========================================
+                        
+                        const isEmergency = emergency === 'yes' || emergency === 'emergency_ward' || 
+                                           nameLower.includes('pronto socorro') || nameLower.includes('pronto atendimento') ||
+                                           nameLower.includes('emergency') || nameLower.includes('urgência');
+                        
+                        // Verifica se aceita SUS (hospital público)
+                        const acceptsSUS = payment === 'public' || payment === 'yes' || 
+                                          operatorType === 'public';
+                        
+                        // Extrai informação sobre se é confirmação explícita ou dedução
+                        const hasExplicitMaternity = infrastructureValidation.explicit; // true = explícito, false = dedução
+                        
+                        // Marca como maternidade: sempre true pois passou no filtro (geral ou com maternidade explícita)
+                        const isMaternity = true;
+                        
+                        if (!hospitalName || hospitalName.trim() === '') {
+                            hospitalName = hasExplicitMaternity ? 'Hospital com Ala de Maternidade' : 'Hospital Geral';
+                        }
+                        
+                        // Identifica se é público ou privado baseado no nome
+                        const isPublic = nameLower.includes('ubs') || 
+                                        nameLower.includes('upa') || 
+                                        nameLower.includes('municipal') || 
+                                        nameLower.includes('estadual') || 
+                                        nameLower.includes('federal') ||
+                                        nameLower.includes('santa casa') ||
+                                        nameLower.includes('santa casa de misericórdia') ||
+                                        payment === 'public' || 
+                                        operatorType === 'public';
+                        
+                        const hospital = {
+                            name: hospitalName,
+                            lat: element.lat || element.center?.lat,
+                            lon: element.lon || element.center?.lon,
+                            address: fullAddress,
+                            street: street,
+                            houseNumber: houseNumber,
+                            neighborhood: neighborhood,
+                            city: city,
+                            state: state,
+                            phone: element.tags?.['phone'] || element.tags?.['contact:phone'] || element.tags?.['contact:mobile'] || '',
+                            website: element.tags?.['website'] || element.tags?.['contact:website'] || '',
+                            distance: this.calculateDistance(lat, lon, element.lat || element.center?.lat, element.lon || element.center?.lon),
+                            isMaternity: isMaternity, // Sempre true pois passou no filtro duplo
+                            isMaternityExplicit: hasExplicitMaternity, // true = confirmação explícita, false = dedução (hospital geral)
+                            isEmergency: isEmergency,
+                            acceptsSUS: acceptsSUS,
+                            isPublic: isPublic
+                        };
+                        
+                        if (hospital.lat && hospital.lon) {
+                            hospitals.push(hospital);
+                        }
+                    }
+                }
+                
+                // Remove duplicatas
+                let filteredHospitals = this.deduplicateHospitals(hospitals);
+                
+                // Filtra hospitais que têm TODAS as informações completas: nome, endereço, telefone e coordenadas
+                filteredHospitals = filteredHospitals.filter(h => {
+                    const hasName = h.name && h.name.trim() !== '' && h.name !== 'Hospital';
+                    const hasAddress = h.address && h.address.trim() !== '';
+                    const hasPhone = h.phone && h.phone.trim() !== '';
+                    const hasCoordinates = h.lat && h.lon;
+                    return hasName && hasAddress && hasPhone && hasCoordinates;
+                });
+                
+                // Adiciona score de prioridade baseado em palavras-chave de maternidade/obstetrícia no nome
+                filteredHospitals.forEach(h => {
+                    const nameLower = (h.name || '').toLowerCase();
+                    const maternityKeywords = ['maternidade', 'maternity', 'obstetrícia', 'obstetrics', 'obstetricia', 'parto', 'nascimento'];
+                    h.maternityScore = 0;
+                    maternityKeywords.forEach(keyword => {
+                        if (nameLower.includes(keyword)) {
+                            h.maternityScore += 10; // Score alto para palavras-chave no nome
+                        }
+                    });
+                    // Bonus para hospitais com confirmação explícita
+                    if (h.isMaternityExplicit) {
+                        h.maternityScore += 5;
+                    }
+                });
+                
+                // Ordena: 1) Por score de maternidade (maior primeiro), 2) Por distância (mais próximo primeiro)
+                filteredHospitals.sort((a, b) => {
+                    // Prioridade 1: Hospitais com maior score de maternidade primeiro
+                    if (b.maternityScore !== a.maternityScore) {
+                        return b.maternityScore - a.maternityScore;
+                    }
+                    // Prioridade 2: Entre hospitais com mesmo score, ordena por distância (mais próximo primeiro)
+                    return a.distance - b.distance;
+                });
+                
+                return filteredHospitals;
+            
+            } catch (error) {
+                // Captura erros da requisição ou processamento
+                lastError = error;
+                if (serverIndex < servers.length - 1) {
+                    continue; // Tenta próximo servidor
+                }
+                // Se esgotou todos os servidores, propaga o erro
+                // O erro já foi tratado com mensagem amigável nas verificações anteriores
+                throw error;
+            }
+        }
+        
+        // Se chegou aqui sem retornar, nenhum servidor funcionou
+        if (lastError) {
+            throw lastError; // Lança o último erro capturado (já com mensagem amigável)
+        }
+        
+        return []; // Fallback: retorna array vazio se nenhum erro foi capturado
+    }
+    
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        /** Calcula distância em metros usando fórmula de Haversine */
+        const R = 6371000; // Raio da Terra em metros
+        const dLat = this.toRad(lat2 - lat1);
+        const dLon = this.toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+    
+    toRad(degrees) {
+        return degrees * (Math.PI / 180);
+    }
+    
+    /**
+     * ========================================
+     * VALIDAÇÃO DE TIPO DE HOSPITAL
+     * ========================================
+     * REGRA DE SEGURANÇA: Apenas hospitais reais devem aparecer.
+     * Exclui: UBS, Clínicas, UPAs, Postos de Saúde, Unidades Básicas, etc.
+     * 
+     * @param {Object} tags - Tags do elemento OSM
+     * @param {string} hospitalName - Nome do estabelecimento
+     * @returns {boolean} - true se for hospital válido, false caso contrário
+     */
+    validateHospitalType(tags, hospitalName) {
+        const nameLower = (hospitalName || '').toLowerCase();
+        const healthcareType = (tags?.['healthcare'] || '').toLowerCase();
+        const amenity = (tags?.['amenity'] || '').toLowerCase();
+        
+        // PALAVRAS-CHAVE QUE INDICAM QUE NÃO É HOSPITAL (EXCLUIR)
+        const excludeKeywords = [
+            'ubs', 'unidade básica de saúde',
+            'clínica', 'clinica',
+            'upa', 'unidade de pronto atendimento',
+            'posto de saúde', 'posto',
+            'centro de saúde',
+            'unidade de saúde',
+            'ambulatório', 'ambulatorio',
+            'consultório', 'consultorio',
+            'laboratório', 'laboratorio',
+            'farmácia', 'farmacia',
+            'policlínica', 'policlinica',
+            'emergência', 'emergencia', // Se não tiver "hospital" no contexto
+            'pronto atendimento', // Se não tiver "hospital" no contexto
+        ];
+        
+        // Verificar se o nome contém palavras de exclusão
+        for (const keyword of excludeKeywords) {
+            if (nameLower.includes(keyword)) {
+                // EXCEÇÃO: Se contiver "hospital" no nome, ainda pode ser hospital
+                if (!nameLower.includes('hospital')) {
+                    return false; // Rejeita: não é hospital
+                }
+            }
+        }
+        
+        // PALAVRAS-CHAVE QUE INDICAM QUE É HOSPITAL (INCLUIR)
+        const includeKeywords = [
+            'hospital',
+            'maternidade', // Maternidades são hospitais especializados
+            'hsp', // Abreviação comum
+            'hosp.', // Abreviação comum
+        ];
+        
+        // Verificar se o nome contém palavras de inclusão
+        let hasHospitalKeyword = false;
+        for (const keyword of includeKeywords) {
+            if (nameLower.includes(keyword)) {
+                hasHospitalKeyword = true;
+                break;
+            }
+        }
+        
+        // Validação do tipo healthcare
+        const validHealthcareTypes = ['hospital', 'maternity'];
+        const isValidHealthcareType = validHealthcareTypes.includes(healthcareType);
+        
+        // Validação do amenity (deve ser hospital)
+        const isValidAmenity = amenity === 'hospital';
+        
+        // REGRA: Deve ter "hospital" no nome OU ser do tipo hospital no healthcare OU ter amenity=hospital
+        // Se tiver palavra de exclusão E não tiver "hospital" no contexto, rejeita
+        const hasExclusionWithoutHospital = excludeKeywords.some(kw => nameLower.includes(kw)) && !hasHospitalKeyword;
+        
+        if (hasExclusionWithoutHospital) {
+            return false; // Rejeita: tem palavra de exclusão e não tem "hospital"
+        }
+        
+        // Aceita se: tem palavra de inclusão OU é do tipo hospital no healthcare OU tem amenity=hospital
+        return hasHospitalKeyword || isValidHealthcareType || isValidAmenity;
+    }
+    
+    /**
+     * ========================================
+     * VALIDAÇÃO DE INFRAESTRUTURA DE MATERNIDADE
+     * ========================================
+     * NOVA ESTRATÉGIA: Lista Negra (Exclusão) em vez de Inclusão Estrita
+     * 
+     * REGRA: Aceitar por padrão hospitais gerais e bloquear apenas especializados que não atendem parto.
+     * 
+     * Lógica:
+     * 1. PRIORIDADE ALTA: Aceitar se contém indicadores de maternidade (confirmação explícita)
+     * 2. PADRÃO: Aceitar "Hospital Geral" ou apenas "Hospital" (presumimos que hospitais gerais atendem partos ou estabilizam melhor)
+     * 3. BLOQUEAR: Excluir hospitais especializados que NÃO atendem parto (Lista Negra)
+     * 
+     * @param {Object} tags - Tags do elemento OSM
+     * @param {string} hospitalName - Nome do estabelecimento
+     * @param {string} specialty - Especialidade do healthcare
+     * @param {string} healthcare - Tipo de healthcare
+     * @returns {{accepted: boolean, explicit: boolean}} - Objeto com accepted (aceita/bloqueia) e explicit (confirmação explícita ou dedução)
+     */
+    validateMaternityInfrastructure(tags, hospitalName, specialty, healthcare) {
+        const nameLower = (hospitalName || '').toLowerCase();
+        const specialtyLower = (specialty || '').toLowerCase();
+        const healthcareLower = (healthcare || '').toLowerCase();
+        const healthcareSpeciality = (tags?.['healthcare:speciality'] || '').toLowerCase();
+        
+        // ========================================
+        // PRIORIDADE ALTA: Indicadores explícitos de maternidade (aceita imediatamente)
+        // ========================================
+        const maternityKeywords = [
+            'maternidade', 'maternity',
+            'obstetrícia', 'obstetrics',
+            'ala maternal', 'ala de maternidade',
+            'mulher', 'women', 'saúde da mulher',
+            'ginecologia', 'gynaecology', 'gynecology',
+            'parto', 'birth', 'centro de parto',
+        ];
+        
+        // Verificar indicadores de maternidade (PRIORIDADE ALTA)
+        const hasMaternityIndicator = 
+            maternityKeywords.some(kw => nameLower.includes(kw)) ||
+            maternityKeywords.some(kw => specialtyLower.includes(kw)) ||
+            maternityKeywords.some(kw => healthcareLower.includes(kw)) ||
+            maternityKeywords.some(kw => healthcareSpeciality.includes(kw));
+        
+        if (hasMaternityIndicator) {
+            return { accepted: true, explicit: true }; // Aceita imediatamente - confirmação explícita
+        }
+        
+        // ========================================
+        // LISTA NEGRA: Especialidades que NÃO atendem parto (bloquear)
+        // ========================================
+        // IMPORTANTE: Inclui variações, abreviações e termos sem acento para evitar falsos positivos
+        const blacklistSpecialties = [
+            // Oftalmologia
+            'oftalmologia', 'ophthalmology', 'olhos', 'eyes', 'ocular', 'oftalmo',
+            
+            // Cardiologia
+            'cardiologia', 'cardiology', 'cardíaco', 'cardiac', 'coracao', 'coração', 'cardio',
+            
+            // Oncologia
+            'oncologia', 'oncology', 'câncer', 'cancer', 'onco',
+            
+            // Ortopedia (ATUALIZADO: inclui variações e abreviações)
+            'ortopedia', 'orthopedics', 'ortopédico', 'orthopedic', 'orto', 'trauma', 'traumatologia', 'fraturas', 'acidentados',
+            
+            // Psiquiatria
+            'psiquiatria', 'psychiatry', 'psiquiátrico', 'psychiatric',
+            
+            // Cirurgia Plástica/Estética (ATUALIZADO: inclui variações)
+            'plástica', 'plastic', 'cirurgia plástica', 'plastic surgery', 'plastica', 'estetica', 'estética', 'lipo', 'lipoaspiração', 'lipoaspiracao',
+            
+            // Day Hospital (geralmente cirurgias pequenas, não atende parto)
+            'day hospital', 'day-hospital', 'day',
+            
+            // Dermatologia
+            'dermatologia', 'dermatology',
+            
+            // Neurologia
+            'neurologia', 'neurology', 'neurológico', 'neurological',
+            
+            // Urologia / Rim / Renal
+            'urologia', 'urology', 'rim', 'renal', 'nefrologia', 'nephrology',
+            
+            // Otorrino
+            'otorrino', 'otorhinolaryngology', 'ouvido', 'ear', 'nose', 'garganta', 'throat',
+        ];
+        
+        // Verificar se contém termos da lista negra usando WORD BOUNDARIES (\b)
+        // CRÍTICO: Usar Regex com \b para evitar falsos positivos como "Porto Alegre" ou "Hortolândia"
+        const hasBlacklistedSpecialty = 
+            blacklistSpecialties.some(term => {
+                // Escapa caracteres especiais do termo para uso seguro em Regex
+                const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                // Cria regex com word boundaries para verificar palavra inteira
+                const regex = new RegExp(`\\b${escapedTerm}\\b`, 'i');
+                return regex.test(nameLower) || 
+                       regex.test(specialtyLower) || 
+                       regex.test(healthcareLower) || 
+                       regex.test(healthcareSpeciality);
+            });
+        
+        if (hasBlacklistedSpecialty) {
+            return { accepted: false, explicit: false }; // BLOQUEIA: Hospital especializado que não atende parto
+        }
+        
+        // ========================================
+        // PADRÃO: Aceitar hospitais gerais (presumimos que atendem partos ou estabilizam melhor)
+        // ========================================
+        // Se chegou aqui, não tem indicador explícito de maternidade, mas também não está na lista negra
+        // Presumimos que é um "Hospital Geral" e aceitamos por padrão (dedução)
+        return { accepted: true, explicit: false }; // Aceito por dedução (não é explícito, mas passou na lista negra)
+    }
+    
+    calculateHospitalScore(tags, hospitalName) {
+        /** Calcula score baseado na completude das informações */
+        let score = 0;
+        if (hospitalName && hospitalName.trim() !== '') score += 10;
+        if (tags?.['addr:street']) score += 5;
+        if (tags?.['addr:housenumber']) score += 2;
+        if (tags?.['addr:city']) score += 3;
+        if (tags?.['phone'] || tags?.['contact:phone']) score += 5;
+        if (tags?.['website'] || tags?.['contact:website']) score += 3;
+        return score;
+    }
+    
+    deduplicateHospitals(hospitals) {
+        /** Remove hospitais duplicados baseado em proximidade e nome similar */
+        const unique = [];
+        for (const hospital of hospitals) {
+            let isDuplicate = false;
+            for (const existing of unique) {
+                const distance = this.calculateDistance(
+                    hospital.lat, hospital.lon,
+                    existing.lat, existing.lon
+                );
+                if (distance < 100) { // Menos de 100m
+                    const similarity = this.calculateNameSimilarity(hospital.name, existing.name);
+                    if (similarity > 0.7) {
+                        isDuplicate = true;
+                        // Prioriza: Maternos COM SUS > Maternos > Com SUS > Outros
+                        const hospitalPriority = (hospital.isMaternity && hospital.acceptsSUS ? 3 : 
+                                                  hospital.isMaternity ? 2 : 
+                                                  hospital.acceptsSUS ? 1 : 0);
+                        const existingPriority = (existing.isMaternity && existing.acceptsSUS ? 3 : 
+                                                  existing.isMaternity ? 2 : 
+                                                  existing.acceptsSUS ? 1 : 0);
+                        if (hospitalPriority > existingPriority) {
+                            const index = unique.indexOf(existing);
+                            unique[index] = hospital;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!isDuplicate) {
+                unique.push(hospital);
+            }
+        }
+        return unique;
+    }
+    
+    calculateNameSimilarity(name1, name2) {
+        /** Calcula similaridade entre dois nomes */
+        const words1 = name1.toLowerCase().split(/\s+/);
+        const words2 = name2.toLowerCase().split(/\s+/);
+        const commonWords = words1.filter(w => words2.includes(w));
+        return commonWords.length / Math.max(words1.length, words2.length);
+    }
+    
+    /**
+     * Sanitiza string para exibição elegante (remove CAIXA ALTA excessiva, normaliza espaços)
+     */
+    sanitizeString(str) {
+        if (!str || typeof str !== 'string') return '';
+        
+        // Remove espaços múltiplos
+        str = str.replace(/\s+/g, ' ').trim();
+        
+        // Se a string está toda em CAIXA ALTA (exceto palavras curtas), converte para Title Case
+        const isAllCaps = str === str.toUpperCase() && str.length > 3;
+        if (isAllCaps) {
+            // Converte para Title Case, mas preserva siglas conhecidas
+            str = str.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+            // Preserva siglas comuns
+            str = str.replace(/\b(Sus|SUS|UBS|UPA|SAMU|CRO|CRM)\b/gi, (match) => match.toUpperCase());
+        }
+        
+        return str;
+    }
+    
+    /**
+     * Sanitiza número de telefone para link tel: (remove espaços, parênteses, traços)
+     */
+    sanitizePhone(phone) {
+        if (!phone || typeof phone !== 'string') return '';
+        // Remove tudo exceto números e +
+        return phone.replace(/[^\d+]/g, '');
+    }
+    
+    /**
+     * Formata nome do hospital para exibição elegante
+     */
+    formatHospitalName(name) {
+        if (!name) return 'Hospital';
+        const sanitized = this.sanitizeString(name);
+        return this.escapeHtml(sanitized);
+    }
+    
+    /**
+     * Cria badge com fallback seguro (nunca retorna badge vazio)
+     */
+    createBadge(type, text, icon = '') {
+        if (!text || !type) return '';
+        
+        const iconHtml = icon ? `<i class="${icon}"></i> ` : '';
+        const classes = {
+            'sus': 'hospital-badge-sus',
+            'maternity': 'hospital-badge-maternity',
+            'emergency': 'hospital-badge-emergency'
+        };
+        
+        return `<span class="${classes[type]}">${iconHtml}${this.escapeHtml(text)}</span>`;
+    }
+    
+    /**
+     * Copia texto para área de transferência
+     */
+    async copyToClipboard(text) {
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } else {
+                // Fallback para navegadores antigos
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                return true;
+            }
+        } catch (error) {
+            console.error('Erro ao copiar:', error);
+            return false;
+        }
+    }
+    
+    displayHospitals(hospitals) {
+        if (!this.hospitalsList) return;
+        
+        if (!hospitals || hospitals.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+        
+        // Filtra apenas hospitais com informações completas (nome, endereço, telefone)
+        const completeHospitals = hospitals.filter(h => {
+            const hasName = h.name && h.name.trim() !== '' && h.name !== 'Hospital';
+            const hasAddress = h.address && h.address.trim() !== '';
+            const hasPhone = h.phone && h.phone.trim() !== '';
+            return hasName && hasAddress && hasPhone;
+        });
+        
+        // Ordena: 1) Hospitais com ala maternal primeiro, 2) Por distância (mais próximo primeiro)
+        const sortedHospitals = [...completeHospitals].sort((a, b) => {
+            // Prioridade 1: Hospitais com ala maternal primeiro
+            if (a.isMaternity && !b.isMaternity) return -1;
+            if (!a.isMaternity && b.isMaternity) return 1;
+            
+            // Prioridade 2: Entre maternos ou não-maternos, ordena por distância (mais próximo primeiro)
+            return a.distance - b.distance;
+        });
+        
+        if (sortedHospitals.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+        
+        // Renderização otimizada: cria fragmento para melhor performance
+        const fragment = document.createDocumentFragment();
+        const container = document.createElement('div');
+        // Conta hospitais com confirmação explícita vs dedução
+        const explicitCount = sortedHospitals.filter(h => h.isMaternityExplicit === true).length;
+        const generalCount = sortedHospitals.filter(h => h.isMaternityExplicit === false).length;
+        
+        let messageText = '';
+        if (explicitCount > 0 && generalCount > 0) {
+            messageText = `Encontrados ${sortedHospitals.length} hospital(is) próximo(s): ${explicitCount} com Ala de Maternidade confirmada e ${generalCount} hospital(is) geral(is).`;
+        } else if (explicitCount > 0) {
+            messageText = `Encontrados ${sortedHospitals.length} hospital(is) com Ala de Maternidade confirmada próximo(s):`;
+        } else {
+            messageText = `Encontrados ${sortedHospitals.length} hospital(is) geral(is) próximo(s) (atendimento provável):`;
+        }
+        
+        container.innerHTML = `<p style="margin-bottom: var(--sophia-spacing-md); color: var(--sophia-text-secondary);">${messageText}</p>`;
+        
+        sortedHospitals.forEach((hospital, index) => {
+            const distanceKm = (hospital.distance / 1000).toFixed(1);
+            const badges = [];
+            
+            // Badge Pronto Socorro
+            if (hospital.isEmergency === true) {
+                badges.push(this.createBadge('emergency', 'Pronto Socorro', 'fas fa-ambulance'));
+            }
+            
+            // Sanitiza dados
+            const hospitalName = hospital.name || 'Hospital';
+            const sanitizedPhone = hospital.phone ? this.sanitizePhone(hospital.phone) : '';
+            const sanitizedAddress = hospital.address ? this.sanitizeString(hospital.address) : '';
+            const sanitizedStreet = hospital.street ? this.sanitizeString(hospital.street) : '';
+            const sanitizedHouseNumber = hospital.houseNumber ? this.sanitizeString(hospital.houseNumber) : '';
+            
+            // Identifica se é público ou privado
+            const publicPrivateTag = hospital.isPublic ? 
+                '<span class="hospital-badge-sus hospital-tag-public" style="display: inline-block; background: #4CAF50; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Provável SUS/Público</span>' :
+                '<span class="hospital-tag-private" style="display: inline-block; background: #FF9800; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Provável Privado</span>';
+            
+            // Badge de Maternidade: Diferenciação entre Certeza Explícita e Dedução
+            let maternityMessage = '';
+            if (hospital.isMaternityExplicit === true) {
+                // Badge Verde (✅ Confirmada): Apenas se o hospital tiver passado pela regra de Inclusão Explícita
+                maternityMessage = `
+                    <div class="hospital-maternity-info" style="background: rgba(76, 175, 80, 0.15); border-left: 3px solid #4CAF50; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 1rem;"></i>
+                        <span style="color: #2E7D32; font-weight: 600; font-size: 0.9rem;">✅ Ala de Maternidade Confirmada</span>
+                    </div>
+                `;
+            } else {
+                // Badge Azul/Neutro (ℹ️ Hospital Geral): Se o hospital passou apenas porque não caiu na lista negra
+                maternityMessage = `
+                    <div class="hospital-maternity-info" style="background: rgba(33, 150, 243, 0.15); border-left: 3px solid #2196F3; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-info-circle" style="color: #2196F3; font-size: 1rem;"></i>
+                        <span style="color: #1565C0; font-weight: 600; font-size: 0.9rem;">ℹ️ Hospital Geral (Atendimento Provável)</span>
+                    </div>
+                `;
+            }
+            
+            // Aviso de segurança
+            const safetyWarning = `
+                <div class="hospital-safety-warning" style="background: #fff3cd; border-left: 3px solid #ffb703; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px;">
+                    <i class="fas fa-exclamation-triangle" style="color: #ffb703; margin-right: 0.5rem;"></i>
+                    <span style="color: #856404; font-weight: 600; font-size: 0.85rem;">⚠️ Recomendamos ligar para confirmar se há plantão obstétrico disponível no momento</span>
+                </div>
+            `;
+            
+            // Monta endereço formatado (rua e número separados)
+            let formattedAddress = '';
+            if (sanitizedStreet) {
+                formattedAddress = sanitizedStreet;
+                if (sanitizedHouseNumber) {
+                    formattedAddress += `, ${sanitizedHouseNumber}`;
+                }
+                if (hospital.neighborhood) {
+                    formattedAddress += ` - ${this.escapeHtml(hospital.neighborhood)}`;
+                }
+                if (hospital.city) {
+                    formattedAddress += `, ${this.escapeHtml(hospital.city)}`;
+                }
+                if (hospital.state) {
+                    formattedAddress += ` - ${this.escapeHtml(hospital.state)}`;
+                }
+            } else {
+                formattedAddress = sanitizedAddress;
+            }
+            
+            // Monta query para Google Maps usando nome + endereço
+            const mapQuery = encodeURIComponent(`${hospitalName} ${formattedAddress}`);
+            
+            const cardHtml = `
+                <div class="hospital-card" data-index="${index}">
+                    <div class="hospital-header">
+                        <div class="hospital-header-top">
+                            <h4 class="hospital-name">${this.escapeHtml(hospitalName)}</h4>
+                        </div>
+                        <div class="hospital-header-bottom">
+                            <div class="hospital-header-tags">
+                                ${publicPrivateTag}
+                            </div>
+                            <span class="hospital-distance">${distanceKm} km</span>
+                        </div>
+                    </div>
+                    ${badges.length > 0 ? `<div class="hospital-badges">${badges.join('')}</div>` : ''}
+                    ${maternityMessage}
+                    ${safetyWarning}
+                    <div class="hospital-info">
+                        ${formattedAddress ? `
+                            <p class="hospital-address">
+                                <i class="fas fa-map-marker-alt"></i> 
+                                <span>${this.escapeHtml(formattedAddress)}</span>
+                                <button class="hospital-copy-btn" 
+                                        data-copy="${this.escapeHtml(formattedAddress)}" 
+                                        aria-label="Copiar endereço"
+                                        title="Copiar endereço">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </p>
+                        ` : ''}
+                        ${sanitizedPhone ? `
+                            <p class="hospital-phone">
+                                <i class="fas fa-phone"></i> 
+                                <a href="tel:${sanitizedPhone}" 
+                                   class="hospital-phone-link" 
+                                   data-phone="${sanitizedPhone}">${this.escapeHtml(hospital.phone)}</a>
+                            </p>
+                        ` : ''}
+                        ${hospital.website ? `
+                            <p class="hospital-website">
+                                <i class="fas fa-globe"></i> 
+                                <a href="${hospital.website}" target="_blank" rel="noopener" class="hospital-website-link">${this.escapeHtml(hospital.website)}</a>
+                            </p>
+                        ` : ''}
+                    </div>
+                    <div class="hospital-actions">
+                        ${sanitizedPhone ? `
+                            <a href="tel:${sanitizedPhone}" 
+                               class="btn-sophia btn-sophia-compact hospital-call-btn hospital-call-btn-primary"
+                               data-phone="${sanitizedPhone}"
+                               style="background: var(--sophia-emergency); color: white; font-weight: 700; flex: 1; min-width: 120px;">
+                                <i class="fas fa-phone"></i> Ligar
+                            </a>
+                        ` : ''}
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lon}" 
+                           target="_blank" 
+                           class="btn-sophia btn-sophia-compact hospital-route-btn">
+                            <i class="fas fa-route"></i> Rota
+                        </a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" 
+                           target="_blank" 
+                           class="btn-sophia btn-sophia-compact hospital-map-btn">
+                            <i class="fas fa-map"></i> Ver no Mapa
+                        </a>
+                    </div>
+                    </div>
+                `;
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = cardHtml;
+            container.appendChild(tempDiv.firstElementChild);
+        });
+        
+        fragment.appendChild(container);
+        this.hospitalsList.innerHTML = '';
+        this.hospitalsList.appendChild(fragment);
+        
+        // Adiciona event listeners para botões de copiar e feedback visual
+        this.attachHospitalEventListeners();
+    }
+    
+    /**
+     * Mostra estado vazio com sugestão de SAMU
+     */
+    showEmptyState() {
+        if (!this.hospitalsList) return;
+        
+        this.hospitalsList.innerHTML = `
+            <div class="hospital-empty-state">
+                <div class="hospital-empty-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="hospital-empty-title">Nenhum hospital encontrado próximo</h3>
+                <p class="hospital-empty-message">
+                    Não foi possível encontrar hospitais próximos à sua localização.
+                </p>
+                <div class="hospital-empty-actions">
+                    <a href="tel:192" class="btn-sophia hospital-emergency-btn">
+                        <i class="fas fa-phone-alt"></i> Ligar SAMU (192)
+                    </a>
+                    <button class="btn-sophia hospital-retry-btn" onclick="window.chatApp?.findNearbyHospitals()">
+                        <i class="fas fa-redo"></i> Tentar Novamente
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Carrega e exibe o módulo de triagem de sintomas
+     */
+    async showSintomasTriagem() {
+        try {
+            // Carrega dados dos sintomas
+            const response = await fetch('/static/data/sintomas_puerperio.json');
+            const data = await response.json();
+            
+            // Esconde welcome message e mostra recursos
+            if (this.welcomeMessage) {
+                this.welcomeMessage.style.display = 'none';
+            }
+            
+            if (this.resourcesModal) {
+                this.resourcesTitle.textContent = '⚠️ Sinais de Alerta';
+                this.resourcesContent.innerHTML = this.renderSintomasTriagem(data.sintomas);
+                this.resourcesModal.classList.add('show');
+            }
+        } catch (error) {
+            this.error('Erro ao carregar sintomas:', error);
+            alert('❌ Erro ao carregar sinais de alerta. Por favor, tente novamente.');
+        }
+    }
+    
+    /**
+     * Renderiza a interface de triagem de sintomas
+     */
+    renderSintomasTriagem(sintomas) {
+        // Agrupa por gravidade
+        const criticos = sintomas.filter(s => s.gravidade === 'critico');
+        const medios = sintomas.filter(s => s.gravidade === 'medio');
+        const baixos = sintomas.filter(s => s.gravidade === 'baixo');
+        
+        let html = `
+            <div class="sintomas-triagem-container">
+                <p class="sintomas-intro">Selecione os sintomas que você está sentindo. Baseado nas suas respostas, te orientaremos sobre o que fazer.</p>
+        `;
+        
+        // Sintomas Críticos
+        if (criticos.length > 0) {
+            html += `
+                <div class="sintomas-section">
+                    <h3 class="sintomas-section-title sintomas-critico">
+                        <i class="fas fa-exclamation-circle"></i> Sintomas Críticos
+                    </h3>
+                    <div class="sintomas-grid">
+                        ${criticos.map(s => this.renderSintomaCard(s)).join('')}
+            </div>
+            </div>
+        `;
+        }
+        
+        // Sintomas Médios
+        if (medios.length > 0) {
+            html += `
+                <div class="sintomas-section">
+                    <h3 class="sintomas-section-title sintomas-medio">
+                        <i class="fas fa-exclamation-triangle"></i> Atenção
+                    </h3>
+                    <div class="sintomas-grid">
+                        ${medios.map(s => this.renderSintomaCard(s)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Sintomas Baixos
+        if (baixos.length > 0) {
+            html += `
+                <div class="sintomas-section">
+                    <h3 class="sintomas-section-title sintomas-baixo">
+                        <i class="fas fa-info-circle"></i> Monitorar
+                    </h3>
+                    <div class="sintomas-grid">
+                        ${baixos.map(s => this.renderSintomaCard(s)).join('')}
+                    </div>
+                    </div>
+                `;
+        }
+        
+        html += `</div>`;
+        return html;
+    }
+    
+    /**
+     * Renderiza um card de sintoma individual
+     */
+    renderSintomaCard(sintoma) {
+        const gravidadeClass = `sintoma-${sintoma.gravidade}`;
+        const badgeClass = sintoma.gravidade === 'critico' ? 'sintoma-badge-critico' : 
+                          sintoma.gravidade === 'medio' ? 'sintoma-badge-medio' : 
+                          'sintoma-badge-baixo';
+        
+        return `
+            <div class="sintoma-card ${gravidadeClass}" data-sintoma-id="${sintoma.id}">
+                <div class="sintoma-header">
+                    <h4 class="sintoma-titulo">${this.escapeHtml(this.sanitizeString(sintoma.titulo))}</h4>
+                    <span class="sintoma-badge ${badgeClass}">${this.getGravidadeLabel(sintoma.gravidade)}</span>
+                    </div>
+                <p class="sintoma-pergunta">${this.escapeHtml(this.sanitizeString(sintoma.pergunta))}</p>
+                <div class="sintoma-actions">
+                    <button class="btn-sophia sintoma-btn-yes" data-sintoma-id="${sintoma.id}" data-resposta="sim">
+                        <i class="fas fa-check"></i> Sim
+                    </button>
+                    <button class="btn-sophia sintoma-btn-no" data-sintoma-id="${sintoma.id}" data-resposta="nao">
+                        <i class="fas fa-times"></i> Não
+                    </button>
+                    </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Retorna label de gravidade
+     */
+    getGravidadeLabel(gravidade) {
+        const labels = {
+            'critico': 'Crítico',
+            'medio': 'Atenção',
+            'baixo': 'Monitorar'
+        };
+        return labels[gravidade] || 'Monitorar';
+    }
+    
+    /**
+     * Processa resposta do sintoma e exibe recomendação
+     */
+    async processarRespostaSintoma(sintomaId, resposta) {
+        try {
+            // Carrega dados novamente para garantir que temos o sintoma completo
+            const response = await fetch('/static/data/sintomas_puerperio.json');
+            const data = await response.json();
+            const sintoma = data.sintomas.find(s => s.id === sintomaId);
+            
+            if (!sintoma) {
+                this.error('Sintoma não encontrado:', sintomaId);
+                return;
+            }
+            
+            // Se resposta for "Sim" e gravidade for crítica, mostra ação imediata
+            if (resposta === 'sim' && sintoma.gravidade === 'critico') {
+                this.mostrarRecomendacaoCritica(sintoma);
+            } else if (resposta === 'sim' && sintoma.gravidade === 'medio') {
+                this.mostrarRecomendacaoMedia(sintoma);
+            } else if (resposta === 'sim' && sintoma.gravidade === 'baixo') {
+                this.mostrarRecomendacaoBaixa(sintoma);
+            } else {
+                // Resposta "Não" - apenas confirma
+                this.mostrarFeedbackNegativo(sintoma);
+            }
+            
+            // Salva no histórico local
+            this.salvarTriagemHistorico(sintoma, resposta);
+            
+        } catch (error) {
+            this.error('Erro ao processar resposta:', error);
+        }
+    }
+    
+    /**
+     * Mostra recomendação para sintoma crítico
+     */
+    mostrarRecomendacaoCritica(sintoma) {
+        const html = `
+            <div class="sintoma-resultado sintoma-resultado-critico">
+                <div class="sintoma-resultado-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3 class="sintoma-resultado-titulo">${this.escapeHtml(sintoma.recomendacao)}</h3>
+                <p class="sintoma-resultado-descricao">${this.escapeHtml(sintoma.descricao)}</p>
+                <div class="sintoma-resultado-acoes">
+                    ${sintoma.acoes.map(acao => {
+                        if (acao.tipo === 'hospital') {
+                            return `
+                                <button class="btn-sophia sintoma-acao-btn sintoma-acao-hospital" 
+                                        onclick="window.chatApp?.findNearbyHospitals()">
+                                    <i class="fas fa-hospital"></i> ${this.escapeHtml(acao.texto)}
+                                </button>
+                            `;
+                        } else if (acao.tipo === 'telefone') {
+                            const phoneSanitized = this.sanitizePhone(acao.numero);
+                            return `
+                                <a href="tel:${phoneSanitized}" class="btn-sophia sintoma-acao-btn sintoma-acao-telefone">
+                                    <i class="fas fa-phone-alt"></i> ${this.escapeHtml(acao.texto)}
+                                </a>
+                            `;
+                        }
+                        return '';
+                    }).join('')}
+                    </div>
+                    </div>
+        `;
+        
+        // Substitui o conteúdo do modal
+        if (this.resourcesContent) {
+            this.resourcesContent.innerHTML = html;
+        }
+    }
+    
+    /**
+     * Mostra recomendação para sintoma médio
+     */
+    mostrarRecomendacaoMedia(sintoma) {
+        const html = `
+            <div class="sintoma-resultado sintoma-resultado-medio">
+                <div class="sintoma-resultado-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                <h3 class="sintoma-resultado-titulo">${this.escapeHtml(sintoma.recomendacao)}</h3>
+                <p class="sintoma-resultado-descricao">${this.escapeHtml(sintoma.descricao)}</p>
+                <div class="sintoma-resultado-acoes">
+                    ${sintoma.acoes.map(acao => {
+                        if (acao.tipo === 'hospital') {
+                            return `
+                                <button class="btn-sophia sintoma-acao-btn" 
+                                        onclick="window.chatApp?.findNearbyHospitals()">
+                                    <i class="fas fa-hospital"></i> ${this.escapeHtml(acao.texto)}
+                                </button>
+                            `;
+                        } else if (acao.tipo === 'telefone') {
+                            const phoneSanitized = this.sanitizePhone(acao.numero);
+                            return `
+                                <a href="tel:${phoneSanitized}" class="btn-sophia sintoma-acao-btn">
+                                    <i class="fas fa-phone-alt"></i> ${this.escapeHtml(acao.texto)}
+                                </a>
+                            `;
+                        }
+                        return '';
+                    }).join('')}
+                    </div>
+                <button class="btn-sophia sintoma-voltar-btn" onclick="window.chatApp?.showSintomasTriagem()">
+                    <i class="fas fa-arrow-left"></i> Voltar aos Sintomas
+                </button>
+                </div>
+            `;
+        
+        if (this.resourcesContent) {
+            this.resourcesContent.innerHTML = html;
+        }
+    }
+    
+    /**
+     * Mostra recomendação para sintoma baixo
+     */
+    mostrarRecomendacaoBaixa(sintoma) {
+        const html = `
+            <div class="sintoma-resultado sintoma-resultado-baixo">
+                <div class="sintoma-resultado-icon">
+                    <i class="fas fa-info-circle"></i>
+                    </div>
+                <h3 class="sintoma-resultado-titulo">${this.escapeHtml(sintoma.recomendacao)}</h3>
+                <p class="sintoma-resultado-descricao">${this.escapeHtml(sintoma.descricao)}</p>
+                <button class="btn-sophia sintoma-voltar-btn" onclick="window.chatApp?.showSintomasTriagem()">
+                    <i class="fas fa-arrow-left"></i> Voltar aos Sintomas
+                </button>
+                </div>
+            `;
+        
+        if (this.resourcesContent) {
+            this.resourcesContent.innerHTML = html;
+        }
+    }
+    
+    /**
+     * Mostra feedback para resposta negativa
+     */
+    mostrarFeedbackNegativo(sintoma) {
+        // Feedback discreto - apenas confirma que não tem o sintoma
+        const card = document.querySelector(`[data-sintoma-id="${sintoma.id}"]`);
+        if (card) {
+            card.classList.add('sintoma-respondido');
+            const actions = card.querySelector('.sintoma-actions');
+            if (actions) {
+                actions.innerHTML = '<p class="sintoma-feedback-positivo">✓ Obrigada por responder. Continue monitorando.</p>';
+            }
+        }
+    }
+    
+    /**
+     * Salva triagem no histórico local
+     */
+    salvarTriagemHistorico(sintoma, resposta) {
+        try {
+            const historico = JSON.parse(localStorage.getItem('sophia_triagem_historico') || '[]');
+            historico.push({
+                sintoma: sintoma.titulo,
+                categoria: sintoma.categoria,
+                gravidade: sintoma.gravidade,
+                resposta: resposta,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Mantém apenas últimos 50 registros
+            if (historico.length > 50) {
+                historico.shift();
+            }
+            
+            localStorage.setItem('sophia_triagem_historico', JSON.stringify(historico));
+        } catch (error) {
+            this.error('Erro ao salvar histórico de triagem:', error);
+        }
+    }
+    
+    /* Função mostrarHistoricoTriagens() removida - botão "Ver meu Histórico" foi removido */
+    
+    /**
+     * Limpa o histórico de triagens do localStorage
+     */
+    limparHistoricoTriagens() {
+        try {
+            const historico = JSON.parse(localStorage.getItem('sophia_triagem_historico') || '[]');
+            
+            if (historico.length === 0) {
+                this.showNotification('Histórico vazio', 'Não há registros para limpar.', 'info');
+                return;
+            }
+            
+            // Confirmação amigável
+            if (confirm(`Tem certeza que deseja limpar todo o histórico de triagens?\n\nVocê tem ${historico.length} registro(s) salvo(s). Esta ação não pode ser desfeita.`)) {
+                localStorage.removeItem('sophia_triagem_historico');
+                this.showNotification('Histórico limpo', 'Todos os registros de triagem foram removidos com sucesso.', 'success');
+                
+                // Feedback visual no botão (se existir)
+                if (this.sidebarBtnClearMemory) {
+                    const textoOriginal = this.sidebarBtnClearMemory.innerHTML;
+                    this.sidebarBtnClearMemory.innerHTML = '<i class="fas fa-check"></i> Limpo!';
+                    this.sidebarBtnClearMemory.style.background = 'var(--sophia-pink-light, #F4A6A6)';
+                    this.sidebarBtnClearMemory.style.color = '#ffffff';
+                    
+                    setTimeout(() => {
+                        this.sidebarBtnClearMemory.innerHTML = textoOriginal;
+                        this.sidebarBtnClearMemory.style.background = '';
+                        this.sidebarBtnClearMemory.style.color = '';
+                    }, 2000);
+                }
+            }
+        } catch (error) {
+            this.error('Erro ao limpar histórico de triagens:', error);
+            this.showNotification('Erro', 'Não foi possível limpar o histórico. Tente novamente.', 'error');
+        }
+    }
+    
+    /**
+     * Anexa event listeners para interações dos cards
+     */
+    attachHospitalEventListeners() {
+        // Botões de copiar endereço
+        const copyButtons = this.hospitalsList.querySelectorAll('.hospital-copy-btn');
+        copyButtons.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const textToCopy = btn.getAttribute('data-copy');
+                if (textToCopy) {
+                    const success = await this.copyToClipboard(textToCopy);
+                    if (success) {
+                        // Feedback visual
+                        btn.classList.add('copied');
+                        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+                            btn.classList.remove('copied');
+                            btn.innerHTML = '<i class="fas fa-copy"></i>';
+                        }, 2000);
+                    }
+                }
+            });
+        });
+        
+        // Botões de ligar - feedback visual
+        const callButtons = this.hospitalsList.querySelectorAll('.hospital-call-btn, .hospital-phone-link');
+        callButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Feedback visual imediato
+                btn.classList.add('clicked');
+                setTimeout(() => {
+                    btn.classList.remove('clicked');
+                }, 300);
+            });
+        });
+    }
 }
 
 // Inicializa o chatbot quando a página carrega
@@ -3954,6 +5564,7 @@ function initializeChatApp() {
         console.log('✅ [INIT] chatApp.handleInitialLogin disponível:', typeof window.chatApp.handleInitialLogin);
         
         // Verifica status da conexão periodicamente (apenas se já estiver logado)
+        // Intervalo aumentado para 30s para reduzir requisições (otimização para ngrok)
         setInterval(() => {
             try {
                 // Verifica se o chatbot existe e está logado
@@ -3973,7 +5584,7 @@ function initializeChatApp() {
             } catch (error) {
                 console.warn('Erro no setInterval de checkConnectionStatus:', error);
             }
-        }, 5000);
+        }, 30000); // Aumentado de 5s para 30s para reduzir carga no ngrok
 
         // Verifica status inicial apenas se estiver logado
         if (chatbot.userLoggedIn) {
@@ -4042,8 +5653,8 @@ function initFeatureCarousel() {
     const nextBtn = document.getElementById('feature-carousel-next');
     const dotsContainer = document.getElementById('feature-carousel-dots');
     
-    if (!track || !prevBtn || !nextBtn || !dotsContainer) {
-        return; // Elementos não existem ainda
+    if (!track || !prevBtn || !dotsContainer) {
+        return; // Elementos não existem ainda (nextBtn é opcional)
     }
 
     const buttons = track.querySelectorAll('.feature-btn');
@@ -4078,7 +5689,7 @@ function initFeatureCarousel() {
         if (totalSlides === 0) {
             dotsContainer.style.display = 'none';
             prevBtn.style.display = 'none';
-            nextBtn.style.display = 'none';
+            if (nextBtn) nextBtn.style.display = 'none';
             track.style.transform = 'translateX(0)'; // Reseta posição
             return;
         }
@@ -4086,7 +5697,7 @@ function initFeatureCarousel() {
         // Mostra os controles
         dotsContainer.style.display = 'flex';
         prevBtn.style.display = 'flex';
-        nextBtn.style.display = 'flex';
+        if (nextBtn) nextBtn.style.display = 'flex';
 
         // Remove dots antigos
         dotsContainer.innerHTML = '';
@@ -4140,12 +5751,12 @@ function initFeatureCarousel() {
         const totalSlides = calculateTotalSlides();
         if (totalSlides === 0) {
             prevBtn.disabled = true;
-            nextBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
             return;
         }
         
         prevBtn.disabled = currentIndex === 0;
-        nextBtn.disabled = currentIndex >= totalSlides - 1;
+        if (nextBtn) nextBtn.disabled = currentIndex >= totalSlides - 1;
     }
 
     // Atualiza os dots
@@ -4187,7 +5798,7 @@ function initFeatureCarousel() {
     }
 
     // Event listeners
-    nextBtn.addEventListener('click', nextSlide);
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
     prevBtn.addEventListener('click', prevSlide);
 
     // Redimensionamento da janela

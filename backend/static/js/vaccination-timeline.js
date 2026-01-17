@@ -21,6 +21,13 @@
          */
         async loadVaccinationData() {
             if (this.isLoading) return;
+            
+            // Verifica se apiClient está disponível e usuário está autenticado
+            if (!window.apiClient) {
+                this.log('apiClient não disponível ainda');
+                return;
+            }
+            
             this.isLoading = true;
 
             try {
@@ -28,7 +35,10 @@
                 
                 if (response.error) {
                     this.log('Erro ao carregar dados:', response.error);
-                    this.showErrorMessage(response.message || 'Erro ao carregar calendário de vacinação');
+                    // Não mostra erro se usuário não estiver autenticado ou não tiver perfil de bebê
+                    if (response.message && !response.message.includes('Nenhum perfil de bebê encontrado')) {
+                        this.showErrorMessage(response.message || 'Erro ao carregar calendário de vacinação');
+                    }
                     return;
                 }
 
@@ -40,8 +50,18 @@
                 this.log('Dados de vacinação carregados:', response);
                 
             } catch (error) {
+                // Não mostra erro se for 401/403 (não autenticado) ou 404 (sem perfil de bebê)
+                // Esses são casos esperados e não devem ser tratados como erros
+                if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404)) {
+                    this.log('Usuário não autenticado ou sem perfil de bebê - inicialização adiada');
+                    return;
+                }
+                
                 this.log('Erro na requisição:', error);
-                this.showErrorMessage('Erro ao carregar calendário de vacinação. Tente novamente.');
+                // Só mostra erro se for um problema real (erro 500, etc)
+                if (!error.response || error.response.status >= 500) {
+                    this.showErrorMessage('Erro ao carregar calendário de vacinação. Tente novamente.');
+                }
             } finally {
                 this.isLoading = false;
             }
@@ -534,11 +554,19 @@
             // Verifica se o container existe
             const container = document.getElementById('vaccination-timeline-container');
             if (!container) {
-                this.log('Container vaccination-timeline-container não encontrado');
+                this.log('Container vaccination-timeline-container não encontrado - inicialização adiada');
+                // Não carrega dados automaticamente se o container não existir
+                // Os dados serão carregados quando o usuário clicar no botão de vacinação
                 return;
             }
 
-            // Carrega dados automaticamente
+            // Verifica se apiClient está disponível (usuário autenticado)
+            if (!window.apiClient) {
+                this.log('apiClient não disponível - inicialização adiada até autenticação');
+                return;
+            }
+
+            // Carrega dados automaticamente apenas se container existe e usuário está autenticado
             this.loadVaccinationData();
         }
     }

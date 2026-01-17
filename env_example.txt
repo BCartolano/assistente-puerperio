@@ -1,26 +1,51 @@
-# Configurações do Chatbot Puerpério
-# OPENAI_API_KEY (obrigatório para uso da IA)
+# ============================================
+# CONFIGURAÇÕES DO CHATBOT PUERPÉRIO
+# ============================================
+# Copie este arquivo para .env e configure as variáveis
+# Comando: Copy-Item env_example.txt .env
+# ============================================
+
+# ============================================
+# IA - OPENAI (OBRIGATÓRIO para funcionalidade de IA)
+# ============================================
 # Obtenha sua chave em: https://platform.openai.com/api-keys
 OPENAI_API_KEY=sua_chave_openai_aqui
+
+# Habilita/desabilita uso de IA (true/false)
+# Se false, o sistema usará apenas a base de conhecimento local
 USE_AI=true
 
-# OPENAI_ASSISTANT_ID (opcional - será criado automaticamente se não configurado)
-# Se você já tiver um assistente criado, pode adicionar o ID aqui para reutilizá-lo
+# ID do Assistente OpenAI (OPCIONAL)
+# Será criado automaticamente se não configurado
+# Se você já tiver um assistente, adicione o ID aqui para reutilizá-lo
 # OPENAI_ASSISTANT_ID=asst_xxxxx
 
-# Configurações do Flask
+# ============================================
+# FLASK - CONFIGURAÇÕES DO SERVIDOR
+# ============================================
+# Ambiente: development ou production
 FLASK_ENV=development
+
+# Modo debug (True/False)
+# ⚠️ NUNCA use True em produção!
 FLASK_DEBUG=True
+
+# Chave secreta para sessões e cookies
+# ⚠️ IMPORTANTE: Gere uma chave segura e única para produção!
+# Pode usar: python -c "import secrets; print(secrets.token_hex(32))"
 SECRET_KEY=sua-chave-secreta-super-segura-mude-isso-em-producao
 
 # Porta do servidor
+# Em produção, muitas plataformas (Render, Railway) definem via variável PORT
 PORT=5000
 
-# URL base do aplicativo (para links de email)
-# ⚠️ IMPORTANTE: Se usar ngrok, emails podem cair no spam ou não serem entregues!
-# - Em desenvolvimento: pode usar ngrok (ex: https://seu-link.ngrok-free.app)
-# - Em produção: use um domínio próprio e verificado (ex: https://sophia.com)
-# - Links de ngrok são marcados como não confiáveis por muitos provedores de email
+# ============================================
+# URL BASE DO APLICATIVO
+# ============================================
+# URL base para links em emails e redirecionamentos
+# ⚠️ IMPORTANTE: Se usar ngrok, emails podem cair no spam!
+# - Desenvolvimento: http://localhost:5000 ou https://seu-link.ngrok-free.app
+# - Produção: https://seu-dominio.com (use domínio próprio e verificado)
 BASE_URL=http://localhost:5000
 
 # Configurações de Email (Opcional - se não configurar, emails serão logados no console)
@@ -57,9 +82,23 @@ MAIL_DEFAULT_SENDER=seu_email@gmail.com
 # MAIL_PASSWORD=sua_senha_normal
 # MAIL_DEFAULT_SENDER=noreply@chatbot-puerperio.com
 
-# Para usar este arquivo, renomeie para .env na raiz do projeto
-# 
-# IMPORTANTE: 
-# - Gmail requer Verificação em Duas Etapas + Senha de App
-# - Outlook/Yahoo podem usar senha normal (mas menos seguro)
-# - Se não configurar, emails aparecerão apenas no console do servidor
+# ============================================
+# VARIÁVEIS DE PRODUÇÃO (Definidas automaticamente pelas plataformas)
+# ============================================
+# Estas variáveis são definidas automaticamente em produção:
+# - RENDER (Render.com)
+# - RENDER_EXTERNAL_URL (Render.com)
+# - DYNO (Heroku)
+# - PORT (muitas plataformas definem automaticamente)
+# Não é necessário configurá-las manualmente
+
+# ============================================
+# NOTAS IMPORTANTES
+# ============================================
+# 1. Gmail requer Verificação em Duas Etapas + Senha de App
+# 2. Outlook/Yahoo podem usar senha normal (mas menos seguro)
+# 3. Se não configurar email, emails aparecerão apenas no console
+# 4. Links de ngrok são marcados como não confiáveis por provedores de email
+# 5. Em produção, sempre use HTTPS e domínio próprio
+# 6. NUNCA commite o arquivo .env no Git!
+# 7. Para usar este arquivo, copie para .env na raiz do projeto

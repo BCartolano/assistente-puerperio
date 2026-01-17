@@ -67,6 +67,14 @@ try:
             nltk.download('punkt', quiet=True)
         except:
             pass
+    # Baixa RSLP stemmer se necessário
+    try:
+        nltk.data.find('stemmers/rslp')
+    except LookupError:
+        try:
+            nltk.download('rslp', quiet=True)
+        except:
+            pass
 except ImportError:
     NLTK_AVAILABLE = False
 except Exception as e:
@@ -144,6 +152,28 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
+# Verifica se google-generativeai (Gemini) está disponível
+GEMINI_AVAILABLE = False
+gemini_client = None
+try:
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+    logger.info("[GEMINI] Biblioteca google-generativeai importada com sucesso")
+    print("[GEMINI] Biblioteca google-generativeai importada com sucesso")
+except ImportError as e:
+    GEMINI_AVAILABLE = False
+    gemini_client = None
+    logger.warning(f"[GEMINI] ERRO ao importar google-generativeai: {e}")
+    print(f"[GEMINI] ERRO ao importar google-generativeai: {e}")
+    print("[GEMINI] Execute: pip install google-generativeai")
+except Exception as e:
+    GEMINI_AVAILABLE = False
+    gemini_client = None
+    logger.error(f"[GEMINI] ERRO inesperado ao importar google-generativeai: {e}")
+    print(f"[GEMINI] ERRO inesperado ao importar google-generativeai: {e}")
+    import traceback
+    traceback.print_exc()
+
 # Logger já foi configurado acima (antes da importação do NLTK)
 
 # Carrega variáveis de ambiente
@@ -194,39 +224,61 @@ BASE_PATH = os.path.join(os.path.dirname(__file__), "..", "dados")
 DB_PATH = os.path.join(os.path.dirname(__file__), "users.db")
 # Flag para controlar uso de IA (permite desabilitar completamente)
 USE_AI = os.getenv("USE_AI", "true").lower() == "true"
+AI_PROVIDER = os.getenv("AI_PROVIDER", "openai").lower()  # openai ou gemini
 logger.info(f"[IA] 🔍 USE_AI configurado: {USE_AI}")
+logger.info(f"[IA] 🔍 AI_PROVIDER configurado: {AI_PROVIDER}")
 print(f"[IA] 🔍 USE_AI configurado: {USE_AI}")
+print(f"[IA] 🔍 AI_PROVIDER configurado: {AI_PROVIDER}")
 
-# Carrega OPENAI_API_KEY com múltiplas tentativas (apenas se USE_AI estiver habilitado)
+# Carrega chaves de API com múltiplas tentativas (apenas se USE_AI estiver habilitado)
 OPENAI_API_KEY = None
 OPENAI_ASSISTANT_ID = None
+GEMINI_API_KEY = None
 if USE_AI:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Carrega também no início
     if not OPENAI_API_KEY:
         # Tenta recarregar se não encontrou
-        logger.warning("[OPENAI] OPENAI_API_KEY não encontrada na primeira tentativa, recarregando .env...")
-        print("[OPENAI] OPENAI_API_KEY não encontrada na primeira tentativa, recarregando .env...")
+        logger.warning("[IA] Nenhuma chave de API encontrada na primeira tentativa, recarregando .env...")
+        print("[IA] Nenhuma chave de API encontrada na primeira tentativa, recarregando .env...")
         for env_path in env_paths:
             if os.path.exists(env_path):
-                logger.info(f"[OPENAI] Recarregando .env de: {env_path}")
-                print(f"[OPENAI] Recarregando .env de: {env_path}")
+                logger.info(f"[IA] Recarregando .env de: {env_path}")
+                print(f"[IA] Recarregando .env de: {env_path}")
                 load_dotenv(env_path, override=True)
                 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
                 OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
-                if OPENAI_API_KEY:
-                    logger.info(f"[OPENAI] OPENAI_API_KEY carregada após recarregar (length: {len(OPENAI_API_KEY)})")
-                    print(f"[OPENAI] OPENAI_API_KEY carregada após recarregar (length: {len(OPENAI_API_KEY)})")
+                GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+                if OPENAI_API_KEY or GEMINI_API_KEY:
+                    if OPENAI_API_KEY:
+                        logger.info(f"[OPENAI] OPENAI_API_KEY carregada após recarregar (length: {len(OPENAI_API_KEY)})")
+                        print(f"[OPENAI] OPENAI_API_KEY carregada após recarregar (length: {len(OPENAI_API_KEY)})")
+                    if GEMINI_API_KEY:
+                        logger.info(f"[GEMINI] GEMINI_API_KEY carregada após recarregar (length: {len(GEMINI_API_KEY)})")
+                        print(f"[GEMINI] GEMINI_API_KEY carregada após recarregar (length: {len(GEMINI_API_KEY)})")
                     break
 
     if OPENAI_API_KEY:
         logger.info(f"[OPENAI] OPENAI_API_KEY encontrada (length: {len(OPENAI_API_KEY)})")
         print(f"[OPENAI] OPENAI_API_KEY encontrada (length: {len(OPENAI_API_KEY)})")
-    else:
-        logger.error("[OPENAI] OPENAI_API_KEY NAO encontrada após todas as tentativas!")
+    if GEMINI_API_KEY:
+        logger.info(f"[GEMINI] GEMINI_API_KEY encontrada (length: {len(GEMINI_API_KEY)})")
+        print(f"[GEMINI] GEMINI_API_KEY encontrada (length: {len(GEMINI_API_KEY)})")
+    if not OPENAI_API_KEY and not GEMINI_API_KEY:
+        logger.error("[IA] Nenhuma chave de API encontrada após todas as tentativas!")
 else:
     logger.info("[IA] USE_AI=false - IA desabilitada, usando apenas base local humanizada")
     print("[IA] USE_AI=false - IA desabilitada, usando apenas base local humanizada")
+
+# YouTube API Key (opcional - para busca dinâmica de vídeos, independente de USE_AI)
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+if YOUTUBE_API_KEY:
+    logger.info(f"[YOUTUBE] YOUTUBE_API_KEY encontrada (length: {len(YOUTUBE_API_KEY)})")
+    print(f"[YOUTUBE] YOUTUBE_API_KEY encontrada (opcional para busca dinâmica)")
+else:
+    logger.info("[YOUTUBE] YOUTUBE_API_KEY não encontrada - busca dinâmica desabilitada, usando vídeos estáticos")
+    print("[YOUTUBE] YOUTUBE_API_KEY não encontrada - busca dinâmica desabilitada, usando vídeos estáticos")
 
 # Configurações de sessão para funcionar com IP/localhost e mobile
 # Detecta se está em produção (HTTPS) ou desenvolvimento
@@ -401,8 +453,33 @@ login_manager.login_view = 'index'
 # "strong" pode causar problemas em dispositivos móveis com mudança de rede
 login_manager.session_protection = "basic"
 
+# Inicializa cliente Gemini se a chave estiver disponível E USE_AI estiver habilitado
+# NOTA: A inicialização completa com system_instruction será feita na classe ChatbotPuerperio
+gemini_model = None
+if USE_AI and AI_PROVIDER == "gemini" and GEMINI_AVAILABLE and GEMINI_API_KEY:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=GEMINI_API_KEY)
+        # Inicializa modelo básico (sem system_instruction por enquanto)
+        # O system_instruction será adicionado na classe ChatbotPuerperio
+        gemini_model = genai.GenerativeModel('gemini-pro')
+        logger.info("[GEMINI] Cliente Gemini inicializado com sucesso (modelo básico)")
+        print("[GEMINI] Cliente Gemini inicializado com sucesso (modelo básico)")
+        print("[GEMINI] System prompt será configurado na classe ChatbotPuerperio")
+    except Exception as e:
+        logger.error(f"[GEMINI] Erro ao inicializar Gemini: {e}")
+        print(f"[GEMINI] Erro ao inicializar Gemini: {e}")
+        gemini_model = None
+elif USE_AI and AI_PROVIDER == "gemini":
+    if not GEMINI_AVAILABLE:
+        logger.warning("[GEMINI] Biblioteca google-generativeai nao instalada - execute: pip install google-generativeai")
+        print("[GEMINI] Biblioteca nao instalada - execute: pip install google-generativeai")
+    elif not GEMINI_API_KEY:
+        logger.warning("[GEMINI] GEMINI_API_KEY nao configurada")
+        print("[GEMINI] GEMINI_API_KEY nao configurada")
+
 # Inicializa cliente OpenAI se a chave estiver disponível E USE_AI estiver habilitado
-if USE_AI and OPENAI_AVAILABLE and OPENAI_API_KEY:
+if USE_AI and AI_PROVIDER == "openai" and OPENAI_AVAILABLE and OPENAI_API_KEY:
     try:
         openai_client = OpenAI(api_key=OPENAI_API_KEY)
         logger.info("[OPENAI] Cliente OpenAI inicializado com sucesso")
@@ -2061,8 +2138,48 @@ class ChatbotPuerperio:
         self.assistant_id = OPENAI_ASSISTANT_ID
         self.user_threads = {}  # {user_id: thread_id}
         
-        # Cria assistente Sophia se não existir
-        if self.openai_client and not self.assistant_id:
+        # Armazena cliente Gemini e histórico de conversas por usuário
+        self.gemini_model = gemini_model
+        self.user_historico_gemini = {}  # {user_id: [lista de mensagens]}
+        
+        # Carrega system prompt para Gemini
+        self.gemini_system_instruction = None
+        if AI_PROVIDER == "gemini" and self.gemini_model is None and GEMINI_AVAILABLE and GEMINI_API_KEY:
+            try:
+                # Carrega system prompt do loader.py
+                self.gemini_system_instruction = self._carregar_system_prompt()
+                if self.gemini_system_instruction:
+                    # Inicializa modelo Gemini com system instruction
+                    import google.generativeai as genai
+                    genai.configure(api_key=GEMINI_API_KEY)
+                    self.gemini_model = genai.GenerativeModel(
+                        'gemini-pro',
+                        system_instruction=self.gemini_system_instruction
+                    )
+                    logger.info("[GEMINI] Modelo Gemini inicializado com system prompt")
+                    print("[GEMINI] Modelo Gemini inicializado com system prompt")
+            except Exception as e:
+                logger.error(f"[GEMINI] Erro ao inicializar Gemini no __init__: {e}")
+                print(f"[GEMINI] Erro ao inicializar Gemini no __init__: {e}")
+                self.gemini_model = None
+        elif AI_PROVIDER == "gemini" and self.gemini_model:
+            # Se já foi inicializado globalmente, carrega system prompt também
+            self.gemini_system_instruction = self._carregar_system_prompt()
+            if self.gemini_system_instruction:
+                # Reinicializa com system instruction
+                try:
+                    import google.generativeai as genai
+                    genai.configure(api_key=GEMINI_API_KEY)
+                    self.gemini_model = genai.GenerativeModel(
+                        'gemini-pro',
+                        system_instruction=self.gemini_system_instruction
+                    )
+                    logger.info("[GEMINI] Modelo Gemini reconfigurado com system prompt")
+                except Exception as e:
+                    logger.warning(f"[GEMINI] Erro ao reconfigurar Gemini: {e}")
+        
+        # Cria assistente Sophia se não existir (apenas para OpenAI)
+        if AI_PROVIDER == "openai" and self.openai_client and not self.assistant_id:
             logger.info(f"[ChatbotPuerperio] Criando assistente Sophia...")
             print(f"[ChatbotPuerperio] Criando assistente Sophia...")
             self.assistant_id = self._criar_assistente_sophia()
@@ -2073,8 +2190,36 @@ class ChatbotPuerperio:
                 logger.error(f"[ChatbotPuerperio] ❌ Falha ao criar assistente na inicialização")
                 print(f"[ChatbotPuerperio] ❌ Falha ao criar assistente na inicialização")
         
-        logger.info(f"[ChatbotPuerperio] Inicializado. OpenAI disponivel: {self.openai_client is not None}, Assistant ID: {self.assistant_id is not None}")
-        print(f"[ChatbotPuerperio] Inicializado. OpenAI disponivel: {self.openai_client is not None}, Assistant ID: {self.assistant_id is not None}")
+        logger.info(f"[ChatbotPuerperio] Inicializado. Provider: {AI_PROVIDER}, OpenAI: {self.openai_client is not None}, Gemini: {self.gemini_model is not None}")
+        print(f"[ChatbotPuerperio] Inicializado. Provider: {AI_PROVIDER}, OpenAI: {self.openai_client is not None}, Gemini: {self.gemini_model is not None}")
+    
+    def _carregar_system_prompt(self):
+        """Carrega o system prompt do loader.py para uso com Gemini"""
+        try:
+            import os
+            loader_path = os.path.join(os.path.dirname(__file__), 'loader.py')
+            if os.path.exists(loader_path):
+                import importlib.util
+                spec = importlib.util.spec_from_file_location("loader", loader_path)
+                loader_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(loader_module)
+                load_all = loader_module.load_all
+                
+                logger.info("[GEMINI] Carregando System Prompt do loader.py...")
+                loaded_data = load_all()
+                system_prompt = loaded_data.get("system_prompt", "")
+                if system_prompt:
+                    logger.info("[GEMINI] ✅ System prompt carregado com sucesso")
+                    return system_prompt
+                else:
+                    logger.warning("[GEMINI] ⚠️ System prompt vazio do loader")
+            else:
+                logger.warning(f"[GEMINI] ⚠️ Loader não encontrado em {loader_path}")
+        except Exception as e:
+            logger.warning(f"[GEMINI] ⚠️ Erro ao carregar system prompt: {e}. Usando fallback.")
+        
+        # Fallback: system prompt básico
+        return """Você é a Sophia, uma Inteligência Artificial EMPÁTICA, ACOLHEDORA e ESPECIALIZADA EXCLUSIVAMENTE em gestação, parto, pós-parto, vacinação e cuidados maternos. Sempre seja empática, acolhedora e oriente consultar profissionais de saúde quando necessário."""
     
     def _criar_assistente_sophia(self):
         """Cria o assistente Sophia personalizado na OpenAI usando nova arquitetura (loader.py)"""
@@ -2191,7 +2336,22 @@ Quando detectar tags de contexto como 'cansaço_extremo_critico', 'crise_emocion
 4. Valide os sentimentos da mãe antes de dar orientações
 5. Para 'cansaço_extremo_critico', sempre inclua sugestão prática: "peça para alguém ficar com o bebê por 30 minutos enquanto você toma um banho calmo"
 
-Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para ajudar, apoiar e acolher durante esse momento especial do puerpério."""
+Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para ajudar, apoiar e acolher durante esse momento especial do puerpério.
+
+RECURSOS DISPONÍVEIS NO DASHBOARD:
+A plataforma possui uma Central de Apoio ao Puerpério com cards interativos que você pode mencionar quando relevante:
+
+1. **Saúde Preventiva - Câncer de Mama**: Card com link para informações oficiais do Ministério da Saúde sobre prevenção e detecção precoce. Quando a usuária mencionar preocupações sobre saúde preventiva, câncer de mama, ou exames de rotina, você pode orientar: "Você sabia que temos um card aqui na página com informações oficiais do Ministério da Saúde sobre saúde preventiva? Fica lá no dashboard, no card de Saúde Preventiva."
+
+2. **Rede de Apoio - Doação de Leite**: Card com link para a Rede Brasileira de Bancos de Leite Humano (Fiocruz). Quando a usuária mencionar doação de leite, excesso de leite, ou interesse em ajudar outras mães, você pode orientar: "Que lindo seu interesse em ajudar! Temos um card aqui na página com o link direto para a Rede Brasileira de Bancos de Leite Humano, da Fiocruz. É o card de Rede de Apoio, lá no dashboard."
+
+3. **Conteúdo Educativo - Vídeos**: Card que abre um modal com vídeos educativos sobre puerpério e amamentação. Quando a usuária demonstrar interesse em conteúdo visual ou vídeos educativos, você pode mencionar: "Se quiser ver vídeos educativos sobre puerpério e amamentação, temos um card de Conteúdo Educativo aqui na página que abre vídeos selecionados especialmente para você."
+
+DIRECIONAMENTO NATURAL:
+- Sempre mencione os cards de forma natural e contextualizada, apenas quando fizer sentido na conversa
+- Use linguagem acolhedora: "Você sabia que temos...", "Temos um card aqui que pode te ajudar..."
+- Nunca force a menção dos cards se não for relevante ao tópico da conversa
+- Os links abrem em nova aba, então a usuária pode continuar conversando com você enquanto explora os recursos externos"""
             
             assistant = self.openai_client.beta.assistants.create(
                 name="Sophia - Assistente Puerpério",
@@ -2312,6 +2472,57 @@ Lembre-se: Você é a Sophia, uma amiga empática que está sempre pronta para a
             
         except Exception as e:
             logger.error(f"[OPENAI] Erro ao gerar resposta: {e}", exc_info=True)
+            import traceback
+            traceback.print_exc()
+            return None
+    
+    def _gerar_resposta_gemini(self, pergunta, user_id, historico=None, contexto_pessoal=""):
+        """Gera resposta usando Google Gemini API"""
+        if not self.gemini_model:
+            return None
+        
+        try:
+            # Prepara histórico no formato Gemini (role: user/model, parts: [{"text": "..."}])
+            historico_gemini = []
+            if historico:
+                for msg in historico:
+                    pergunta_hist = msg.get('pergunta', '')
+                    resposta_hist = msg.get('resposta', '')
+                    if pergunta_hist:
+                        historico_gemini.append({
+                            "role": "user",
+                            "parts": [{"text": pergunta_hist}]
+                        })
+                    if resposta_hist:
+                        historico_gemini.append({
+                            "role": "model",
+                            "parts": [{"text": resposta_hist}]
+                        })
+            
+            # Adiciona contexto pessoal à pergunta se disponível
+            mensagem_completa = pergunta
+            if contexto_pessoal:
+                mensagem_completa = f"[Contexto: {contexto_pessoal}]\n\n{pergunta}"
+            
+            # Adiciona pergunta atual ao histórico
+            historico_gemini.append({
+                "role": "user",
+                "parts": [{"text": mensagem_completa}]
+            })
+            
+            # Chama a API do Gemini
+            response = self.gemini_model.generate_content(historico_gemini)
+            
+            if response and response.text:
+                resposta = response.text.strip()
+                logger.info(f"[GEMINI] Resposta gerada ({len(resposta)} caracteres)")
+                return resposta
+            else:
+                logger.warning("[GEMINI] Resposta vazia da API")
+                return None
+            
+        except Exception as e:
+            logger.error(f"[GEMINI] Erro ao gerar resposta: {e}", exc_info=True)
             import traceback
             traceback.print_exc()
             return None
@@ -3163,20 +3374,25 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
         categoria = None
         similaridade = 0
         
-        # Tenta OpenAI PRIMEIRO (SEMPRE, para TODAS as conversas)
-        # Se o assistente não existir, tenta criar agora
-        if self.openai_client and not self.assistant_id:
+        # Verifica qual provider usar
+        usar_openai = AI_PROVIDER == "openai" and self.openai_client and self.assistant_id
+        usar_gemini = AI_PROVIDER == "gemini" and self.gemini_model
+        
+        # Tenta OpenAI (se configurado)
+        if AI_PROVIDER == "openai" and self.openai_client and not self.assistant_id:
             logger.warning(f"[CHAT] ⚠️ Assistente não encontrado, tentando criar agora...")
             print(f"[CHAT] ⚠️ Assistente não encontrado, tentando criar agora...")
             self.assistant_id = self._criar_assistente_sophia()
             if self.assistant_id:
                 logger.info(f"[CHAT] ✅ Assistente criado com sucesso: {self.assistant_id}")
                 print(f"[CHAT] ✅ Assistente criado com sucesso: {self.assistant_id}")
+                usar_openai = True
             else:
                 logger.error(f"[CHAT] ❌ Falha ao criar assistente - usando fallback")
                 print(f"[CHAT] ❌ Falha ao criar assistente - usando fallback")
         
-        if self.openai_client and self.assistant_id:
+        # Tenta usar IA (OpenAI ou Gemini)
+        if usar_openai:
             logger.info(f"[CHAT] OpenAI client disponivel (assistant_id: {self.assistant_id[:20]}...), tentando gerar resposta...")
             print(f"[CHAT] OpenAI client disponivel, tentando gerar resposta...")
             try:
@@ -3305,14 +3521,118 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
                 import traceback
                 traceback.print_exc()
                 # Continua para fallback
+        
+        # Tenta usar Gemini (se configurado)
+        elif usar_gemini:
+            logger.info(f"[CHAT] Gemini disponível, tentando gerar resposta...")
+            print(f"[CHAT] Gemini disponível, tentando gerar resposta...")
+            try:
+                # Prepara contexto para Gemini
+                contexto_pessoal = ""
+                
+                # Carrega dados memorizados da Sophia (nomes, lugares, comidas)
+                dados_memoria = self._obter_dados_memoria(user_id)
+                if dados_memoria:
+                    contexto_pessoal += dados_memoria + "\n\n"
+                
+                # Extrai informações pessoais adicionais do histórico (complemento)
+                if historico_usuario:
+                    for msg in historico_usuario[-10:]:
+                        pergunta_hist = msg.get('pergunta', '').lower()
+                        if 'me chamo' in pergunta_hist or 'meu nome e' in pergunta_hist:
+                            palavras = pergunta_hist.split()
+                            for i, palavra in enumerate(palavras):
+                                if palavra in ['chamo', 'nome'] and i + 2 < len(palavras):
+                                    nome = palavras[i+2]
+                                    if nome not in ['sophia', 'e', 'a', 'o']:
+                                        if not dados_memoria or nome.lower() not in dados_memoria.lower():
+                                            contexto_pessoal += f"Nome mencionado: {nome}. "
+                                        break
+                
+                # Prepara historico para Gemini (ultimas 5 mensagens)
+                historico_para_gemini = []
+                if historico_usuario:
+                    historico_para_gemini = historico_usuario[-5:]
+                
+                # Gera resposta usando Gemini
+                resposta_ia = self._gerar_resposta_gemini(
+                    pergunta,
+                    user_id,
+                    historico=historico_para_gemini,
+                    contexto_pessoal=contexto_pessoal or ""
+                )
+                
+                if resposta_ia and resposta_ia.strip():
+                    # SEMPRE usa a resposta da IA (Gemini)
+                    resposta_final = resposta_ia.strip()
+                    fonte = "gemini"
+                    
+                    logger.info(f"[CHAT] ✅ Resposta gerada pela IA (Gemini) - {len(resposta_final)} caracteres")
+                    
+                    # Armazena resposta nas ultimas respostas para deteccao de repeticao
+                    if user_id not in self.ultimas_respostas:
+                        self.ultimas_respostas[user_id] = []
+                    self.ultimas_respostas[user_id].append(resposta_final)
+                    if len(self.ultimas_respostas[user_id]) > 3:
+                        self.ultimas_respostas[user_id].pop(0)
+                    
+                    # Verifica repeticao
+                    resposta_repetida = None
+                    if len(self.ultimas_respostas[user_id]) >= 2:
+                        for resposta_anterior in self.ultimas_respostas[user_id][:-1]:
+                            similaridade_seq = difflib.SequenceMatcher(None, resposta_final.lower(), resposta_anterior.lower()).ratio()
+                            palavras_final = set(resposta_final.lower().split())
+                            palavras_anterior = set(resposta_anterior.lower().split())
+                            if palavras_final and palavras_anterior:
+                                similaridade_palavras = len(palavras_final.intersection(palavras_anterior)) / len(palavras_final.union(palavras_anterior))
+                                similaridade_total = (similaridade_seq + similaridade_palavras) / 2
+                                if similaridade_total > 0.80:
+                                    resposta_repetida = resposta_anterior
+                                    break
+                    
+                    # Se detectou repeticao, regenera resposta
+                    if resposta_repetida:
+                        logger.warning(f"[CHAT] Repeticao detectada - regenerando resposta")
+                        resposta_regenerada = self._gerar_resposta_gemini(
+                            pergunta,
+                            user_id,
+                            historico=historico_para_gemini,
+                            contexto_pessoal=f"EVITE REPETIR: {resposta_repetida[:200]}"
+                        )
+                        if resposta_regenerada and len(resposta_regenerada.strip()) >= 150:
+                            resposta_final = resposta_regenerada.strip()
+                            fonte = "gemini_regenerada"
+                    
+                    # Salva dados na memoria
+                    self._salvar_dados_memoria(user_id, pergunta, resposta_final)
+                    
+                    return {
+                        "resposta": resposta_final,
+                        "fonte": fonte,
+                        "categoria": categoria
+                    }
+                else:
+                    # Resposta Gemini vazia ou None
+                    logger.warning(f"[CHAT] ⚠️ Gemini retornou resposta vazia - usando fallback")
+                    print(f"[CHAT] ⚠️ Gemini retornou resposta vazia - usando fallback")
+            except Exception as e:
+                logger.error(f"[CHAT] ❌ Erro ao gerar resposta Gemini: {e}", exc_info=True)
+                import traceback
+                traceback.print_exc()
+                # Continua para fallback
         else:
-            # Log detalhado do por que não está usando OpenAI
-            if not self.openai_client:
-                logger.warning(f"[CHAT] ⚠️ OpenAI client não disponível - usando fallback")
-                print(f"[CHAT] ⚠️ OpenAI client não disponível - usando fallback")
-            elif not self.assistant_id:
-                logger.warning(f"[CHAT] ⚠️ Assistant ID não disponível (openai_client existe mas assistant_id é None) - usando fallback")
-                print(f"[CHAT] ⚠️ Assistant ID não disponível - usando fallback")
+            # Log detalhado do por que não está usando IA
+            if AI_PROVIDER == "openai":
+                if not self.openai_client:
+                    logger.warning(f"[CHAT] ⚠️ OpenAI client não disponível - usando fallback")
+                    print(f"[CHAT] ⚠️ OpenAI client não disponível - usando fallback")
+                elif not self.assistant_id:
+                    logger.warning(f"[CHAT] ⚠️ Assistant ID não disponível - usando fallback")
+                    print(f"[CHAT] ⚠️ Assistant ID não disponível - usando fallback")
+            elif AI_PROVIDER == "gemini":
+                if not self.gemini_model:
+                    logger.warning(f"[CHAT] ⚠️ Gemini model não disponível - usando fallback")
+                    print(f"[CHAT] ⚠️ Gemini model não disponível - usando fallback")
         
         # FALLBACK: Se OpenAI nao funcionou, busca resposta local como ultimo recurso
         if not resposta_final:
@@ -3402,6 +3722,24 @@ def index():
     has_minified = False  # Usar versão não-minificada até corrigir o script de minificação
     
     return render_template('index.html', timestamp=timestamp, has_minified=has_minified)
+
+@app.route('/favicon.ico', methods=['GET', 'HEAD'])
+def favicon():
+    """Rota para favicon.ico - retorna 204 (No Content) para evitar 404"""
+    from flask import Response
+    response = Response(status=204)
+    response.headers['Content-Type'] = 'image/x-icon'
+    response.headers['Cache-Control'] = 'public, max-age=31536000'  # Cache por 1 ano
+    return response
+
+@app.route('/static/favicon.ico', methods=['GET', 'HEAD'])
+def static_favicon():
+    """Rota para /static/favicon.ico - retorna 204 (No Content) para evitar 404"""
+    from flask import Response
+    response = Response(status=204)
+    response.headers['Content-Type'] = 'image/x-icon'
+    response.headers['Cache-Control'] = 'public, max-age=31536000'  # Cache por 1 ano
+    return response
 
 @app.route('/forgot-password')
 def forgot_password():
@@ -3662,6 +4000,173 @@ def api_telefones():
 @app.route('/api/guias')
 def api_guias():
     return jsonify(guias_praticos)
+
+# ENDPOINT DESATIVADO: Funcionalidade de vídeos removida temporariamente
+# @app.route('/api/youtube-search', methods=['POST'])
+def api_youtube_search_disabled():
+    """
+    Busca vídeos no YouTube usando YouTube Data API v3.
+    Usado para preencher vídeos dinamicamente quando video_id é null no JSON.
+    WHITELIST: Apenas canais oficiais verificados são permitidos.
+    """
+    try:
+        if not YOUTUBE_API_KEY:
+            return jsonify({
+                "erro": "YouTube API não configurada",
+                "fallback": True
+            }), 503
+        
+        data = request.get_json() or {}
+        query = data.get('query', '')
+        channel_id = data.get('channel_id', '')  # ID do canal (opcional)
+        max_results = data.get('max_results', 5)
+        order = data.get('order', 'relevance')  # relevance, date, rating, viewCount
+        
+        if not query:
+            return jsonify({"erro": "Query de busca não fornecida"}), 400
+        
+        # Importa requests se necessário
+        try:
+            import requests
+            import re
+        except ImportError:
+            return jsonify({"erro": "Biblioteca requests não instalada"}), 500
+        
+        # WHITELIST DE CANAIS OFICIAIS
+        # Canais permitidos (nomes de usuário/@handles dos canais oficiais)
+        ALLOWED_CHANNEL_HANDLES = [
+            '@ministeriodasaude',
+            '@canalsaudeoficial',
+            '@fisioterapiasaudepelvicaobstetricahcfmusp',
+            '@hcfmuspoficial'
+        ]
+        
+        # TAGS DE RELEVÂNCIA: Adiciona termos obrigatórios à query se não estiverem presentes
+        relevant_terms = ['pós-parto', 'saúde da mulher', 'cuidados com o bebê', 'puerpério']
+        query_lower = query.lower()
+        missing_terms = [term for term in relevant_terms if term not in query_lower]
+        if missing_terms:
+            # Adiciona pelo menos um termo de relevância se nenhum estiver presente
+            query = query + ' ' + ' '.join(relevant_terms[:1])
+        
+        # Monta URL da API
+        url = "https://www.googleapis.com/youtube/v3/search"
+        params = {
+            'part': 'snippet',
+            'q': query,
+            'type': 'video',
+            'maxResults': min(max_results, 50),  # Limita a 50 (máximo da API)
+            'order': order,
+            'key': YOUTUBE_API_KEY,
+            'safeSearch': 'strict',  # FILTRO DE SEGURANÇA: Modo seguro obrigatório
+            'relevanceLanguage': 'pt'  # Prioriza conteúdo em português
+        }
+        
+        # NOTA: A API do YouTube não aceita handles (@username) diretamente no channelId
+        # A verificação de canais será feita pós-busca usando channelTitle
+        # O channel_id fornecido é usado apenas para melhorar a relevância da busca
+        
+        # Faz requisição para API
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        items = data.get('items', [])
+        
+        if not items:
+            return jsonify({
+                "erro": "Nenhum vídeo encontrado",
+                "fallback": True
+            }), 404
+        
+        # Mapeia resultados e FILTRA por canais verificados
+        videos = []
+        for item in items:
+            snippet = item.get('snippet', {})
+            video_id = item.get('id', {}).get('videoId')
+            channel_title = snippet.get('channelTitle', '')
+            channel_id_api = snippet.get('channelId', '')
+            
+            if not video_id:
+                continue
+            
+            # VERIFICAÇÃO MANUAL: Verifica se o vídeo é de um canal verificado
+            # Verifica pelo channelTitle (nome do canal) e keywords específicas
+            is_verified_channel = False
+            
+            # Nomes de canais oficiais verificados (case-insensitive)
+            verified_channel_names = [
+                'ministério da saúde',
+                'ministerio da saude',
+                'canal saúde',
+                'canal saude',
+                'fiocruz',
+                'hospital das clínicas',
+                'hcfmusp',
+                'fisioterapia',
+                'saúde pélvica',
+                'saude pelvica'
+            ]
+            
+            # Verifica se o nome do canal contém algum dos nomes verificados
+            channel_title_lower = channel_title.lower()
+            for verified_name in verified_channel_names:
+                if verified_name in channel_title_lower:
+                    is_verified_channel = True
+                    logger.info(f"[YOUTUBE] ✅ Canal verificado: {channel_title}")
+                    break
+            
+            # APENAS ADICIONA VÍDEOS DE CANAIS VERIFICADOS
+            if not is_verified_channel:
+                logger.warning(f"[YOUTUBE] ❌ Vídeo rejeitado - canal não verificado: '{channel_title}' (ID: {channel_id_api})")
+                continue
+            
+            videos.append({
+                'video_id': video_id,
+                'title': snippet.get('title', ''),
+                'description': snippet.get('description', '')[:200] + '...' if len(snippet.get('description', '')) > 200 else snippet.get('description', ''),
+                'thumbnail_url': snippet.get('thumbnails', {}).get('high', {}).get('url') or snippet.get('thumbnails', {}).get('medium', {}).get('url') or snippet.get('thumbnails', {}).get('default', {}).get('url'),
+                'channel_title': channel_title,
+                'channel_id': channel_id_api,
+                'published_at': snippet.get('publishedAt', ''),
+                'embed_url': f'https://www.youtube.com/embed/{video_id}'
+            })
+        
+        # Retorna lista de resultados ou um resultado específico
+        if videos:
+            # Se foi solicitado índice específico, retorna esse vídeo
+            index = data.get('index', None)
+            if index is not None and index >= 0 and index < len(videos):
+                return jsonify(videos[index])
+            # Se foi solicitado aleatório, retorna um aleatório
+            if data.get('random', False):
+                import random
+                return jsonify(random.choice(videos))
+            # Por padrão, retorna todos os resultados
+            return jsonify({
+                "videos": videos,
+                "count": len(videos)
+            })
+        
+        return jsonify({
+            "erro": "Nenhum vídeo válido encontrado",
+            "fallback": True
+        }), 404
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"[YOUTUBE] Erro na requisição à API: {e}")
+        return jsonify({
+            "erro": f"Erro ao buscar vídeos: {str(e)}",
+            "fallback": True
+        }), 500
+    except Exception as e:
+        logger.error(f"[YOUTUBE] Erro inesperado: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "erro": "Erro inesperado ao buscar vídeos",
+            "fallback": True
+        }), 500
 
 @app.route('/api/guias/<guia_id>')
 def api_guia_especifico(guia_id):
