@@ -1,0 +1,548 @@
+{
+  "titulo": "Linha do Tempo de Cuidados - Gestação, Parto e Pós-Parto",
+  "descricao": "Marcos biológicos e cuidados preventivos por semana durante a gestação, parto e período pós-parto",
+  "fonte": "Ministério da Saúde, Federação Brasileira das Associações de Ginecologia e Obstetricia (FEBRASGO)",
+  "observacao_importante": "⚠️ IMPORTANTE: Esta linha do tempo é apenas INFORMATIVA e EDUCATIVA. Este conteúdo NÃO substitui consulta médica profissional, diagnóstico ou tratamento médico. Sempre consulte um profissional de saúde qualificado (obstetra, enfermeiro obstetra ou médico da família) para orientações personalizadas. Em caso de dúvidas, sintomas preocupantes ou emergências, procure atendimento médico imediato ou ligue para 192 (SAMU).",
+  "periodos": {
+    "gestacao": {
+      "titulo": "Gestação",
+      "duracao_semanas": 40,
+      "trimestres": {
+        "primeiro": {
+          "semanas": "1-12",
+          "descricao": "Formação dos órgãos e sistemas principais"
+        },
+        "segundo": {
+          "semanas": "13-27",
+          "descricao": "Crescimento e desenvolvimento fetal"
+        },
+        "terceiro": {
+          "semanas": "28-40",
+          "descricao": "Crescimento acelerado e preparação para o parto"
+        }
+      },
+      "semanas": [
+        {
+          "semana": 4,
+          "periodo": "1º Trimestre",
+          "icone": "fa-seedling",
+          "marcos_biologicos": [
+            "Formação do embrião",
+            "Desenvolvimento da placenta",
+            "Início do sistema circulatório"
+          ],
+          "cuidados_preventivos": [
+            "Iniciar pré-natal (se ainda não iniciou)",
+            "Iniciar suplementação de ácido fólico (se ainda não iniciou)",
+            "Evitar álcool, tabaco e outras substâncias",
+            "Evitar medicamentos sem prescrição médica",
+            "Alimentação saudável e balanceada"
+          ],
+          "exames_recomendados": [
+            "Teste de gravidez confirmatório",
+            "Hemograma completo",
+            "Tipagem sanguínea e fator Rh",
+            "Sorologias (HIV, Sífilis, Hepatite B e C, Toxoplasmose, Rubéola)"
+          ],
+          "sintomas_comuns": [
+            "Náuseas e vômitos",
+            "Aumento da sensibilidade mamária",
+            "Cansaço e sonolência"
+          ],
+          "alertas": [
+            "Sangramento vaginal intenso - procure atendimento imediato",
+            "Dor abdominal intensa - procure atendimento médico"
+          ]
+        },
+        {
+          "semana": 8,
+          "periodo": "1º Trimestre",
+          "icone": "fa-heartbeat",
+          "marcos_biologicos": [
+            "Todos os órgãos principais começam a se formar",
+            "Coração começa a bater",
+            "Formação dos braços e pernas"
+          ],
+          "cuidados_preventivos": [
+            "Continuar pré-natal regular",
+            "Manter suplementação de ácido fólico",
+            "Alimentação rica em ferro e cálcio",
+            "Hidratação adequada",
+            "Repouso adequado"
+          ],
+          "exames_recomendados": [
+            "Ultrassom transvaginal (se indicado pelo médico)",
+            "Revisão dos exames iniciais"
+          ],
+          "sintomas_comuns": [
+            "Náuseas podem persistir",
+            "Frequência urinária aumentada",
+            "Alterações de humor"
+          ],
+          "alertas": [
+            "Sangramento vaginal - procure atendimento médico",
+            "Dor abdominal persistente - informe ao médico"
+          ]
+        },
+        {
+          "semana": 12,
+          "periodo": "1º Trimestre",
+          "icone": "fa-baby",
+          "marcos_biologicos": [
+            "Feto está completamente formado",
+            "Órgãos genitais externos começam a se desenvolver",
+            "Movimentos fetais começam (ainda não percebidos pela mãe)"
+          ],
+          "cuidados_preventivos": [
+            "Ultrassom morfológico de 1º trimestre (se indicado)",
+            "Manter hábitos saudáveis",
+            "Prática de atividade física leve (com orientação médica)",
+            "Cuidados com a pele (hidratação)"
+          ],
+          "exames_recomendados": [
+            "Ultrassom morfológico de 1º trimestre",
+            "Translucência nucal (avaliação de risco)",
+            "Teste combinado (screening de cromossomopatias)"
+          ],
+          "sintomas_comuns": [
+            "Náuseas começam a diminuir",
+            "Cansaço ainda presente",
+            "Alterações na pele"
+          ],
+          "alertas": [
+            "Sangramento vaginal - sempre informe ao médico",
+            "Perda de líquido - procure atendimento médico"
+          ]
+        },
+        {
+          "semana": 16,
+          "periodo": "2º Trimestre",
+          "marcos_biologicos": [
+            "Movimentos fetais podem começar a ser percebidos",
+            "Formação completa dos órgãos genitais",
+            "Desenvolvimento do sistema nervoso"
+          ],
+          "cuidados_preventivos": [
+            "Continuar pré-natal regular",
+            "Aumentar ingestão de proteínas e ferro",
+            "Prática de atividade física moderada (com orientação)",
+            "Cuidados odontológicos (higiene bucal)"
+          ],
+          "exames_recomendados": [
+            "Hemograma completo",
+            "Teste de glicemia de jejum",
+            "Urina tipo I e urocultura"
+          ],
+          "sintomas_comuns": [
+            "Náuseas geralmente desaparecem",
+            "Mais energia e bem-estar",
+            "Aumento do apetite"
+          ],
+          "alertas": [
+            "Movimentos fetais ausentes após serem percebidos - informe ao médico",
+            "Contrações uterinas regulares - procure atendimento médico"
+          ]
+        },
+        {
+          "semana": 20,
+          "periodo": "2º Trimestre",
+          "icone": "fa-stethoscope",
+          "marcos_biologicos": [
+            "Meio da gestação (metade do caminho)",
+            "Movimentos fetais mais evidentes",
+            "Desenvolvimento dos sentidos (audição, tato)"
+          ],
+          "cuidados_preventivos": [
+            "Vacina dTpa (tríplice bacteriana) - recomendada a partir desta semana",
+            "Ultrassom morfológico de 2º trimestre",
+            "Alimentação balanceada e nutritiva",
+            "Hidratação adequada"
+          ],
+          "exames_recomendados": [
+            "Ultrassom morfológico de 2º trimestre (anatomia fetal)",
+            "Teste de tolerância à glicose (se indicado)"
+          ],
+          "sintomas_comuns": [
+            "Movimentos fetais perceptíveis",
+            "Crescimento do útero",
+            "Possíveis dores lombares leves"
+          ],
+          "alertas": [
+            "Movimentos fetais ausentes - informe ao médico imediatamente",
+            "Sangramento ou perda de líquido - procure atendimento médico"
+          ]
+        },
+        {
+          "semana": 24,
+          "periodo": "2º Trimestre",
+          "marcos_biologicos": [
+            "Feto com aproximadamente 30 cm",
+            "Desenvolvimento pulmonar acelerado",
+            "Formação de impressões digitais"
+          ],
+          "cuidados_preventivos": [
+            "Continuar pré-natal regular",
+            "Vacina dTpa (se ainda não foi aplicada)",
+            "Preparação para o curso de gestantes (se disponível)",
+            "Cuidados com o peso (ganho adequado)"
+          ],
+          "exames_recomendados": [
+            "Hemograma completo",
+            "Revisão geral dos exames"
+          ],
+          "sintomas_comuns": [
+            "Movimentos fetais frequentes",
+            "Inchaço leve nos pés e tornozelos",
+            "Possível azia"
+          ],
+          "alertas": [
+            "Inchaço excessivo ou súbito - informe ao médico",
+            "Pressão alta - procure atendimento médico"
+          ]
+        },
+        {
+          "semana": 28,
+          "periodo": "3º Trimestre",
+          "marcos_biologicos": [
+            "Início do terceiro trimestre",
+            "Feto com aproximadamente 1 kg",
+            "Desenvolvimento do sistema imunológico"
+          ],
+          "cuidados_preventivos": [
+            "Pré-natal a cada 2-3 semanas",
+            "Monitoramento da pressão arterial",
+            "Teste de glicose (diabetes gestacional)",
+            "Preparação para o parto"
+          ],
+          "exames_recomendados": [
+            "Teste de tolerância à glicose (75g)",
+            "Hemograma completo",
+            "Urina tipo I e urocultura"
+          ],
+          "sintomas_comuns": [
+            "Mais desconforto físico",
+            "Falta de ar leve",
+            "Dificuldade para dormir"
+          ],
+          "alertas": [
+            "Pressão alta ou pré-eclâmpsia - procure atendimento médico imediato",
+            "Dor de cabeça intensa ou visão embaçada - emergência médica"
+          ]
+        },
+        {
+          "semana": 32,
+          "periodo": "3º Trimestre",
+          "marcos_biologicos": [
+            "Feto com aproximadamente 1,8 kg",
+            "Pulmões quase completamente desenvolvidos",
+            "Crescimento acelerado"
+          ],
+          "cuidados_preventivos": [
+            "Pré-natal mais frequente",
+            "Ultrassom de crescimento fetal",
+            "Preparação do quarto do bebê",
+            "Preparação do enxoval"
+          ],
+          "exames_recomendados": [
+            "Ultrassom de crescimento fetal",
+            "Hemograma completo",
+            "Sorologias (repetição se necessário)"
+          ],
+          "sintomas_comuns": [
+            "Movimentos fetais mais fortes",
+            "Mais cansaço",
+            "Contrações de Braxton Hicks (treinamento)"
+          ],
+          "alertas": [
+            "Contrações regulares e dolorosas antes do tempo - procure atendimento médico",
+            "Rompimento da bolsa - procure atendimento médico imediato"
+          ]
+        },
+        {
+          "semana": 36,
+          "periodo": "3º Trimestre",
+          "marcos_biologicos": [
+            "Feto está quase pronto para nascer",
+            "Pulmões completamente desenvolvidos",
+            "Sistema imunológico em desenvolvimento"
+          ],
+          "cuidados_preventivos": [
+            "Pré-natal semanal ou quinzenal",
+            "Preparação final para o parto",
+            "Bolsa de maternidade pronta",
+            "Informações sobre o hospital/maternidade"
+          ],
+          "exames_recomendados": [
+            "Ultrassom final (avaliação fetal e posição)",
+            "Hemograma completo",
+            "Cultura para estreptococo B (se indicado)"
+          ],
+          "sintomas_comuns": [
+            "Desconforto aumentado",
+            "Falta de ar",
+            "Contrações de treinamento mais frequentes"
+          ],
+          "alertas": [
+            "Rompimento da bolsa - procure atendimento médico imediato",
+            "Contrações regulares a cada 5 minutos - hora de ir para o hospital"
+          ]
+        },
+        {
+          "semana": 40,
+          "periodo": "Termo",
+          "marcos_biologicos": [
+            "Feto em termo (pronto para nascer)",
+            "Todos os sistemas desenvolvidos",
+            "Bebê pronto para a vida extrauterina"
+          ],
+          "cuidados_preventivos": [
+            "Monitoramento diário (se necessário)",
+            "Aguardar início do trabalho de parto",
+            "Manter contato próximo com equipe médica",
+            "Repouso e preparação física e emocional"
+          ],
+          "exames_recomendados": [
+            "Avaliação médica frequente",
+            "Monitoramento do bem-estar fetal",
+            "Avaliação da maturidade cervical (se necessário)"
+          ],
+          "sintomas_comuns": [
+            "Ansiedade pela chegada do bebê",
+            "Contrações podem começar a qualquer momento",
+            "Sinais de trabalho de parto"
+          ],
+          "alertas": [
+            "Trabalho de parto iniciado - siga para o hospital",
+            "Rompimento da bolsa - procure atendimento médico imediato",
+            "Sangramento intenso - emergência médica"
+          ]
+        }
+      ]
+    },
+    "parto": {
+      "titulo": "Parto",
+      "fases": [
+        {
+          "fase": "Pré-parto",
+          "duracao": "Variável",
+          "sinais": [
+            "Contrações regulares e progressivas",
+            "Rompimento da bolsa (líquido amniótico)",
+            "Sangramento leve (perda de tampão mucoso)",
+            "Dilatação do colo do útero"
+          ],
+          "cuidados": [
+            "Aguardar contrações regulares (a cada 5 minutos, durando 1 minuto, por 1 hora)",
+            "Ir para o hospital/maternidade quando indicado",
+            "Manter calma e respiração adequada",
+            "Ter acompanhante de escolha"
+          ],
+          "alertas": [
+            "Sangramento intenso - emergência médica imediata",
+            "Diminuição dos movimentos fetais - informe a equipe médica",
+            "Febre ou mal-estar - informe a equipe médica"
+          ]
+        },
+        {
+          "fase": "Trabalho de Parto",
+          "duracao": "Variável (primeira gestação: 12-18 horas, gestações seguintes: 6-10 horas)",
+          "sinais": [
+            "Contrações progressivamente mais fortes e frequentes",
+            "Dilatação cervical progressiva",
+            "Acompanhamento da equipe médica"
+          ],
+          "cuidados": [
+            "Seguir orientações da equipe médica",
+            "Manter hidratação",
+            "Posições que facilitem o parto (com orientação)",
+            "Suporte emocional"
+          ],
+          "alertas": [
+            "Alterações no bem-estar fetal - monitoramento constante",
+            "Complicações durante o trabalho de parto - equipe médica presente"
+          ]
+        },
+        {
+          "fase": "Nascimento",
+          "duracao": "Minutos a horas",
+          "icone": "fa-hospital-user",
+          "sinais": [
+            "Dilatação completa (10 cm)",
+            "Expulsão do bebê",
+            "Nascimento da placenta"
+          ],
+          "cuidados": [
+            "Acompanhamento da equipe médica",
+            "Cuidados imediatos com o recém-nascido",
+            "Primeiro contato pele a pele (se possível)",
+            "Início da amamentação na primeira hora (se possível)"
+          ],
+          "alertas": [
+            "Complicações durante o parto - equipe médica preparada",
+            "Sofrimento fetal - intervenção médica imediata"
+          ]
+        }
+      ]
+    },
+    "pos_parto": {
+      "titulo": "Pós-Parto",
+      "periodos": {
+        "imediato": {
+          "semanas": "0-2",
+          "descricao": "Período imediato após o parto"
+        },
+        "mediano": {
+          "semanas": "2-6",
+          "descricao": "Recuperação e adaptação"
+        },
+        "tardio": {
+          "semanas": "6-12",
+          "descricao": "Consolidação e rotina"
+        }
+      },
+      "semanas": [
+        {
+          "semana": 1,
+          "periodo": "Imediato",
+          "icone": "fa-feeding",
+          "marcos_biologicos": [
+            "Recuperação do útero (involução)",
+            "Lóquios (sangramento pós-parto normal)",
+            "Início da produção de leite",
+            "Cicatrização de cortes ou episiotomia"
+          ],
+          "cuidados_preventivos": [
+            "Repouso adequado",
+            "Hidratação abundante",
+            "Alimentação nutritiva",
+            "Cuidados com higiene íntima",
+            "Amamentação frequente (livre demanda)",
+            "Primeira consulta pós-parto (se indicada)"
+          ],
+          "sintomas_comuns": [
+            "Lóquios (sangramento normal)",
+            "Contrações uterinas (amamentação)",
+            "Cansaço intenso",
+            "Alterações de humor (baby blues)"
+          ],
+          "alertas": [
+            "Sangramento intenso (mais que um absorvente por hora) - emergência médica",
+            "Febre alta (acima de 38°C) - procure atendimento médico",
+            "Dor intensa que não melhora - procure atendimento médico",
+            "Sinais de infecção - procure atendimento médico"
+          ],
+          "icone": "fa-feeding"
+        },
+        {
+          "semana": 2,
+          "periodo": "Imediato",
+          "marcos_biologicos": [
+            "Lóquios diminuindo",
+            "Cicatrização em andamento",
+            "Adaptação hormonal",
+            "Estabelecimento da amamentação"
+          ],
+          "cuidados_preventivos": [
+            "Continuar repouso",
+            "Amamentação estabelecida",
+            "Cuidados com a cicatriz (se houver)",
+            "Retorno gradual às atividades leves",
+            "Consulta pós-parto (check-up)"
+          ],
+          "sintomas_comuns": [
+            "Lóquios mais leves",
+            "Menos desconforto",
+            "Mais energia (gradual)",
+            "Adaptação ao novo ritmo"
+          ],
+          "alertas": [
+            "Lóquios com cheiro forte ou pus - sinais de infecção, procure atendimento médico",
+            "Dor intensa persistente - procure atendimento médico",
+            "Depressão pós-parto (sintomas persistentes de tristeza) - procure ajuda profissional"
+          ]
+        },
+        {
+          "semana": 4,
+          "periodo": "Mediano",
+          "marcos_biologicos": [
+            "Lóquios quase cessando",
+            "Cicatrização quase completa",
+            "Equilíbrio hormonal mais estável",
+            "Amamentação estabelecida"
+          ],
+          "cuidados_preventivos": [
+            "Consulta pós-parto (check-up completo)",
+            "Retorno gradual às atividades",
+            "Exercícios leves (com orientação médica)",
+            "Cuidados com a saúde mental",
+            "Cuidados com a saúde do bebê (consulta pediátrica)"
+          ],
+          "sintomas_comuns": [
+            "Mais energia",
+            "Adaptação à rotina",
+            "Estabelecimento de padrões de sono"
+          ],
+          "alertas": [
+            "Sintomas de depressão pós-parto - procure ajuda profissional",
+            "Problemas persistentes na amamentação - procure ajuda (banco de leite, consultoria)"
+          ]
+        },
+        {
+          "semana": 6,
+          "periodo": "Mediano",
+          "marcos_biologicos": [
+            "Útero voltando ao tamanho normal",
+            "Cicatrização completa",
+            "Possível retorno da menstruação (se não amamentando)",
+            "Equilíbrio hormonal mais estável"
+          ],
+          "cuidados_preventivos": [
+            "Consulta pós-parto final (liberação médica)",
+            "Retorno à atividade sexual (se desejado, com orientação médica)",
+            "Contracepção (se necessário)",
+            "Retorno gradual aos exercícios físicos",
+            "Cuidados contínuos com a saúde mental"
+          ],
+          "sintomas_comuns": [
+            "Mais energia e disposição",
+            "Adaptação completa à rotina",
+            "Rotina de amamentação estabelecida"
+          ],
+          "alertas": [
+            "Sintomas de depressão pós-parto persistentes - procure ajuda profissional",
+            "Problemas de saúde não resolvidos - mantenha acompanhamento médico"
+          ]
+        },
+        {
+          "semana": 12,
+          "periodo": "Tardio",
+          "marcos_biologicos": [
+            "Recuperação física completa (geralmente)",
+            "Equilíbrio hormonal estabelecido",
+            "Amamentação consolidada (se amamentando)",
+            "Adaptação completa à nova vida"
+          ],
+          "cuidados_preventivos": [
+            "Acompanhamento médico regular",
+            "Cuidados contínuos com a saúde física e mental",
+            "Rede de apoio estabelecida",
+            "Cuidados com o bebê (consultas pediátricas regulares)",
+            "Preparação para retorno ao trabalho (se aplicável)"
+          ],
+          "sintomas_comuns": [
+            "Energia e disposição normalizadas",
+            "Rotina estabelecida",
+            "Adaptação completa"
+          ],
+          "alertas": [
+            "Sintomas de depressão pós-parto - nunca é tarde para procurar ajuda",
+            "Preocupações com a saúde - mantenha acompanhamento médico regular"
+          ]
+        }
+      ]
+    }
+  },
+  "aviso_importante_geral": "⚠️ IMPORTANTE: Esta linha do tempo é apenas INFORMATIVA e EDUCATIVA. Este conteúdo NÃO substitui consulta médica profissional, diagnóstico ou tratamento médico. Sempre consulte um profissional de saúde qualificado (obstetra, enfermeiro obstetra, pediatra ou médico da família) para orientações personalizadas. Cada gestação é única e pode ter variações. Em caso de dúvidas, sintomas preocupantes ou EMERGÊNCIAS, procure atendimento médico IMEDIATO ou ligue para 192 (SAMU).",
+  "fonte_oficial": "Ministério da Saúde, Federação Brasileira das Associações de Ginecologia e Obstetricia (FEBRASGO)",
+  "atualizacao": "2024"
+}

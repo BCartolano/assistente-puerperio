@@ -1,0 +1,38 @@
+# Puerperio Health Locator Rules
+
+You are an expert Health Data Engineer focusing on the Brazilian System (SUS/ANS).
+
+## Source of Truth
+All facility data MUST be validated against CNES schemas (Cadastro Nacional de Estabelecimentos de Saúde).
+
+## Data Structure
+- Use `cnes_id` as unique identifier.
+- `management_type`: Enum['MUNICIPAL', 'ESTADUAL', 'FEDERAL', 'DUPLA'].
+- `funding`: Enum['SUS_ONLY', 'PRIVATE_ONLY', 'MIXED'].
+- `services`: Must check specifically for 'Obstetrics' (Code 065) or 'Neonatal ICU'.
+
+## Logic Constraints
+- IF facility_type == 'UPA' OR 'UBS': `has_maternity` = FALSE.
+- IF funding == 'PRIVATE_ONLY' AND user_filter == 'SUS': DO NOT DISPLAY.
+- IF `Aceita SUS` is NULL or ambiguous: DISCARD facility. Never infer specialty by hospital name.
+
+## Safety Disclaimers
+Every location output typically generated requires a try/catch block that appends a legal disclaimer regarding "Emergency Law (Lei 11.634/2008)".
+
+## No Hallucinations
+Do not generate fake phone numbers or assumed insurance acceptance. If data is null, display "Information Unavailable - Call to Confirm".
+
+## Cascade Filter Logic
+
+### Filter 1 (Unit Type): 
+Is it Hospital? UPA? UBS? (Via CNES type code).
+
+### Filter 2 (Specialty): 
+Does it have registered obstetric beds? (Yes = Maternity / No = General Hospital).
+
+### Filter 3 (Funding):
+- Linked to SUS? Yes -> Is Public or Philanthropic.
+- Linked to SUS? No -> Is 100% Private.
+
+### Filter 4 (Management): 
+Read the "Administrative Sphere" and "Management" fields from official dataset.

@@ -6,19 +6,38 @@
 # ============================================
 
 # ============================================
-# IA - OPENAI (OBRIGATÓRIO para funcionalidade de IA)
+# IA - CONFIGURAÇÃO DO PROVEDOR DE IA
 # ============================================
-# Obtenha sua chave em: https://platform.openai.com/api-keys
-OPENAI_API_KEY=sua_chave_openai_aqui
-
 # Habilita/desabilita uso de IA (true/false)
 # Se false, o sistema usará apenas a base de conhecimento local
 USE_AI=true
+
+# Provedor de IA: "openai", "gemini" ou "groq"
+# Recomendado: "groq" (gratuito e rápido com Llama-3.1-70b)
+AI_PROVIDER=groq
+
+# ============================================
+# IA - GROQ (RECOMENDADO - Gratuito e Rápido)
+# ============================================
+# Obtenha sua chave em: https://console.groq.com/keys
+GROQ_API_KEY=sua_chave_groq_aqui
+
+# ============================================
+# IA - OPENAI (Alternativa)
+# ============================================
+# Obtenha sua chave em: https://platform.openai.com/api-keys
+# OPENAI_API_KEY=sua_chave_openai_aqui
 
 # ID do Assistente OpenAI (OPCIONAL)
 # Será criado automaticamente se não configurado
 # Se você já tiver um assistente, adicione o ID aqui para reutilizá-lo
 # OPENAI_ASSISTANT_ID=asst_xxxxx
+
+# ============================================
+# IA - GEMINI (Alternativa)
+# ============================================
+# Obtenha sua chave em: https://makersuite.google.com/app/apikey
+# GEMINI_API_KEY=sua_chave_gemini_aqui
 
 # ============================================
 # FLASK - CONFIGURAÇÕES DO SERVIDOR

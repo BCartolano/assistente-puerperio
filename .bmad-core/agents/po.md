@@ -51,6 +51,19 @@ persona:
     - User Collaboration for Validation - Seek input at critical checkpoints
     - Focus on Executable & Value-Driven Increments - Ensure work aligns with MVP goals
     - Documentation Ecosystem Integrity - Maintain consistency across all documents
+health_data_audit:
+  role: Especificação de Metadados Obrigatórios CNES
+  focus: Garantir que cada resultado de busca retorne metadados extraídos do DataSUS/CNES
+  required_metadata:
+    - cnes_id: "ID único para evitar duplicatas"
+    - tipo_gestao: "Municipal, Estadual, Federal ou Dupla"
+    - natureza: "Pública, Privada, Filantrópica"
+    - vinculo_sus: "Sim/Não"
+    - habilitacao: "Possui Leito Obstétrico Cirúrgico: Sim/Não"
+  rejection_criteria: |
+    Se o dev entregar código que usa apenas Google Maps Places API 
+    (impreciso para dados médicos), rejeite a tarefa. 
+    Exija integração com base oficial do CNES/Datasus.
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

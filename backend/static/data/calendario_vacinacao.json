@@ -1,0 +1,302 @@
+{
+  "calendario": {
+    "gestante_puerpera": {
+      "titulo": "Calendário de Vacinação - Gestante e Puérpera",
+      "descricao": "Vacinas recomendadas durante a gestação e no período pós-parto para proteger a mãe e o bebê.",
+      "fonte": "Ministério da Saúde - Programa Nacional de Imunizações (PNI)",
+      "vacinas": [
+        {
+          "id": "gestante_1",
+          "nome": "dTpa (Tríplice Bacteriana Acelular)",
+          "idade_recomendada": "A partir da 20ª semana de gestação",
+          "dose": "1 dose a cada gestação",
+          "descricao": "Protege contra difteria, tétano e coqueluche. Deve ser aplicada em cada gravidez, mesmo que a gestante já tenha sido vacinada anteriormente.",
+          "importancia": "Protege a gestante e transfere anticorpos para o bebê, protegendo-o nos primeiros meses de vida.",
+          "obrigatoria": true,
+          "categoria": "Gestante"
+        },
+        {
+          "id": "gestante_2",
+          "nome": "Hepatite B",
+          "idade_recomendada": "A qualquer momento da gestação",
+          "dose": "3 doses (0, 1 e 6 meses)",
+          "descricao": "Protege contra a hepatite B. Se a gestante não foi vacinada antes, deve iniciar o esquema durante a gestação.",
+          "importancia": "Previne a transmissão vertical (da mãe para o bebê durante o parto).",
+          "obrigatoria": true,
+          "categoria": "Gestante"
+        },
+        {
+          "id": "gestante_3",
+          "nome": "Influenza (Gripe)",
+          "idade_recomendada": "A qualquer momento da gestação",
+          "dose": "1 dose anual",
+          "descricao": "Vacina da gripe (H1N1 e Influenza B). Deve ser tomada durante a campanha anual de vacinação ou em qualquer época do ano.",
+          "importancia": "Gestantes têm maior risco de complicações graves pela gripe. A vacina protege a mãe e o bebê.",
+          "obrigatoria": true,
+          "categoria": "Gestante"
+        },
+        {
+          "id": "puerpera_1",
+          "nome": "dTpa (Reforço Puérpera)",
+          "idade_recomendada": "Até 45 dias após o parto (se não foi vacinada na gestação)",
+          "dose": "1 dose",
+          "descricao": "Se a gestante não recebeu a dTpa durante a gestação, deve ser vacinada o mais rápido possível após o parto.",
+          "importancia": "Protege a puérpera e reduz o risco de transmissão de coqueluche para o bebê.",
+          "obrigatoria": false,
+          "categoria": "Puérpera"
+        }
+      ]
+    },
+    "bebe_0_a_2_anos": {
+      "titulo": "Calendário de Vacinação - Bebê (0 a 2 anos)",
+      "descricao": "Calendário nacional de vacinação do Programa Nacional de Imunizações (PNI) para crianças de 0 a 2 anos.",
+      "fonte": "Ministério da Saúde - Programa Nacional de Imunizações (PNI)",
+      "observacao_importante": "Este calendário segue as recomendações do PNI. Sempre consulte o pediatra para orientações personalizadas.",
+      "vacinas": [
+        {
+          "id": "bebe_0m",
+          "nome": "BCG",
+          "idade_recomendada": "Ao nascer",
+          "dose": "1 dose (única)",
+          "descricao": "Protege contra formas graves de tuberculose (meningite tuberculosa e tuberculose miliar).",
+          "importancia": "Essencial para prevenir formas graves de tuberculose em crianças pequenas.",
+          "obrigatoria": true,
+          "categoria": "Ao nascer"
+        },
+        {
+          "id": "bebe_0m_2",
+          "nome": "Hepatite B",
+          "idade_recomendada": "Ao nascer",
+          "dose": "1ª dose (esquema de 3 doses: 0, 1 e 6 meses)",
+          "descricao": "Primeira dose da vacina contra hepatite B. Segunda dose aos 2 meses e terceira aos 6 meses.",
+          "importancia": "Previne a hepatite B, que pode se tornar crônica em crianças.",
+          "obrigatoria": true,
+          "categoria": "Ao nascer"
+        },
+        {
+          "id": "bebe_2m",
+          "nome": "Pentavalente (DTP + Hib + Hepatite B)",
+          "idade_recomendada": "2 meses",
+          "dose": "1ª dose (esquema de 3 doses: 2, 4 e 6 meses)",
+          "descricao": "Protege contra difteria, tétano, coqueluche, Haemophilus influenzae tipo b e hepatite B.",
+          "importancia": "Protege contra doenças graves que podem ser fatais em bebês pequenos.",
+          "obrigatoria": true,
+          "categoria": "2 meses"
+        },
+        {
+          "id": "bebe_2m_2",
+          "nome": "VIP (Poliomielite Inativada)",
+          "idade_recomendada": "2 meses",
+          "dose": "1ª dose (esquema de 3 doses: 2, 4 e 6 meses)",
+          "descricao": "Vacina inativada contra poliomielite. Faz parte do esquema de proteção contra paralisia infantil.",
+          "importancia": "Essencial para manter o Brasil livre da poliomielite.",
+          "obrigatoria": true,
+          "categoria": "2 meses"
+        },
+        {
+          "id": "bebe_2m_3",
+          "nome": "Pneumocócica 10-valente",
+          "idade_recomendada": "2 meses",
+          "dose": "1ª dose (esquema de 2 doses: 2 e 4 meses + reforço aos 12 meses)",
+          "descricao": "Protege contra doenças pneumocócicas invasivas (meningite, pneumonia, otite média).",
+          "importancia": "Previne infecções graves causadas pelo pneumococo em crianças pequenas.",
+          "obrigatoria": true,
+          "categoria": "2 meses"
+        },
+        {
+          "id": "bebe_2m_4",
+          "nome": "Rotavírus Humano",
+          "idade_recomendada": "2 meses",
+          "dose": "1ª dose (esquema de 2 doses: 2 e 4 meses)",
+          "descricao": "Protege contra diarreia grave causada por rotavírus. Aplicada via oral.",
+          "importancia": "Previne hospitalizações por diarreia grave em bebês.",
+          "obrigatoria": true,
+          "categoria": "2 meses"
+        },
+        {
+          "id": "bebe_3m",
+          "nome": "Meningocócica C",
+          "idade_recomendada": "3 meses",
+          "dose": "1ª dose (esquema de 2 doses: 3 e 5 meses + reforço aos 12 meses)",
+          "descricao": "Protege contra a meningite meningocócica do sorogrupo C.",
+          "importancia": "Previne formas graves de meningite que podem ser fatais.",
+          "obrigatoria": true,
+          "categoria": "3 meses"
+        },
+        {
+          "id": "bebe_4m",
+          "nome": "Pentavalente (2ª dose)",
+          "idade_recomendada": "4 meses",
+          "dose": "2ª dose",
+          "descricao": "Segunda dose do esquema de proteção contra difteria, tétano, coqueluche, Haemophilus influenzae tipo b e hepatite B.",
+          "importancia": "Essencial para completar a proteção contra essas doenças.",
+          "obrigatoria": true,
+          "categoria": "4 meses"
+        },
+        {
+          "id": "bebe_4m_2",
+          "nome": "VIP (2ª dose)",
+          "idade_recomendada": "4 meses",
+          "dose": "2ª dose",
+          "descricao": "Segunda dose da vacina contra poliomielite.",
+          "importancia": "Mantém a proteção contra paralisia infantil.",
+          "obrigatoria": true,
+          "categoria": "4 meses"
+        },
+        {
+          "id": "bebe_4m_3",
+          "nome": "Pneumocócica 10-valente (2ª dose)",
+          "idade_recomendada": "4 meses",
+          "dose": "2ª dose",
+          "descricao": "Segunda dose do esquema de proteção contra doenças pneumocócicas.",
+          "importancia": "Completa a proteção primária contra infecções pneumocócicas.",
+          "obrigatoria": true,
+          "categoria": "4 meses"
+        },
+        {
+          "id": "bebe_4m_4",
+          "nome": "Rotavírus Humano (2ª dose)",
+          "idade_recomendada": "4 meses",
+          "dose": "2ª dose (última)",
+          "descricao": "Segunda e última dose da vacina contra rotavírus.",
+          "importancia": "Completa a proteção contra diarreia grave por rotavírus.",
+          "obrigatoria": true,
+          "categoria": "4 meses"
+        },
+        {
+          "id": "bebe_5m",
+          "nome": "Meningocócica C (2ª dose)",
+          "idade_recomendada": "5 meses",
+          "dose": "2ª dose",
+          "descricao": "Segunda dose do esquema de proteção contra meningite meningocócica C.",
+          "importancia": "Mantém a proteção contra meningite.",
+          "obrigatoria": true,
+          "categoria": "5 meses"
+        },
+        {
+          "id": "bebe_6m",
+          "nome": "Pentavalente (3ª dose)",
+          "idade_recomendada": "6 meses",
+          "dose": "3ª dose (última do esquema básico)",
+          "descricao": "Terceira e última dose do esquema básico da pentavalente.",
+          "importancia": "Completa o esquema primário de proteção contra difteria, tétano, coqueluche, Hib e hepatite B.",
+          "obrigatoria": true,
+          "categoria": "6 meses"
+        },
+        {
+          "id": "bebe_6m_2",
+          "nome": "VIP (3ª dose)",
+          "idade_recomendada": "6 meses",
+          "dose": "3ª dose",
+          "descricao": "Terceira dose da vacina contra poliomielite.",
+          "importancia": "Completa o esquema primário de proteção contra paralisia infantil.",
+          "obrigatoria": true,
+          "categoria": "6 meses"
+        },
+        {
+          "id": "bebe_6m_3",
+          "nome": "Influenza (Gripe)",
+          "idade_recomendada": "6 meses",
+          "dose": "1ª dose (2 doses no primeiro ano, depois 1 dose anual)",
+          "descricao": "Primeira dose da vacina da gripe para bebês. No primeiro ano, são necessárias 2 doses com intervalo de 30 dias. Depois, 1 dose anual.",
+          "importancia": "Previne complicações graves da gripe em crianças pequenas.",
+          "obrigatoria": true,
+          "categoria": "6 meses"
+        },
+        {
+          "id": "bebe_9m",
+          "nome": "Febre Amarela",
+          "idade_recomendada": "9 meses",
+          "dose": "1ª dose (reforço aos 4 anos)",
+          "descricao": "Protege contra febre amarela. Recomendada para áreas de risco ou antes de viagens.",
+          "importancia": "Previne febre amarela, doença que pode ser fatal.",
+          "obrigatoria": true,
+          "categoria": "9 meses"
+        },
+        {
+          "id": "bebe_12m",
+          "nome": "Tríplice Viral (SCR)",
+          "idade_recomendada": "12 meses",
+          "dose": "1ª dose (reforço aos 15 meses)",
+          "descricao": "Protege contra sarampo, caxumba e rubéola.",
+          "importancia": "Essencial para manter o Brasil livre do sarampo e prevenir rubéola congênita.",
+          "obrigatoria": true,
+          "categoria": "12 meses"
+        },
+        {
+          "id": "bebe_12m_2",
+          "nome": "Pneumocócica 10-valente (Reforço)",
+          "idade_recomendada": "12 meses",
+          "dose": "Reforço (última dose)",
+          "descricao": "Reforço da vacina pneumocócica para completar a proteção.",
+          "importancia": "Mantém a proteção contra doenças pneumocócicas invasivas.",
+          "obrigatoria": true,
+          "categoria": "12 meses"
+        },
+        {
+          "id": "bebe_12m_3",
+          "nome": "Meningocócica C (Reforço)",
+          "idade_recomendada": "12 meses",
+          "dose": "Reforço",
+          "descricao": "Reforço da vacina meningocócica C.",
+          "importancia": "Mantém a proteção contra meningite meningocócica.",
+          "obrigatoria": true,
+          "categoria": "12 meses"
+        },
+        {
+          "id": "bebe_15m",
+          "nome": "DTP (Tríplice Bacteriana)",
+          "idade_recomendada": "15 meses",
+          "dose": "1ª dose (reforço aos 4 anos)",
+          "descricao": "Reforço da proteção contra difteria, tétano e coqueluche.",
+          "importancia": "Mantém a proteção contra essas doenças na primeira infância.",
+          "obrigatoria": true,
+          "categoria": "15 meses"
+        },
+        {
+          "id": "bebe_15m_2",
+          "nome": "Hepatite A",
+          "idade_recomendada": "15 meses",
+          "dose": "1ª dose (esquema de 2 doses: 15 meses e 18 meses)",
+          "descricao": "Protege contra hepatite A. Segunda dose aos 18 meses.",
+          "importancia": "Previne hepatite A, que pode causar icterícia e complicações hepáticas.",
+          "obrigatoria": true,
+          "categoria": "15 meses"
+        },
+        {
+          "id": "bebe_15m_3",
+          "nome": "Tríplice Viral (Reforço)",
+          "idade_recomendada": "15 meses",
+          "dose": "Reforço (2ª dose)",
+          "descricao": "Reforço da vacina contra sarampo, caxumba e rubéola.",
+          "importancia": "Completa a proteção contra essas doenças.",
+          "obrigatoria": true,
+          "categoria": "15 meses"
+        },
+        {
+          "id": "bebe_18m",
+          "nome": "Hepatite A (2ª dose)",
+          "idade_recomendada": "18 meses",
+          "dose": "2ª dose (última)",
+          "descricao": "Segunda e última dose da vacina contra hepatite A.",
+          "importancia": "Completa a proteção contra hepatite A.",
+          "obrigatoria": true,
+          "categoria": "18 meses"
+        },
+        {
+          "id": "bebe_24m",
+          "nome": "Hepatite A (Catch-up, se necessário)",
+          "idade_recomendada": "24 meses",
+          "dose": "Se não foi vacinada antes, iniciar esquema de 2 doses",
+          "descricao": "Para crianças que não receberam a vacina no período recomendado.",
+          "importancia": "Garante a proteção contra hepatite A.",
+          "obrigatoria": false,
+          "categoria": "24 meses"
+        }
+      ]
+    }
+  },
+  "aviso_importante": "⚠️ IMPORTANTE: Este calendário é apenas INFORMATIVO e EDUCATIVO. É baseado nas recomendações do Programa Nacional de Imunizações (PNI) do Ministério da Saúde. Este conteúdo NÃO substitui consulta médica profissional, diagnóstico ou tratamento. Sempre consulte um profissional de saúde qualificado (pediatra ou médico da família) para orientações personalizadas e para verificar se há atualizações no calendário de vacinação.",
+  "fonte_oficial": "Ministério da Saúde - Programa Nacional de Imunizações (PNI)",
+  "atualizacao": "2024"
+}

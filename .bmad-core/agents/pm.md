@@ -48,6 +48,31 @@ persona:
     - Collaborative & iterative approach
     - Proactive risk identification
     - Strategic thinking & outcome-oriented
+health_data_audit:
+  role: Mitigação de Risco Legal e Segurança do Paciente
+  focus: Definição de Regras de Negócio e Risco Legal
+  business_rules:
+    triagem_emergencia: |
+      Antes de mostrar o mapa, o sistema deve perguntar: 
+      'É uma emergência médica (sangramento, desmaio, dor extrema)?'. 
+      Se SIM, direcione para unidade de emergência mais próxima independente de convênio 
+      (Lei do Cheque Caução/Atendimento de Emergência).
+    segregacao_financeira: |
+      O usuário deve selecionar explicitamente: 
+      'Busco atendimento SUS' ou 'Busco atendimento Particular/Convênio'. 
+      Nunca misture os resultados sem tags claras.
+    definicao_puerperio: |
+      Apenas listar locais com habilitação em 'Obstetrícia' ou 'Clínica Cirúrgica'. 
+      UBS e UPA devem ser marcadas estritamente como 'Primeiro Atendimento/Triagem', 
+      nunca como local de internação.
+    insurance_confirmation_rule: |
+      REGRA CRÍTICA: Nunca confirme aceitação de convênio específico a menos que tenhamos 
+      uma API direta da seguradora conectada. Caso contrário, exiba como 
+      'Hospital Privado (Verificar Plano)' com link/telefone para confirmação.
+      
+      O CNES informa se o hospital é privado, mas NÃO informa aceitação de convênios 
+      específicos (Unimed, Amil, Bradesco, etc). Esta informação muda contratualmente 
+      e não está na API pública do governo.
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

@@ -1,0 +1,106 @@
+{
+  "titulo": "Guia Visual de Autoexame de Mama",
+  "subtitulo": "Passo a passo ilustrado para detecção precoce",
+  "clausula_etica": "O autoexame é uma técnica de autoconhecimento para notar alterações precoces, mas não substitui o exame clínico realizado pelo seu ginecologista ou mastologista. Este guia é para autoconhecimento. O autoexame não substitui o rastreamento clínico profissional. Em caso de alterações, procure seu médico.",
+  "aviso_importante": "⚠️ O autoexame NÃO substitui a consulta médica e a mamografia. Se encontrar qualquer alteração, procure um médico imediatamente.",
+  "passos": [
+    {
+      "numero": 1,
+      "titulo": "Observação com Braços Abaixados",
+      "descricao": "Posicione-se em frente ao espelho com os braços relaxados ao lado do corpo. Observe o tamanho, formato e contorno das mamas. Verifique se há mudanças na pele, como retrações, rugosidades ou alterações de cor. Observe também o mamilo e a aréola.",
+      "imagem_placeholder": "autoexame-passo1.jpg",
+      "dica": "Faça essa observação em um ambiente bem iluminado e com privacidade.",
+      "checklist": [
+        "Tamanho e formato das mamas",
+        "Mudanças na cor da pele",
+        "Retrações ou enrugamentos",
+        "Alterações no mamilo"
+      ]
+    },
+    {
+      "numero": 2,
+      "titulo": "Observação com Braços Levantados",
+      "descricao": "Levante os braços acima da cabeça e observe se há alguma alteração no contorno das mamas. Verifique se a pele acompanha o movimento naturalmente. Observe se há retração do mamilo ou qualquer mudança na forma.",
+      "imagem_placeholder": "autoexame-passo2.jpg",
+      "dica": "Compare as duas mamas - pequenas diferenças são normais, mas mudanças recentes devem ser investigadas.",
+      "checklist": [
+        "Contorno das mamas",
+        "Movimento natural da pele",
+        "Retração do mamilo",
+        "Simetria entre as mamas"
+      ]
+    },
+    {
+      "numero": 3,
+      "titulo": "Observação com Mãos na Cintura",
+      "descricao": "Coloque as mãos na cintura e faça pressão, contraindo os músculos do peito. Observe se há alguma alteração, retração ou enrugamento na pele das mamas. Esta posição ajuda a identificar alterações que podem não ser visíveis em outras posições.",
+      "imagem_placeholder": "autoexame-passo3.jpg",
+      "dica": "A contração muscular pode revelar alterações sutis que não são visíveis em repouso.",
+      "checklist": [
+        "Retrações na pele",
+        "Enrugamentos",
+        "Alterações no contorno",
+        "Mudanças na textura"
+      ]
+    },
+    {
+      "numero": 4,
+      "titulo": "Palpação da Mama Esquerda",
+      "descricao": "Deite-se de costas e coloque um travesseiro embaixo do ombro esquerdo. Coloque a mão esquerda atrás da cabeça. Use a mão direita para palpar a mama esquerda, fazendo movimentos circulares com as pontas dos dedos. Inicie pela parte externa e siga em espiral até o mamilo, ou faça movimentos verticais de cima para baixo. Não esqueça de verificar também a axila.",
+      "imagem_placeholder": "autoexame-passo4.jpg",
+      "dica": "Use a parte plana dos dedos (não as pontas) e faça pressão suave, média e firme em cada área.",
+      "checklist": [
+        "Palpação em espiral ou vertical",
+        "Verificação da axila",
+        "Pressão suave, média e firme",
+        "Cobertura de toda a mama"
+      ]
+    },
+    {
+      "numero": 5,
+      "titulo": "Palpação da Mama Direita",
+      "descricao": "Repita o processo na mama direita. Coloque o travesseiro embaixo do ombro direito, coloque a mão direita atrás da cabeça e use a mão esquerda para palpar a mama direita. Use os mesmos movimentos circulares ou verticais, verificando toda a mama e a axila.",
+      "imagem_placeholder": "autoexame-passo5.jpg",
+      "dica": "Compare a sensação entre as duas mamas - isso ajuda a identificar alterações.",
+      "checklist": [
+        "Palpação completa da mama direita",
+        "Verificação da axila direita",
+        "Comparação com a mama esquerda",
+        "Identificação de nódulos ou caroços"
+      ]
+    },
+    {
+      "numero": 6,
+      "titulo": "Palpação no Banho (Opcional)",
+      "descricao": "Com a pele ensaboada, a palpação pode ser mais fácil. Use os mesmos movimentos circulares ou verticais, verificando toda a mama e a axila. A água e o sabão facilitam o deslizamento dos dedos sobre a pele.",
+      "imagem_placeholder": "autoexame-passo6.jpg",
+      "dica": "Muitas mulheres preferem fazer o autoexame no banho, pois é mais prático e a pele molhada facilita a palpação.",
+      "checklist": [
+        "Palpação com pele ensaboada",
+        "Movimentos suaves e circulares",
+        "Verificação completa",
+        "Conforto e privacidade"
+      ]
+    }
+  ],
+  "sinais_alerta": {
+    "titulo": "Sinais de Alerta - Procure um Médico Imediatamente",
+    "sinais": [
+      {
+        "tipo": "Visual",
+        "descricao": "Mudança no tamanho ou formato da mama, retração ou enrugamento da pele, mudanças na cor (vermelhidão, escurecimento), alterações no mamilo (retração, inversão), secreção pelo mamilo (especialmente se sanguinolenta)"
+      },
+      {
+        "tipo": "Ao Tocar",
+        "descricao": "Nódulos ou caroços (duros, fixos ou móveis), áreas endurecidas, dor ou sensibilidade persistente, alterações na textura da pele (aspecto de 'casca de laranja'), gânglios aumentados na axila"
+      }
+    ]
+  },
+  "frequencia": {
+    "quando": "Entre o 7º e 10º dia após o início da menstruação",
+    "menopausa": "Escolher um dia fixo do mês",
+    "amamentacao": "Após amamentar ou retirar o leite",
+    "puerperio": "Aguardar o período de recuperação pós-parto (consulte seu médico)"
+  },
+  "lembrete": "A maioria dos nódulos encontrados é benigna, mas apenas o médico pode avaliar adequadamente. Mulheres a partir de 40 anos devem fazer mamografia anualmente."
+}

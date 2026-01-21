@@ -707,34 +707,34 @@
                             </div>
                         </div>
                         
-                        <!-- Perguntas Rápidas -->
+                        <!-- Bússola de Sentimentos -->
                         <div class="quick-questions">
                             <h2>💬 Não sabe por onde começar?</h2>
-                            <p class="quick-questions-subtitle">Clique em uma pergunta para iniciar a conversa:</p>
+                            <p class="quick-questions-subtitle">Clique em uma frase para iniciar a conversa:</p>
                             <div class="quick-questions-grid">
-                                <button class="quick-btn" data-question="Como está sendo sua experiência no puerpério?">
+                                <button class="quick-btn" data-question="Tudo parece muito difícil hoje.">
                                     <i class="fas fa-heart"></i>
-                                    Como está sua experiência no puerpério?
+                                    Tudo parece muito difícil hoje.
                                 </button>
-                                <button class="quick-btn" data-question="Quais são os cuidados mais importantes no pós-parto?">
-                                    <i class="fas fa-shield-alt"></i>
-                                    Quais cuidados são importantes no pós-parto?
+                                <button class="quick-btn" data-question="Sinto uma tristeza que não passa.">
+                                    <i class="fas fa-heart"></i>
+                                    Sinto uma tristeza que não passa.
                                 </button>
-                                <button class="quick-btn" data-question="Me fale sobre amamentação">
-                                    <i class="fas fa-child"></i>
-                                    Me fale sobre amamentação
+                                <button class="quick-btn" data-question="Estou com dificuldades para amamentar.">
+                                    <i class="fas fa-heart"></i>
+                                    Estou com dificuldades para amamentar.
                                 </button>
-                                <button class="quick-btn" data-question="Quais sintomas são normais no puerpério?">
-                                    <i class="fas fa-stethoscope"></i>
-                                    Quais sintomas são normais?
+                                <button class="quick-btn" data-question="Sinto coisas estranhas no meu corpo/mente.">
+                                    <i class="fas fa-heart"></i>
+                                    Sinto coisas estranhas no meu corpo/mente.
                                 </button>
-                                <button class="quick-btn" data-question="Como me sinto triste após o parto, isso é normal?">
-                                    <i class="fas fa-smile"></i>
-                                    Estou triste, isso é normal?
+                                <button class="quick-btn" data-question="Esqueci como cuidar de mim mesma.">
+                                    <i class="fas fa-heart"></i>
+                                    Esqueci como cuidar de mim mesma.
                                 </button>
-                                <button class="quick-btn" data-question="Como cuidar de mim mesmo cuidando do bebê?">
-                                    <i class="fas fa-spa"></i>
-                                    Como me cuidar também?
+                                <button class="quick-btn" data-question="Não sei explicar o que estou sentindo.">
+                                    <i class="fas fa-heart"></i>
+                                    Não sei explicar o que estou sentindo.
                                 </button>
                             </div>
                         </div>
@@ -946,6 +946,71 @@
                         Sim, Sair
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Baby Profile Onboarding Modal -->
+    <div class="modal" id="baby-profile-modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px; background: linear-gradient(135deg, #fff5f9 0%, #ffeef5 100%); border-radius: 20px; box-shadow: 0 10px 40px rgba(255, 182, 193, 0.3);">
+            <div class="modal-header" style="background: transparent; border-bottom: 2px solid #ffccd5; padding: 1.5rem;">
+                <h2 style="color: #8b5a5a; font-family: 'Playfair Display', serif; font-size: 1.5rem; margin: 0; text-align: center;">
+                    <i class="fas fa-heart" style="color: #ff8fa3;"></i> Olá! A Sophia quer te conhecer melhor. 💕
+                </h2>
+                <button class="close-modal" id="close-baby-profile" aria-label="Fechar modal" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <p style="color: #6b4a3f; font-size: 1rem; line-height: 1.6; margin-bottom: 2rem; text-align: center;">
+                    Para eu acompanhar o desenvolvimento e as vacinas do seu bebê, me conte um pouquinho sobre ele(a):
+                </p>
+                <form id="baby-profile-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label for="baby-name-input" style="color: #8b5a5a; font-weight: 600; font-size: 0.95rem;">
+                            <i class="fas fa-baby" style="color: #ff8fa3; margin-right: 0.5rem;"></i>
+                            Qual o nome do seu bebê?
+                        </label>
+                        <input 
+                            type="text" 
+                            id="baby-name-input" 
+                            name="name" 
+                            placeholder="Ex: Maria, João, Sofia..." 
+                            required
+                            autocomplete="off"
+                            style="padding: 0.875rem; border: 2px solid #ffccd5; border-radius: 12px; font-size: 1rem; color: #6b4a3f; background: white; transition: all 0.3s ease;"
+                            onfocus="this.style.borderColor='#ff8fa3'; this.style.boxShadow='0 0 0 3px rgba(255, 143, 163, 0.1)';"
+                            onblur="this.style.borderColor='#ffccd5'; this.style.boxShadow='none';"
+                        >
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label for="baby-birth-date-input" style="color: #8b5a5a; font-weight: 600; font-size: 0.95rem;">
+                            <i class="fas fa-calendar-heart" style="color: #ff8fa3; margin-right: 0.5rem;"></i>
+                            Quando ele(a) nasceu?
+                        </label>
+                        <input 
+                            type="date" 
+                            id="baby-birth-date-input" 
+                            name="birth_date" 
+                            required
+                            max=""
+                            style="padding: 0.875rem; border: 2px solid #ffccd5; border-radius: 12px; font-size: 1rem; color: #6b4a3f; background: white; transition: all 0.3s ease;"
+                            onfocus="this.style.borderColor='#ff8fa3'; this.style.boxShadow='0 0 0 3px rgba(255, 143, 163, 0.1)';"
+                            onblur="this.style.borderColor='#ffccd5'; this.style.boxShadow='none';"
+                        >
+                    </div>
+                    <div id="baby-profile-error" style="display: none; color: #d32f2f; background: #ffebee; padding: 0.75rem; border-radius: 8px; font-size: 0.9rem; margin-top: -0.5rem;"></div>
+                    <button 
+                        type="submit" 
+                        id="baby-profile-submit-btn"
+                        style="background: linear-gradient(135deg, #ff8fa3 0%, #ffb3c1 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 143, 163, 0.3); margin-top: 0.5rem;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 143, 163, 0.4)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 143, 163, 0.3)';"
+                    >
+                        <i class="fas fa-heart" style="margin-right: 0.5rem;"></i>
+                        Salvar e Começar
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -1525,6 +1590,159 @@
         setTimeout(function() {
             clearInterval(chatAppCheckInterval);
         }, 10000);
+    </script>
+
+    <!-- Baby Profile Onboarding Script -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // Define data máxima como hoje (não pode nascer no futuro)
+            const birthDateInput = document.getElementById('baby-birth-date-input');
+            if (birthDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                birthDateInput.setAttribute('max', today);
+            }
+            
+            // Verifica se usuário tem perfil de bebê e abre modal se necessário
+            async function checkBabyProfile() {
+                try {
+                    // Verifica se usuário está logado
+                    const userResponse = await fetch('/api/user', { credentials: 'include' });
+                    if (!userResponse.ok) {
+                        return; // Usuário não está logado
+                    }
+                    
+                    // Verifica se tem perfil de bebê
+                    const babyProfileResponse = await fetch('/api/baby_profile', { 
+                        credentials: 'include',
+                        method: 'GET'
+                    });
+                    
+                    if (babyProfileResponse.status === 404) {
+                        // Não tem perfil - abre modal
+                        const modal = document.getElementById('baby-profile-modal');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            // Foca no primeiro input
+                            const nameInput = document.getElementById('baby-name-input');
+                            if (nameInput) {
+                                setTimeout(() => nameInput.focus(), 300);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.log('[BabyProfile] Erro ao verificar perfil:', error);
+                }
+            }
+            
+            // Handler do formulário
+            const form = document.getElementById('baby-profile-form');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = document.getElementById('baby-profile-submit-btn');
+                    const errorDiv = document.getElementById('baby-profile-error');
+                    const nameInput = document.getElementById('baby-name-input');
+                    const birthDateInput = document.getElementById('baby-birth-date-input');
+                    
+                    // Validações
+                    const name = nameInput.value.trim();
+                    const birthDate = birthDateInput.value;
+                    
+                    if (!name) {
+                        errorDiv.textContent = 'Por favor, informe o nome do bebê.';
+                        errorDiv.style.display = 'block';
+                        nameInput.focus();
+                        return;
+                    }
+                    
+                    if (!birthDate) {
+                        errorDiv.textContent = 'Por favor, informe a data de nascimento.';
+                        errorDiv.style.display = 'block';
+                        birthDateInput.focus();
+                        return;
+                    }
+                    
+                    // Desabilita botão e mostra loading
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Salvando...';
+                    errorDiv.style.display = 'none';
+                    
+                    try {
+                        const response = await fetch('/api/baby_profile', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                name: name,
+                                birth_date: birthDate
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                            // Sucesso - fecha modal e recarrega página
+                            const modal = document.getElementById('baby-profile-modal');
+                            if (modal) {
+                                modal.style.display = 'none';
+                            }
+                            
+                            // Recarrega a página para atualizar o calendário de vacinação
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
+                        } else {
+                            // Erro
+                            errorDiv.textContent = data.message || data.error || 'Erro ao salvar perfil do bebê. Tente novamente.';
+                            errorDiv.style.display = 'block';
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-heart" style="margin-right: 0.5rem;"></i> Salvar e Começar';
+                        }
+                    } catch (error) {
+                        console.error('[BabyProfile] Erro ao salvar:', error);
+                        errorDiv.textContent = 'Erro ao conectar com o servidor. Verifique sua conexão e tente novamente.';
+                        errorDiv.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-heart" style="margin-right: 0.5rem;"></i> Salvar e Começar';
+                    }
+                });
+            }
+            
+            // Verifica perfil quando a página carrega (após login)
+            // Aguarda um pouco para garantir que o usuário está logado
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(checkBabyProfile, 1500);
+                });
+            } else {
+                setTimeout(checkBabyProfile, 1500);
+            }
+            
+            // Também verifica quando o chatApp inicializa (caso o login seja feito depois)
+            if (typeof window.chatApp !== 'undefined') {
+                window.chatApp.addEventListener('login', function() {
+                    setTimeout(checkBabyProfile, 1000);
+                });
+            }
+            
+            // Escuta mudanças no chatApp (login/logout)
+            let chatAppCheckInterval = setInterval(function() {
+                if (typeof window.chatApp !== 'undefined' && window.chatApp.userLoggedIn) {
+                    clearInterval(chatAppCheckInterval);
+                    setTimeout(checkBabyProfile, 1000);
+                }
+            }, 500);
+            
+            // Para o intervalo após 10 segundos
+            setTimeout(function() {
+                clearInterval(chatAppCheckInterval);
+            }, 10000);
+        })();
     </script>
 </body>
 </html>

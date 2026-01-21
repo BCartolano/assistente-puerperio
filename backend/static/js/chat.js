@@ -837,7 +837,7 @@ class ChatbotPuerperio {
     
     async handleInitialRegister() {
         const name = document.getElementById('initial-register-name').value.trim();
-        const email = document.getElementById('initial-register-email').value.trim();
+        const email = document.getElementById('initial-register-email').value.trim().toLowerCase();
         const password = document.getElementById('initial-register-password').value;
         const babyName = document.getElementById('initial-register-baby').value.trim();
         
@@ -4280,7 +4280,7 @@ Como você está se sentindo hoje? 💛`;
             const position = await new Promise((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
                     enableHighAccuracy: true,
-                    timeout: 10000,
+                    timeout: 15000, // Aumentado de 10s para 15s
                     maximumAge: 0
                 });
             });
@@ -4288,8 +4288,15 @@ Como você está se sentindo hoje? 💛`;
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             
-            // Busca hospitais próximos
+            // LOG: Início da busca
+            console.log(`[MAPS DEBUG] Iniciando busca de hospitais próximos`);
+            console.log(`[MAPS DEBUG] Coordenadas: lat=${lat}, lon=${lon}`);
+            
+            // Busca hospitais próximos (com timeout aumentado implicitamente na função)
             const hospitals = await this.searchHospitalsNearby(lat, lon);
+            
+            // LOG: Resultado da busca
+            console.log(`[MAPS DEBUG] Busca concluída: ${hospitals ? hospitals.length : 0} unidades encontradas`);
             
             // Esconde loading
             if (this.hospitalsLoading) {
@@ -4298,17 +4305,31 @@ Como você está se sentindo hoje? 💛`;
             
             // Exibe os hospitais encontrados
             if (hospitals && hospitals.length > 0) {
+                console.log(`[MAPS DEBUG] Exibindo ${hospitals.length} unidades na interface`);
                 this.displayHospitals(hospitals);
-                } else {
+            } else {
+                console.warn(`[MAPS DEBUG] Nenhuma unidade encontrada - exibindo estado vazio`);
                 this.showEmptyState();
             }
         } catch (error) {
+            // LOG: Erro na busca
+            console.error(`[MAPS DEBUG] ❌ ERRO na busca de hospitais:`, error);
+            console.error(`[MAPS DEBUG] Tipo:`, error.name);
+            console.error(`[MAPS DEBUG] Mensagem:`, error.message);
+            
             if (this.hospitalsLoading) {
                 this.hospitalsLoading.style.display = 'none';
             }
             if (this.hospitalsError) {
                 this.hospitalsError.style.display = 'block';
-                this.hospitalsError.innerHTML = `<p>Erro: ${error.message}</p>`;
+                // Mensagem de erro mais detalhada
+                let errorMessage = error.message || 'Erro desconhecido';
+                if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                    errorMessage = 'A busca está demorando muito. Tente novamente ou reduza o raio de busca.';
+                } else if (error.message.includes('geolocalização') || error.message.includes('permissão')) {
+                    errorMessage = 'É necessário permitir acesso à sua localização para buscar hospitais próximos.';
+                }
+                this.hospitalsError.innerHTML = `<p>Erro: ${errorMessage}</p>`;
             }
             // Mostra estado vazio mesmo em caso de erro
             this.showEmptyState();
@@ -4318,19 +4339,149 @@ Como você está se sentindo hoje? 💛`;
     
     async searchHospitalsNearby(lat, lon, radius = 50000) {
         /** 
-         * Busca hospitais próximos usando Overpass API
-         * OTIMIZADO: Query simplificada + filtragem no cliente
+         * ✅ ATUALIZADO: Busca unidades de saúde usando API Segura FastAPI
+         * Validação rigorosa via CNES (Source of Truth)
+         * Substitui Overpass API direto para garantir dados validados
+         */
+        
+        const API_BASE_URL = 'http://localhost:5000';
+        const radiusKm = radius / 1000; // Converte metros para km
+        
+        try {
+            console.log(`[MAPS DEBUG] 🔒 Usando API Segura: ${API_BASE_URL}/api/v1/facilities/search`);
+            console.log(`[MAPS DEBUG] Coordenadas: lat=${lat}, lon=${lon}, radius=${radiusKm}km`);
+            
+            const response = await fetch(`${API_BASE_URL}/api/v1/facilities/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    latitude: lat,
+                    longitude: lon,
+                    radius_km: radiusKm,
+                    filter_type: 'ALL', // Pode ser ajustado baseado em filtros do usuário
+                    is_emergency: false
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API retornou erro: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`[MAPS DEBUG] ✅ API respondeu: ${data.meta?.total_results || 0} unidades encontradas`);
+            
+            // Converter formato da nossa API para formato esperado pelo displayHospitals
+            const hospitals = this.convertFacilitiesToHospitals(data.results || [], lat, lon);
+            
+            console.log(`[MAPS DEBUG] ✅ Conversão concluída: ${hospitals.length} hospitais formatados`);
+            
+            return hospitals;
+            
+        } catch (error) {
+            console.error(`[MAPS DEBUG] ❌ ERRO ao buscar na API Segura:`, error);
+            console.error(`[MAPS DEBUG] ⚠️ API Segura indisponível. Sistema não pode operar sem validação CNES.`);
+            throw new Error('Não foi possível buscar hospitais validados. Tente novamente ou ligue 192 em caso de emergência.');
+        }
+    }
+    
+    /**
+     * Converte formato da API FastAPI para formato esperado pelo displayHospitals
+     * @param {Array} facilities - Resultados da API FastAPI
+     * @param {number} userLat - Latitude do usuário
+     * @param {number} userLon - Longitude do usuário
+     * @returns {Array} - Array de hospitais no formato esperado
+     */
+    convertFacilitiesToHospitals(facilities, userLat, userLon) {
+        return facilities.map(facility => {
+            // Converter distância de km para metros
+            const distanceMeters = (facility.distance_km || 0) * 1000;
+            
+            // Extrair informações do endereço
+            // A API pode retornar address completo ou partes separadas
+            const fullAddress = facility.address || '';
+            const addressParts = fullAddress.split(',').map(s => s.trim());
+            
+            let street = addressParts[0] || '';
+            let neighborhood = facility.neighborhood || '';
+            let city = facility.city || addressParts.find(part => 
+                part && !part.match(/^\d+$/) && part.length > 3
+            ) || '';
+            let state = facility.state || '';
+            
+            // Se não tem neighborhood separado, tenta extrair do endereço
+            if (!neighborhood && addressParts.length > 1) {
+                neighborhood = addressParts.find(part => 
+                    part && !part.match(/^\d+$/) && part !== city && part !== state
+                ) || '';
+            }
+            
+            // Determinar se é público baseado em tags
+            const isPublic = facility.tags?.sus === true;
+            
+            // Determinar tipo de unidade
+            let healthcareType = 'hospital';
+            if (facility.type === 'UPA') {
+                healthcareType = 'emergency';
+            } else if (facility.type === 'UBS') {
+                healthcareType = 'centre';
+            }
+            
+            return {
+                name: facility.fantasy_name || facility.name || 'Hospital',
+                lat: facility.lat,
+                lon: facility.long,
+                address: fullAddress,
+                street: street,
+                houseNumber: '', // Não vem da nossa API, mas mantém compatibilidade
+                neighborhood: neighborhood,
+                city: city,
+                state: state,
+                phone: facility.phone || '',
+                website: '',
+                distance: distanceMeters,
+                isEmergency: facility.tags?.emergency_only === true,
+                acceptsSUS: facility.tags?.sus === true,
+                isPublic: isPublic,
+                healthcareType: healthcareType,
+                // Campos adicionais da nossa API (preservados para displayHospitals)
+                tags: facility.tags,
+                badges: facility.badges || [],
+                warning_message: facility.warning_message,
+                type: facility.type
+            };
+        });
+    }
+    
+    async searchHospitalsNearby_OLD_OVERPASS(lat, lon, radius = 50000) {
+        /** 
+         * ⚠️ MÉTODO ANTIGO - MANTIDO APENAS PARA REFERÊNCIA
+         * NÃO DEVE SER USADO EM PRODUÇÃO - Violação de segurança (.cursorrules)
+         * Busca usando Overpass API direto (SEM validação CNES)
          */
         
         // ========================================
-        // QUERY OTIMIZADA: Busca hospitais (filtragem específica no cliente)
+        // QUERY AMPLIADA: Busca TODAS as unidades de saúde próximas
         // ========================================
-        // Busca todos os hospitais. A filtragem e priorização por maternidade/obstetrícia
-        // acontece no cliente, priorizando hospitais com tags ou nomes relacionados.
         const query = `[out:json][timeout:30];
-(node["amenity"="hospital"](around:${radius},${lat},${lon});
- way["amenity"="hospital"](around:${radius},${lat},${lon});
- relation["amenity"="hospital"](around:${radius},${lat},${lon}););
+(
+  node["amenity"="hospital"](around:${radius},${lat},${lon});
+  way["amenity"="hospital"](around:${radius},${lat},${lon});
+  relation["amenity"="hospital"](around:${radius},${lat},${lon});
+  node["amenity"="clinic"](around:${radius},${lat},${lon});
+  way["amenity"="clinic"](around:${radius},${lat},${lon});
+  relation["amenity"="clinic"](around:${radius},${lat},${lon});
+  node["healthcare"="hospital"](around:${radius},${lat},${lon});
+  way["healthcare"="hospital"](around:${radius},${lat},${lon});
+  relation["healthcare"="hospital"](around:${radius},${lat},${lon});
+  node["healthcare"="clinic"](around:${radius},${lat},${lon});
+  way["healthcare"="clinic"](around:${radius},${lat},${lon});
+  relation["healthcare"="clinic"](around:${radius},${lat},${lon});
+  node["healthcare"="centre"](around:${radius},${lat},${lon});
+  way["healthcare"="centre"](around:${radius},${lat},${lon});
+  relation["healthcare"="centre"](around:${radius},${lat},${lon});
+);
 out center tags;`;
         
         // Lista de servidores Overpass para tentar
@@ -4349,8 +4500,12 @@ out center tags;`;
             
             try {
                 const controller = new AbortController();
-                // Timeout aumentado para 30 segundos (era 20)
-                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                // Timeout aumentado para 45 segundos (era 30) para dar mais tempo à API
+                const timeoutId = setTimeout(() => controller.abort(), 45000);
+                
+                // LOG: Início da requisição
+                console.log(`[MAPS DEBUG] Tentativa ${serverIndex + 1}/${servers.length} - Servidor: ${server}`);
+                console.log(`[MAPS DEBUG] Query Overpass:`, query.substring(0, 200) + '...');
                 
                 let response;
                 try {
@@ -4363,10 +4518,15 @@ out center tags;`;
                         signal: controller.signal
                     });
                     clearTimeout(timeoutId);
+                    
+                    // LOG: Status da resposta
+                    console.log(`[MAPS DEBUG] Resposta recebida - Status: ${response.status} ${response.statusText}`);
                 } catch (fetchError) {
                     clearTimeout(timeoutId);
                     lastError = fetchError;
+                    console.error(`[MAPS DEBUG] Erro na requisição fetch:`, fetchError);
                     if (serverIndex < servers.length - 1) {
+                        console.log(`[MAPS DEBUG] Tentando próximo servidor...`);
                         continue; // Tenta próximo servidor
                     }
                     // Se esgotou todos os servidores, lança erro amigável
@@ -4398,10 +4558,35 @@ out center tags;`;
                 
                 const responseText = await response.text();
                 
+                // LOG: Conteúdo da resposta (primeiros 500 caracteres)
+                console.log(`[MAPS DEBUG] Resposta da API (primeiros 500 chars):`, responseText.substring(0, 500));
+                
                 let data;
                 try {
                     data = JSON.parse(responseText);
+                    
+                    // LOG: Estrutura do JSON retornado
+                    console.log(`[MAPS DEBUG] JSON parseado com sucesso`);
+                    console.log(`[MAPS DEBUG] Número de elementos:`, data.elements ? data.elements.length : 0);
+                    if (data.elements && data.elements.length > 0) {
+                        console.log(`[MAPS DEBUG] Primeiro elemento (amostra):`, JSON.stringify(data.elements[0]).substring(0, 300));
+                    }
+                    
+                    // Verifica se há erros na resposta da API Overpass
+                    if (data.error) {
+                        console.error(`[MAPS DEBUG] ERRO DA API OVERPASS:`, data.error);
+                        console.error(`[MAPS DEBUG] Status: ${data.error.status || 'N/A'}`);
+                        console.error(`[MAPS DEBUG] Mensagem: ${data.error.message || 'N/A'}`);
+                        lastError = new Error(`Erro da API de mapas: ${data.error.message || 'Erro desconhecido'}`);
+                        if (serverIndex < servers.length - 1) {
+                            continue; // Tenta próximo servidor
+                        }
+                        throw lastError;
+                    }
+                    
                 } catch (parseError) {
+                    console.error(`[MAPS DEBUG] ERRO ao fazer parse do JSON:`, parseError);
+                    console.error(`[MAPS DEBUG] Resposta completa (últimos 1000 chars):`, responseText.substring(Math.max(0, responseText.length - 1000)));
                     if (serverIndex < servers.length - 1) {
                         continue;
                     }
@@ -4410,7 +4595,13 @@ out center tags;`;
                 
                 const hospitals = [];
                 
+                // LOG: Início do processamento
+                console.log(`[MAPS DEBUG] Processando ${data.elements ? data.elements.length : 0} elementos da API`);
+                
                 if (data.elements && data.elements.length > 0) {
+                    let processedCount = 0;
+                    let skippedCount = 0;
+                    
                     for (const element of data.elements) {
                         const street = element.tags?.['addr:street'] || '';
                         const houseNumber = element.tags?.['addr:housenumber'] || '';
@@ -4450,29 +4641,18 @@ out center tags;`;
                         
                         const specialty = (element.tags?.['healthcare:speciality'] || '').toLowerCase();
                         const healthcare = (element.tags?.['healthcare'] || '').toLowerCase();
+                        const amenity = (element.tags?.['amenity'] || '').toLowerCase();
                         const nameLower = (hospitalName || '').toLowerCase();
                         const emergency = (element.tags?.['emergency'] || '').toLowerCase();
                         const payment = (element.tags?.['healthcare:payment'] || '').toLowerCase();
                         const operatorType = (element.tags?.['operator:type'] || '').toLowerCase();
                         
                         // ========================================
-                        // FILTRO DUPLO OBRIGATÓRIO DE SEGURANÇA
+                        // FILTROS REMOVIDOS: Aceita TODAS as unidades de saúde
                         // ========================================
-                        // REGRA 1: Validar TIPO - Deve ser Hospital (excluir UBS, Clínicas, UPAs, Postos)
-                        const isValidHospitalType = this.validateHospitalType(element.tags, hospitalName);
-                        if (!isValidHospitalType) {
-                            // Rejeita estabelecimentos que não são hospitais
-                            continue;
-                        }
-                        
-                        // REGRA 2: Validar INFRAESTRUTURA - Aceita hospitais gerais, bloqueia especializados que não atendem parto
-                        const infrastructureValidation = this.validateMaternityInfrastructure(element.tags, hospitalName, specialty, healthcare);
-                        if (!infrastructureValidation.accepted) {
-                            // Rejeita hospitais especializados que não atendem parto (lista negra)
-                            continue;
-                        }
-                        
-                        // Se chegou aqui, passou no filtro duplo obrigatório
+                        // REMOVIDO: Validação restritiva de tipo de hospital
+                        // REMOVIDO: Validação de infraestrutura de maternidade
+                        // Agora aceita todas as unidades de saúde retornadas pela API
                         // ========================================
                         
                         const isEmergency = emergency === 'yes' || emergency === 'emergency_ward' || 
@@ -4483,14 +4663,10 @@ out center tags;`;
                         const acceptsSUS = payment === 'public' || payment === 'yes' || 
                                           operatorType === 'public';
                         
-                        // Extrai informação sobre se é confirmação explícita ou dedução
-                        const hasExplicitMaternity = infrastructureValidation.explicit; // true = explícito, false = dedução
-                        
-                        // Marca como maternidade: sempre true pois passou no filtro (geral ou com maternidade explícita)
-                        const isMaternity = true;
-                        
+                        // REMOVIDO: Validação de maternidade - agora aceita todas as unidades
+                        // Define nome padrão se não houver
                         if (!hospitalName || hospitalName.trim() === '') {
-                            hospitalName = hasExplicitMaternity ? 'Hospital com Ala de Maternidade' : 'Hospital Geral';
+                            hospitalName = 'Unidade de Saúde';
                         }
                         
                         // Identifica se é público ou privado baseado no nome
@@ -4517,76 +4693,86 @@ out center tags;`;
                             phone: element.tags?.['phone'] || element.tags?.['contact:phone'] || element.tags?.['contact:mobile'] || '',
                             website: element.tags?.['website'] || element.tags?.['contact:website'] || '',
                             distance: this.calculateDistance(lat, lon, element.lat || element.center?.lat, element.lon || element.center?.lon),
-                            isMaternity: isMaternity, // Sempre true pois passou no filtro duplo
-                            isMaternityExplicit: hasExplicitMaternity, // true = confirmação explícita, false = dedução (hospital geral)
+                            // REMOVIDO: Campos relacionados a maternidade (não mais utilizados)
                             isEmergency: isEmergency,
                             acceptsSUS: acceptsSUS,
-                            isPublic: isPublic
+                            isPublic: isPublic,
+                            // Tipo de unidade de saúde (hospital, clinic, centre, etc)
+                            healthcareType: healthcare || amenity || 'health'
                         };
                         
                         if (hospital.lat && hospital.lon) {
                             hospitals.push(hospital);
+                            processedCount++;
+                        } else {
+                            skippedCount++;
+                            console.warn(`[MAPS DEBUG] Elemento sem coordenadas ignorado:`, element.tags?.name || 'Sem nome');
                         }
                     }
+                    
+                    // LOG: Resultado do processamento
+                    console.log(`[MAPS DEBUG] Processamento concluído: ${processedCount} unidades adicionadas, ${skippedCount} ignoradas`);
+                } else {
+                    console.warn(`[MAPS DEBUG] AVISO: API retornou 0 elementos (ZERO_RESULTS ou resposta vazia)`);
+                    console.warn(`[MAPS DEBUG] Estrutura da resposta:`, Object.keys(data));
                 }
                 
                 // Remove duplicatas
                 let filteredHospitals = this.deduplicateHospitals(hospitals);
+                console.log(`[MAPS DEBUG] Após remoção de duplicatas: ${filteredHospitals.length} unidades`);
                 
-                // Filtra hospitais que têm TODAS as informações completas: nome, endereço, telefone e coordenadas
+                // Filtra unidades que têm informações básicas: nome e coordenadas (critério mínimo)
+                // REMOVIDO: Exigência de telefone e endereço completo (muito restritivo)
+                const beforeFilter = filteredHospitals.length;
                 filteredHospitals = filteredHospitals.filter(h => {
-                    const hasName = h.name && h.name.trim() !== '' && h.name !== 'Hospital';
-                    const hasAddress = h.address && h.address.trim() !== '';
-                    const hasPhone = h.phone && h.phone.trim() !== '';
+                    const hasName = h.name && h.name.trim() !== '' && h.name !== 'Unidade de Saúde';
                     const hasCoordinates = h.lat && h.lon;
-                    return hasName && hasAddress && hasPhone && hasCoordinates;
+                    return hasName && hasCoordinates;
                 });
+                console.log(`[MAPS DEBUG] Após filtro de informações básicas: ${filteredHospitals.length} unidades (${beforeFilter - filteredHospitals.length} removidas)`);
                 
-                // Adiciona score de prioridade baseado em palavras-chave de maternidade/obstetrícia no nome
-                filteredHospitals.forEach(h => {
-                    const nameLower = (h.name || '').toLowerCase();
-                    const maternityKeywords = ['maternidade', 'maternity', 'obstetrícia', 'obstetrics', 'obstetricia', 'parto', 'nascimento'];
-                    h.maternityScore = 0;
-                    maternityKeywords.forEach(keyword => {
-                        if (nameLower.includes(keyword)) {
-                            h.maternityScore += 10; // Score alto para palavras-chave no nome
-                        }
-                    });
-                    // Bonus para hospitais com confirmação explícita
-                    if (h.isMaternityExplicit) {
-                        h.maternityScore += 5;
-                    }
-                });
-                
-                // Ordena: 1) Por score de maternidade (maior primeiro), 2) Por distância (mais próximo primeiro)
+                // REMOVIDO: Scoring e priorização por maternidade
+                // Agora ordena APENAS por distância (mais próximo primeiro)
                 filteredHospitals.sort((a, b) => {
-                    // Prioridade 1: Hospitais com maior score de maternidade primeiro
-                    if (b.maternityScore !== a.maternityScore) {
-                        return b.maternityScore - a.maternityScore;
-                    }
-                    // Prioridade 2: Entre hospitais com mesmo score, ordena por distância (mais próximo primeiro)
                     return a.distance - b.distance;
                 });
+                
+                // LOG: Resultado final
+                console.log(`[MAPS DEBUG] ✅ Busca concluída com sucesso: ${filteredHospitals.length} unidades de saúde encontradas`);
+                if (filteredHospitals.length > 0) {
+                    console.log(`[MAPS DEBUG] Primeira unidade:`, filteredHospitals[0].name, `- Distância: ${(filteredHospitals[0].distance / 1000).toFixed(1)} km`);
+                }
                 
                 return filteredHospitals;
             
             } catch (error) {
+                // LOG: Erro capturado
+                console.error(`[MAPS DEBUG] ERRO na tentativa ${serverIndex + 1}:`, error);
+                console.error(`[MAPS DEBUG] Tipo do erro:`, error.name);
+                console.error(`[MAPS DEBUG] Mensagem:`, error.message);
+                if (error.stack) {
+                    console.error(`[MAPS DEBUG] Stack trace:`, error.stack.substring(0, 500));
+                }
+                
                 // Captura erros da requisição ou processamento
                 lastError = error;
                 if (serverIndex < servers.length - 1) {
+                    console.log(`[MAPS DEBUG] Tentando próximo servidor...`);
                     continue; // Tenta próximo servidor
                 }
                 // Se esgotou todos os servidores, propaga o erro
-                // O erro já foi tratado com mensagem amigável nas verificações anteriores
+                console.error(`[MAPS DEBUG] ❌ Todos os servidores falharam. Último erro:`, lastError);
                 throw error;
             }
         }
         
         // Se chegou aqui sem retornar, nenhum servidor funcionou
         if (lastError) {
+            console.error(`[MAPS DEBUG] ❌ FALHA FINAL: Nenhum servidor funcionou. Último erro:`, lastError);
             throw lastError; // Lança o último erro capturado (já com mensagem amigável)
         }
         
+        console.warn(`[MAPS DEBUG] ⚠️ AVISO: Nenhum servidor retornou dados e nenhum erro foi capturado`);
         return []; // Fallback: retorna array vazio se nenhum erro foi capturado
     }
     
@@ -4821,22 +5007,19 @@ out center tags;`;
                     existing.lat, existing.lon
                 );
                 if (distance < 100) { // Menos de 100m
-                    const similarity = this.calculateNameSimilarity(hospital.name, existing.name);
-                    if (similarity > 0.7) {
-                        isDuplicate = true;
-                        // Prioriza: Maternos COM SUS > Maternos > Com SUS > Outros
-                        const hospitalPriority = (hospital.isMaternity && hospital.acceptsSUS ? 3 : 
-                                                  hospital.isMaternity ? 2 : 
-                                                  hospital.acceptsSUS ? 1 : 0);
-                        const existingPriority = (existing.isMaternity && existing.acceptsSUS ? 3 : 
-                                                  existing.isMaternity ? 2 : 
-                                                  existing.acceptsSUS ? 1 : 0);
-                        if (hospitalPriority > existingPriority) {
-                            const index = unique.indexOf(existing);
-                            unique[index] = hospital;
+                        const similarity = this.calculateNameSimilarity(hospital.name, existing.name);
+                        if (similarity > 0.7) {
+                            isDuplicate = true;
+                            // REMOVIDO: Priorização por maternidade
+                            // Prioriza apenas: Com SUS > Outros (mantém o que aceita SUS)
+                            const hospitalPriority = hospital.acceptsSUS ? 1 : 0;
+                            const existingPriority = existing.acceptsSUS ? 1 : 0;
+                            if (hospitalPriority > existingPriority) {
+                                const index = unique.indexOf(existing);
+                                unique[index] = hospital;
+                            }
+                            break;
                         }
-                        break;
-                    }
                 }
             }
             if (!isDuplicate) {
@@ -4943,21 +5126,17 @@ out center tags;`;
             return;
         }
         
-        // Filtra apenas hospitais com informações completas (nome, endereço, telefone)
+        // REMOVIDO: Filtro restritivo que exigia telefone completo
+        // Agora aceita unidades com nome e coordenadas (critério mínimo)
         const completeHospitals = hospitals.filter(h => {
-            const hasName = h.name && h.name.trim() !== '' && h.name !== 'Hospital';
-            const hasAddress = h.address && h.address.trim() !== '';
-            const hasPhone = h.phone && h.phone.trim() !== '';
-            return hasName && hasAddress && hasPhone;
+            const hasName = h.name && h.name.trim() !== '' && h.name !== 'Unidade de Saúde';
+            const hasCoordinates = h.lat && h.lon;
+            return hasName && hasCoordinates;
         });
         
-        // Ordena: 1) Hospitais com ala maternal primeiro, 2) Por distância (mais próximo primeiro)
+        // REMOVIDO: Priorização por maternidade
+        // Ordena APENAS por distância (mais próximo primeiro)
         const sortedHospitals = [...completeHospitals].sort((a, b) => {
-            // Prioridade 1: Hospitais com ala maternal primeiro
-            if (a.isMaternity && !b.isMaternity) return -1;
-            if (!a.isMaternity && b.isMaternity) return 1;
-            
-            // Prioridade 2: Entre maternos ou não-maternos, ordena por distância (mais próximo primeiro)
             return a.distance - b.distance;
         });
         
@@ -4969,18 +5148,10 @@ out center tags;`;
         // Renderização otimizada: cria fragmento para melhor performance
         const fragment = document.createDocumentFragment();
         const container = document.createElement('div');
-        // Conta hospitais com confirmação explícita vs dedução
-        const explicitCount = sortedHospitals.filter(h => h.isMaternityExplicit === true).length;
-        const generalCount = sortedHospitals.filter(h => h.isMaternityExplicit === false).length;
         
-        let messageText = '';
-        if (explicitCount > 0 && generalCount > 0) {
-            messageText = `Encontrados ${sortedHospitals.length} hospital(is) próximo(s): ${explicitCount} com Ala de Maternidade confirmada e ${generalCount} hospital(is) geral(is).`;
-        } else if (explicitCount > 0) {
-            messageText = `Encontrados ${sortedHospitals.length} hospital(is) com Ala de Maternidade confirmada próximo(s):`;
-        } else {
-            messageText = `Encontrados ${sortedHospitals.length} hospital(is) geral(is) próximo(s) (atendimento provável):`;
-        }
+        // REMOVIDO: Contagem de hospitais com/sem maternidade
+        // Mensagem simples e genérica
+        const messageText = `Encontradas ${sortedHospitals.length} unidade(s) de saúde próxima(s):`;
         
         container.innerHTML = `<p style="margin-bottom: var(--sophia-spacing-md); color: var(--sophia-text-secondary);">${messageText}</p>`;
         
@@ -4988,9 +5159,22 @@ out center tags;`;
             const distanceKm = (hospital.distance / 1000).toFixed(1);
             const badges = [];
             
-            // Badge Pronto Socorro
+            // Badge Pronto Socorro (se for UPA/Emergência)
             if (hospital.isEmergency === true) {
                 badges.push(this.createBadge('emergency', 'Pronto Socorro', 'fas fa-ambulance'));
+            }
+            
+            // Badges da nossa API (se disponíveis) - UX Expert
+            if (hospital.badges && Array.isArray(hospital.badges)) {
+                hospital.badges.forEach(badgeText => {
+                    if (badgeText.includes('MATERNIDADE')) {
+                        badges.push(this.createBadge('maternity', badgeText, 'fas fa-baby'));
+                    } else if (badgeText.includes('SUS')) {
+                        badges.push(this.createBadge('sus', badgeText, 'fas fa-hospital'));
+                    } else if (badgeText.includes('EMERGÊNCIA')) {
+                        badges.push(this.createBadge('emergency', badgeText, 'fas fa-ambulance'));
+                    }
+                });
             }
             
             // Sanitiza dados
@@ -5000,38 +5184,30 @@ out center tags;`;
             const sanitizedStreet = hospital.street ? this.sanitizeString(hospital.street) : '';
             const sanitizedHouseNumber = hospital.houseNumber ? this.sanitizeString(hospital.houseNumber) : '';
             
-            // Identifica se é público ou privado
-            const publicPrivateTag = hospital.isPublic ? 
-                '<span class="hospital-badge-sus hospital-tag-public" style="display: inline-block; background: #4CAF50; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Provável SUS/Público</span>' :
-                '<span class="hospital-tag-private" style="display: inline-block; background: #FF9800; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Provável Privado</span>';
+            // Identifica se é público ou privado (melhorado com dados da nossa API)
+            const publicPrivateTag = hospital.isPublic || hospital.acceptsSUS ? 
+                '<span class="hospital-badge-sus hospital-tag-public" style="display: inline-block; background: #2563eb; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">SUS/Público</span>' :
+                '<span class="hospital-tag-private" style="display: inline-block; background: #059669; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Privado</span>';
             
-            // Badge de Maternidade: Diferenciação entre Certeza Explícita e Dedução
-            let maternityMessage = '';
-            if (hospital.isMaternityExplicit === true) {
-                // Badge Verde (✅ Confirmada): Apenas se o hospital tiver passado pela regra de Inclusão Explícita
-                maternityMessage = `
-                    <div class="hospital-maternity-info" style="background: rgba(76, 175, 80, 0.15); border-left: 3px solid #4CAF50; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 1rem;"></i>
-                        <span style="color: #2E7D32; font-weight: 600; font-size: 0.9rem;">✅ Ala de Maternidade Confirmada</span>
+            // Aviso de segurança - usa warning_message da API se disponível (UX Expert)
+            let safetyWarning = '';
+            if (hospital.warning_message) {
+                // Aviso crítico da API (ex: UPA não faz parto)
+                safetyWarning = `
+                    <div class="hospital-safety-warning" style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #dc2626; margin-right: 0.5rem;"></i>
+                        <span style="color: #991b1b; font-weight: 600; font-size: 0.85rem;">${this.escapeHtml(hospital.warning_message)}</span>
                     </div>
                 `;
             } else {
-                // Badge Azul/Neutro (ℹ️ Hospital Geral): Se o hospital passou apenas porque não caiu na lista negra
-                maternityMessage = `
-                    <div class="hospital-maternity-info" style="background: rgba(33, 150, 243, 0.15); border-left: 3px solid #2196F3; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-info-circle" style="color: #2196F3; font-size: 1rem;"></i>
-                        <span style="color: #1565C0; font-weight: 600; font-size: 0.9rem;">ℹ️ Hospital Geral (Atendimento Provável)</span>
+                // Aviso genérico
+                safetyWarning = `
+                    <div class="hospital-safety-warning" style="background: #fff3cd; border-left: 3px solid #ffb703; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #ffb703; margin-right: 0.5rem;"></i>
+                        <span style="color: #856404; font-weight: 600; font-size: 0.85rem;">⚠️ Recomendamos ligar para confirmar disponibilidade de atendimento no momento</span>
                     </div>
                 `;
             }
-            
-            // Aviso de segurança
-            const safetyWarning = `
-                <div class="hospital-safety-warning" style="background: #fff3cd; border-left: 3px solid #ffb703; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 6px;">
-                    <i class="fas fa-exclamation-triangle" style="color: #ffb703; margin-right: 0.5rem;"></i>
-                    <span style="color: #856404; font-weight: 600; font-size: 0.85rem;">⚠️ Recomendamos ligar para confirmar se há plantão obstétrico disponível no momento</span>
-                </div>
-            `;
             
             // Monta endereço formatado (rua e número separados)
             let formattedAddress = '';
@@ -5070,7 +5246,6 @@ out center tags;`;
                         </div>
                     </div>
                     ${badges.length > 0 ? `<div class="hospital-badges">${badges.join('')}</div>` : ''}
-                    ${maternityMessage}
                     ${safetyWarning}
                     <div class="hospital-info">
                         ${formattedAddress ? `

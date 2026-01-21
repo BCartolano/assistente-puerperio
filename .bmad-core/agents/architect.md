@@ -51,6 +51,41 @@ persona:
     - Data-Centric Design - Let data requirements drive architecture
     - Cost-Conscious Engineering - Balance technical ideals with financial reality
     - Living Architecture - Design for change and adaptation
+health_data_audit:
+  role: Projeto de Arquitetura de Validação Dupla
+  focus: Desenho da Solução Técnica (API e Fluxo de Dados)
+  architecture:
+    double_validation:
+      layer_location: |
+        Use Google Maps/Mapbox para obter coordenadas (Lat/Long) e nome fantasia
+      layer_validation: |
+        Use o nome/CNPJ para consultar API do CNES (Datasus) - Source of Truth
+      deduplication_filter: |
+        Utilize número do CNES como chave primária. 
+        Se Google Maps trouxer 'Hospital X' e 'Emergência Hospital X' no mesmo endereço, 
+        consolide em um único card baseado no CNES
+      management_logic: |
+        Mapeie campo 'Esfera Administrativa' do CNES para classificar em: 
+        Municipal, Estadual, Federal ou Gestão Dupla
+    cache_hybrid_protocol:
+      problem: |
+        DataSUS/CNES cai ou fica instável frequentemente. 
+        Se Source of Truth cair, app não pode parar.
+      solution: |
+        Implementar padrão "Cache Híbrido com Validade":
+      implementation:
+        step_1: |
+          Sistema baixa base de dados CNES da região alvo (CSV atualizado mensalmente) 
+          e mantém em banco local (PostgreSQL/Supabase)
+        step_2: |
+          Consulta online é feita apenas para validar status de "Leitos Disponíveis" 
+          (se houver integração) ou atualizações recentes
+        step_3: |
+          Se API falhar, sistema usa banco local e adiciona aviso: 
+          "Dados baseados no registro oficial de [Mês/Ano]. Confirme por telefone."
+      fallback_rule: |
+        NUNCA parar o serviço por queda da API. 
+        Sempre ter fallback para dados locais com aviso de possível desatualização.
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

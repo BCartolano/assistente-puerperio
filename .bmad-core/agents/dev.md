@@ -50,6 +50,71 @@ core_principles:
   - CRITICAL: ONLY update story file Dev Agent Record sections (checkboxes/Debug Log/Completion Notes/Change Log)
   - CRITICAL: FOLLOW THE develop-story command when the user tells you to implement the story
   - Numbered Options - Always use numbered lists when presenting choices to the user
+health_data_audit:
+  role: Implementação de Código com Tratamento Rigoroso de Exceções
+  focus: Script de busca com filtros booleanos rígidos
+  implementation_rules:
+    exception_handling: |
+      Se API do CNES estiver fora do ar, NÃO mostre dados cacheados antigos 
+      sem aviso explícito: 'Dados podem estar desatualizados'
+    filter_precision: |
+      Implemente filtros booleanos rígidos:
+      if (hospital.leitos_obstetricos == 0 and busca == 'parto'): 
+          return null
+    geolocation: |
+      Calcule distância real (driving mode), não em linha reta. 
+      Puérpera em emergência precisa do tempo real de deslocamento
+    integration: |
+      Conecte script ao crawler oficial do CNES ou API equivalente 
+      para buscar lista de convênios aceitos quando disponível
+    insurance_handling: |
+      NUNCA confirme aceitação de convênio específico sem API direta da seguradora.
+      Sempre exibir: "Hospital Privado (Verificar Plano)" e fornecer link/telefone para confirmação.
+  validation_logic_example: |
+    # Lógica de Validação Rigorosa (Python Pseudocode)
+    def validar_hospital(google_place_id, user_filters):
+        # 1. Obter dados brutos do Google (Geolocalização)
+        google_data = google_maps_client.get_details(google_place_id)
+        
+        # 2. BUSCAR A VERDADE NO CNES (Base Oficial)
+        # A busca deve ser feita pelo CNPJ ou Match exato de Nome + Município
+        cnes_data = cnes_provider.search(name=google_data.name, lat=google_data.lat, long=google_data.lng)
+        
+        if not cnes_data:
+            return None # REGRA DE OURO: Se não está no CNES, não existe para nós.
+            
+        # 3. Auditoria de Dados
+        relatorio = {
+            "nome": cnes_data.nome_fantasia,
+            "sus_exclusivo": False,
+            "maternidade": False,
+            "emergencia_apenas": False,
+            "risco_legal": False
+        }
+
+        # Filtro de Maternidade (Códigos de Habilitação)
+        codigos_servicos = cnes_data.servicos_especializados
+        if '065' in codigos_servicos: # 065 = Obstetrícia
+            relatorio["maternidade"] = True
+        else:
+            # Se for UPA (Tipo 73)
+            if cnes_data.tipo_unidade == '73':
+                relatorio["emergencia_apenas"] = True
+        
+        # Filtro Financeiro
+        if cnes_data.vinculo_sus == 'S' and cnes_data.natureza_juridica in ['ADM_PUB', 'FILANTROPICA']:
+            relatorio["sus_exclusivo"] = True
+        elif cnes_data.vinculo_sus == 'N':
+            relatorio["privado_puro"] = True
+            
+        # 4. Decisão de Exibição (Filtro do Usuário)
+        if user_filters.busca_parto and not relatorio["maternidade"]:
+            return None # Descarta hospitais gerais se a busca é parto
+            
+        if user_filters.financeiro == 'SUS' and relatorio["privado_puro"]:
+            return None # Descarta particulares na busca SUS
+            
+        return relatorio
 
 # All commands require * prefix when used (e.g., *help)
 commands:

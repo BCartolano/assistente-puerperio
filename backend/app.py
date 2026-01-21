@@ -174,6 +174,28 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
+# Verifica se groq está disponível
+GROQ_AVAILABLE = False
+groq_client = None
+try:
+    from groq import Groq
+    GROQ_AVAILABLE = True
+    logger.info("[GROQ] Biblioteca groq importada com sucesso")
+    print("[GROQ] Biblioteca groq importada com sucesso")
+except ImportError as e:
+    GROQ_AVAILABLE = False
+    groq_client = None
+    logger.warning(f"[GROQ] ERRO ao importar groq: {e}")
+    print(f"[GROQ] ERRO ao importar groq: {e}")
+    print("[GROQ] Execute: pip install groq")
+except Exception as e:
+    GROQ_AVAILABLE = False
+    groq_client = None
+    logger.error(f"[GROQ] ERRO inesperado ao importar groq: {e}")
+    print(f"[GROQ] ERRO inesperado ao importar groq: {e}")
+    import traceback
+    traceback.print_exc()
+
 # Logger já foi configurado acima (antes da importação do NLTK)
 
 # Carrega variáveis de ambiente
@@ -224,7 +246,7 @@ BASE_PATH = os.path.join(os.path.dirname(__file__), "..", "dados")
 DB_PATH = os.path.join(os.path.dirname(__file__), "users.db")
 # Flag para controlar uso de IA (permite desabilitar completamente)
 USE_AI = os.getenv("USE_AI", "true").lower() == "true"
-AI_PROVIDER = os.getenv("AI_PROVIDER", "openai").lower()  # openai ou gemini
+AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").lower()  # openai, gemini ou groq
 logger.info(f"[IA] 🔍 USE_AI configurado: {USE_AI}")
 logger.info(f"[IA] 🔍 AI_PROVIDER configurado: {AI_PROVIDER}")
 print(f"[IA] 🔍 USE_AI configurado: {USE_AI}")
@@ -234,10 +256,12 @@ print(f"[IA] 🔍 AI_PROVIDER configurado: {AI_PROVIDER}")
 OPENAI_API_KEY = None
 OPENAI_ASSISTANT_ID = None
 GEMINI_API_KEY = None
+GROQ_API_KEY = None
 if USE_AI:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Carrega também no início
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")  # Chave da Groq
     if not OPENAI_API_KEY:
         # Tenta recarregar se não encontrou
         logger.warning("[IA] Nenhuma chave de API encontrada na primeira tentativa, recarregando .env...")
@@ -511,6 +535,28 @@ else:
 
 logger.info(f"[OPENAI] Status final: openai_client = {openai_client is not None}")
 print(f"[OPENAI] Status final: openai_client disponivel = {openai_client is not None}")
+
+# Inicializa cliente Groq se a chave estiver disponível E USE_AI estiver habilitado
+groq_client = None
+if USE_AI and AI_PROVIDER == "groq" and GROQ_AVAILABLE and GROQ_API_KEY:
+    try:
+        groq_client = Groq(api_key=GROQ_API_KEY)
+        logger.info("[GROQ] Cliente Groq inicializado com sucesso")
+        print("[GROQ] Cliente Groq inicializado com sucesso")
+    except Exception as e:
+        logger.error(f"[GROQ] Erro ao inicializar Groq: {e}")
+        print(f"[GROQ] Erro ao inicializar Groq: {e}")
+        groq_client = None
+elif USE_AI and AI_PROVIDER == "groq":
+    if not GROQ_AVAILABLE:
+        logger.warning("[GROQ] Biblioteca groq nao instalada - execute: pip install groq")
+        print("[GROQ] Biblioteca nao instalada - execute: pip install groq")
+    elif not GROQ_API_KEY:
+        logger.warning("[GROQ] GROQ_API_KEY nao configurada")
+        print("[GROQ] GROQ_API_KEY nao configurada")
+
+logger.info(f"[GROQ] Status final: groq_client = {groq_client is not None}")
+print(f"[GROQ] Status final: groq_client disponivel = {groq_client is not None}")
 
 # Classe User para Flask-Login
 class User(UserMixin):
@@ -2142,6 +2188,24 @@ class ChatbotPuerperio:
         self.gemini_model = gemini_model
         self.user_historico_gemini = {}  # {user_id: [lista de mensagens]}
         
+        # Armazena cliente Groq
+        self.groq_client = groq_client
+        self.groq_system_instruction = None
+        
+        # Carrega system prompt para Groq (se estiver usando Groq)
+        if AI_PROVIDER == "groq" and self.groq_client:
+            try:
+                self.groq_system_instruction = self._carregar_system_prompt()
+                if self.groq_system_instruction:
+                    logger.info("[GROQ] ✅ System prompt carregado com sucesso para Groq")
+                    print("[GROQ] ✅ System prompt carregado com sucesso para Groq")
+                else:
+                    logger.warning("[GROQ] ⚠️ System prompt vazio para Groq")
+                    print("[GROQ] ⚠️ System prompt vazio para Groq")
+            except Exception as e:
+                logger.error(f"[GROQ] Erro ao carregar system prompt: {e}")
+                print(f"[GROQ] Erro ao carregar system prompt: {e}")
+        
         # Carrega system prompt para Gemini
         self.gemini_system_instruction = None
         if AI_PROVIDER == "gemini" and self.gemini_model is None and GEMINI_AVAILABLE and GEMINI_API_KEY:
@@ -2190,11 +2254,11 @@ class ChatbotPuerperio:
                 logger.error(f"[ChatbotPuerperio] ❌ Falha ao criar assistente na inicialização")
                 print(f"[ChatbotPuerperio] ❌ Falha ao criar assistente na inicialização")
         
-        logger.info(f"[ChatbotPuerperio] Inicializado. Provider: {AI_PROVIDER}, OpenAI: {self.openai_client is not None}, Gemini: {self.gemini_model is not None}")
-        print(f"[ChatbotPuerperio] Inicializado. Provider: {AI_PROVIDER}, OpenAI: {self.openai_client is not None}, Gemini: {self.gemini_model is not None}")
+        logger.info(f"[ChatbotPuerperio] Inicializado. Provider: {AI_PROVIDER}, OpenAI: {self.openai_client is not None}, Gemini: {self.gemini_model is not None}, Groq: {self.groq_client is not None}")
+        print(f"[ChatbotPuerperio] Inicializado. Provider: {AI_PROVIDER}, OpenAI: {self.openai_client is not None}, Gemini: {self.gemini_model is not None}, Groq: {self.groq_client is not None}")
     
     def _carregar_system_prompt(self):
-        """Carrega o system prompt do loader.py para uso com Gemini"""
+        """Carrega o system prompt do loader.py para uso com Gemini e Groq"""
         try:
             import os
             loader_path = os.path.join(os.path.dirname(__file__), 'loader.py')
@@ -2523,6 +2587,93 @@ DIRECIONAMENTO NATURAL:
             
         except Exception as e:
             logger.error(f"[GEMINI] Erro ao gerar resposta: {e}", exc_info=True)
+            import traceback
+            traceback.print_exc()
+            return None
+    
+    def _gerar_resposta_groq(self, pergunta, user_id, historico=None, contexto_pessoal="", contexto_tags=None):
+        """Gera resposta usando Groq API com Llama-3.3-70b-versatile"""
+        if not self.groq_client:
+            return None
+        
+        try:
+            # Carrega system prompt (já carregado no __init__, mas recarrega se necessário)
+            if not self.groq_system_instruction:
+                self.groq_system_instruction = self._carregar_system_prompt()
+            
+            system_prompt = self.groq_system_instruction
+            if not system_prompt:
+                # Fallback básico
+                system_prompt = """Você é a Sophia, uma Inteligência Artificial EMPÁTICA, ACOLHEDORA e ESPECIALIZADA EXCLUSIVAMENTE em gestação, parto, pós-parto, vacinação e cuidados maternos. Sempre seja empática, acolhedora e oriente consultar profissionais de saúde quando necessário."""
+            
+            # RAG Simples: Busca dados relevantes da base local
+            dados_relevantes = ""
+            resposta_local, categoria_local, similaridade_local = self.buscar_resposta_local(pergunta)
+            if resposta_local and similaridade_local > 0.45:
+                dados_relevantes = f"\n\nINFORMAÇÕES RELEVANTES DA BASE DE CONHECIMENTO:\n{resposta_local}\n\nUse essas informações como base para sua resposta, mas mantenha o tom acolhedor da Sophia. Se a pergunta for sobre sentimentos ou emoções, priorize o acolhimento emocional sobre informações técnicas."
+            
+            # Adiciona contexto pessoal se disponível
+            if contexto_pessoal:
+                system_prompt += f"\n\nCONTEXTO PESSOAL DA USUÁRIA:\n{contexto_pessoal}"
+            
+            # Adiciona tags de contexto se disponíveis
+            if contexto_tags:
+                tags_texto = "\n".join([f"- {tag}" for tag in contexto_tags])
+                system_prompt += f"\n\nTAGS DE CONTEXTO:\n{tags_texto}"
+            
+            # Constrói lista de mensagens para Groq
+            messages = []
+            
+            # 1. System message (alma da Sophia)
+            messages.append({
+                "role": "system",
+                "content": system_prompt + dados_relevantes
+            })
+            
+            # 2. Histórico da conversa (memória de curto prazo)
+            if historico:
+                for msg in historico:
+                    pergunta_hist = msg.get('pergunta', '')
+                    resposta_hist = msg.get('resposta', '')
+                    if pergunta_hist:
+                        messages.append({
+                            "role": "user",
+                            "content": pergunta_hist
+                        })
+                    if resposta_hist:
+                        messages.append({
+                            "role": "assistant",
+                            "content": resposta_hist
+                        })
+            
+            # 3. Pergunta atual da mãe
+            mensagem_completa = pergunta
+            if contexto_pessoal and not dados_relevantes:  # Se já não foi adicionado no system
+                mensagem_completa = f"[Contexto: {contexto_pessoal}]\n\n{pergunta}"
+            
+            messages.append({
+                "role": "user",
+                "content": mensagem_completa
+            })
+            
+            # Chama a API da Groq
+            chat_completion = self.groq_client.chat.completions.create(
+                messages=messages,
+                model="llama-3.3-70b-versatile",  # Modelo atualizado (llama-3.1 foi descontinuado)
+                temperature=0.7,  # Equilíbrio entre criatividade e coerência
+                max_tokens=1024,
+            )
+            
+            if chat_completion and chat_completion.choices and len(chat_completion.choices) > 0:
+                resposta = chat_completion.choices[0].message.content.strip()
+                logger.info(f"[GROQ] Resposta gerada ({len(resposta)} caracteres)")
+                return resposta
+            else:
+                logger.warning("[GROQ] Resposta vazia da API")
+                return None
+            
+        except Exception as e:
+            logger.error(f"[GROQ] Erro ao gerar resposta: {e}", exc_info=True)
             import traceback
             traceback.print_exc()
             return None
@@ -3377,6 +3528,7 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
         # Verifica qual provider usar
         usar_openai = AI_PROVIDER == "openai" and self.openai_client and self.assistant_id
         usar_gemini = AI_PROVIDER == "gemini" and self.gemini_model
+        usar_groq = AI_PROVIDER == "groq" and self.groq_client
         
         # Tenta OpenAI (se configurado)
         if AI_PROVIDER == "openai" and self.openai_client and not self.assistant_id:
@@ -3620,6 +3772,131 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
                 import traceback
                 traceback.print_exc()
                 # Continua para fallback
+        
+        # Tenta usar Groq (se configurado)
+        elif usar_groq:
+            logger.info(f"[CHAT] Groq disponível, tentando gerar resposta...")
+            print(f"[CHAT] Groq disponível, tentando gerar resposta...")
+            try:
+                # Prepara contexto para Groq
+                contexto_pessoal = ""
+                
+                # Adiciona contexto do usuário (baby_profile e próxima vacina)
+                if contexto_usuario:
+                    if contexto_usuario.get('baby_name'):
+                        contexto_pessoal += f"INFORMAÇÕES SOBRE O BEBÊ:\n"
+                        contexto_pessoal += f"- Nome do bebê: {contexto_usuario['baby_name']}\n"
+                        contexto_pessoal += f"- Idade: {contexto_usuario.get('baby_age_days', 0)} dias ({contexto_usuario.get('baby_age_months', 0)} meses)\n"
+                    
+                    if contexto_usuario.get('next_vaccine_name'):
+                        contexto_pessoal += f"\nPRÓXIMA VACINA:\n"
+                        contexto_pessoal += f"- Nome: {contexto_usuario['next_vaccine_name']}\n"
+                        contexto_pessoal += f"- Data recomendada: {contexto_usuario['next_vaccine_date']}\n"
+                        contexto_pessoal += f"- Dias até a vacina: {contexto_usuario['next_vaccine_days_until']}\n"
+                    
+                    contexto_pessoal += "\n"
+                
+                # Carrega dados memorizados da Sophia (nomes, lugares, comidas)
+                dados_memoria = self._obter_dados_memoria(user_id)
+                if dados_memoria:
+                    contexto_pessoal += f"DADOS MEMORIZADOS:\n{dados_memoria}\n\n"
+                
+                # Extrai informações pessoais adicionais do histórico (complemento)
+                if historico_usuario:
+                    for msg in historico_usuario[-10:]:
+                        pergunta_hist = msg.get('pergunta', '').lower()
+                        if 'me chamo' in pergunta_hist or 'meu nome e' in pergunta_hist:
+                            palavras = pergunta_hist.split()
+                            for i, palavra in enumerate(palavras):
+                                if palavra in ['chamo', 'nome'] and i + 2 < len(palavras):
+                                    nome = palavras[i+2]
+                                    if nome not in ['sophia', 'e', 'a', 'o']:
+                                        if not dados_memoria or nome.lower() not in dados_memoria.lower():
+                                            contexto_pessoal += f"Nome mencionado: {nome}. "
+                                        break
+                
+                # Prepara historico para Groq (ultimas 5 mensagens)
+                historico_para_groq = []
+                if historico_usuario:
+                    historico_para_groq = historico_usuario[-5:]
+                
+                # Detecta tags de contexto (momento emocional da usuária)
+                contexto_tags = self._detectar_contexto_tags(pergunta, user_id)
+                
+                # Se cansaço_extremo foi detectado 3 vezes seguidas, adiciona sugestão proativa
+                if "cansaço_extremo_critico" in contexto_tags:
+                    sugestao_proativa = "\n\n[SUGESTÃO PROATIVA IMPORTANTE]: A mãe parece muito exausta (cansaço detectado 3 vezes seguidas). A resposta da Sophia DEVE incluir naturalmente a sugestão: 'Que tal experimentar algo simples agora? Peça para alguém da sua confiança ficar com o bebê por apenas 30 minutos - nem que seja na sala enquanto você toma um banho calmo ou simplesmente fecha os olhos. Esse pequeno momento só seu pode fazer toda a diferença. Você merece esse cuidado. 💛' Integre essa sugestão de forma empática e fluida na resposta, como uma interrupção amorosa, não como uma ordem ou parágrafo separado."
+                    contexto_pessoal += sugestao_proativa
+                
+                # Gera resposta usando Groq
+                resposta_groq = self._gerar_resposta_groq(
+                    pergunta,
+                    user_id,
+                    historico=historico_para_groq,
+                    contexto_pessoal=contexto_pessoal or "",
+                    contexto_tags=contexto_tags
+                )
+                
+                if resposta_groq and resposta_groq.strip():
+                    # SEMPRE usa a resposta da IA (Groq)
+                    resposta_final = resposta_groq.strip()
+                    fonte = "groq"
+                    
+                    logger.info(f"[CHAT] ✅ Resposta gerada pela IA (Groq) - {len(resposta_final)} caracteres")
+                    
+                    # Armazena resposta nas ultimas respostas para deteccao de repeticao
+                    if user_id not in self.ultimas_respostas:
+                        self.ultimas_respostas[user_id] = []
+                    self.ultimas_respostas[user_id].append(resposta_final)
+                    if len(self.ultimas_respostas[user_id]) > 3:
+                        self.ultimas_respostas[user_id].pop(0)
+                    
+                    # Verifica repeticao
+                    resposta_repetida = None
+                    if len(self.ultimas_respostas[user_id]) >= 2:
+                        for resposta_anterior in self.ultimas_respostas[user_id][:-1]:
+                            similaridade_seq = difflib.SequenceMatcher(None, resposta_final.lower(), resposta_anterior.lower()).ratio()
+                            palavras_final = set(resposta_final.lower().split())
+                            palavras_anterior = set(resposta_anterior.lower().split())
+                            if palavras_final and palavras_anterior:
+                                similaridade_palavras = len(palavras_final.intersection(palavras_anterior)) / len(palavras_final.union(palavras_anterior))
+                                similaridade_total = (similaridade_seq + similaridade_palavras) / 2
+                                if similaridade_total > 0.80:
+                                    resposta_repetida = resposta_anterior
+                                    break
+                    
+                    # Se detectou repeticao, regenera resposta
+                    if resposta_repetida:
+                        logger.warning(f"[CHAT] Repeticao detectada - regenerando resposta")
+                        resposta_regenerada = self._gerar_resposta_groq(
+                            pergunta,
+                            user_id,
+                            historico=historico_para_groq,
+                            contexto_pessoal=f"EVITE REPETIR: {resposta_repetida[:200]}",
+                            contexto_tags=contexto_tags
+                        )
+                        if resposta_regenerada and len(resposta_regenerada.strip()) >= 150:
+                            resposta_final = resposta_regenerada.strip()
+                            fonte = "groq_regenerada"
+                    
+                    # Salva dados na memoria
+                    self._salvar_dados_memoria(user_id, pergunta, resposta_final)
+                    
+                    return {
+                        "resposta": resposta_final,
+                        "fonte": fonte,
+                        "categoria": categoria,
+                        "contexto_tags": contexto_tags if contexto_tags else []
+                    }
+                else:
+                    # Resposta Groq vazia ou None
+                    logger.warning(f"[CHAT] ⚠️ Groq retornou resposta vazia - usando fallback")
+                    print(f"[CHAT] ⚠️ Groq retornou resposta vazia - usando fallback")
+            except Exception as e:
+                logger.error(f"[CHAT] ❌ Erro ao gerar resposta Groq: {e}", exc_info=True)
+                import traceback
+                traceback.print_exc()
+                # Continua para fallback
         else:
             # Log detalhado do por que não está usando IA
             if AI_PROVIDER == "openai":
@@ -3633,6 +3910,10 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
                 if not self.gemini_model:
                     logger.warning(f"[CHAT] ⚠️ Gemini model não disponível - usando fallback")
                     print(f"[CHAT] ⚠️ Gemini model não disponível - usando fallback")
+            elif AI_PROVIDER == "groq":
+                if not self.groq_client:
+                    logger.warning(f"[CHAT] ⚠️ Groq client não disponível - usando fallback")
+                    print(f"[CHAT] ⚠️ Groq client não disponível - usando fallback")
         
         # FALLBACK: Se OpenAI nao funcionou, busca resposta local como ultimo recurso
         if not resposta_final:
@@ -4239,47 +4520,50 @@ def api_register():
         print(f"[REGISTER] ❌ {erro_msg}")
         return jsonify({"erro": erro_msg}), 400
     
+    # Usa transação para garantir atomicidade
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Verifica se email já existe
-    cursor.execute('SELECT id, email_verified FROM users WHERE email = ?', (email,))
-    existing = cursor.fetchone()
-    if existing:
-        conn.close()
-        if existing[1] == 1:
-            erro_msg = "Este email já está cadastrado e verificado"
-            logger.warning(f"[REGISTER] {erro_msg} - email: {email}")
-            print(f"[REGISTER] ❌ {erro_msg}")
-            return jsonify({"erro": erro_msg}), 400
-        else:
-            erro_msg = "Este email já está cadastrado. Verifique seu email ou use 'Esqueci minha senha'"
-            logger.warning(f"[REGISTER] {erro_msg} - email: {email}")
-            print(f"[REGISTER] ❌ {erro_msg}")
-            return jsonify({"erro": erro_msg}), 400
-    
-    # Hash da senha - salva como string base64 para preservar bytes
-    password_hash_bytes = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    password_hash = base64.b64encode(password_hash_bytes).decode('utf-8')
-    
-    # Gera token de verificação
-    verification_token = generate_token()
-    
-    # Verifica se email está configurado (modo desenvolvimento vs produção)
-    email_configurado = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
-    
-    # Em desenvolvimento (sem email configurado), marca como verificado automaticamente
-    email_verified_value = 1 if not email_configurado else 0
-    
-    # Insere usuário
     try:
+        # Verifica se email já existe (dentro da transação)
+        cursor.execute('SELECT id, email_verified FROM users WHERE email = ?', (email,))
+        existing = cursor.fetchone()
+        
+        if existing:
+            conn.rollback()
+            conn.close()
+            if existing[1] == 1:
+                erro_msg = "Este email já está cadastrado e verificado"
+                logger.warning(f"[REGISTER] {erro_msg} - email: {email}")
+                print(f"[REGISTER] ❌ {erro_msg}")
+                return jsonify({"erro": erro_msg}), 400
+            else:
+                erro_msg = "Este email já está cadastrado. Verifique seu email ou use 'Esqueci minha senha'"
+                logger.warning(f"[REGISTER] {erro_msg} - email: {email}")
+                print(f"[REGISTER] ❌ {erro_msg}")
+                return jsonify({"erro": erro_msg}), 400
+        
+        # Hash da senha - salva como string base64 para preservar bytes
+        password_hash_bytes = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        password_hash = base64.b64encode(password_hash_bytes).decode('utf-8')
+        
+        # Gera token de verificação
+        verification_token = generate_token()
+        
+        # Verifica se email está configurado (modo desenvolvimento vs produção)
+        email_configurado = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
+        
+        # Em desenvolvimento (sem email configurado), marca como verificado automaticamente
+        email_verified_value = 1 if not email_configurado else 0
+        
+        # Insere usuário
         cursor.execute('''
             INSERT INTO users (name, email, password_hash, baby_name, email_verified, email_verification_token)
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (name, email, password_hash, baby_name if baby_name else None, email_verified_value, verification_token))
         
-        conn.commit()
         user_id = cursor.lastrowid
+        conn.commit()
         conn.close()
         
         # Envia email de verificação apenas se estiver configurado
@@ -4310,11 +4594,11 @@ def api_register():
                 import traceback
                 traceback.print_exc()
                 # Se falhar ao enviar, marca como verificado para não bloquear o usuário
-                conn = sqlite3.connect(DB_PATH)
-                cursor = conn.cursor()
-                cursor.execute('UPDATE users SET email_verified = 1 WHERE id = ?', (user_id,))
-                conn.commit()
-                conn.close()
+                conn_update = sqlite3.connect(DB_PATH)
+                cursor_update = conn_update.cursor()
+                cursor_update.execute('UPDATE users SET email_verified = 1 WHERE id = ?', (user_id,))
+                conn_update.commit()
+                conn_update.close()
                 mensagem = "Cadastro realizado! (O email de verificação não pôde ser enviado, mas sua conta foi ativada automaticamente. Você já pode fazer login!) 💕"
                 verification_sent = False
         else:
@@ -4333,9 +4617,40 @@ def api_register():
             "verification_sent": verification_sent,
             "email_verified": email_verified_value == 1
         }), 201
-    except sqlite3.IntegrityError:
+        
+    except sqlite3.IntegrityError as e:
+        # Rollback e fecha a conexão em caso de IntegrityError
+        conn.rollback()
         conn.close()
-        return jsonify({"erro": "Este email já está cadastrado"}), 400
+        
+        # Verifica novamente para dar mensagem mais específica
+        conn_check = sqlite3.connect(DB_PATH)
+        cursor_check = conn_check.cursor()
+        cursor_check.execute('SELECT id, email_verified FROM users WHERE email = ?', (email,))
+        existing_check = cursor_check.fetchone()
+        conn_check.close()
+        
+        if existing_check:
+            if existing_check[1] == 1:
+                erro_msg = "Este email já está cadastrado e verificado"
+            else:
+                erro_msg = "Este email já está cadastrado. Verifique seu email ou use 'Esqueci minha senha'"
+        else:
+            erro_msg = "Este email já está cadastrado"
+        
+        logger.warning(f"[REGISTER] IntegrityError - {erro_msg} - email: {email} - erro: {e}")
+        print(f"[REGISTER] ❌ IntegrityError - {erro_msg} - email: {email}")
+        return jsonify({"erro": erro_msg}), 400
+        
+    except Exception as e:
+        # Rollback e fecha a conexão em caso de qualquer outro erro
+        conn.rollback()
+        conn.close()
+        logger.error(f"[REGISTER] ❌ Erro inesperado no cadastro: {e}", exc_info=True)
+        print(f"[REGISTER] ❌ Erro inesperado no cadastro: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"erro": "Erro ao processar cadastro. Tente novamente."}), 500
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
@@ -5040,19 +5355,165 @@ def api_vacinas_marcar():
 # ROTAS DA AGENDA DE VACINAÇÃO INTERATIVA
 # ========================================
 
+@app.route('/api/baby_profile', methods=['POST'])
+@login_required
+def api_create_baby_profile():
+    """Cria perfil do bebê e gera calendário de vacinação automaticamente"""
+    try:
+        # Importa VaccinationService com fallback
+        try:
+            from services.vaccination_service import VaccinationService
+        except ImportError:
+            try:
+                from backend.services.vaccination_service import VaccinationService
+            except ImportError as import_err:
+                logger.error(f"[BABY_PROFILE] Erro ao importar VaccinationService: {import_err}", exc_info=True)
+                return jsonify({
+                    'error': 'Erro ao carregar serviço de vacinação',
+                    'message': 'Serviço não disponível. Verifique os logs do servidor.'
+                }), 500
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Dados não fornecidos'}), 400
+        
+        name = data.get('name', '').strip()
+        birth_date = data.get('birth_date', '').strip()
+        gender = data.get('gender', None)  # Opcional
+        
+        # Validações
+        if not name:
+            return jsonify({'error': 'Nome do bebê é obrigatório'}), 400
+        
+        if not birth_date:
+            return jsonify({'error': 'Data de nascimento é obrigatória'}), 400
+        
+        # Valida formato da data (YYYY-MM-DD)
+        try:
+            from datetime import datetime
+            datetime.strptime(birth_date, '%Y-%m-%d')
+        except ValueError:
+            return jsonify({'error': 'Data de nascimento inválida. Use o formato YYYY-MM-DD'}), 400
+        
+        # Verifica se já existe perfil de bebê para este usuário
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM baby_profiles WHERE user_id = ? LIMIT 1', (int(current_user.id),))
+        existing_profile = cursor.fetchone()
+        conn.close()
+        
+        if existing_profile:
+            return jsonify({
+                'error': 'Você já possui um perfil de bebê cadastrado',
+                'message': 'Cada usuário pode ter apenas um perfil de bebê por enquanto.'
+            }), 400
+        
+        # Cria perfil do bebê usando o serviço (gera calendário automaticamente)
+        try:
+            vaccination_service = VaccinationService(DB_PATH)
+            baby_profile_id = vaccination_service.create_baby_profile(
+                user_id=int(current_user.id),
+                name=name,
+                birth_date=birth_date,
+                gender=gender
+            )
+            
+            logger.info(f"[BABY_PROFILE] Perfil criado com sucesso: ID={baby_profile_id}, Nome={name}, User={current_user.id}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Perfil do bebê criado com sucesso! O calendário de vacinação foi gerado automaticamente.',
+                'baby_profile_id': baby_profile_id
+            }), 201
+            
+        except ValueError as ve:
+            # Erro de validação (ex: bebê duplicado)
+            logger.warning(f"[BABY_PROFILE] Erro de validação: {ve}")
+            return jsonify({'error': str(ve)}), 400
+        except Exception as service_err:
+            logger.error(f"[BABY_PROFILE] Erro ao criar perfil: {service_err}", exc_info=True)
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'error': 'Erro ao criar perfil do bebê',
+                'message': str(service_err)
+            }), 500
+        
+    except Exception as e:
+        logger.error(f"[BABY_PROFILE] Erro inesperado: {e}", exc_info=True)
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': 'Erro inesperado',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/baby_profile', methods=['GET'])
+@login_required
+def api_get_baby_profile():
+    """Retorna o perfil do bebê do usuário (se existir)"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT id, name, birth_date, gender, created_at
+            FROM baby_profiles 
+            WHERE user_id = ? 
+            LIMIT 1
+        ''', (int(current_user.id),))
+        baby_profile = cursor.fetchone()
+        conn.close()
+        
+        if not baby_profile:
+            return jsonify({'exists': False}), 404
+        
+        return jsonify({
+            'exists': True,
+            'id': baby_profile[0],
+            'name': baby_profile[1],
+            'birth_date': baby_profile[2],
+            'gender': baby_profile[3],
+            'created_at': baby_profile[4]
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"[BABY_PROFILE] Erro ao buscar perfil: {e}", exc_info=True)
+        return jsonify({'error': 'Erro ao buscar perfil do bebê'}), 500
+
 @app.route('/api/vaccination/status', methods=['GET'])
 @login_required
 def api_vaccination_status():
     """Retorna status completo da vacinação do bebê do usuário"""
     try:
-        from backend.services.vaccination_service import VaccinationService
+        # Importa VaccinationService com fallback
+        try:
+            from services.vaccination_service import VaccinationService
+        except ImportError:
+            try:
+                from backend.services.vaccination_service import VaccinationService
+            except ImportError as import_err:
+                logger.error(f"[VACCINATION] Erro ao importar VaccinationService: {import_err}", exc_info=True)
+                return jsonify({
+                    'error': 'Erro ao carregar serviço de vacinação',
+                    'message': 'Serviço não disponível. Verifique os logs do servidor.'
+                }), 500
         
         # Busca perfil do bebê do usuário (assumindo um bebê por usuário por enquanto)
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('SELECT id FROM baby_profiles WHERE user_id = ? LIMIT 1', (int(current_user.id),))
-        baby_profile = cursor.fetchone()
-        conn.close()
+        conn = None
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute('SELECT id FROM baby_profiles WHERE user_id = ? LIMIT 1', (int(current_user.id),))
+            baby_profile = cursor.fetchone()
+        except Exception as db_err:
+            logger.error(f"[VACCINATION] Erro ao buscar perfil do bebê: {db_err}", exc_info=True)
+            return jsonify({
+                'error': 'Erro ao acessar banco de dados',
+                'message': str(db_err)
+            }), 500
+        finally:
+            if conn:
+                conn.close()
         
         if not baby_profile:
             return jsonify({
@@ -5063,17 +5524,35 @@ def api_vaccination_status():
         baby_profile_id = baby_profile[0]
         
         # Busca status usando o serviço
-        vaccination_service = VaccinationService(DB_PATH)
-        status = vaccination_service.get_vaccination_status(baby_profile_id)
-        
-        if not status:
-            return jsonify({'error': 'Erro ao buscar status de vacinação'}), 500
-        
-        return jsonify(status), 200
+        try:
+            vaccination_service = VaccinationService(DB_PATH)
+            status = vaccination_service.get_vaccination_status(baby_profile_id)
+            
+            if not status:
+                logger.warning(f"[VACCINATION] get_vaccination_status retornou None para baby_profile_id={baby_profile_id}")
+                return jsonify({
+                    'error': 'Erro ao buscar status de vacinação',
+                    'message': 'Não foi possível recuperar os dados de vacinação'
+                }), 500
+            
+            return jsonify(status), 200
+        except Exception as service_err:
+            logger.error(f"[VACCINATION] Erro ao buscar status de vacinação (service): {service_err}", exc_info=True)
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'error': 'Erro ao processar dados de vacinação',
+                'message': str(service_err)
+            }), 500
         
     except Exception as e:
-        logger.error(f"Erro ao buscar status de vacinação: {e}", exc_info=True)
-        return jsonify({'error': f'Erro ao buscar status: {str(e)}'}), 500
+        logger.error(f"[VACCINATION] Erro inesperado ao buscar status de vacinação: {e}", exc_info=True)
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': 'Erro inesperado',
+            'message': str(e)
+        }), 500
 
 @app.route('/api/feedback', methods=['POST'])
 @login_required
@@ -5153,7 +5632,10 @@ Comentário: {comment}
 def api_vaccination_mark_done():
     """Marca uma vacina como aplicada"""
     try:
-        from backend.services.vaccination_service import VaccinationService
+        try:
+            from services.vaccination_service import VaccinationService
+        except ImportError:
+            from backend.services.vaccination_service import VaccinationService
         
         data = request.get_json()
         schedule_id = data.get('schedule_id')

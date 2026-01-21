@@ -2303,6 +2303,7 @@ body.device-mobile .rotating-message {
 .quick-questions {
     max-width: 850px;
     margin: 4rem auto 3rem !important; /* Aumentado: 64px top, 48px bottom - mais respiração após feeling-box */
+    margin-top: 40px !important; /* Espaçamento generoso acima da seção para separar do card anterior */
     width: 100% !important;
     padding: 0 1rem;
     animation: buttonsSlideIn 0.8s ease-out 0.9s backwards;
@@ -2345,6 +2346,10 @@ body.device-mobile .rotating-message {
 }
 
 @media (max-width: 768px) {
+    .quick-questions {
+        margin-top: 30px !important; /* Espaçamento reduzido em mobile para não ocupar muito espaço vertical */
+    }
+    
     .quick-questions-grid {
         grid-template-columns: 1fr;
         align-items: stretch !important; /* Garante altura uniforme */
@@ -4202,7 +4207,8 @@ body.device-mobile.orientation-portrait #menu-toggle {
          max-width: 100% !important;
          width: 100% !important;
          padding: 0 0.5rem !important;
-         margin: 0.5rem auto 0.5rem !important;
+         margin: 30px auto 0.5rem !important; /* Margin-top aumentado para 30px em mobile */
+         margin-top: 30px !important; /* Espaçamento acima da seção em mobile */
          box-sizing: border-box !important;
          position: relative !important;
          overflow-x: hidden !important;
@@ -12825,11 +12831,21 @@ button.modern-pill-btn,
     
     .feeling-btn,
     .feeling-btn-modern {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         width: 100% !important;
         margin: 0 !important; /* Remove margens externas que desalinham */
-        padding: 12px 15px !important;
-        min-height: 50px !important;
+        padding: 8px 4px !important; /* Padding otimizado para mobile */
+        min-height: 70px !important; /* Altura uniforme em mobile */
         max-height: none !important;
+        font-size: 0.85rem !important; /* Fonte ligeiramente menor em mobile */
+        line-height: 1.2 !important;
+        text-align: center !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        box-sizing: border-box !important;
     }
 
     .feeling-extra-btn-modern {
@@ -13117,12 +13133,22 @@ button:hover, .btn:hover, .btn-sophia:hover, .sidebar-btn:hover,
 }
 
 .feeling-btn-modern {
-    padding: 16px 20px !important;
-    font-size: 0.95rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-height: 80px !important; /* Altura fixa para uniformidade */
+    padding: 8px 4px !important; /* Padding otimizado - menos lateral */
+    font-size: 0.9rem !important; /* Fonte responsiva */
+    line-height: 1.2 !important;
+    text-align: center !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
     border-radius: 20px !important;
-    min-height: 56px !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 4px 12px rgba(244, 166, 166, 0.15) !important;
+    box-sizing: border-box !important;
 }
 
 .feeling-btn-modern:hover {
@@ -13172,13 +13198,23 @@ button:hover, .btn:hover, .btn-sophia:hover, .sidebar-btn:hover,
     
     .feeling-grid-modern {
         grid-template-columns: repeat(2, 1fr) !important; /* 2 COLUNAS NO MOBILE */
-        gap: 12px !important;
+        gap: 10px !important; /* Gap reduzido para dar mais espaço aos botões */
+        padding: 0 10px !important; /* Padding lateral reduzido */
     }
     
     .feeling-btn-modern {
-        padding: 14px 16px !important;
-        font-size: 0.9rem !important;
-        min-height: 52px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 8px 4px !important; /* Padding otimizado para mobile */
+        font-size: 0.85rem !important; /* Fonte menor em mobile */
+        min-height: 70px !important; /* Altura uniforme */
+        line-height: 1.2 !important;
+        text-align: center !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        box-sizing: border-box !important;
     }
     
     .feeling-extra-btn-modern {

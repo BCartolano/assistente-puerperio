@@ -178,10 +178,13 @@ class VaccinationService:
             }
             
         except Exception as e:
-            logger.error(f"Erro ao buscar status de vacinação: {e}")
+            logger.error(f"Erro ao buscar status de vacinação: {e}", exc_info=True)
+            import traceback
+            traceback.print_exc()
             raise
         finally:
-            conn.close()
+            if conn:
+                conn.close()
     
     def _calculate_statistics(self, schedules):
         """Calcula estatísticas do calendário"""

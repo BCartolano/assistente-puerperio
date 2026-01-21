@@ -1,0 +1,92 @@
+{
+  "videos": [
+    {
+      "id": "video-1",
+      "title": "Amamentação: Dúvidas sobre Amamentação",
+      "description": "Orientações essenciais sobre a pega correta na amamentação, técnicas de posicionamento e dicas para os primeiros dias. Conteúdo oficial do Ministério da Saúde do Brasil.",
+      "source": "Ministério da Saúde",
+      "video_id": "BJTk8fuuJYI",
+      "thumbnail_url": "https://img.youtube.com/vi/BJTk8fuuJYI/hqdefault.jpg",
+      "embed_url": "https://www.youtube.com/embed/BJTk8fuuJYI",
+      "external_url": "https://www.youtube.com/@ministeriodasaude",
+      "duration": "5-10 min",
+      "category": "amamentacao",
+      "icon": "fas fa-baby",
+      "color": "#f4a6a6",
+      "note": "Canal oficial: youtube.com/@ministeriodasaude - Vídeo oficial sobre amamentação"
+    },
+    {
+      "id": "video-2",
+      "title": "Banho do Bebê e Cuidados com o Umbigo",
+      "description": "Guia completo sobre como dar banho no recém-nascido, cuidados com o coto umbilical e segurança nos primeiros dias. Conteúdo oficial da Fiocruz - Portal de Boas Práticas IFF/Fiocruz.",
+      "source": "Fiocruz / Canal Saúde",
+      "video_id": "l7hrM7YLjcU",
+      "thumbnail_url": "https://img.youtube.com/vi/l7hrM7YLjcU/hqdefault.jpg",
+      "embed_url": "https://www.youtube.com/embed/l7hrM7YLjcU",
+      "external_url": "https://www.youtube.com/@canalsaudeoficial",
+      "duration": "5-10 min",
+      "category": "cuidados-recem-nascido",
+      "icon": "fas fa-baby",
+      "color": "#e8b4b8",
+      "note": "Canal oficial: youtube.com/@canalsaudeoficial - Portal de Boas Práticas IFF/Fiocruz"
+    },
+    {
+      "id": "video-3",
+      "title": "Saúde Pélvica e Obstétrica no Puerpério",
+      "description": "Informações essenciais sobre cuidados pélvicos e obstétricos no pós-parto, recuperação física e sinais de alerta. Conteúdo oficial do Hospital das Clínicas FMUSP.",
+      "source": "Hospital das Clínicas FMUSP",
+      "video_id": null,
+      "thumbnail_url": null,
+      "embed_url": null,
+      "external_url": "https://www.youtube.com/@fisioterapiasaudepelvicaobstetricahcfmusp",
+      "duration": "5-10 min",
+      "category": "saude-pelvica",
+      "icon": "fas fa-exclamation-triangle",
+      "color": "#ffd89b",
+      "note": "Canal oficial: youtube.com/@fisioterapiasaudepelvicaobstetricahcfmusp - Vídeo será buscado dinamicamente via API"
+    },
+    {
+      "id": "video-4",
+      "title": "Importância da Vacinação",
+      "description": "Orientações sobre o calendário de vacinação, importância das vacinas para mãe e bebê, e esclarecimentos sobre imunidade. Conteúdo oficial do Ministério da Saúde do Brasil.",
+      "source": "Ministério da Saúde",
+      "video_id": null,
+      "thumbnail_url": null,
+      "embed_url": null,
+      "external_url": "https://www.youtube.com/@ministeriodasaude",
+      "duration": "5-10 min",
+      "category": "vacinacao",
+      "icon": "fas fa-syringe",
+      "color": "#a8d5ba",
+      "note": "Canal oficial: youtube.com/@ministeriodasaude - Vídeo será buscado dinamicamente via API"
+    }
+  ],
+  "metadata": {
+    "last_updated": "2024",
+    "note": "Todos os links e canais foram verificados e são oficiais das instituições brasileiras. Os video_id e embed_url foram atualizados com IDs reais dos vídeos oficiais quando disponíveis. Para vídeos sem video_id, o external_url direciona para os canais oficiais corretos.",
+    "instructions": "Para adicionar um vídeo do YouTube: 1) Encontre o ID do vídeo na URL (ex: youtube.com/watch?v=VIDEO_ID), 2) Preencha video_id, 3) embed_url será gerado automaticamente como: https://www.youtube.com/embed/VIDEO_ID, 4) thumbnail_url será: https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg",
+    "canais_oficiais": {
+      "ministerio_saude": {
+        "nome": "Ministério da Saúde Brasil",
+        "url_canal": "https://www.youtube.com/@ministeriodasaude",
+        "url_canal_alternativo": "https://www.youtube.com/user/MinSaudeBR",
+        "temas": ["Amamentação", "Vacinação", "Saúde da Mulher"],
+        "verificado": true
+      },
+      "fiocruz": {
+        "nome": "Canal Saúde Fiocruz",
+        "url_canal": "https://www.youtube.com/@canalsaudeoficial",
+        "temas": ["Cuidados com Recém-Nascido", "Amamentação", "Saúde Materno-Infantil"],
+        "verificado": true
+      },
+      "hc_fmusp": {
+        "nome": "Fisioterapia Saúde Pélvica e Obstétrica HCFMUSP",
+        "url_canal": "https://www.youtube.com/@fisioterapiasaudepelvicaobstetricahcfmusp",
+        "url_canal_alternativo": "https://www.youtube.com/@hcfmuspoficial",
+        "temas": ["Puerpério", "Saúde Pélvica", "Fisioterapia Obstétrica"],
+        "verificado": true
+      }
+    },
+    "importante": "Todos os links foram verificados e são canais oficiais das instituições brasileiras. Não foram incluídos links para canais em espanhol ou conteúdos não verificados."
+  }
+}
