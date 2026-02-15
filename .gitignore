@@ -183,9 +183,10 @@ BMAD-METHOD-v5/
 *.min.js
 *.min.css
 
-# Documentação temporária de debug e guias
+# Documentação temporária de debug, guias e backups (manter só README e docs/ essenciais)
 SOLUCAO_*.md
 CORRECAO_*.md
+CORRECOES_*.md
 DEBUG_*.md
 GUIA_*.md
 COMO_*.md
@@ -221,8 +222,27 @@ COMPLETO_*.md
 DEPLOY_*.md
 BMAD-*.md
 IMAGENS_*.md
+CHECKLIST_*.md
+REQUISITOS_INSTALACAO.md
+BACKUP_*.md
+DOCUMENTO_INSTITUCIONAL_*.md
+LIMPEZA_*.md
+MODO_AUTOMATICO_*.md
+OPCOES_*.md
+QA_REPORT_*.md
+SISTEMA_NOTURNO_*.md
+TUDO_ARRUMADO_*.md
+TESTING_*.md
+QUICK_START_*.md
 task.md
 tasks.md
+COMMIT_MSG_*.txt
+COHERENCE_REPORT.txt
+env_example.txt
+guias_com_imagens_exemplo.json
+Novo*.txt
+Novo(a)*.txt
+flattened-codebase.xml
 
 # Observabilidade de busca (evitar commit de logs)
 logs/search_events.jsonl
