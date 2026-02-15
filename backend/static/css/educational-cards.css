@@ -1,0 +1,230 @@
+/* === Conteúdos Educativos – grid responsiva e UI dos cards === */
+:root {
+    --edu-card-min: 240px;
+    --edu-card-gap: 24px; /* Respiro visual entre cards (vertical e horizontal) */
+    --edu-card-radius: 16px;
+    --edu-card-pad: 16px;
+}
+
+.conteudos-carousel-track,
+.card-container.conteudos-carousel-track {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(var(--edu-card-min), 1fr));
+    gap: var(--edu-card-gap);
+    align-items: start;
+}
+
+@media (min-width: 768px) {
+    .conteudos-carousel-track {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+}
+
+@media (min-width: 1200px) {
+    .conteudos-carousel-track {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+}
+
+.conteudo-card-carousel {
+    padding: var(--edu-card-pad) !important;
+    border-radius: var(--edu-card-radius) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 200px;
+    background: linear-gradient(180deg, #fff, #fff9);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    position: relative;
+    z-index: 0;
+}
+
+.conteudo-card-carousel:hover,
+.conteudo-card-carousel:focus-within {
+    z-index: 5;
+}
+
+.conteudo-card-carousel .conteudo-card-title {
+    margin: 0;
+    text-align: center;
+}
+
+.conteudo-card-carousel .edu-meta {
+    margin-top: 2px;
+}
+
+.conteudo-card-carousel .conteudo-card-cta.btn-soft {
+    align-self: center;
+    width: fit-content;
+    margin-top: 4px;
+    text-align: center;
+    justify-content: center;
+}
+
+/* Mobile: botões dos cards iguais aos outros (100% largura, mesma altura de toque) */
+@media (max-width: 768px) {
+    .conteudo-card-carousel .conteudo-card-cta.btn-soft {
+        width: 100% !important;
+        min-height: 48px;
+        justify-content: center;
+    }
+}
+
+/* card não é mais clicável; só o botão leva ao site */
+
+.conteudo-card-carousel .conteudo-card-figure {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.conteudo-card-figure img.edu-img {
+    width: clamp(96px, 30vw, 140px);
+    height: clamp(72px, 22vw, 110px);
+    object-fit: contain;
+    display: block;
+}
+
+.edu-icon {
+    width: clamp(48px, 18vw, 96px);
+    height: auto;
+    display: block;
+}
+
+.edu-icon--bottles {
+    width: clamp(64px, 22vw, 120px);
+}
+
+.conteudo-card-carousel .conteudo-card-title {
+    font-size: clamp(14px, 2.1vw, 18px);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: #6b4a3f;
+}
+
+.conteudo-card-carousel .conteudo-card-subtitle {
+    font-size: clamp(12px, 1.7vw, 15px);
+    opacity: 0.85;
+}
+
+.btn-soft,
+.conteudo-card-carousel .conteudo-card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: linear-gradient(180deg, #fff, #fff6);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    color: #6b4a3f !important;
+    font-weight: 600;
+    font-size: 12px;
+    transition: transform 0.12s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-soft:hover,
+.conteudo-card-carousel .conteudo-card-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.btn-soft:active,
+.conteudo-card-carousel .conteudo-card-cta:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Manutenção: manter .conteudos-carousel e .conteudos-carousel-track no HTML (compatibilidade edu-cards-wire.js). Layout forçado via CSS. */
+
+/* Carrossel apenas se NÃO for a seção de lista (p. ex. página /conteudos) */
+.conteudos-carousel:not(.conteudos-educativos-list-inner) {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.conteudos-carousel:not(.conteudos-educativos-list-inner) .conteudo-card-carousel {
+    scroll-snap-align: start;
+}
+
+/* Conteúdos Educativos na home: lista vertical, não carrossel */
+.conteudos-educativos-list .conteudos-carousel.conteudos-educativos-list-inner {
+    display: block !important;
+    overflow: visible !important;
+    scroll-snap-type: none !important;
+}
+
+.conteudos-educativos-list .conteudos-carousel-track > .conteudo-card-carousel {
+    scroll-snap-align: none;
+    min-width: 0;
+}
+
+/* Lista: 1 coluna no mobile, 2 no desktop (grid explícito) */
+.conteudos-educativos-list .conteudos-carousel-track {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: var(--edu-card-gap) !important;
+}
+@media (min-width: 769px) {
+    .conteudos-educativos-list .conteudos-carousel-track {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+.edu-ribbon-stroke {
+    stroke: #ff7ab8;
+}
+
+.edu-bottle-stroke {
+    stroke: #6aa8ff;
+}
+
+.edu-bottle-fill {
+    fill: #d8ebff;
+}
+
+/* ---- meta/badges e "Ver todos" ---- */
+.conteudo-card-carousel .edu-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.badge-read {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: #eff6ff;
+    color: #2262c6;
+    border: 1px solid rgba(34, 98, 198, 0.18);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.edu-title-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 8px 0;
+}
+
+.edu-view-all {
+    color: #c44569;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(196, 69, 105, 0.35);
+    padding-bottom: 1px;
+}
+
+.edu-view-all:hover {
+    color: #a83455;
+    border-color: rgba(196, 69, 105, 0.6);
+}

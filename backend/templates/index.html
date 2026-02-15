@@ -1,8 +1,33 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-page="{{ page|default('app') }}">
 <head>
+    {% include '_perf_head_links.html' %}
+    {% include '_csp_meta.html' %}
+    <!-- 0102: preload das imagens dos cards educativos (3 temas oficiais) -->
+    <link rel="preload" href="{{ url_for('static', filename='img/edu/cancer-mama.png') }}" as="image">
+    <link rel="preload" href="{{ url_for('static', filename='img/edu/doacao-leite-materno.png') }}" as="image">
+    <link rel="preload" href="{{ url_for('static', filename='img/edu/aleitamento.png') }}" as="image">
+    <!-- Dedupe de /api/user e /api/educational (carregar antes de qualquer fetch a essas APIs) -->
+    <script src="/static/js/fetch-deduped.js?v={{ timestamp }}"></script>
+    <!-- Namespacing automático do localStorage (carregar antes dos demais scripts) -->
+    <script src="/static/js/storage-namespace.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/geo-autostart.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/debug-guard.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/flags-override-wire.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/version-watchdog.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/disable-autologin.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/login-forgot-wire.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/emergency-headers-wire.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/nearby-headers-wire.js?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/hospitals-ux-bundle.js') }}?v={{ timestamp }}" defer></script>
+    <script src="/static/js/hospitals-hud-wire.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/hospitals-offline-wire.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/kill-searchlog-wire.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/kill-gps-refresh-wire.js?v={{ timestamp }}" defer></script>
+    <script src="/static/js/debug-drawer.js?v={{ timestamp }}" defer></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="/manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -21,6 +46,9 @@
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://api.groq.com" crossorigin>
+    <link rel="dns-prefetch" href="//api.groq.com">
+    <script src="{{ url_for('static', filename='js/perf-prefetch.js') }}?v={{ timestamp }}" defer></script>
     
     <!-- Google Fonts - Playfair Display (Tipografia Serifada) -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
@@ -43,13 +71,29 @@
     {% endif %}
     
     <!-- CSS Timeline de Vacinação -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/vaccination-timeline.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vaccination-timeline.css') }}?v={{ timestamp }}">
     
     <!-- CSS Feedback Modal -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback-modal.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback-modal.css') }}?v={{ timestamp }}">
+    
+    <!-- CSS Card Ownership (chips Público/Privado/Filantrópico) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/card-ownership.css') }}?v={{ timestamp }}">
+    <!-- CSS Conteúdos Educativos (grid responsiva + cards) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/educational-cards.css') }}?v={{ timestamp }}">
+    <!-- CSS Tema (tipografia e botões) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-polish.css') }}?v={{ timestamp }}">
+    <!-- CSS Categorias da Home (grid Guias/Gestação/Pós-Parto/Vacinação) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/categories-cards.css') }}?v={{ timestamp }}">
+    <!-- CSS Filtros das categorias (chips + Ver todos) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/categories-filters.css') }}?v={{ timestamp }}">
+    <!-- CSS Hospitals UX Bundle (convênios chips, debug, ações) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hospitals-ux.css') }}?v={{ timestamp }}">
+    <!-- CSS Cards de Emergência -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hospital-cards-emergency.css') }}?v={{ timestamp }}">
+    <link rel="stylesheet" href="/static/css/debug-drawer.css?v={{ timestamp }}">
     
     <!-- Preload JavaScript crítico -->
-    <link rel="preload" href="{{ url_for('static', filename='js/device-detector.js') }}" as="script">
+    <!-- Removido preload de device-detector.js - não necessário pois é carregado com defer -->
     <!-- chat.js não precisa de preload - carrega com defer após DOM -->
     
     <!-- Favicons -->
@@ -59,15 +103,25 @@
     <!-- CSS crítico inline para renderização imediata -->
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        html{height:100vh;overflow:hidden}
+        /* Safari/iPhone: 100dvh e -webkit-fill-available evitam corte quando a barra do Safari aparece/desaparece */
+        html{
+            height:100vh;
+            height:100dvh;
+            min-height:100%;
+            min-height:-webkit-fill-available;
+            overflow:hidden;
+        }
         body{
             background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             margin:0;
             padding:0;
             font-family:'Playfair Display', 'Nunito', -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
             height:100vh;
+            height:100dvh;
+            min-height:-webkit-fill-available;
             overflow:hidden;
-            color:#6b4a3f
+            color:#6b4a3f;
+            -webkit-text-size-adjust:100%;
         }
         .login-screen{
             position:fixed;
@@ -87,9 +141,11 @@
             max-width:100vw;
             margin:0;
             height:100vh;
+            height:100dvh;
+            min-height:-webkit-fill-available;
             background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
             overflow:hidden;
-            position:relative
+            position:relative;
         }
         .header-modern{
             position:sticky;
@@ -147,6 +203,8 @@
             max-width:100vw;
             margin:0;
             height:100vh;
+            height:100dvh;
+            min-height:-webkit-fill-available;
             display:flex;
             flex-direction:column;
             background:linear-gradient(135deg,#fff5f9 0%,#ffeef5 25%,#ffe8f0 50%,#ffd6e6 75%,#ffccd5 100%);
@@ -251,10 +309,21 @@
                     }
                     setTimeout(tryLogin, 100);
                 } else {
-                    console.error('❌ [LOGIN] chatApp não disponível após 3 segundos');
+                    // Aumenta timeout e tenta mais uma vez antes de mostrar erro
+                    if (attempts < maxAttempts + 10) {
+                        attempts++;
+                        setTimeout(tryLogin, 100);
+                        return false;
+                    }
+                    console.error('❌ [LOGIN] chatApp não disponível após 4 segundos');
                     console.error('❌ [LOGIN] window.chatApp:', typeof window.chatApp);
                     console.error('❌ [LOGIN] Verifique se chat.js foi carregado corretamente');
-                    alert('Erro: JavaScript não carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a página.');
+                    // Não mostra alert imediatamente - dá mais uma chance
+                    setTimeout(() => {
+                        if (!window.chatApp) {
+                            alert('Erro: JavaScript não carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a página.');
+                        }
+                    }, 500);
                 }
                 return false;
             }
@@ -280,15 +349,59 @@
                     }
                     setTimeout(tryRegister, 100);
                 } else {
-                    console.error('❌ [REGISTER] chatApp não disponível após 3 segundos');
-                    console.error('❌ [REGISTER] window.chatApp:', typeof window.chatApp);
-                    console.error('❌ [REGISTER] Verifique se chat.js foi carregado corretamente');
-                    alert('Erro: JavaScript não carregou completamente. Verifique o console (F12) para mais detalhes e recarregue a página.');
+                    // Fallback: faz o cadastro sem chatApp (fetch direto)
+                    console.warn('⚠️ [REGISTER] chatApp indisponível, usando fallback direto');
+                    runRegisterFallback();
                 }
                 return false;
             }
             
             return tryRegister();
+        }
+        
+        // Fallback de registro quando chat.js não carrega (funciona sem chatApp)
+        async function runRegisterFallback() {
+            var nameEl = document.getElementById('initial-register-name');
+            var emailEl = document.getElementById('initial-register-email');
+            var passwordEl = document.getElementById('initial-register-password');
+            var babyEl = document.getElementById('initial-register-baby');
+            if (!nameEl || !emailEl || !passwordEl) {
+                alert('Por favor, preencha Nome, E-mail e Senha.');
+                return;
+            }
+            var name = nameEl.value.trim();
+            var email = emailEl.value.trim().toLowerCase();
+            var password = passwordEl.value;
+            var baby_name = (babyEl && babyEl.value) ? babyEl.value.trim() : '';
+            if (!name || !email || !password) {
+                alert('Por favor, preencha os campos obrigatórios! 💕');
+                return;
+            }
+            if (password.length < 6) {
+                alert('A senha deve ter no mínimo 6 caracteres! 💕');
+                return;
+            }
+            try {
+                var response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name: name, email: email, password: password, baby_name: baby_name})
+                });
+                var data = await response.json();
+                if (response.ok && data.sucesso !== false) {
+                    alert('🎉 ' + (data.mensagem || 'Cadastro realizado!'));
+                    var loginTab = document.querySelector('[data-tab="login"]');
+                    if (loginTab) loginTab.click();
+                    var loginEmail = document.getElementById('initial-login-email');
+                    if (loginEmail) loginEmail.value = email;
+                } else {
+                    var msg = data.erro || data.mensagem || 'Erro ao cadastrar. Tente novamente.';
+                    alert('⚠️ ' + msg);
+                }
+            } catch (e) {
+                console.error('Erro no registro:', e);
+                alert('Erro ao cadastrar. Verifique sua conexão e tente novamente.');
+            }
         }
         
         // Fallback para carregar Font Awesome se onload não funcionar
@@ -355,20 +468,16 @@
                 <span class="login-subtitle">Sua Companheira no Puerpério</span>
             </div>
             <div class="login-content">
-                <h2>Bem-vinda à Sophia - Sua Companheira no Puerpério! 👋</h2>
+                <h2 class="login-welcome-title">Bem-vinda à Sophia - Sua Companheira no Puerpério! 👋</h2>
                 <p style="color: #8b5a5a; margin-bottom: 2rem;">Faça login ou crie sua conta para começar</p>
-                
-                <div class="login-tabs">
-                    <button class="login-tab active" data-tab="login">
-                        <i class="fas fa-sign-in-alt"></i> Entrar
-                    </button>
-                    <button class="login-tab" data-tab="register">
-                        <i class="fas fa-user-plus"></i> Cadastrar
-                    </button>
-                </div>
-                
+                {% if login_error %}
+                <p class="login-error-banner" style="background:#fef2f2;color:#991b1b;padding:0.75rem;border-radius:6px;margin-bottom:1rem;font-weight:600;">
+                    Email ou senha incorretos. Tente novamente.
+                </p>
+                {% endif %}
                 <div class="login-forms">
-                    <form class="login-form active" id="initial-login-form" onsubmit="return false;" action="javascript:void(0);">
+                    <!-- Fallback sem JS: action + method garantem submit no servidor se JS cair -->
+                    <form class="login-form active" id="initial-login-form" action="/auth/login" method="POST">
                         <div class="form-group">
                             <label for="initial-login-email">
                                 <i class="fas fa-envelope"></i>
@@ -385,21 +494,30 @@
                         </div>
                         <div class="form-group remember-me-group">
                             <label class="remember-me-label">
-                                <input type="checkbox" id="initial-remember-me" name="remember_me" checked>
+                                <input type="checkbox" id="initial-remember-me" name="remember_me" value="1" checked>
                                 <span class="remember-me-text">
                                     <i class="fas fa-heart"></i>
                                     Lembre-se de mim
                                 </span>
                             </label>
                         </div>
-                        <button type="button" class="btn btn-login-main" id="initial-login-submit" onclick="return handleLoginClick();">
+                        <div class="login-actions-stack">
+                        <button type="submit" class="btn btn-login-main btn-login-block" id="initial-login-submit">
                             <i class="fas fa-sign-in-alt"></i>
-                            Entrar
+                            <span class="btn-login-text">Entrar</span>
                         </button>
                         <a href="/forgot-password" class="forgot-password-link" id="forgot-password-link">
                             <i class="fas fa-key"></i>
                             Esqueci minha senha
                         </a>
+                        <a href="#" class="forgot-password-link resend-verification-link" id="resend-verification-link" style="display:block;margin-top:0.5rem;font-size:0.9em;">
+                            <i class="fas fa-envelope"></i>
+                            Reenviar link de verificação
+                        </a>
+                        </div>
+                        <p class="login-switch-link">
+                            Novo por aqui? <button type="button" class="link-button" data-tab="register" aria-label="Ir para cadastro">Cadastre-se aqui</button>
+                        </p>
                     </form>
                     
                     <form class="login-form" id="initial-register-form" onsubmit="return false;" action="javascript:void(0);">
@@ -415,14 +533,14 @@
                                 <i class="fas fa-envelope"></i>
                                 E-mail
                             </label>
-                            <input type="email" id="initial-register-email" name="email" autocomplete="email" placeholder="Seu e-mail" required>
+                            <input type="email" id="initial-register-email" name="register_email" autocomplete="new-password" placeholder="E-mail novo" required>
                         </div>
                         <div class="form-group">
                             <label for="initial-register-password">
                                 <i class="fas fa-lock"></i>
                                 Senha
                             </label>
-                            <input type="password" id="initial-register-password" name="password" autocomplete="new-password" placeholder="Sua senha (min. 6 caracteres)" required>
+                            <input type="password" id="initial-register-password" name="password" autocomplete="new-password" placeholder="Senha (mín. 6)" required>
                         </div>
                         <div class="form-group">
                             <label for="initial-register-baby">
@@ -431,10 +549,13 @@
                             </label>
                             <input type="text" id="initial-register-baby" name="baby_name" autocomplete="off" placeholder="Nome do bebê (opcional)">
                         </div>
-                        <button type="button" class="btn btn-login-main" id="initial-register-submit" onclick="return handleRegisterClick();">
+                        <button type="button" class="btn btn-login-main btn-login-block" id="initial-register-submit" onclick="return handleRegisterClick();">
                             <i class="fas fa-user-plus"></i>
-                            Criar Conta
+                            <span class="btn-login-text">Criar Conta</span>
                         </button>
+                        <p class="login-switch-link">
+                            Já tem conta? <button type="button" class="link-button" data-tab="login" aria-label="Ir para login">Entre aqui</button>
+                        </p>
                     </form>
                 </div>
             </div>
@@ -567,10 +688,7 @@
                             <div class="decoration-shape shape-2"></div>
                         </div>
 
-                        <!-- Widget Próxima Vacina -->
-                        <div id="next-vaccine-widget">
-                            <!-- Widget será carregado via JavaScript -->
-                        </div>
+                        <!-- Espaço reservado para conteúdo adicional na sidebar -->
                     </div>
                     
                     <!-- Conteúdo Central -->
@@ -602,7 +720,7 @@
                         </div>
                         
                         <!-- Hero Grid - Menu Principal (2x2 Mobile / 4x1 Desktop) -->
-                        <div class="hero-grid-section">
+                        <div class="hero-grid-section" data-viewall-href="/conteudos">
                             <div class="hero-grid">
                                 <button class="hero-grid-card" id="btn-guias">
                                     <i class="fa-solid fa-book-open-reader"></i>
@@ -623,65 +741,45 @@
                             </div>
                         </div>
                         
-                        <!-- Seção "Como está seu coração hoje?" - Grid Moderno -->
-                        <div class="feeling-widget-modern" id="feeling-widget">
-                            <h2 class="feeling-title-modern">Como você está se sentindo hoje?</h2>
-                            <p class="feeling-subtitle-modern">Escolha a palavra que melhor te acolhe agora.</p>
-                            <div class="feeling-grid-modern">
-                                <button class="feeling-btn-modern" data-feeling="cansada" aria-label="Estou exausta">Exausta</button>
-                                <button class="feeling-btn-modern" data-feeling="feliz" aria-label="Estou em paz">Em paz</button>
-                                <button class="feeling-btn-modern" data-feeling="ansiosa" aria-label="Estou sobrecarregada">Sobrecarregada</button>
-                                <button class="feeling-btn-modern" data-feeling="confusa" aria-label="Estou confusa">Confusa</button>
-                                <button class="feeling-btn-modern" data-feeling="triste" aria-label="Estou para baixo">Para baixo</button>
-                                <button class="feeling-btn-modern" data-feeling="gratidao" aria-label="Estou grata">Grata</button>
-                            </div>
-                            <div class="feeling-extra-options-modern">
-                                <button class="feeling-extra-btn-modern" id="feeling-write-own">Quero escrever com minhas próprias palavras</button>
-                                <button class="feeling-extra-btn-modern" id="feeling-skip">Prefiro não responder agora</button>
-                            </div>
-                            <div class="feeling-feedback" id="feeling-feedback" style="display: none;">
-                                <span class="feeling-feedback-icon">💗</span>
-                                <span class="feeling-feedback-text">Obrigada por compartilhar</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Carrossel de Conteúdos Educativos (Horizontal Scroll Snap) -->
-                        <div class="conteudos-educativos-section-modern">
+                        <!-- Conteúdos Educativos: lista vertical (não carrossel) -->
+                        <div class="conteudos-educativos-section-modern conteudos-educativos-list">
                             <h2 class="conteudos-title-modern">📚 Conteúdos Educativos</h2>
-                            <div class="conteudos-carousel">
-                                <div class="conteudos-carousel-track">
-                                    <!-- Saúde Preventiva: Câncer de Mama -->
+                            <div class="conteudos-carousel conteudos-educativos-list-inner" data-viewall-href="/conteudos">
+                                <div class="conteudos-carousel-track card-container">
+                                    <!-- Câncer de Mama -->
                                     <div class="conteudo-card-carousel" id="card-cancer-mama-welcome">
-                                        <div class="conteudo-card-image">
-                                            <img src="{{ url_for('static', filename='images/cancer-mama.svg') }}" alt="Prevenção do Câncer de Mama" loading="lazy">
+                                        <div class="conteudo-card-figure">
+                                            <img class="edu-img" src="{{ url_for('static', filename='img/edu/cancer-mama.png') }}" alt="Câncer de Mama" loading="lazy">
                                         </div>
-                                        <div class="conteudo-card-content">
-                                            <h3 class="conteudo-card-title">Saúde Preventiva</h3>
-                                            <p class="conteudo-card-subtitle">Câncer de Mama</p>
-                                            <button class="conteudo-card-btn" onclick="event.stopPropagation(); window.open('https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/c/cancer-de-mama', '_blank', 'noopener,noreferrer');" aria-label="Acessar informações sobre câncer de mama no Ministério da Saúde">
-                                                <i class="fas fa-external-link-alt"></i>
-                                                Ministério da Saúde
-                                            </button>
-                                        </div>
+                                        <h3 class="conteudo-card-title">Câncer de Mama</h3>
+                                        <a class="conteudo-card-cta btn-soft" href="https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/c/cancer-de-mama" target="_blank" rel="noopener noreferrer" aria-label="Acessar informações sobre câncer de mama no Ministério da Saúde">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            Ministério da Saúde
+                                        </a>
                                     </div>
-                                    <!-- Rede de Apoio: Doação de Leite -->
+                                    <!-- Doação de Leite -->
                                     <div class="conteudo-card-carousel" id="card-doacao-leite-welcome">
-                                        <div class="conteudo-card-image">
-                                            <img src="{{ url_for('static', filename='images/doacao-leite.svg') }}" alt="Doação de Leite Materno" loading="lazy">
+                                        <div class="conteudo-card-figure">
+                                            <img class="edu-img" src="{{ url_for('static', filename='img/edu/doacao-leite-materno.png') }}" alt="Doação de Leite Materno" loading="lazy">
                                         </div>
-                                        <div class="conteudo-card-content">
-                                            <h3 class="conteudo-card-title">Rede de Apoio</h3>
-                                            <p class="conteudo-card-subtitle">Doação de Leite</p>
-                                            <button class="conteudo-card-btn" onclick="event.stopPropagation(); window.open('https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/d/doacao-de-leite', '_blank', 'noopener,noreferrer');" aria-label="Acessar informações sobre doação de leite no Ministério da Saúde">
-                                                <i class="fas fa-external-link-alt"></i>
-                                                Ministério da Saúde
-                                            </button>
+                                        <h3 class="conteudo-card-title">Doação de Leite</h3>
+                                        <a class="conteudo-card-cta btn-soft" href="https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/d/doacao-de-leite" target="_blank" rel="noopener noreferrer" aria-label="Acessar informações sobre doação de leite no Ministério da Saúde">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            Ministério da Saúde
+                                        </a>
+                                    </div>
+                                    <!-- Amamentação -->
+                                    <div class="conteudo-card-carousel" id="card-aleitamento">
+                                        <div class="conteudo-card-figure">
+                                            <img class="edu-img" src="{{ url_for('static', filename='img/edu/aleitamento.png') }}" alt="Amamentação" loading="lazy">
                                         </div>
+                                        <h3 class="conteudo-card-title">Amamentação</h3>
+                                        <a class="conteudo-card-cta btn-soft" href="https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/a/aleitamento-materno" target="_blank" rel="noopener noreferrer" aria-label="Acessar informações sobre aleitamento materno no Ministério da Saúde">
+                                            <i class="fas fa-external-link-alt"></i>
+                                            Ministério da Saúde
+                                        </a>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="carousel-dots" id="feature-carousel-dots">
-                                <!-- Dots serão criados dinamicamente pelo JavaScript -->
                             </div>
                         </div>
                         
@@ -697,84 +795,81 @@
                                 <button class="feeling-btn" data-feeling="triste" aria-label="Estou para baixo">Para baixo</button>
                                 <button class="feeling-btn" data-feeling="gratidao" aria-label="Estou grata">Grata</button>
                             </div>
-                            <div class="feeling-extra-options">
-                                <button class="feeling-extra-btn" id="feeling-write-own">Quero escrever com minhas próprias palavras</button>
-                                <button class="feeling-extra-btn" id="feeling-skip">Prefiro não responder agora</button>
-                            </div>
                             <div class="feeling-feedback" id="feeling-feedback" style="display: none;">
                                 <span class="feeling-feedback-icon">💗</span>
                                 <span class="feeling-feedback-text">Obrigada por compartilhar</span>
                             </div>
                         </div>
                         
-                        <!-- Bússola de Sentimentos -->
-                        <div class="quick-questions">
-                            <h2>💬 Não sabe por onde começar?</h2>
-                            <p class="quick-questions-subtitle">Clique em uma frase para iniciar a conversa:</p>
-                            <div class="quick-questions-grid">
-                                <button class="quick-btn" data-question="Tudo parece muito difícil hoje.">
-                                    <i class="fas fa-heart"></i>
-                                    Tudo parece muito difícil hoje.
-                                </button>
-                                <button class="quick-btn" data-question="Sinto uma tristeza que não passa.">
-                                    <i class="fas fa-heart"></i>
-                                    Sinto uma tristeza que não passa.
-                                </button>
-                                <button class="quick-btn" data-question="Estou com dificuldades para amamentar.">
-                                    <i class="fas fa-heart"></i>
-                                    Estou com dificuldades para amamentar.
-                                </button>
-                                <button class="quick-btn" data-question="Sinto coisas estranhas no meu corpo/mente.">
-                                    <i class="fas fa-heart"></i>
-                                    Sinto coisas estranhas no meu corpo/mente.
-                                </button>
-                                <button class="quick-btn" data-question="Esqueci como cuidar de mim mesma.">
-                                    <i class="fas fa-heart"></i>
-                                    Esqueci como cuidar de mim mesma.
-                                </button>
-                                <button class="quick-btn" data-question="Não sei explicar o que estou sentindo.">
-                                    <i class="fas fa-heart"></i>
-                                    Não sei explicar o que estou sentindo.
-                                </button>
+                        <!-- Bússola de Sentimentos: fundo branco explícito -->
+                        <div class="quick-questions feeling-box quick-questions-section-white">
+                            <h2 class="gentle-title">Não sabe por onde começar?</h2>
+                            <p class="gentle-subtitle">Clique em uma frase para iniciar a conversa:</p>
+                            <div class="quick-questions-grid feeling-buttons-grid">
+                                <button class="quick-btn feeling-btn" data-feeling="frase" data-question="Tudo parece muito difícil hoje.">Tudo parece muito difícil hoje.</button>
+                                <button class="quick-btn feeling-btn" data-feeling="frase" data-question="Sinto uma tristeza que não passa.">Sinto uma tristeza que não passa.</button>
+                                <button class="quick-btn feeling-btn" data-feeling="frase" data-question="Esqueci como cuidar de mim mesma.">Esqueci como cuidar de mim mesma.</button>
+                                <button class="quick-btn feeling-btn" data-feeling="frase" data-question="Estou com dificuldades para amamentar.">Estou com dificuldades para amamentar.</button>
+                                <button class="quick-btn feeling-btn" data-feeling="frase" data-question="Sinto coisas estranhas no meu corpo/mente.">Sinto coisas estranhas no meu corpo/mente.</button>
+                                <button class="quick-btn feeling-btn" data-feeling="frase" data-question="Não sei explicar o que estou sentindo.">Não sei explicar o que estou sentindo.</button>
                             </div>
                         </div>
                         
-                        <!-- Cards de Apoio (Dica do Dia e Afirmação Positiva) -->
-                        <div class="welcome-cards-container">
-                            <!-- Card Dica do Dia -->
-                            <div class="sidebar-card tip-card" id="tip-of-the-day-card">
-                                <div class="card-icon">💡</div>
-                                <h3>Dica do Dia</h3>
-                                <div class="tip-content" id="tip-content">
-                                    <p class="tip-text" id="tip-text">Carregando dica...</p>
+                        <!-- Cards de Apoio (Orientação, Afirmação e Agenda de Vacinação) -->
+                        <div class="welcome-cards-container" id="welcome-cards-container">
+                            <!-- Card Orientação -->
+                            <div class="sidebar-card orientacao-card" id="orientacao-card" role="button" tabindex="0" aria-label="Clique para ver outra orientação">
+                                <div class="card-icon"><i class="fas fa-tint" aria-hidden="true"></i></div>
+                                <h3>Orientação</h3>
+                                <div class="orientacao-content" id="orientacao-content">
+                                    <p class="orientacao-text" id="orientacao-text">Carregando orientação...</p>
                                 </div>
                             </div>
                             
-                            <!-- Widget Afirmação Positiva -->
-                            <div class="sidebar-card affirmation-card" id="affirmation-card">
-                                <div class="card-icon">✨</div>
-                                <h3>Afirmação Positiva</h3>
+                            <!-- Card Afirmação Positiva -->
+                            <div class="sidebar-card affirmation-card" id="affirmation-card" role="button" tabindex="0" aria-label="Clique para ver outra afirmação">
+                                <div class="card-icon"><i class="fas fa-sun" aria-hidden="true"></i></div>
+                                <h3>Afirmação</h3>
                                 <div class="affirmation-content" id="affirmation-content">
                                     <p class="affirmation-text" id="affirmation-text">Carregando afirmação...</p>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Aviso Médico -->
-                        <div class="medical-disclaimer">
-                            <p class="disclaimer-text">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <strong>Aviso Importante:</strong> Este conteúdo é apenas informativo e não substitui uma consulta médica profissional. 
-                                <strong>Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina.</strong> 
-                                Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas. 
-                                <strong>Em situações de emergência, gestantes e puérperas devem procurar imediatamente um hospital com emergência obstétrica, onde há equipe especializada 24h.</strong> 
-                                Para outras emergências, ligue para <strong>192 (SAMU)</strong>.
-                            </p>
+                            
+                            <!-- Card Agenda de Vacinação -->
+                            <div class="sidebar-card agenda-card" id="agenda-de-vacinacao-card">
+                                <div class="card-icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></div>
+                                <h3>Agenda de Vacinação</h3>
+                                <div class="agenda-content" id="agenda-content">
+                                    <p class="agenda-text" id="agenda-text">Carregando agenda...</p>
+                                </div>
+                                <div class="agenda-reminders-wrap" id="agenda-reminders-wrap" style="margin-top: 0.75rem; width: 100%; text-align: left;"></div>
+                                <button type="button" class="btn-agenda-add-reminder" id="btn-add-reminder" style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 12px; border: 1px solid rgba(244,166,166,0.5); background: rgba(255,255,255,0.9); color: #8b5a5a; font-size: 0.9rem; cursor: pointer;">
+                                    <i class="fas fa-plus" aria-hidden="true"></i> Adicionar lembrete
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- Mensagem Rotativa de Apoio -->
                         <div class="rotating-message">
                             <p id="rotating-text">Você não está sozinha. 💛</p>
+                        </div>
+                        
+                        <!-- Aviso Importante (accordion no final, não rouba protagonismo) -->
+                        <div class="medical-disclaimer medical-disclaimer-accordion medical-disclaimer-end">
+                            <button type="button" class="medical-disclaimer-toggle" id="medical-disclaimer-toggle" aria-expanded="false" aria-controls="medical-disclaimer-content">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Aviso Importante</span>
+                                <i class="fas fa-chevron-down accordion-arrow"></i>
+                            </button>
+                            <div class="medical-disclaimer-content" id="medical-disclaimer-content" hidden>
+                                <p class="disclaimer-text">
+                                    Este conteúdo é apenas informativo e não substitui uma consulta médica profissional. 
+                                    Procure orientação médica ou de enfermagem antes de usar qualquer medicamento, suplemento ou vitamina. 
+                                    Sempre consulte um médico, enfermeiro ou profissional de saúde qualificado para orientações personalizadas. 
+                                    Em situações de emergência, gestantes e puérperas devem procurar imediatamente um hospital com emergência obstétrica, onde há equipe especializada 24h. 
+                                    Para outras emergências, ligue para <strong>192 (SAMU)</strong>.
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Container da Timeline de Vacinação -->
@@ -826,32 +921,31 @@
                     </button>
                 </div>
 
-                <!-- Typing Indicator -->
-                <div class="typing-indicator" id="typing-indicator">
-                    <div class="typing-dots">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                    <span>Assistente está digitando... ✨</span>
-                </div>
             </div>
         </div>
 
         <!-- Input Area -->
         <div class="input-area" data-form-type="chat" style="display: none;">
+            <!-- Typing Indicator - Acima do botão de enviar -->
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
             <div class="input-container">
                 <button class="btn btn-icon" id="menu-toggle" aria-label="Abrir menu">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="input-wrapper">
-                    <input type="text" id="message-input" name="chat-message" placeholder="Digite sua pergunta sobre puerpério..." maxlength="500" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="true" inputmode="text" data-lpignore="true" data-form-type="other" role="textbox" aria-label="Campo de mensagem do chat">
+                    <input type="text" id="message-input" name="chat-message" placeholder="Digite sua pergunta sobre puerpério..." maxlength="2000" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="true" inputmode="text" data-lpignore="true" data-form-type="other" role="textbox" aria-label="Campo de mensagem do chat">
                     <button class="btn btn-send" id="send-button" aria-label="Enviar mensagem">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
                 <div class="input-info">
-                    <span id="char-count">0/500</span>
+                    <span id="char-count">0/2000</span>
                 </div>
             </div>
         </div>
@@ -866,15 +960,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="auth-tabs">
-                        <button class="auth-tab active" data-tab="login">
-                            <i class="fas fa-sign-in-alt"></i> Entrar
-                        </button>
-                        <button class="auth-tab" data-tab="register">
-                            <i class="fas fa-user-plus"></i> Cadastrar
-                        </button>
-                    </div>
-
                     <!-- Login Form -->
                     <div class="auth-form active" id="login-form">
                         <div class="form-group">
@@ -926,6 +1011,32 @@
                 </div>
             </div>
         </div>
+
+    <!-- Modal Adicionar Lembrete de Vacinação -->
+    <div class="modal" id="vaccination-reminder-modal" style="display: none;">
+        <div class="modal-content" style="max-width: 420px; border-radius: 20px; background: linear-gradient(135deg, #f0f8ff 0%, #e8f4fc 100%); box-shadow: 0 10px 40px rgba(144,202,249,0.25);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(244,166,166,0.3);">
+                <h3 style="color: #8b5a5a; font-size: 1.2rem;"><i class="fas fa-calendar-plus"></i> Adicionar lembrete</h3>
+                <button type="button" class="close-modal" id="close-vaccination-reminder-modal" aria-label="Fechar">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.25rem;">
+                <form id="form-vaccination-reminder">
+                    <label for="reminder-vacina" style="display:block; margin-bottom: 0.25rem; font-size: 0.9rem; color: #6b4a3f;">Vacina</label>
+                    <input type="text" id="reminder-vacina" name="vacina" required placeholder="Ex.: BCG, Hepatite B" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 12px; border: 1px solid rgba(244,166,166,0.4); margin-bottom: 0.75rem; box-sizing: border-box;">
+                    <label for="reminder-data" style="display:block; margin-bottom: 0.25rem; font-size: 0.9rem; color: #6b4a3f;">Data</label>
+                    <input type="date" id="reminder-data" name="data" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 12px; border: 1px solid rgba(244,166,166,0.4); margin-bottom: 0.75rem; box-sizing: border-box;">
+                    <label for="reminder-hora" style="display:block; margin-bottom: 0.25rem; font-size: 0.9rem; color: #6b4a3f;">Hora</label>
+                    <input type="time" id="reminder-hora" name="hora" placeholder="Ex.: 14:00" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 12px; border: 1px solid rgba(244,166,166,0.4); margin-bottom: 0.75rem; box-sizing: border-box;">
+                    <label for="reminder-local" style="display:block; margin-bottom: 0.25rem; font-size: 0.9rem; color: #6b4a3f;">Local</label>
+                    <input type="text" id="reminder-local" name="local" required placeholder="Ex.: UBS Centro, Hospital X" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 12px; border: 1px solid rgba(244,166,166,0.4); margin-bottom: 1rem; box-sizing: border-box;">
+                    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" id="cancel-vaccination-reminder" style="padding: 0.5rem 1rem; border-radius: 12px;">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="submit-vaccination-reminder" style="padding: 0.5rem 1rem; border-radius: 12px; background: #f4a6a6;">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Logout Confirmation Modal -->
     <div class="modal" id="logout-confirm-modal" style="display: none;">
@@ -1073,6 +1184,11 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <div id="hospitals-region-search" class="hospitals-region-search" style="margin-bottom: 0.75rem;">
+                        <button type="button" id="btn-find-hospitals-my-region" class="btn-sophia btn-sophia-compact" style="font-size: 0.85rem;">
+                            <i class="fas fa-location-crosshairs"></i> Atualizar localização (GPS)
+                        </button>
+                    </div>
                     <div id="hospitals-loading" class="hospitals-loading" style="display: none;">
                         <div class="loading-content">
                             <i class="fas fa-spinner fa-spin"></i>
@@ -1380,22 +1496,48 @@
             }
         });
     </script>
-    <script src="{{ url_for('static', filename='js/device-detector.js') }}" defer></script>
-    <!-- APIClient deve carregar ANTES do chat.js pois é dependência -->
-    <script src="{{ url_for('static', filename='js/api-client.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/toast-notification.js') }}" defer></script>
-    <!-- Sidebar Content Manager -->
-    <script src="{{ url_for('static', filename='js/sidebar-content.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/vaccination-timeline.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/mobile-navigation.js') }}" defer></script>
+    <!-- chat.js carregado também na página de login para Cadastrar/Entrar funcionarem (chatApp) -->
+    {% if page == 'login' %}
+    <script src="{{ url_for('static', filename='js/boot.js') }}?v={{ timestamp }}" defer></script>
+    {% if timestamp %}
+    <script src="{{ url_for('static', filename='js/chat.js') }}?v={{ timestamp }}" defer></script>
+    {% else %}
+    <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+    {% endif %}
+    {% else %}
+    <script src="{{ url_for('static', filename='js/boot.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/action-dispatcher.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/device-detector.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/api-client.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/toast-notification.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/sidebar-content.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vaccination-timeline.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/mobile-navigation.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/badges.js') }}?v={{ timestamp }}" defer></script>
     {% if has_minified and timestamp %}
-    <!-- Usar versão minificada se disponível -->
     <script src="{{ url_for('static', filename='js/chat.min.js') }}?v={{ timestamp }}" defer></script>
     {% elif timestamp %}
     <script src="{{ url_for('static', filename='js/chat.js') }}?v={{ timestamp }}" defer></script>
     {% else %}
     <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
     {% endif %}
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/nearby-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/chat-header-offset.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/card-ownership-integrated.js') }}?v={{ timestamp }}" defer></script>
+    {% if config.DEBUG %}
+    <script src="{{ url_for('static', filename='js/skeleton-toggle-dev.js') }}?v={{ timestamp }}" defer></script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/edu-cards-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/theme-polish-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/categories-cards-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/categories-filters-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/categories-skeleton-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/nearby-skeleton-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/hospitals-skeleton-wire.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/auth-cache-buster.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/privacy-storage-guard.js') }}?v={{ timestamp }}" defer></script>
+    <script src="{{ url_for('static', filename='js/hospital-cards-emergency.js') }}?v={{ timestamp }}" defer></script>
     
     <!-- Silenciar erros de extensões do navegador (não afetam o funcionamento do site) -->
     <script>
@@ -1425,6 +1567,140 @@
                 return false;
             }
         });
+    </script>
+    
+    <!-- Aviso médico colapsável (accordion) -->
+    <script>
+        (function() {
+            function initDisclaimerAccordion() {
+                var btn = document.getElementById('medical-disclaimer-toggle');
+                var content = document.getElementById('medical-disclaimer-content');
+                var wrap = btn && btn.closest('.medical-disclaimer-accordion');
+                if (!btn || !content || !wrap) return;
+                btn.addEventListener('click', function() {
+                    var isOpen = !content.hidden;
+                    content.hidden = isOpen;
+                    btn.setAttribute('aria-expanded', !isOpen);
+                    wrap.classList.toggle('expanded', !isOpen);
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initDisclaimerAccordion);
+            } else {
+                initDisclaimerAccordion();
+            }
+        })();
+    </script>
+    
+    <!-- Agenda de Vacinação: lembretes e modal Adicionar lembrete -->
+    <script>
+        (function() {
+            var modal = document.getElementById('vaccination-reminder-modal');
+            var wrap = document.getElementById('agenda-reminders-wrap');
+            var btnAdd = document.getElementById('btn-add-reminder');
+            var form = document.getElementById('form-vaccination-reminder');
+            var closeBtn = document.getElementById('close-vaccination-reminder-modal');
+            var cancelBtn = document.getElementById('cancel-vaccination-reminder');
+            
+            function openModal() {
+                if (modal) modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+            function closeModal() {
+                if (modal) modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+            
+            function isTomorrow(dateStr) {
+                if (!dateStr) return false;
+                var today = new Date();
+                var d = new Date(dateStr);
+                var tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                return d.getFullYear() === tomorrow.getFullYear() && d.getMonth() === tomorrow.getMonth() && d.getDate() === tomorrow.getDate();
+            }
+            function renderReminders(upcoming, taken) {
+                if (!wrap) return;
+                upcoming = upcoming || [];
+                taken = taken || [];
+                window.__agendaTomorrowFromReminders = upcoming.some(function(r) { return isTomorrow(r.data); });
+                if (typeof window.applyAgendaCardTomorrowAlert === 'function') window.applyAgendaCardTomorrowAlert();
+                if (upcoming.length === 0 && taken.length === 0) {
+                    wrap.innerHTML = '';
+                    return;
+                }
+                var html = '';
+                if (upcoming.length > 0) {
+                    html += '<p style="font-size: 0.85rem; color: #6b4a3f; margin-bottom: 0.35rem;"><strong>Próximas</strong></p><ul class="agenda-reminders-list" style="margin: 0 0 0.75rem 1.25rem; padding: 0; font-size: 0.85rem; color: #6b4a3f;">' +
+                        upcoming.map(function(r) {
+                            return '<li style="margin-bottom: 0.35rem;">' + escapeHtml(r.vacina) + ' – ' + escapeHtml(r.data) + (r.hora ? ' às ' + escapeHtml(r.hora) : '') + ' – ' + escapeHtml(r.local) + '</li>';
+                        }).join('') + '</ul>';
+                }
+                if (taken.length > 0) {
+                    html += '<p style="font-size: 0.8rem; color: #8b7355; margin-bottom: 0.35rem;"><strong>Tomadas</strong></p><ul class="agenda-reminders-taken" style="margin: 0 0 0 1.25rem; padding: 0; font-size: 0.8rem; color: #8b7355;">' +
+                        taken.map(function(r) {
+                            return '<li style="margin-bottom: 0.25rem;">' + escapeHtml(r.vacina) + ' – ' + escapeHtml(r.data) + (r.hora ? ' às ' + escapeHtml(r.hora) : '') + ' – ' + escapeHtml(r.local) + '</li>';
+                        }).join('') + '</ul>';
+                }
+                wrap.innerHTML = html;
+            }
+            function escapeHtml(s) {
+                if (s == null) return '';
+                var div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+            
+            function loadReminders() {
+                var api = window.apiClient || {};
+                var fetchOpts = { credentials: 'include', headers: { 'Accept': 'application/json' } };
+                var url = '/api/v1/vaccination/reminders';
+                if (typeof api.get === 'function') {
+                    api.get(url).then(function(res) {
+                        if (res) renderReminders(res.upcoming || [], res.taken || []);
+                    }).catch(function() { renderReminders([], []); });
+                } else {
+                    fetch(url, fetchOpts).then(function(r) { return r.json(); }).then(function(res) {
+                        if (res) renderReminders(res.upcoming || [], res.taken || []);
+                    }).catch(function() { renderReminders([], []); });
+                }
+            }
+            
+            function submitReminder(e) {
+                e.preventDefault();
+                var vacina = document.getElementById('reminder-vacina').value.trim();
+                var data = document.getElementById('reminder-data').value.trim();
+                var hora = document.getElementById('reminder-hora').value.trim();
+                var local = document.getElementById('reminder-local').value.trim();
+                if (!vacina || !data || !local) return;
+                var payload = { vacina: vacina, data: data, hora: hora || '08:00', local: local };
+                var api = window.apiClient || {};
+                var fetchOpts = { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) };
+                if (typeof api.post === 'function') {
+                    api.post('/api/v1/vaccination/add', payload).then(function(res) {
+                        if (res && res.success) { closeModal(); form.reset(); loadReminders(); }
+                    }).catch(function() {});
+                } else {
+                    fetch('/api/v1/vaccination/add', fetchOpts).then(function(r) { return r.json(); }).then(function(res) {
+                        if (res && res.success) { closeModal(); form.reset(); loadReminders(); }
+                    }).catch(function() {});
+                }
+            }
+            
+            if (btnAdd) btnAdd.addEventListener('click', openModal);
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+            if (modal && modal.querySelector('.modal-content')) {
+                modal.addEventListener('click', function(ev) { if (ev.target === modal) closeModal(); });
+            }
+            if (form) form.addEventListener('submit', submitReminder);
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() { setTimeout(loadReminders, 800); });
+            } else {
+                setTimeout(loadReminders, 800);
+            }
+        })();
     </script>
     
     <!-- Prefetch para recursos não críticos (após carregamento inicial) -->
@@ -1607,9 +1883,11 @@
             // Verifica se usuário tem perfil de bebê e abre modal se necessário
             async function checkBabyProfile() {
                 try {
-                    // Verifica se usuário está logado
-                    const userResponse = await fetch('/api/user', { credentials: 'include' });
-                    if (!userResponse.ok) {
+                    // Verifica se usuário está logado (deduped: evita chamada duplicada em 2s)
+                    const userData = window.dedupedFetchJSON
+                        ? await window.dedupedFetchJSON('/api/user', { credentials: 'include' }).catch(function() { return null; })
+                        : await fetch('/api/user', { credentials: 'include' }).then(function(r) { return r.ok ? r.json() : null; });
+                    if (!userData) {
                         return; // Usuário não está logado
                     }
                     

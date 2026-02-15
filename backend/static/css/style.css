@@ -140,10 +140,89 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     max-width: 450px;
     width: 90%;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
-    /* Animação removida para melhor performance */
     box-sizing: border-box;
     overflow: visible;
     overflow-y: auto;
+}
+
+/* Mobile/Safari: tela de login utilizável, sem texto cortado, botões empilhados */
+.login-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+@media (max-width: 768px) {
+    #login-screen {
+        padding: 0 20px !important;
+        padding-left: max(20px, env(safe-area-inset-left)) !important;
+        padding-right: max(20px, env(safe-area-inset-right)) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .login-container {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 1.5rem 20px !important;
+        padding-left: max(20px, env(safe-area-inset-left)) !important;
+        padding-right: max(20px, env(safe-area-inset-right)) !important;
+        border-radius: 20px !important;
+    }
+    .login-content {
+        padding: 0 4px !important; /* Respiro interno no card */
+    }
+    .login-welcome-title,
+    #login-screen .login-content h2 {
+        font-size: 1.2rem !important;
+        line-height: 1.35 !important;
+    }
+    #login-screen .login-content > p {
+        font-size: 0.9rem !important;
+    }
+    .login-form .form-group {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    .login-form .form-group input {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        font-size: 16px !important; /* Evita zoom no iOS; texto não corta */
+        min-height: 48px !important;
+        padding: 12px 14px !important;
+    }
+    /* Empilhar Entrar e Esqueci minha senha em coluna, cada um 100% */
+    .login-actions-stack .btn-login-block,
+    .login-actions-stack .forgot-password-link {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+    }
+    #initial-login-submit,
+    #initial-register-submit,
+    .btn-login-main,
+    .btn-login-block {
+        min-height: 48px !important;
+        padding: 14px 20px !important;
+        font-size: 1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        -webkit-tap-highlight-color: rgba(244, 166, 166, 0.2) !important;
+    }
+    .login-form .link-button,
+    .forgot-password-link {
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 12px 0 !important;
+        width: 100% !important;
+    }
 }
 
 .login-header {
@@ -318,29 +397,121 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
 .btn-login-main {
     width: 100%;
     max-width: 100%;
-    background: var(--color-primary-warm); /* Cor sólida simples */
-    color: white;
+    background: var(--color-primary-warm);
+    color: #fff !important;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease; /* Transição simplificada */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra simplificada */
+    transition: background 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-top: 0.5rem;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     line-height: 1.4;
     box-sizing: border-box;
-    white-space: nowrap;
-    min-width: fit-content;
 }
 
-.btn-login-main i {
-    font-size: 0.95rem !important; /* Reduzido */
+/* Texto e ícone sempre visíveis (evita transparente por override) */
+.btn-login-main,
+.btn-login-main *,
+.btn-login-main i,
+.btn-login-main .btn-login-text {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+.btn-login-main i,
+.btn-login-main .btn-login-text {
+    font-size: 0.95rem !important;
+}
+
+/* Abas Entrar/Cadastrar em bloco (full width) */
+.login-tabs-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.login-tab-block {
+    width: 100%;
+    display: block;
+    text-align: center;
+    padding: 1rem 1.25rem;
+    border: 2px solid rgba(255, 143, 163, 0.4);
+    border-radius: 12px;
+    background: #fff;
+    color: #6b4a3f !important; /* Marrom escuro: sempre visível no fundo branco */
+    font-weight: 600;
+}
+
+.login-tab-block i {
+    color: #6b4a3f !important;
+}
+
+.login-tab-block.active {
+    background: var(--color-primary-warm);
+    color: #fff !important;
+    border-color: var(--color-primary-warm);
+}
+
+.login-tab-block.active i {
+    color: #fff !important;
+}
+
+/* Botão principal em bloco */
+.btn-login-block {
+    display: flex !important;
+    width: 100% !important;
+}
+
+/* Link "Novo cadastro? Entre aqui" / "Já tem conta? Entre aqui" */
+.login-switch-link {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: 0.95rem;
+    color: var(--text-warm-medium);
+}
+
+.login-switch-link .link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    font-weight: 600;
+    color: var(--color-primary-warm);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.login-switch-link .link-button:hover {
+    color: var(--color-primary-soft);
+}
+
+/* Forçar texto visível na tela de login (sobrescreve qualquer outro estilo) */
+#login-screen .login-tab-block {
+    color: #6b4a3f !important;
+}
+#login-screen .login-tab-block i {
+    color: #6b4a3f !important;
+}
+#login-screen .login-tab-block.active,
+#login-screen .login-tab-block.active i {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+}
+#login-screen .btn-login-main,
+#login-screen .btn-login-main *,
+#login-screen .btn-login-main i,
+#login-screen .btn-login-main .btn-login-text,
+#login-screen .btn-login-main span {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
 }
 
 .btn-login-main:hover {
@@ -452,6 +623,194 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     font-size: 0.85rem;
     color: var(--color-primary-warm);
     flex-shrink: 0;
+}
+
+/* === URGENTE: Acessibilidade e Viewport Mobile - Projeto Sophia === */
+/* Sidebar fechada NÃO bloqueia cliques: pointer-events none (z-index alto mas invisível) */
+.sidebar:not(.open),
+#sidebar:not(.open) {
+    pointer-events: none !important;
+}
+.sidebar.open,
+#sidebar.open {
+    pointer-events: auto !important;
+}
+
+@media (max-width: 768px) {
+    /* Safari/iPhone: altura que não corta com barra de endereço */
+    html, body, #main-container, .container {
+        min-height: -webkit-fill-available !important;
+    }
+    /* Padding de segurança: 20px + safe area (notch/home indicator no iPhone) */
+    #main-container,
+    .container,
+    .welcome-content-wrapper,
+    .welcome-content,
+    .welcome-message {
+        padding-left: max(20px, env(safe-area-inset-left)) !important;
+        padding-right: max(20px, env(safe-area-inset-right)) !important;
+    }
+    .welcome-message {
+        padding-top: max(0px, env(safe-area-inset-top)) !important;
+    }
+    /* Scroll suave no Safari/iPhone */
+    .welcome-message,
+    .welcome-content-wrapper,
+    .sidebar-content {
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .welcome-content-wrapper {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+    /* Reset de largura: sem width fixo; 100% e max-width none */
+    #main-container,
+    .container,
+    .welcome-content-wrapper,
+    .welcome-content {
+        width: 100% !important;
+        max-width: none !important;
+        flex-basis: 100% !important;
+    }
+    /* Tipografia reduzida: h2 máx 1.3rem, parágrafo 0.9rem */
+    .welcome-content h1,
+    .welcome-content h2,
+    .welcome-hero-title,
+    .gentle-title,
+    .conteudos-title-modern,
+    .welcome-content .feeling-box h2,
+    .welcome-content .quick-questions h2 {
+        font-size: 1.3rem !important;
+    }
+    .welcome-content p,
+    .welcome-hero-subtitle,
+    .welcome-hero-description,
+    .gentle-subtitle,
+    .inclusion-phrase,
+    .feeling-subtitle,
+    .welcome-content .feeling-box p {
+        font-size: 0.9rem !important;
+        line-height: 1.45;
+    }
+    /* Cards e botões: sem width fixo, 100%, max-width none */
+    .welcome-cards-container .sidebar-card,
+    .feeling-box,
+    .quick-questions.feeling-box,
+    .hero-grid-card,
+    .conteudo-card-carousel,
+    .sidebar-card {
+        width: 100% !important;
+        max-width: none !important;
+        border-radius: 20px !important;
+    }
+    .welcome-cards-container .sidebar-card {
+        min-width: 100% !important;
+    }
+    /* Container de sentimentos: flex coluna para empilhar verticalmente e evitar corte */
+    .feeling-box,
+    .quick-questions.feeling-box {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+    .feeling-buttons-grid,
+    .quick-questions-grid.feeling-buttons-grid,
+    .welcome-content .feeling-buttons-grid,
+    .welcome-content .quick-questions-grid.feeling-buttons-grid,
+    .welcome-message .feeling-buttons-grid,
+    .welcome-message .quick-questions-grid.feeling-buttons-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        gap: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+    /* Cada botão 100% largura, margin-bottom 10px, sem cortar palavras */
+    .feeling-btn,
+    .quick-btn.feeling-btn {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 48px !important;
+        font-size: 0.9rem !important;
+        padding: 12px 16px !important;
+        margin-bottom: 10px !important;
+        border-radius: 24px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        text-align: center !important;
+    }
+    .feeling-btn:last-child,
+    .quick-btn.feeling-btn:last-child {
+        margin-bottom: 0 !important;
+    }
+    /* Hero grid - cantos arredondados */
+    .hero-grid-card {
+        border-radius: 20px !important;
+        padding: 1rem !important;
+    }
+    /* Área central clicável: evitar overflow que corte conteúdo */
+    .welcome-message,
+    .welcome-content-wrapper {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+    .welcome-content {
+        overflow: visible !important;
+    }
+}
+
+/* Aviso Importante no final - accordion secundário, não rouba protagonismo */
+.medical-disclaimer-end.medical-disclaimer-accordion {
+    margin-top: 2rem !important;
+    margin-bottom: 1.5rem !important;
+}
+.medical-disclaimer-end .medical-disclaimer-toggle {
+    font-size: 0.85rem !important;
+}
+@media (max-width: 768px) {
+    .medical-disclaimer-end .medical-disclaimer-toggle {
+        font-size: 0.8rem !important;
+        padding: 0.6rem 0.9rem !important;
+    }
+    .medical-disclaimer-end .disclaimer-text {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Mobile: Aviso Importante – tipografia 0.7rem/0.65rem para otimizar espaço vertical (iPhone/Android). Manutenção: manter reduzido. */
+@media (max-width: 768px) {
+    .medical-disclaimer-end.medical-disclaimer-accordion {
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    .medical-disclaimer-end .medical-disclaimer-toggle {
+        font-size: 0.7rem !important;
+        padding: 0.5rem 0.75rem !important;
+        min-height: auto !important;
+    }
+    .medical-disclaimer-end .disclaimer-text {
+        font-size: 0.65rem !important;
+        line-height: 1.4 !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+}
+
+body.device-mobile .medical-disclaimer-end .medical-disclaimer-toggle {
+    font-size: 0.7rem !important;
+}
+body.device-mobile .medical-disclaimer-end .disclaimer-text {
+    font-size: 0.65rem !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 /* Ajustes para mobile - garantir que o texto não seja cortado */
@@ -734,6 +1093,31 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         position: fixed !important;
     }
     
+    /* Menu Rápido como Bottom Sheet no mobile (sobe de baixo) */
+    .sidebar,
+    #sidebar {
+        top: auto !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 70vh !important;
+        max-height: 70vh !important;
+        border-radius: 20px 20px 0 0 !important;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    .sidebar.open,
+    #sidebar.open {
+        transform: translateY(0) !important;
+    }
+    .sidebar.open::after,
+    #sidebar.open::after {
+        content: none !important; /* Remove indicador "Menu" no bottom sheet */
+    }
+    
     /* Header SEMPRE abaixo da sidebar no mobile */
     .header-modern,
     header.header-modern,
@@ -890,12 +1274,12 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         justify-content: space-between !important; /* Separa ícone e texto */
         margin: 0 auto !important;
         width: auto !important;
-        min-width: 300px !important;
+        min-width: 240px !important;
         max-width: 90% !important;
         text-align: left !important;
         white-space: nowrap !important;
-        padding: 1.5rem 3rem !important; /* Padding maior para encaixar tudo */
-        font-size: 0.85rem !important; /* Texto legível */
+        padding: 0.9rem 1.75rem !important;
+        font-size: 0.9rem !important;
         font-weight: 600 !important;
         border-radius: 50px !important; /* Sobrescreve border-radius: 50% do .btn */
         gap: 1rem !important; /* Espaço entre ícone e texto */
@@ -1829,9 +2213,9 @@ body.sidebar-open .header-modern-content {
     opacity: 0.85;
 }
 
-/* Espaço de Escuta */
+/* Espaço de Escuta – card branco com fundo semitransparente */
 .feeling-box {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.95);
     border: 2px solid rgba(244, 166, 166, 0.3);
     border-radius: 20px;
     padding: 1.5rem 2rem; /* Aumentado padding lateral: 1.5rem → 2rem para mais respiração */
@@ -1839,9 +2223,11 @@ body.sidebar-open .header-modern-content {
     max-width: 600px;
     box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05); /* Sombra mais pronunciada */
     animation: textFadeIn 0.8s ease-out 0.75s backwards;
-    /* Otimizações de performance */
     contain: layout style paint;
-    /* transform: translateZ(0); */ /* Removido - otimização desnecessária */
+}
+/* Menu inicial: espaço entre seções (Como está seu coração / Não sabe por onde começar) */
+.welcome-content .feeling-box + .feeling-box {
+    margin-top: 1.5rem;
 }
 
 .feeling-box h2,
@@ -1856,11 +2242,19 @@ body.sidebar-open .header-modern-content {
 }
 
 .gentle-title {
-    color: #8b5e66; /* Tom de marrom rosado suave - mais confortável aos olhos */
+    color: #8b5e66;
     font-size: 1.4rem;
     margin-bottom: 5px;
     font-weight: 500;
-    font-family: 'Poppins', sans-serif; /* Fonte arredondada é mais amigável */
+    font-family: 'Poppins', sans-serif;
+}
+
+@media (max-width: 1023px) {
+    .gentle-title { font-size: 1.2rem !important; }
+}
+
+body.device-mobile .gentle-title {
+    font-size: 1.2rem !important;
 }
 
 .gentle-subtitle {
@@ -1887,11 +2281,27 @@ body.sidebar-open .header-modern-content {
 .feeling-buttons-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px; /* Aumentado de 12px para 20px - mais respiração entre cards */
+    gap: 20px;
     max-width: 400px;
     width: 100%;
     margin: 0 auto;
     padding: 10px;
+}
+
+@media (max-width: 1023px) {
+    .feeling-buttons-grid { gap: 15px !important; }
+}
+
+body.device-mobile .feeling-buttons-grid {
+    gap: 15px !important;
+}
+
+.quick-questions-grid.feeling-buttons-grid {
+    gap: 15px !important;
+}
+
+@media (max-width: 1023px) {
+    .quick-questions-grid.feeling-buttons-grid { gap: 15px !important; }
 }
 
 /* ===== FEELING BUTTONS - BOTÕES DE ESTADO EMOCIONAL ===== */
@@ -1959,6 +2369,15 @@ body.sidebar-open .header-modern-content {
     color: #065f46;
     transform: scale(1.08);
     box-shadow: 0 8px 15px rgba(167, 243, 208, 0.2);
+}
+
+/* Hover para botões de frase ("Não sabe por onde começar") */
+.feeling-btn[data-feeling="frase"]:hover {
+    background-color: #fdf2f8;
+    border-color: #fbcfe8;
+    color: #9d174d;
+    transform: scale(1.08);
+    box-shadow: 0 8px 15px rgba(251, 207, 232, 0.2);
 }
 
 .feeling-btn.selected {
@@ -2142,10 +2561,10 @@ body.device-mobile .support-links {
     outline-offset: 2px;
 }
 
-/* Container de Cards no Welcome Content */
+/* Container de Cards no Welcome Content (Orientação, Afirmação, Agenda) */
 .welcome-cards-container {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
     gap: 1.5rem !important;
     margin: 3rem auto 2rem !important;
     max-width: 900px !important;
@@ -2153,54 +2572,160 @@ body.device-mobile .support-links {
     padding: 0 1rem !important;
     box-sizing: border-box !important;
     animation: textFadeIn 0.8s ease-out 0.85s backwards;
-    /* Otimizações de performance */
     contain: layout style paint;
 }
 
-@media (max-width: 768px) {
+/* Cards com cores pastéis e bordas arredondadas (mín. 20px) - redesign Sophia Mobile */
+.welcome-cards-container .sidebar-card {
+    flex: 1 1 280px !important;
+    min-width: 280px !important;
+    min-height: 250px !important;
+    align-self: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 24px !important;
+    overflow: visible !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(244, 166, 166, 0.25) !important;
+    box-shadow: 0 4px 16px rgba(244, 166, 166, 0.12) !important;
+}
+.welcome-cards-container .orientacao-card {
+    background: linear-gradient(135deg, #fff8f9 0%, #fff0f3 100%) !important;
+}
+.welcome-cards-container .affirmation-card {
+    background: linear-gradient(135deg, #fef9f0 0%, #fef5e7 100%) !important;
+}
+.welcome-cards-container .agenda-card {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e8f4fc 100%) !important;
+}
+
+.welcome-cards-container .sidebar-card .card-icon {
+    flex-shrink: 0;
+    display: block !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 2rem !important;
+}
+
+.welcome-cards-container .sidebar-card h3 {
+    flex-shrink: 0;
+    margin-bottom: 12px !important;
+    width: 100%;
+}
+
+.welcome-cards-container .orientacao-content,
+.welcome-cards-container .affirmation-content,
+.welcome-cards-container .agenda-content {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+}
+
+@media (max-width: 1023px) {
     .welcome-cards-container {
-        grid-template-columns: 1fr !important;
+        flex-direction: column !important;
         gap: 1rem !important;
         margin: 2rem auto 1.5rem !important;
         padding: 0 0.5rem !important;
     }
+    .welcome-cards-container .sidebar-card {
+        flex: 1 1 auto !important;
+        min-width: 100% !important;
+        width: 100% !important;
+    }
 }
 
 body.device-mobile .welcome-cards-container {
-    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
     gap: 1rem !important;
     margin: 2rem auto 1.5rem !important;
     padding: 0 0.5rem !important;
 }
+body.device-mobile .welcome-cards-container .sidebar-card {
+    min-width: 100% !important;
+    width: 100% !important;
+}
 
 /* Ajustes dos cards quando estão no welcome-content */
-.welcome-content .sidebar-card {
-    margin-bottom: 0 !important; /* Remove margem inferior padrão */
-    height: 100% !important; /* Garante altura uniforme no grid */
+.welcome-content .welcome-cards-container .sidebar-card {
+    margin-bottom: 0 !important;
 }
 
 /* Medical Disclaimer */
 .medical-disclaimer {
-    margin: 4rem auto 2rem; /* Aumentado: 64px top - mais respiração após welcome-cards-container */
+    margin: 4rem auto 2rem;
     max-width: 650px;
     animation: textFadeIn 0.8s ease-out 0.9s backwards;
     padding: 0 1rem;
-    /* Otimizações de performance */
     contain: layout style paint;
-    /* transform: translateZ(0); */ /* Removido - otimização desnecessária */
+}
+
+/* Aviso colapsável (accordion) */
+.medical-disclaimer-accordion .medical-disclaimer-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 249, 247, 0.95);
+    border: 1px solid rgba(244, 166, 166, 0.4);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-warm-medium);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.medical-disclaimer-accordion .medical-disclaimer-toggle:hover {
+    background: rgba(255, 243, 239, 0.98);
+}
+
+.medical-disclaimer-accordion .medical-disclaimer-toggle i.fa-exclamation-triangle {
+    color: #f4a6a6;
+    margin-right: 0.25rem;
+}
+
+.medical-disclaimer-accordion .accordion-arrow {
+    transition: transform 0.2s;
+    color: #b39299;
+}
+
+.medical-disclaimer-accordion.expanded .accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.medical-disclaimer-accordion .medical-disclaimer-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.medical-disclaimer-accordion .medical-disclaimer-content[hidden] {
+    display: none;
 }
 
 .medical-disclaimer .disclaimer-text {
     color: var(--text-warm-medium);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    padding: 0.75rem 1rem;
     line-height: 1.5;
     margin: 0;
-    padding: 1.2rem 2rem;
+    padding: 1rem 1.25rem;
     background: rgba(255, 249, 247, 0.9);
-    border-radius: 12px;
-    border-left: 4px solid #f4a6a6;
+    border-radius: 0 0 12px 12px;
+    border: 1px solid rgba(244, 166, 166, 0.3);
+    border-top: none;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.15);
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.1);
 }
 
 .medical-disclaimer .disclaimer-text i {
@@ -2214,13 +2739,26 @@ body.device-mobile .welcome-cards-container {
     font-weight: 600;
 }
 
-/* Mobile: Ajustes para medical-disclaimer */
+/* Mobile: Aviso Importante com fonte menor e padding para não estourar a tela */
 @media (max-width: 768px) {
     .medical-disclaimer {
         margin-bottom: 2rem !important;
         padding: 0 0.5rem;
     }
     
+    .medical-disclaimer-accordion .medical-disclaimer-toggle {
+        font-size: 0.8rem !important;
+        padding: 0.6rem 0.9rem !important;
+    }
+    
+    .medical-disclaimer .disclaimer-text {
+        font-size: 0.75rem !important;
+        padding: 0.6rem 0.9rem !important;
+        padding: 0.9rem 1rem !important;
+    }
+}
+
+@media (max-width: 1023px) {
     .medical-disclaimer .disclaimer-text {
         font-size: 0.85rem !important;
         padding: 1rem 1.5rem !important;
@@ -2314,6 +2852,26 @@ body.device-mobile .rotating-message {
     /* transform: translateZ(0); */ /* Removido - otimização desnecessária */
 }
 
+/* Quando quick-questions É feeling-box: mesmo card branco que "Como está seu coração hoje?" */
+/* Fundo branco, borda rosa suave, sombra – igual ao div.feeling-box */
+.quick-questions.feeling-box {
+    max-width: 600px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border: 2px solid rgba(244, 166, 166, 0.3) !important;
+    border-radius: 20px !important;
+    padding: 1.5rem 2rem !important;
+    margin: 4rem auto 3rem !important;
+    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    contain: layout style paint;
+}
+
+/* "Não sabe por onde começar?" – preservar quick-questions-section-white com !important para separação visual. */
+.quick-questions-section-white.quick-questions.feeling-box {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+}
+
 .quick-questions h2 {
     text-align: center;
     color: var(--text-warm-medium);
@@ -2338,10 +2896,38 @@ body.device-mobile .rotating-message {
     align-items: stretch !important;
 }
 
+/* Layout idêntico ao "Como está seu coração" quando usa feeling-buttons-grid */
+.quick-questions-grid.feeling-buttons-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    max-width: 400px !important;
+    margin: 0 auto !important;
+}
+
+/* Botões de frase com mesmo estilo dos botões de emoção (pill, tamanho uniforme) */
+.quick-questions .quick-btn.feeling-btn {
+    padding: 12px 20px !important;
+    border-radius: 50px !important;
+    border: 1px solid #ffe4e8 !important;
+    background-color: #fff !important;
+    color: #b36b7d !important;
+    min-height: auto !important;
+    height: auto !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    font-size: 1rem !important;
+    white-space: normal !important;
+    text-align: center !important;
+}
+
 @media (max-width: 1024px) {
     .quick-questions-grid {
         grid-template-columns: repeat(2, 1fr);
         align-items: stretch !important; /* Garante altura uniforme */
+    }
+    .quick-questions-grid.feeling-buttons-grid {
+        grid-template-columns: 1fr 1fr !important; /* Mantém 2 cols como "Como está seu coração" */
     }
 }
 
@@ -2353,6 +2939,9 @@ body.device-mobile .rotating-message {
     .quick-questions-grid {
         grid-template-columns: 1fr;
         align-items: stretch !important; /* Garante altura uniforme */
+    }
+    .quick-questions-grid.feeling-buttons-grid {
+        grid-template-columns: 1fr !important; /* 1 coluna em mobile para botões largos */
     }
 }
 
@@ -2464,6 +3053,39 @@ body.device-mobile .rotating-message {
 .quick-btn:active {
     transform: translate3d(0, -2px, 0) scale(1.01);
     transition: transform 0.1s, box-shadow 0.1s;
+}
+
+/* === Chat header fixo: removido da UI (não exibir) === */
+#chat-header-fixed {
+    display: none !important;
+}
+
+/* === Chat header sticky fix (não sobrepor mensagens) – desativado enquanto #chat-header-fixed estiver oculto === */
+:root {
+    /* iOS notch/safe area: reforço para PWA/fullscreen; JS ajusta dinamicamente depois */
+    --chat-header-offset: calc(env(safe-area-inset-top, 0px) + 72px);
+}
+#chat-header-fixed.chat-header-fixed {
+    position: sticky !important;
+    top: var(--chat-header-offset, 72px) !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    transform: none !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+}
+#chat-header-fixed.chat-header-fixed.is-stuck {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+#chat-header-fixed .chat-header-actions,
+#chat-header-fixed a,
+#chat-header-fixed button {
+    pointer-events: auto !important;
+}
+.chat-messages,
+.messages,
+#messages {
+    scroll-margin-top: calc(var(--chat-header-offset, 72px) + 8px);
 }
 
 /* Chat Messages */
@@ -2702,8 +3324,6 @@ body.device-mobile .rotating-message {
       align-items: center !important;
       max-width: 100% !important;
       width: 100% !important;
-      background: transparent !important;
-      border: none !important;
       margin: 0 auto !important;
       padding: 0 1rem !important;
       position: relative !important;
@@ -2711,8 +3331,16 @@ body.device-mobile .rotating-message {
       right: auto !important;
       float: none !important;
       transform: none !important;
-      box-shadow: none !important;
       box-sizing: border-box !important;
+  }
+  /* quick-questions.feeling-box mantém card branco (sobrescreve regra acima) */
+  .welcome-message .quick-questions.feeling-box {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border: 2px solid rgba(244, 166, 166, 0.3) !important;
+      box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+      border-radius: 20px !important;
+      padding: 1.5rem 2rem !important;
+      max-width: 600px !important;
   }
 
   /* Garante que quick-btn nunca seja tratado como mensagem */
@@ -2778,47 +3406,73 @@ body.device-mobile .rotating-message {
     font-size: 0.9rem;
 }
 
-/* Typing Indicator */
+/* Typing Indicator - Posicionado acima do botão de enviar */
 .typing-indicator {
     display: none;
-    padding: 1rem;
+    position: absolute;
+    bottom: 100%;
+    right: 60px; /* Alinhado com o botão de enviar */
+    margin-bottom: 8px;
+    padding: 0.5rem 0.75rem;
     align-items: center;
-    gap: 0.5rem;
-    color: #6c757d;
-    font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 18px;
-    margin: 0.5rem 1rem;
-    /* backdrop-filter: blur(10px); */ /* Removido para melhor performance - muito pesado */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    white-space: nowrap; /* Garante que o texto não quebre */
-    overflow: visible; /* Garante que o texto não seja cortado */
-    width: auto; /* Largura automática para acomodar o texto */
-    max-width: calc(100% - 2rem); /* Não ultrapassa a largura disponível */
-    flex-wrap: nowrap; /* Não permite quebra de linha */
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    animation: fadeInUp 0.2s ease-out;
 }
 
 .typing-indicator.show {
     display: flex;
-    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .typing-dots {
     display: flex;
-    gap: 0.25rem;
+    gap: 4px;
+    align-items: center;
 }
 
 .typing-dots span {
-    width: 8px;
-    height: 8px;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    width: 6px;
+    height: 6px;
+    background: #ff8fa3;
     border-radius: 50%;
-    animation: typing 1.4s infinite ease-in-out;
+    animation: typingDot 1.4s infinite ease-in-out;
+    opacity: 0.4;
 }
 
-.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+.typing-dots span:nth-child(1) { 
+    animation-delay: 0s; 
+}
+.typing-dots span:nth-child(2) { 
+    animation-delay: 0.2s; 
+}
+.typing-dots span:nth-child(3) { 
+    animation-delay: 0.4s; 
+}
+
+@keyframes typingDot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    30% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
+}
 
 @keyframes slideInUp {
     from {
@@ -2842,6 +3496,18 @@ body.device-mobile .rotating-message {
     z-index: 50 !important; /* Abaixo do header (1000), MUITO abaixo da sidebar (2147483647) */
     /* Otimizações de performance */
     contain: layout style paint;
+}
+
+/* Ajuste do typing indicator no input-area - já está definido acima, mas garante position relative */
+.input-area {
+    position: relative;
+}
+
+/* Ajuste do typing indicator para desktop */
+@media (min-width: 769px) {
+    .typing-indicator {
+        right: 80px; /* Mais espaço no desktop */
+    }
 }
 
 /* Mobile: Ajusta tamanho do input area e botões para diferentes tamanhos de tela */
@@ -3542,7 +4208,15 @@ body.device-mobile.orientation-portrait #menu-toggle {
 
     .login-tab:hover {
         background: transparent !important;
-        color: inherit !important;
+        color: #6b4a3f !important;
+    }
+
+    .login-tab-block.active:hover {
+        color: #fff !important;
+    }
+
+    .login-tab-block.active:hover i {
+        color: #fff !important;
     }
 
     .login-tab:active {
@@ -3629,6 +4303,23 @@ body.device-mobile.orientation-portrait #menu-toggle {
 
 .modal-body {
     padding: 1.5rem;
+}
+
+/* Modal Hospitais: evita overflow em mobile */
+#hospitals-modal .modal-content {
+    max-height: 85vh;
+}
+#hospitals-modal .modal-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 768px) {
+    #hospitals-modal .modal-content {
+        width: 100%;
+        max-width: 100%;
+        margin: 0.5rem;
+        max-height: 90vh;
+    }
 }
 
 .alert-actions {
@@ -3865,6 +4556,12 @@ body.device-mobile.orientation-portrait #menu-toggle {
         padding: 0 0.7rem !important;
         gap: 0.45rem !important;
         margin: 0 auto 0.7rem !important;
+    }
+    .quick-questions.feeling-box {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 2px solid rgba(244, 166, 166, 0.3) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
     }
     
     .quick-btn {
@@ -4213,6 +4910,15 @@ body.device-mobile.orientation-portrait #menu-toggle {
          position: relative !important;
          overflow-x: hidden !important;
      }
+     /* Mantém card branco em mobile quando é feeling-box */
+     .quick-questions.feeling-box {
+         background: rgba(255, 255, 255, 0.95) !important;
+         background-color: rgba(255, 255, 255, 0.95) !important;
+         border: 2px solid rgba(244, 166, 166, 0.3) !important;
+         border-radius: 20px !important;
+         padding: 1rem 1.25rem !important;
+         box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+     }
      
      .quick-questions h2 {
          font-size: 1rem !important; /* Reduzido de 1.2rem para 1rem em mobile */
@@ -4378,50 +5084,33 @@ body.device-mobile.orientation-portrait #menu-toggle {
         padding-top: 0.5rem; /* Espaço adicional para evitar sobreposição */
     }
     
+    /* Typing indicator agora está acima do botão de enviar - não precisa de sticky */
     .typing-indicator {
-        padding: 0.8rem;
-        font-size: 0.8rem;
-        position: sticky; /* Sticky no topo da aba de chat mobile */
-        top: 0;
-        background: rgba(255, 255, 255, 0.98); /* Fallback: cor sólida para performance */
-        border-bottom: 1px solid rgba(255, 143, 163, 0.2);
-        z-index: 100;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        margin: 0 !important; /* Remove margens laterais */
-        border-radius: 0; /* Remove bordas arredondadas no mobile */
-    }
-    
-    /* Backdrop-filter apenas em dispositivos mais modernos */
-    @supports (backdrop-filter: blur(10px)) {
-        .typing-indicator {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-    }
-    
-    /* Fallback para dispositivos antigos (max-width: 768px) - remove blur para performance */
-    @media (max-width: 768px) {
-        .typing-indicator {
-            background: rgba(255, 255, 255, 0.98) !important; /* Cor sólida para evitar lag */
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
+        position: absolute !important;
+        bottom: calc(100% + 4px) !important;
+        right: 50px !important; /* Alinhado com botão de enviar */
+        padding: 0.4rem 0.6rem !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+        z-index: 100 !important;
+        margin: 0 !important;
     }
     
     .typing-dots {
         display: flex;
-        gap: 0.4rem; /* Mais espaçamento entre pontos no mobile */
+        gap: 4px;
         align-items: center;
         justify-content: center;
     }
     
     .typing-dots span {
-        width: 8px; /* Pontos ligeiramente maiores no mobile */
-        height: 8px;
-        background: var(--color-primary-warm, #ff8fa3); /* Cor coral */
+        width: 5px;
+        height: 5px;
+        background: #ff8fa3;
         border-radius: 50%;
         animation: typingDot 1.4s infinite ease-in-out;
+        opacity: 0.4;
     }
     
     .typing-dots span:nth-child(1) {
@@ -5361,7 +6050,7 @@ body.device-tablet.orientation-portrait .feature-btn span {
     transform: none;
 }
 
-/* Carousel Dots - REMOVIDO (não usar mais bolinhas) */
+/* Carousel Dots: elemento #feature-carousel-dots removido do HTML (lista vertical). Manter display:none para falha silenciosa se o ID for reintroduzido. */
 .carousel-dots,
 #feature-carousel-dots {
     display: none !important;
@@ -6560,20 +7249,7 @@ body.device-tablet.orientation-portrait .feature-btn span {
         height: 150px;
     }
 
-    .carousel-dots {
-        gap: 0.5rem;
-        margin-top: 0.8rem;
-    }
-
-    .carousel-dots .dot {
-        width: 8px;
-        height: 8px;
-    }
-
-    .carousel-dots .dot.active {
-        width: 10px;
-        height: 10px;
-    }
+    /* Carousel dots removidos: estilos órfãos retirados (elemento #feature-carousel-dots não existe mais) */
   }
 
 /* ===== RESPONSIVE: CELEBRATION OVERLAY ===== */
@@ -9726,16 +10402,33 @@ body.device-mobile .welcome-message .welcome-content {
         font-size: 1rem !important;
     }
 
-    /* SIDEBAR - Colapsável no mobile */
-    .sidebar {
+    /* SIDEBAR - Bottom Sheet no mobile (sobe de baixo) */
+    .sidebar,
+    #sidebar {
         width: 100% !important;
-        max-width: 320px !important;
+        max-width: 100% !important;
+        flex-basis: 100% !important;
         position: fixed !important;
-        top: 0 !important;
+        top: auto !important;
+        bottom: 0 !important;
         left: 0 !important;
-        height: 100vh !important;
-        z-index: 1000 !important;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2) !important;
+        right: 0 !important;
+        height: auto !important;
+        max-height: 85vh !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-radius: 20px 20px 0 0 !important;
+        border-right: none !important;
+        border-top: 1px solid rgba(244, 166, 166, 0.2) !important;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15) !important;
+        z-index: 2147483647 !important;
+    }
+    .sidebar.open,
+    #sidebar.open {
+        transform: translateY(0) !important;
+    }
+    .sidebar.open::after {
+        display: none !important; /* Remove indicador "Menu" lateral no bottom sheet */
     }
 
     /* Overlay quando sidebar está aberta - REMOVIDO para não escurecer a tela */
@@ -9914,15 +10607,20 @@ body.device-mobile .welcome-message .welcome-content {
 
     /* TYPING INDICATOR - Ajustes para mobile */
     .typing-indicator {
-        margin: 0.5rem 0.75rem !important;
-        font-size: 0.85rem !important;
-        white-space: nowrap !important;
-        overflow: visible !important;
-        max-width: calc(100% - 1.5rem) !important;
+        right: 50px !important; /* Alinhado com botão de enviar em mobile */
+        bottom: calc(100% + 4px) !important;
+        padding: 0.4rem 0.6rem !important;
+        margin: 0 !important;
+        margin-bottom: 4px !important;
     }
     
-    .typing-indicator span {
-        white-space: nowrap !important;
+    .typing-indicator .typing-dots {
+        gap: 4px !important;
+    }
+    
+    .typing-indicator .typing-dots span {
+        width: 5px !important;
+        height: 5px !important;
         overflow: visible !important;
     }
 
@@ -11106,11 +11804,11 @@ button {
     border-color: var(--sophia-pink-medium) !important;
 }
 
-/* Header do Card - Nome e Distância */
+/* Header do Card - Nome e Distância (badge não bloqueia clique/overlay) */
 .hospital-header {
     display: flex !important;
     flex-direction: column !important;
-    gap: 0.5rem !important;
+    gap: 4px !important;
     margin-bottom: var(--sophia-spacing-xs) !important;
 }
 
@@ -11122,17 +11820,61 @@ button {
 
 .hospital-header-bottom {
     display: flex !important;
-    justify-content: space-between !important;
     align-items: center !important;
-    gap: 0.75rem !important;
+    gap: 6px !important;
     flex-wrap: wrap !important;
 }
 
 .hospital-header-tags {
     display: flex !important;
     align-items: center !important;
-    gap: 0.5rem !important;
+    gap: 6px !important;
     flex-wrap: wrap !important;
+}
+
+/* Badge não captura eventos; evita overlay travando clique no card */
+.hospital-badge,
+.hospital-tag-public,
+.hospital-tag-private,
+.hospital-tag-philanthropic,
+.hospital-tag-sus-yes,
+.hospital-tag-sus-no,
+[data-badge="esfera"],
+[data-badge="sus"] {
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+
+.hospital-card,
+.hospital-card * {
+    z-index: 1;
+}
+
+/* === Nearby (geolocalização) – estilos leves === */
+.nearby-section {
+    margin: 8px 0 16px 0;
+}
+.nearby-title {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    color: #6b4a3f;
+}
+.nearby-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+@media (min-width: 640px) {
+    .nearby-list { grid-template-columns: 1fr 1fr; }
+}
+.hospital-badge--distance {
+    background: #e8f3ff !important;
+    color: #2262c6 !important;
+}
+.nearby-section .hospital-address {
+    font-size: 12px;
+    color: #555;
+    margin: 6px 0 2px 0;
 }
 
 .hospital-name {
@@ -11155,26 +11897,81 @@ button {
     flex-shrink: 0 !important;
 }
 
-/* Tags de Público/Privado */
+/* Tags de Público/Privado/Filantrópico + SUS (hotfix: cores finais do payload) */
 .hospital-tag-public,
-.hospital-tag-private {
+.hospital-tag-private,
+.hospital-tag-philanthropic {
     display: inline-block !important;
-    padding: 0.3rem 0.6rem !important;
-    border-radius: 4px !important;
-    font-size: 0.75rem !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    font: 12px system-ui !important;
     font-weight: 600 !important;
     margin: 0 !important;
     white-space: nowrap !important;
 }
 
 .hospital-tag-public {
-    background: #4CAF50 !important;
-    color: white !important;
+    background: #059669 !important;
+    color: #fff !important;
+}
+
+.hospital-tag-philanthropic {
+    background: #3b82f6 !important;
+    color: #fff !important;
 }
 
 .hospital-tag-private {
-    background: #FF9800 !important;
-    color: white !important;
+    background: #eab308 !important;
+    color: #1f2937 !important;
+}
+
+.hospital-tag-sus-yes {
+    background: #10b981 !important;
+    color: #fff !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    font: 11px system-ui !important;
+    margin-left: 6px !important;
+    display: inline-block !important;
+}
+
+/* Garantia extra: esconde badges de esfera/SUS duplicados fora do header.
+   !important: override de inline/JS que possa injetar badges na linha do selo (rede de segurança).
+   Impressão: header (.hospital-header-tags) permanece visível; apenas .hospital-badges/.hospital-selo-row ficam sem duplicata.
+   Responsivo: não afeta layout; confira em @media print se precisar forçar visibilidade do header. */
+.hospital-card .hospital-badges .hospital-tag-public,
+.hospital-card .hospital-badges .hospital-tag-private,
+.hospital-card .hospital-badges .hospital-tag-philanthropic,
+.hospital-card .hospital-badges .hospital-tag-sus-yes,
+.hospital-card .hospital-badges .hospital-tag-sus-no {
+    display: none !important;
+}
+
+/* SUS só no header — nunca na linha do selo */
+.hospital-card .hospital-selo-row .hospital-tag-sus-yes,
+.hospital-card .hospital-selo-row .hospital-tag-sus-no {
+    display: none !important;
+}
+
+.hospital-card .hospital-selo-row .info-pill-sus {
+    display: none !important;
+}
+
+.hospital-tag-sus-no {
+    background: #9ca3af !important;
+    color: #111827 !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+    font: 11px system-ui !important;
+    margin-left: 6px !important;
+    display: inline-block !important;
+}
+
+/* Ocultar distância e filtros redundantes (garantia via CSS) */
+.card-distance,
+.search-actions,
+.filters-inline {
+    display: none !important;
 }
 
 /* Badges - Destaque Visual */
@@ -11244,6 +12041,82 @@ button {
 .hospital-badge-emergency i {
     font-size: 0.9rem !important;
     color: white !important;
+}
+
+/* Badge Não atende SUS - Cinza */
+.hospital-badge-sus-no {
+    background: #6b7280 !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.hospital-badge-sus-no i {
+    font-size: 0.9rem !important;
+    color: white !important;
+}
+
+/* Badge Filantrópico - Azul */
+.hospital-badge-philanthropic {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.hospital-badge-philanthropic i {
+    font-size: 0.9rem !important;
+    color: white !important;
+}
+
+/* Badge Público - Verde (administração pública) */
+.hospital-badge-public {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.hospital-badge-public i {
+    font-size: 0.9rem !important;
+    color: white !important;
+}
+
+/* Badge Privado - Amarelo */
+.hospital-badge-private {
+    background: #eab308 !important;
+    color: #1f2937 !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: var(--sophia-border-radius-sm) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.hospital-badge-private i {
+    font-size: 0.9rem !important;
+    color: #1f2937 !important;
 }
 
 /* Informações do Hospital - Hierarquia Visual */
@@ -12321,41 +13194,40 @@ button {
     font-weight: 600;
 }
 
-/* Card Dica do Dia */
-.tip-card {
-    background: linear-gradient(
-        145deg,
-        rgba(255, 143, 163, 0.1) 0%,
-        rgba(255, 179, 198, 0.05) 100%
-    );
+/* Card Orientação (gota d'água) */
+.orientacao-card {
+    background: linear-gradient(145deg, rgba(100, 181, 246, 0.08) 0%, rgba(255, 179, 198, 0.05) 100%) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    padding: 24px !important;
+    cursor: pointer;
 }
 
-.tip-content {
-    text-align: center;
-}
-
-.tip-text {
+.orientacao-card .card-icon { color: #64b5f6; display: block; }
+.orientacao-content { text-align: center; padding: 0.5rem 0; width: 100%; }
+.orientacao-text {
     color: var(--text-warm-dark);
     font-size: 0.9rem;
     line-height: 1.6;
     margin: 0;
+    max-width: 100%;
+    display: block;
 }
 
-/* Card Afirmação Positiva */
+/* Card Afirmação (sol) */
 .affirmation-card {
-    background: linear-gradient(
-        145deg,
-        rgba(196, 213, 160, 0.1) 0%,
-        rgba(255, 179, 198, 0.05) 100%
-    );
+    background: linear-gradient(145deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 179, 198, 0.05) 100%) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    padding: 24px !important;
+    cursor: pointer;
 }
 
+.affirmation-card .card-icon { color: #ffb74d; display: block; }
 .affirmation-content {
     text-align: center;
     min-height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
 }
 
 .affirmation-text {
@@ -12365,6 +13237,127 @@ button {
     margin: 0;
     font-style: italic;
     font-weight: 500;
+    max-width: 100%;
+    display: block;
+}
+
+/* Card Agenda de Saúde (calendário) */
+.agenda-card {
+    background: linear-gradient(145deg, rgba(129, 199, 132, 0.08) 0%, rgba(255, 179, 198, 0.05) 100%) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    padding: 24px !important;
+}
+
+.agenda-card .card-icon { color: #81c784; display: block; }
+.agenda-content { text-align: center; padding: 0.5rem 0; width: 100%; }
+.agenda-vaccine-name, .agenda-para-quem, .agenda-date, .agenda-local, .agenda-success, .agenda-text {
+    color: var(--text-warm-dark);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0.4rem 0;
+    display: block;
+}
+.agenda-actions { margin-top: 1rem; text-align: center; }
+.btn-agenda-reminder {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    background: rgba(255, 143, 163, 0.2);
+    border: 1px solid rgba(244, 166, 166, 0.4);
+    border-radius: 12px;
+    color: var(--text-warm-dark);
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-agenda-reminder:hover {
+    background: rgba(255, 143, 163, 0.3);
+    box-shadow: 0 2px 8px rgba(244, 166, 166, 0.2);
+}
+
+/* Card Agenda em dia de vacina (pulsante) */
+.agenda-card.card-alert-today {
+    border: 2px solid rgba(255, 152, 0, 0.6) !important;
+    box-shadow: 0 4px 20px rgba(255, 152, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    animation: agenda-card-pulse 2.5s ease-in-out infinite;
+}
+@keyframes agenda-card-pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(255, 152, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.05); }
+    50% { box-shadow: 0 6px 28px rgba(255, 152, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.08); }
+}
+
+/* Vigia: card com tom de alerta leve quando há vacina amanhã (laranja pastel) */
+.agenda-card.card-alert-tomorrow {
+    background: linear-gradient(135deg, #fff5e8 0%, #ffecd2 50%, #ffe4c4 100%) !important;
+    border: 1px solid rgba(255, 167, 38, 0.4) !important;
+    box-shadow: 0 4px 20px rgba(255, 167, 38, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Banner de vacina hoje (topo do dashboard) */
+.vaccine-today-banner {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.95) 0%, rgba(255, 183, 77, 0.95) 100%);
+    color: #5d4037;
+    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
+    animation: vaccine-banner-slide 0.4s ease-out;
+}
+@keyframes vaccine-banner-slide {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.vaccine-today-banner-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem 1rem;
+    padding: 0.9rem 1.5rem;
+    padding-right: 3rem;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+}
+.vaccine-today-icon { font-size: 1.4rem; }
+.vaccine-today-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+.vaccine-today-link {
+    color: #5d4037;
+    text-decoration: underline;
+    font-weight: 700;
+    padding: 0.35rem 0.6rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.4);
+    transition: background 0.2s;
+}
+.vaccine-today-link:hover {
+    background: rgba(255,255,255,0.7);
+}
+.vaccine-today-close {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #5d4037;
+    opacity: 0.8;
+}
+.vaccine-today-close:hover { opacity: 1; }
+
+@media (max-width: 768px) {
+    .vaccine-today-banner-inner { flex-direction: column; padding-right: 2.5rem; }
+    .vaccine-today-close { right: 0.5rem; }
 }
 
 /* Card Vídeos */
@@ -13089,6 +14082,12 @@ button:hover, .btn:hover, .btn-sophia:hover, .sidebar-btn:hover,
         max-width: 100% !important;
         overflow-x: auto !important;
     }
+    /* Conteúdos Educativos na home: lista vertical, não carrossel */
+    .conteudos-educativos-list .conteudos-carousel,
+    .conteudos-educativos-list .conteudos-carousel-track {
+        overflow: visible !important;
+        overflow-x: visible !important;
+    }
 }
 
 /* ========================================
@@ -13227,7 +14226,7 @@ button:hover, .btn:hover, .btn-sophia:hover, .sidebar-btn:hover,
 /* Força o container do carrossel a não esticar */
 .conteudos-educativos-section-modern {
     max-width: 100% !important;
-    padding: 20px !important;
+    padding: 24px 20px !important; /* Respiro vertical 24px, horizontal 20px base */
 }
 
 .conteudos-carousel {
@@ -13241,22 +14240,33 @@ button:hover, .btn:hover, .btn-sophia:hover, .sidebar-btn:hover,
 .conteudos-carousel-track {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important; /* 2 COLUNAS LADO A LADO */
-    gap: 20px !important; /* Espaço físico real entre os cards */
+    row-gap: 32px !important; /* Respiro vertical entre linhas - separa cards */
+    column-gap: 24px !important; /* Espaço horizontal entre cards */
     justify-items: center !important;
     align-items: start !important; /* Alinha no topo para evitar sobreposição */
     max-width: 1000px !important;
     margin: 0 auto !important;
     width: 100% !important;
     padding: 0 !important;
-    margin-bottom: 20px !important; /* Espaço extra após o carrossel */
+    margin-bottom: 24px !important; /* Espaço extra após o carrossel */
 }
 
-/* Mobile: 1 coluna */
+/* Fallback: margin-top nos cards da 2ª linha em diante (gap às vezes não aplica) */
+.conteudos-carousel-track > .conteudo-card-carousel:nth-child(n+3) {
+    margin-top: 32px !important;
+}
+
+/* Mobile: 1 coluna - margin-top entre cards empilhados */
 @media (max-width: 768px) {
     .conteudos-carousel-track {
         grid-template-columns: 1fr !important; /* 1 COLUNA NO MOBILE */
-        gap: 20px !important; /* Gap maior no mobile para evitar sobreposição */
-        margin-bottom: 20px !important;
+        row-gap: 32px !important;
+        column-gap: 24px !important;
+        margin-bottom: 24px !important;
+    }
+    /* Card 2 e 3 (e seguintes) ganham espaço acima no mobile */
+    .conteudos-carousel-track > .conteudo-card-carousel:nth-child(n+2) {
+        margin-top: 32px !important;
     }
 }
 
@@ -13566,8 +14576,7 @@ body:has(#sidebar.open) .header-modern {
 .conteudos-educativos-section-modern {
     max-width: 100% !important;
     margin: 0 auto !important;
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
+    padding: 24px 1.5rem !important; /* Respiro vertical e horizontal - evita cards colados nas bordas */
 }
 
 @media (min-width: 1024px) {
@@ -13575,8 +14584,7 @@ body:has(#sidebar.open) .header-modern {
     .hero-grid-section,
     .conteudos-educativos-section-modern {
         max-width: 1200px !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding: 24px 2rem !important;
     }
 }
 
@@ -14400,4 +15408,102 @@ body.sidebar-open .sidebar-content .sidebar-section,
 body:has(.sidebar.open) .sidebar-content .sidebar-section h4 {
     position: relative !important;
     z-index: 2147483646 !important; /* Quase o máximo, mas dentro da sidebar (2147483647) */
+}
+
+/* Badge admin (geo health) – aparece com ?admin=1 */
+#sophia-admin-badge.sophia-badge {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 9999;
+    font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    padding: 8px 36px 8px 10px;
+    border-left: 4px solid #2563eb;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.12);
+    max-width: 70vw;
+    white-space: normal;
+}
+#sophia-admin-badge.sophia-badge.warn {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+    color: #92400e;
+}
+#sophia-admin-badge .sophia-badge-close {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+#sophia-admin-badge #spb-qa a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+/* Perf badge (admin-only: ?admin=1) – start • boot • first + botão ↻ refresh overrides */
+#sophia-perf-badge {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    z-index: 9999;
+    padding: 8px 40px 8px 10px;
+    max-width: 70vw;
+    border-radius: 8px;
+    font: 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;
+    color: #0f172a;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    border-left: 4px solid #2563eb;
+    background: #eff6ff;
+}
+#sophia-perf-badge .spb-line {
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: #1e3a8a;
+}
+#sophia-perf-badge .spb-sub {
+    color: #334155;
+    opacity: 0.9;
+}
+#sophia-perf-badge .spb-actions {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    display: flex;
+    gap: 6px;
+}
+#sophia-perf-badge .spb-btn {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 20px;
+}
+#sophia-perf-badge .spb-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+#sophia-perf-badge.sophia-perf-badge-ok {
+    border-left-color: #16a34a;
+    background: #ecfdf5;
+    color: #064e3b;
+}
+#sophia-perf-badge.sophia-perf-badge-warn {
+    border-left-color: #eab308;
+    background: #fffbeb;
+    color: #92400e;
+}
+#sophia-perf-badge.sophia-perf-badge-bad {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+    color: #991b1b;
 }
