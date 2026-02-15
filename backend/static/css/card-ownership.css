@@ -1,0 +1,16 @@
+/* Header do hospital: layout sem overlay e chips canônicos */
+.hospital-header { display:flex; flex-direction:column; gap:4px; }
+.hospital-header-top { display:flex; align-items:baseline; gap:8px; }
+.hospital-header-bottom { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.hospital-header-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.hospital-tag-public,
+.hospital-tag-private,
+.hospital-tag-philanthropic,
+[data-badge="esfera"] {
+    display:inline-flex; align-items:center;
+    padding:2px 8px; border-radius:12px; font-size:12px; line-height:1;
+    pointer-events:none; user-select:none;
+}
+.hospital-tag-public { background:#e8fff0; color:#137a3a; }
+.hospital-tag-private { background:#fff3e8; color:#8a4b1a; }
+.hospital-tag-philanthropic { background:#eef3ff; color:#2b56c6; }

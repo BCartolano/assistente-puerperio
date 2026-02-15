@@ -1,0 +1,146 @@
+{
+  "batch_num": 10,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0012505",
+      "name": "Hospital Universitario Antonio Pedro",
+      "address": "RUA MARQUES DO PARANA, 303, CENTRO",
+      "city": "",
+      "state": "33",
+      "telefone": "(21) 26299114",
+      "search_queries": {
+        "maternidade": "Hospital Universitario Antonio Pedro  33 maternidade",
+        "obstetricia": "Hospital Universitario Antonio Pedro  33 obstetrícia",
+        "parto": "Hospital Universitario Antonio Pedro  33 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0012513",
+      "name": "Hospital Municipal Carlos Tortelly",
+      "address": "ATHAYDE PARREIRAS, 266, NITEROI",
+      "city": "",
+      "state": "33",
+      "telefone": "(21) 2729-9342",
+      "search_queries": {
+        "maternidade": "Hospital Municipal Carlos Tortelly  33 maternidade",
+        "obstetricia": "Hospital Municipal Carlos Tortelly  33 obstetrícia",
+        "parto": "Hospital Municipal Carlos Tortelly  33 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0012521",
+      "name": "Ses Rj Hospital Estadual Azevedo Lima",
+      "address": "DR TEIXEIRA DE FREITAS, 30, FONSECA",
+      "city": "",
+      "state": "33",
+      "telefone": "2126271448",
+      "search_queries": {
+        "maternidade": "Ses Rj Hospital Estadual Azevedo Lima  33 maternidade",
+        "obstetricia": "Ses Rj Hospital Estadual Azevedo Lima  33 obstetrícia",
+        "parto": "Ses Rj Hospital Estadual Azevedo Lima  33 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0012548",
+      "name": "Hospital Da Policia Militar De Niteroi",
+      "address": "RUA MARTINS TORRES, 245, SANTA ROSA",
+      "city": "",
+      "state": "33",
+      "telefone": "(21)2715-4765",
+      "search_queries": {
+        "maternidade": "Hospital Da Policia Militar De Niteroi  33 maternidade",
+        "obstetricia": "Hospital Da Policia Militar De Niteroi  33 obstetrícia",
+        "parto": "Hospital Da Policia Militar De Niteroi  33 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0012556",
+      "name": "Hospital Orencio De Freitas",
+      "address": "MACHADO, S/N, BARRETO",
+      "city": "",
+      "state": "33",
+      "telefone": "021 26203434",
+      "search_queries": {
+        "maternidade": "Hospital Orencio De Freitas  33 maternidade",
+        "obstetricia": "Hospital Orencio De Freitas  33 obstetrícia",
+        "parto": "Hospital Orencio De Freitas  33 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0012599",
+      "name": "Hospital Getulio Vargas Filho",
+      "address": "TEIXEIRA DE FREITAS, S/N, FONSECA",
+      "city": "",
+      "state": "33",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Hospital Getulio Vargas Filho  33 maternidade",
+        "obstetricia": "Hospital Getulio Vargas Filho  33 obstetrícia",
+        "parto": "Hospital Getulio Vargas Filho  33 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0012769",
+      "name": "Ses Rj Instituto Estadual De Doencas Do Torax Ary Parreiras",
+      "address": "RUA DR LUIZ PALMIER, 762, BARRETO",
+      "city": "",
+      "state": "33",
+      "telefone": "(21)27290008",
+      "search_queries": {
+        "maternidade": "Ses Rj Instituto Estadual De Doencas Do Torax Ary Parreiras  33 maternidade",
+        "obstetricia": "Ses Rj Instituto Estadual De Doencas Do Torax Ary Parreiras  33 obstetrícia",
+        "parto": "Ses Rj Instituto Estadual De Doencas Do Torax Ary Parreiras  33 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0013102",
+      "name": "Centro De Saude Olimpio Goncalves Dos Santos",
+      "address": "CASSIANO ROSA DOS SANTOS, 08, CENTRO",
+      "city": "",
+      "state": "41",
+      "telefone": "41935003689",
+      "search_queries": {
+        "maternidade": "Centro De Saude Olimpio Goncalves Dos Santos  41 maternidade",
+        "obstetricia": "Centro De Saude Olimpio Goncalves Dos Santos  41 obstetrícia",
+        "parto": "Centro De Saude Olimpio Goncalves Dos Santos  41 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0013633",
+      "name": "Hospital Angelina Caron",
+      "address": "RODOVIA DO CAQUI, 1150, ARACATUBA",
+      "city": "",
+      "state": "41",
+      "telefone": "(41) 36798100",
+      "search_queries": {
+        "maternidade": "Hospital Angelina Caron  41 maternidade",
+        "obstetricia": "Hospital Angelina Caron  41 obstetrícia",
+        "parto": "Hospital Angelina Caron  41 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0013838",
+      "name": "Hospital Sao Lucas",
+      "address": "RUA GENEROSO MARQUES, 2022, CENTRO",
+      "city": "",
+      "state": "41",
+      "telefone": "(41) 30329300",
+      "search_queries": {
+        "maternidade": "Hospital Sao Lucas  41 maternidade",
+        "obstetricia": "Hospital Sao Lucas  41 obstetrícia",
+        "parto": "Hospital Sao Lucas  41 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

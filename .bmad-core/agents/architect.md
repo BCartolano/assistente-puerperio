@@ -86,6 +86,21 @@ health_data_audit:
       fallback_rule: |
         NUNCA parar o serviço por queda da API. 
         Sempre ter fallback para dados locais com aviso de possível desatualização.
+    frontend_api_contract: |
+      Contrato e simplificação:
+      - Frontend usa esfera/sus_badge/convênios exclusivos do payload da API; nenhum cálculo local
+      - API envia campos canônicos: esfera (Público/Filantrópico/Privado), sus_badge (Aceita Cartão SUS/Não atende SUS/""), convenios (array)
+      - Frontend NUNCA sobrescreve "Público" com "Privado" por fallback ou heurística de nome
+      - mapEsfera() só usado se API não enviar esfera (casos legados sem override do CNES)
+      - Distância não exibida no card (vem do payload mas não é mostrada)
+      - Cache bust do JS (versão no querystring) no build para evitar cache de versões antigas
+    chat_contract: |
+      Contrato do chat:
+      - POST /api/v1/chat/intent → { ok, intent, text, triage? }
+      - Triagem: se sintomas graves detectados, retorna triage=true e text="Ligue 192 (SAMU)"
+      - Segurança: rate limit (CHAT_RATE_MAX por minuto) e, se público, sem logs de PII
+      - Logging: logs/chat_events.jsonl com rotação automática (RotatingFileHandler, 5MB x 5)
+      - Smoke: scripts/smoke_chat.sh valida ping e intent básica
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

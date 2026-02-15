@@ -1,0 +1,146 @@
+{
+  "batch_num": 1,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0000027",
+      "name": "Casa De Saude Santa Helena",
+      "address": "AVN PRESIDENTE GETULIO VARGAS, 428, CENTRO",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)35210355",
+      "search_queries": {
+        "maternidade": "Casa De Saude Santa Helena maternidade",
+        "obstetricia": "Casa De Saude Santa Helena obstetrícia",
+        "parto": "Casa De Saude Santa Helena parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000035",
+      "name": "Hospital Mendo Sampaio",
+      "address": "BR 101 SUL KM 33, S/N, CHARNECA",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)35210857",
+      "search_queries": {
+        "maternidade": "Hospital Mendo Sampaio maternidade",
+        "obstetricia": "Hospital Mendo Sampaio obstetrícia",
+        "parto": "Hospital Mendo Sampaio parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000094",
+      "name": "Maternidade Padre Geraldo Leite Bastos",
+      "address": "BR 101 SUL KM 23, S/N, PONTE DOS CARVALHOS",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)35221626",
+      "search_queries": {
+        "maternidade": "Maternidade Padre Geraldo Leite Bastos maternidade",
+        "obstetricia": "Maternidade Padre Geraldo Leite Bastos obstetrícia",
+        "parto": "Maternidade Padre Geraldo Leite Bastos parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000183",
+      "name": "Hospital Samaritano",
+      "address": "RUA SEVERINO BEZERRA MARQUES, 40, CENTRO",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)35210109",
+      "search_queries": {
+        "maternidade": "Hospital Samaritano maternidade",
+        "obstetricia": "Hospital Samaritano obstetrícia",
+        "parto": "Hospital Samaritano parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000221",
+      "name": "Hospital Sao Sebastiao",
+      "address": "AVN PRESIDENTE GETULIO VARGAS, 864, CENTRO",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)35214150",
+      "search_queries": {
+        "maternidade": "Hospital Sao Sebastiao maternidade",
+        "obstetricia": "Hospital Sao Sebastiao obstetrícia",
+        "parto": "Hospital Sao Sebastiao parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000396",
+      "name": "Hospital Das Clinicas",
+      "address": "AV PROFESSOR MORAES REGO, 1235, CIDADE UNIVERSITARIA",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)21263633",
+      "search_queries": {
+        "maternidade": "Hospital Das Clinicas maternidade",
+        "obstetricia": "Hospital Das Clinicas obstetrícia",
+        "parto": "Hospital Das Clinicas parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000418",
+      "name": "Hospital Agamenon Magalhaes",
+      "address": "ESTRADA DO ARRAIAL, 2723, CASA AMARELA",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)31841601",
+      "search_queries": {
+        "maternidade": "Hospital Agamenon Magalhaes maternidade",
+        "obstetricia": "Hospital Agamenon Magalhaes obstetrícia",
+        "parto": "Hospital Agamenon Magalhaes parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000426",
+      "name": "Hospital Otavio De Freitas",
+      "address": "RUA APRIGIO GUIMARAES, S/N, TEJIPIO",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)31828500",
+      "search_queries": {
+        "maternidade": "Hospital Otavio De Freitas maternidade",
+        "obstetricia": "Hospital Otavio De Freitas obstetrícia",
+        "parto": "Hospital Otavio De Freitas parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000434",
+      "name": "Imip",
+      "address": "RUA DOS COELHOS, 300, BOA VISTA",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)21224100",
+      "search_queries": {
+        "maternidade": "Imip maternidade",
+        "obstetricia": "Imip obstetrícia",
+        "parto": "Imip parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000477",
+      "name": "Hospital Oswaldo Cruz",
+      "address": "RUA ARNOBIO MARQUES, 310, SANTO AMARO",
+      "city": null,
+      "state": "26",
+      "telefone": "(81)31841200",
+      "search_queries": {
+        "maternidade": "Hospital Oswaldo Cruz maternidade",
+        "obstetricia": "Hospital Oswaldo Cruz obstetrícia",
+        "parto": "Hospital Oswaldo Cruz parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

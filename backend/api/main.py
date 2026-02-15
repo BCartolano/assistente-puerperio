@@ -62,10 +62,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Configurar CORS - Liberado para todas as origens (desenvolvimento/Ngrok)
+# Configurar CORS usando ALLOW_ORIGINS do env
+try:
+    from backend.utils.env import ALLOW_ORIGINS
+    _origins = [o.strip() for o in (ALLOW_ORIGINS or "*").split(",") if o.strip()] or ["*"]
+except ImportError:
+    _origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite todas as origens (Ngrok, localhost, mobile, etc)
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],  # Métodos explícitos
     allow_headers=["*"],  # Permite todos os headers
@@ -78,6 +83,14 @@ if router:
     logger.info("✅ Router de facilities registrado com sucesso")
 else:
     logger.warning("⚠️ Router de facilities não foi importado - endpoints /api/v1/facilities não estarão disponíveis")
+
+# Registrar rotas do chatbot (opcional)
+try:
+    from backend.chat.router_fastapi import router as chat_router
+    app.include_router(chat_router)
+    logger.info("✅ Router de chat registrado com sucesso")
+except Exception as e:
+    logger.warning("⚠️ Router de chat indisponível: %s", e)
 
 # Endpoints dummy para compatibilidade com sistema legado (sem prefixo /api/v1)
 # Estes endpoints são MOCK PURO - NÃO ACESSAM BANCO DE DADOS
@@ -121,16 +134,18 @@ async def dummy_baby_profile():
     )
 
 
-@app.get("/")
-async def root():
-    """Endpoint raiz"""
-    return {
-        "service": "API de Busca de Facilidades Puerperais",
-        "version": "1.0.0",
-        "status": "operational",
-        "documentation": "/docs",
-        "health_check": "/api/v1/facilities/health"
-    }
+# Endpoint raiz REMOVIDO - O Flask serve o HTML na rota /
+# Se precisar de um endpoint raiz para a API, use /api ou /api/v1
+# @app.get("/")
+# async def root():
+#     """Endpoint raiz"""
+#     return {
+#         "service": "API de Busca de Facilidades Puerperais",
+#         "version": "1.0.0",
+#         "status": "operational",
+#         "documentation": "/docs",
+#         "health_check": "/api/v1/facilities/health"
+#     }
 
 
 @app.exception_handler(Exception)

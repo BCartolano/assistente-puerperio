@@ -200,41 +200,42 @@ class MobileNavigation {
         }
         
         // Busca conteúdo das sidebars desktop (que já foram carregadas)
-        const tipCard = document.getElementById('tip-of-the-day-card');
+        const orientacaoCard = document.getElementById('orientacao-card');
         const affirmationCard = document.getElementById('affirmation-card');
-        const nextVaccineWidget = document.getElementById('next-vaccine-widget');
+        const agendaCard = document.getElementById('agenda-de-vacinacao-card');
         
         // Container principal com margens de 15px
-        let html = '<div class="mobile-dicas-section"><h2 style="color: var(--color-primary-warm); margin-bottom: 1.5rem; text-align: center; padding: 0 15px;">💡 Dicas e Recursos</h2>';
+        let html = '<div class="mobile-dicas-section"><h2 style="color: var(--color-primary-warm); margin-bottom: 1.5rem; text-align: center; padding: 0 15px;">💡 Orientações e Recursos</h2>';
         
-        // Dica do Dia
-        if (tipCard) {
-            const tipText = tipCard.querySelector('.tip-text')?.textContent || 'Carregando dica...';
+        // Orientação
+        if (orientacaoCard) {
+            const orientacaoText = orientacaoCard.querySelector('.orientacao-text')?.textContent || 'Carregando orientação...';
             html += `
                 <div class="mobile-dica-card">
-                    <h3><span class="card-icon">💡</span>Dica do Dia</h3>
-                    <p>${this.escapeHtml(tipText)}</p>
+                    <h3><span class="card-icon"><i class="fas fa-tint"></i></span>Orientação</h3>
+                    <p>${this.escapeHtml(orientacaoText)}</p>
                 </div>
             `;
         }
         
-        // Afirmação Positiva
+        // Afirmação
         if (affirmationCard) {
             const affirmationText = affirmationCard.querySelector('.affirmation-text')?.textContent || 'Carregando afirmação...';
             html += `
                 <div class="mobile-dica-card">
-                    <h3><span class="card-icon">✨</span>Afirmação Positiva</h3>
+                    <h3><span class="card-icon"><i class="fas fa-sun"></i></span>Afirmação</h3>
                     <p>${this.escapeHtml(affirmationText)}</p>
                 </div>
             `;
         }
         
-        // Próxima Vacina
-        if (nextVaccineWidget && nextVaccineWidget.innerHTML.trim()) {
+        // Agenda de Saúde
+        if (agendaCard) {
+            const agendaContent = agendaCard.querySelector('.agenda-content')?.innerHTML || '';
             html += `
                 <div class="mobile-dica-card">
-                    <h3><span class="card-icon">📅</span>Próxima Vacina</h3>
-                    <div>${nextVaccineWidget.innerHTML}</div>
+                    <h3><span class="card-icon"><i class="fas fa-calendar-check"></i></span>Agenda de Vacinação</h3>
+                    <div class="agenda-mobile-content">${agendaContent}</div>
                 </div>
             `;
         }
@@ -266,13 +267,14 @@ class MobileNavigation {
     }
     
     loadVideosLazy() {
+        const dicasContainer = document.getElementById('mobile-dicas-container') || document.querySelector('[data-dicas-container]');
         // Verifica se a sidebar direita (desktop) tem vídeos renderizados
         const desktopVideosList = document.getElementById('videos-list');
         if (!desktopVideosList) {
             // Se não existe sidebar desktop, vídeos não foram inicializados ainda
             // Aguarda um pouco e tenta novamente
             setTimeout(() => {
-                if (!dicasContainer.hasAttribute('data-videos-loaded')) {
+                if (!dicasContainer || !dicasContainer.hasAttribute('data-videos-loaded')) {
                     this.loadVideosLazy();
                 }
             }, 500);
@@ -282,7 +284,7 @@ class MobileNavigation {
         const videosCard = document.getElementById('mobile-videos-card');
         if (!videosCard) {
             // Cria card de vídeos se não existe
-            const dicasContainer = document.getElementById('mobile-dicas-container');
+            if (!dicasContainer) return;
             const section = dicasContainer.querySelector('.mobile-dicas-section');
             if (section) {
                 const videoCardHtml = `

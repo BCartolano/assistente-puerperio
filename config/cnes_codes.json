@@ -1,0 +1,35 @@
+{
+  "data_version": "2025-02",
+  "source": "CNES/DataSUS - dicionários oficiais e documentação. Códigos validados contra rlEstabServClass, rlEstabLeito, tbEstabelecimento.",
+  "review_needed": [
+    "CO_LEITO 01/02: em alguns dicionários obstetrícia clínica/cirúrgica aparecem como 43/10; validar contra tbLeito local.",
+    "Habilitações: confirmar códigos de habilitação obstétrica/neonatal no dicionário de habilitacoes do CNES."
+  ],
+  "bed_types_obst": ["01", "02", "10", "43"],
+  "bed_types_neonatal": ["10", "41", "46", "65", "92", "93"],
+  "services_obst": ["125", "141"],
+  "classif_obst": ["001"],
+  "habilitacoes_obst": ["review_needed"],
+  "tipos_estab_maternidade": ["05", "07", "15", "20", "21"],
+  "keywords_nome_fantasia": ["Maternidade", "Hospital da Mulher", "Obstétrico", "Hospital e Maternidade", "Casa de Parto"],
+  "leito_codes_obst": ["4", "04"],
+  "leito_codes_neonatal": ["2", "3", "02", "03"],
+  "extra_exclude_keywords": [
+    "agência transfusional", "agencia transfusional", "hemocentro", "banco de leite",
+    "diagnóstico", "diagnostico", "imagem", "radiologia",
+    "ultrassom", "tomografia", "ressonância",
+    "psicologia", "psicanálise", "psicanalise", "psiquiatria",
+    "fonoaudiologia", "fonoaudiol", "fisioterapia", "fisioter",
+    "terapia ocupacional", "nutrição", "nutricao",
+    "consultório", "consultorio", "ambulatorio", "ambulat",
+    "clínica estética", "clinica estetica", "estética", "estetica",
+    "ótica", "otica", "oficina ortopédica", "oficina ortopedica"
+  ],
+  "campos_sus": ["IND_SUS", "ATEND_SUS", "CO_TIPO_ATENDIMENTO", "TP_ATENDIMENTO", "NU_CNPJ"],
+  "campos_esfera": ["TP_GESTAO", "CO_NATUREZA_JUR", "CO_ESFERA_ADMIN"],
+  "natureza_map": {
+    "1xxx": "Administração Pública",
+    "2xxx": "Entidades Empresariais",
+    "3999": "Sem Fins Lucrativos/Filantrópico"
+  }
+}

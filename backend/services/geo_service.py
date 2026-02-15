@@ -98,12 +98,25 @@ def filter_by_radius(
     """
     filtered = []
     
+    # Coordenadas válidas para Brasil
+    BRASIL_LAT_MIN = -35.0
+    BRASIL_LAT_MAX = 5.0
+    BRASIL_LON_MIN = -75.0
+    BRASIL_LON_MAX = -30.0
+    
     for facility in facilities:
         facility_lat = facility.get('lat')
         facility_lon = facility.get('long')
         
-        if facility_lat is None or facility_lon is None:
+        # Validação rigorosa de coordenadas
+        if (facility_lat is None or facility_lon is None or
+            facility_lat == 0 or facility_lon == 0):
             continue  # Pula facilidades sem coordenadas
+        
+        # Validar se coordenadas estão dentro do Brasil
+        if (not (BRASIL_LAT_MIN <= facility_lat <= BRASIL_LAT_MAX) or
+            not (BRASIL_LON_MIN <= facility_lon <= BRASIL_LON_MAX)):
+            continue  # Pula coordenadas fora do Brasil
         
         distance = haversine_distance(user_lat, user_lon, facility_lat, facility_lon)
         

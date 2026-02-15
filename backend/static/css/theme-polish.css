@@ -1,0 +1,254 @@
+/* === Tema: tipografia e botões – polimento global e seguro === */
+:root {
+    --brand-text: #6b4a3f;
+    --brand-accent: #c44569;
+    --brand-rose: #ff7ab8;
+    --brand-rose-2: #ff6fb1;
+    --brand-rose-3: #ff89c5;
+    --brand-ink: #2b2b2b;
+    --brand-muted: #7a6e68;
+    --brand-surface: #ffffff;
+    --brand-surface-2: #fff7fb;
+    --ring: #8cc6ff;
+    --btn-radius: 12px;
+    --btn-pad-y: 10px;
+    --btn-pad-x: 16px;
+}
+
+h1, h2, h3, h4, h5 {
+    color: var(--brand-text);
+    letter-spacing: 0.2px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1 { font-size: clamp(22px, 3.2vw, 34px); font-weight: 800; margin: 8px 0 12px; }
+h2 { font-size: clamp(18px, 2.6vw, 28px); font-weight: 800; margin: 8px 0 10px; }
+h3 { font-size: clamp(16px, 2.2vw, 22px); font-weight: 700; margin: 8px 0 8px; }
+h4 { font-size: clamp(14px, 1.9vw, 18px); font-weight: 700; margin: 6px 0 6px; }
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--brand-text);
+}
+
+.section-title .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--brand-rose-3), var(--brand-rose));
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.muted { color: var(--brand-muted); }
+.small { font-size: 12px; }
+
+.btn,
+button.btn,
+a.btn,
+[data-role="btn"] {
+    appearance: none;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: var(--btn-radius);
+    padding: var(--btn-pad-y) var(--btn-pad-x);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none !important;
+    cursor: pointer;
+    background: linear-gradient(180deg, #fff, #fff6);
+    color: var(--brand-text);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn:hover,
+button.btn:hover,
+a.btn:hover,
+[data-role="btn"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.btn:active,
+button.btn:active,
+a.btn:active,
+[data-role="btn"]:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+.btn[disabled],
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary,
+button.btn-primary,
+a.btn-primary {
+    color: #fff !important;
+    border-color: rgba(255, 122, 184, 0.28);
+    background: linear-gradient(180deg, var(--brand-rose-3), var(--brand-rose-2));
+    box-shadow: 0 10px 22px rgba(255, 122, 184, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.03);
+    box-shadow: 0 14px 28px rgba(255, 122, 184, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-primary:active {
+    filter: brightness(0.98);
+}
+
+.btn-secondary,
+button.btn-secondary,
+a.btn-secondary {
+    color: var(--brand-accent) !important;
+    border-color: rgba(196, 69, 105, 0.3);
+    background: linear-gradient(180deg, #fff, #fff7);
+    box-shadow: 0 8px 18px rgba(196, 69, 105, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(180deg, #fff, #fff);
+}
+
+.btn-soft {
+    color: var(--brand-text) !important;
+    border-color: rgba(0, 0, 0, 0.06);
+    background: linear-gradient(180deg, #fff, #fff6);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    padding: 8px 12px;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.btn-lg { padding: 12px 18px; font-size: 15px; }
+.btn-sm { padding: 8px 12px; font-size: 12px; }
+
+:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select,
+.form-control {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+    padding: 10px 12px;
+    color: var(--brand-ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.form-control:focus {
+    border-color: rgba(140, 198, 255, 0.8);
+    box-shadow: 0 0 0 3px rgba(140, 198, 255, 0.22);
+    outline: none;
+}
+
+label {
+    color: var(--brand-text);
+    font-weight: 600;
+}
+
+.chip,
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    color: var(--brand-text);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.badge-primary {
+    background: #ffe6f2;
+    color: var(--brand-accent);
+    border-color: rgba(196, 69, 105, 0.24);
+}
+
+.link-soft {
+    color: var(--brand-accent);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(196, 69, 105, 0.35);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.link-soft:hover {
+    color: #a83455;
+    border-color: rgba(196, 69, 105, 0.6);
+}
+
+.card {
+    background: var(--brand-surface);
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.card--soft {
+    background: linear-gradient(180deg, #fff, #fff8);
+}
+
+.mt-0 { margin-top: 0 !important; }
+.mt-4 { margin-top: 4px !important; }
+.mt-8 { margin-top: 8px !important; }
+.mt-12 { margin-top: 12px !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mb-4 { margin-bottom: 4px !important; }
+.mb-8 { margin-bottom: 8px !important; }
+.mb-12 { margin-bottom: 12px !important; }
+.gap-4 { gap: 4px !important; }
+.gap-8 { gap: 8px !important; }
+.gap-12 { gap: 12px !important; }
+
+.btn .icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+::placeholder {
+    color: #9e8f88;
+    opacity: 0.8;
+}
+
+.on-soft-bg {
+    color: var(--brand-text);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}

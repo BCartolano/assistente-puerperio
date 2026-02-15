@@ -1,0 +1,10 @@
+{# Perf: DNS prefetch / preconnect para API e Groq #}
+{% set api_origin = request.url_root %}
+<link rel="dns-prefetch" href="//api.groq.com">
+<link rel="preconnect" href="https://api.groq.com" crossorigin>
+<link rel="dns-prefetch" href="//{{ request.host }}">
+<link rel="preconnect" href="{{ api_origin }}" crossorigin>
+<meta name="api-base" content="{{ api_origin }}">
+{# Fonts (Google) #}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

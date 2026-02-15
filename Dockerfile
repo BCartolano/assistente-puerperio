@@ -1,30 +1,10 @@
-# Usa imagem Python oficial com SQLite incluído
 FROM python:3.11-slim
-
-# Instala dependências do sistema necessárias
-# SQLite precisa de libsqlite3-dev para compilar o módulo Python
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libsqlite3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Define diretório de trabalho
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app
-
-# Copia arquivos de requisitos
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
-
-# Instala dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copia o resto da aplicação
 COPY . .
-
-# Expõe a porta (Railway usa porta dinâmica, mas definimos 8080 como padrão)
-EXPOSE 8080
-
-# Torna o script executável
-RUN chmod +x start.sh
-
-# Comando para iniciar a aplicação (Railway fornece PORT via variável de ambiente)
-CMD ["/bin/bash", "start.sh"]
+EXPOSE 8000
+CMD ["sh","-c","uvicorn backend.api.main:app --host 0.0.0.0 --port ${API_PORT:-8000}"]

@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Lint + checagem de sintaxe nos arquivos staged
+npx lint-staged
+
+# Guarda docs: proíbe guias/resumos perdidos fora de docs/
+node scripts/guard-docs.js
+
+# Guarda geral: bloqueia arquivos enormes (ex.: >10MB)
+node scripts/guard-large-files.js

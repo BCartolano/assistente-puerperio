@@ -1,0 +1,51 @@
+name: CI - Lighthouse
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Build hospitals index (best effort)
+        run: |
+          if [ -f scripts/build_hospitals_index.py ]; then python scripts/build_hospitals_index.py || true; fi
+
+      - name: Start Flask app
+        env:
+          FLASK_ENV: production
+          SECRET_KEY: ci
+        run: |
+          nohup gunicorn -w 2 -k gthread -t 120 -b 127.0.0.1:5000 backend.app:app >/dev/null 2>&1 &
+
+      - name: Wait for server
+        uses: ifaxity/wait-on-action@v1
+        with:
+          resource: http://127.0.0.1:5000/
+          timeout: 60000
+
+      - name: Lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://127.0.0.1:5000/
+          runs: 1
+          uploadArtifacts: true
+          temporaryPublicStorage: true

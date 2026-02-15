@@ -1,0 +1,41 @@
+# Regras de decisão – Mapeamento sintoma → nível base
+# versao: usada no retorno para auditoria
+versao: "1.0.0"
+
+# Mapeamento direto (evita reconstruir mapa; mais legível para manutenção)
+base_rules:
+  # 🔴 Crítico → 192 + hospital
+  dor_cabeca_forte: critico
+  visao_embacada: critico
+  dor_abdominal_intensa: critico
+  sangramento_excessivo: critico
+  febre_alta: critico
+  dificuldade_respirar: critico
+  dor_peito: critico
+
+  # 🟠 Alerta → avaliação em até 24h
+  inchaco_face_maos: alerta
+  dor_perineal_intensa: alerta
+  secrecao_mal_cheiro: alerta
+  dor_mama_vermelha: alerta
+  tristeza_intensa: alerta
+
+  # 🟡 Monitoramento → observar + critérios de piora
+  cansaco_extremo: monitoramento
+
+# Regras de combinação (quando múltiplos sintomas positivos)
+# Avalia TODAS as aplicáveis e escolhe o nível mais grave
+# template_hint: sugere qual conduta usar (camada de comunicação adapta tom)
+combinacoes:
+  - sintomas: [sangramento_excessivo, febre_alta]
+    nivel: critico
+    motivo: Hemorragia + febre = risco de infecção grave
+
+  - sintomas: [dor_abdominal_intensa, febre_alta]
+    nivel: critico
+    motivo: Dor abdominal + febre = possível infecção puerperal
+
+  # Futuro: pensamentos_preocupantes quando houver detecção
+  # - sintomas: [tristeza_intensa, pensamentos_preocupantes]
+  #   nivel: critico
+  #   template_hint: saude_mental

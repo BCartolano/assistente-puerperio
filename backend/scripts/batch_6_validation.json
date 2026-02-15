@@ -1,0 +1,146 @@
+{
+  "batch_num": 6,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0004979",
+      "name": "Hospital De Brotas",
+      "address": "DOM JOAO VI, 1291, BROTAS",
+      "city": "",
+      "state": "29",
+      "telefone": "71 30181212",
+      "search_queries": {
+        "maternidade": "Hospital De Brotas  29 maternidade",
+        "obstetricia": "Hospital De Brotas  29 obstetrícia",
+        "parto": "Hospital De Brotas  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004987",
+      "name": "Hospital Professor Carvalho Luz",
+      "address": "PRACA CONSELHEIRO ALMEIDA COUTO, 512, NAZARE",
+      "city": "",
+      "state": "29",
+      "telefone": "(071)3326-3211",
+      "search_queries": {
+        "maternidade": "Hospital Professor Carvalho Luz  29 maternidade",
+        "obstetricia": "Hospital Professor Carvalho Luz  29 obstetrícia",
+        "parto": "Hospital Professor Carvalho Luz  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0005428",
+      "name": "Instituto Couto Maia",
+      "address": "CORONEL AZEVEDO, 000999, CAJAZEIRAS II",
+      "city": "",
+      "state": "29",
+      "telefone": "71 31037153",
+      "search_queries": {
+        "maternidade": "Instituto Couto Maia  29 maternidade",
+        "obstetricia": "Instituto Couto Maia  29 obstetrícia",
+        "parto": "Instituto Couto Maia  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0005436",
+      "name": "Hospital Especializado Mario Leal",
+      "address": "CONDE DO PORTO ALEGRE, 11, IAPI",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3117-0155",
+      "search_queries": {
+        "maternidade": "Hospital Especializado Mario Leal  29 maternidade",
+        "obstetricia": "Hospital Especializado Mario Leal  29 obstetrícia",
+        "parto": "Hospital Especializado Mario Leal  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0005487",
+      "name": "Somed",
+      "address": "RUA ALMIRANTE TAMANDARE, 14, PARIPE",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3397-0042",
+      "search_queries": {
+        "maternidade": "Somed  29 maternidade",
+        "obstetricia": "Somed  29 obstetrícia",
+        "parto": "Somed  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0005681",
+      "name": "Cato Liberdade",
+      "address": "RUA DO CURUZU, 33, LIBERDADE",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3388-1244",
+      "search_queries": {
+        "maternidade": "Cato Liberdade  29 maternidade",
+        "obstetricia": "Cato Liberdade  29 obstetrícia",
+        "parto": "Cato Liberdade  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0006653",
+      "name": "Sotrauma",
+      "address": "RUA CONDE DE PORTO ALEGRE, 175, IAPI",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3386-3633",
+      "search_queries": {
+        "maternidade": "Sotrauma  29 maternidade",
+        "obstetricia": "Sotrauma  29 obstetrícia",
+        "parto": "Sotrauma  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0007382",
+      "name": "Clisur",
+      "address": "RUA FREDERICO COSTA, 02, PERIPERI",
+      "city": "",
+      "state": "29",
+      "telefone": "(71)3397-4880",
+      "search_queries": {
+        "maternidade": "Clisur  29 maternidade",
+        "obstetricia": "Clisur  29 obstetrícia",
+        "parto": "Clisur  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0007641",
+      "name": "Absj",
+      "address": "PRESIDENTE GETULIO VARGAS, 3506, IANETAMA",
+      "city": "",
+      "state": "15",
+      "telefone": "91 37211660",
+      "search_queries": {
+        "maternidade": "Absj  15 maternidade",
+        "obstetricia": "Absj  15 obstetrícia",
+        "parto": "Absj  15 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0007684",
+      "name": "Hospital Magalhaes",
+      "address": "TRAVESSA QUINTINO BOCAIUVA, 2022, CENTRO",
+      "city": "",
+      "state": "15",
+      "telefone": "91 34126751",
+      "search_queries": {
+        "maternidade": "Hospital Magalhaes  15 maternidade",
+        "obstetricia": "Hospital Magalhaes  15 obstetrícia",
+        "parto": "Hospital Magalhaes  15 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

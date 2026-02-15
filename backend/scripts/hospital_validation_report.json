@@ -1,0 +1,92 @@
+{
+  "removed": [
+    {
+      "cnes_id": "0002593",
+      "name": "Clinica Santa Helena Suissa"
+    },
+    {
+      "cnes_id": "0003085",
+      "name": "Clinica De Repouso Sao Marcello Ltda"
+    },
+    {
+      "cnes_id": "0007714",
+      "name": "Clinica De Acident Sao Francisco"
+    },
+    {
+      "cnes_id": "0014125",
+      "name": "Center Clinicas"
+    },
+    {
+      "cnes_id": "0016292",
+      "name": "Clinica Dr Helio Rotenberg"
+    },
+    {
+      "cnes_id": "0027707",
+      "name": "Clinica Pinel"
+    },
+    {
+      "cnes_id": "0106518",
+      "name": "Clinica Terapeutica Virtude"
+    },
+    {
+      "cnes_id": "0219622",
+      "name": "Policlinica Municipal Geomarco Coelho De Sousa"
+    },
+    {
+      "cnes_id": "0228494",
+      "name": "Serenity Clinica De Desospitalizacao Ltda"
+    },
+    {
+      "cnes_id": "0235385",
+      "name": "Clinica Terapeutica Sonho De Vida"
+    },
+    {
+      "cnes_id": "0262862",
+      "name": "Hospital Das Clinicas Covid 19 Hcc"
+    }
+  ],
+  "kept": [
+    {
+      "cnes_id": "0000396",
+      "name": "Hospital Das Clinicas"
+    },
+    {
+      "cnes_id": "0000671",
+      "name": "Us 153 Policlinica E Maternidade Arnaldo Marques"
+    },
+    {
+      "cnes_id": "0020516",
+      "name": "Us 167 Policlinica E Maternidade Professor Barros Lima"
+    },
+    {
+      "cnes_id": "0026417",
+      "name": "Hospital De Clinicas Sul"
+    },
+    {
+      "cnes_id": "0027049",
+      "name": "Hosp Das Clinicas Da Univ Fed De Minas Gerais Ebserh"
+    },
+    {
+      "cnes_id": "0104884",
+      "name": "Hospital Das Clinicas De Sao Goncalo"
+    },
+    {
+      "cnes_id": "0115509",
+      "name": "Hospital De Clinicas Anjo Gabriel"
+    },
+    {
+      "cnes_id": "0175277",
+      "name": "Hospital Das Clinicas Bauru"
+    },
+    {
+      "cnes_id": "0220337",
+      "name": "Hospital De Clinicas De Campina Grande"
+    }
+  ],
+  "pending": [
+    {
+      "cnes_id": "0017868",
+      "name": "Hospital Filantropico Policlinica"
+    }
+  ]
+}

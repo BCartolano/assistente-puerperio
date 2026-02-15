@@ -1,0 +1,19 @@
+[
+  {
+    "cnes_id": "SUBSTITUIR_1",
+    "expected_has_maternity": true,
+    "min_score": 0.6,
+    "notes": "Maternidade confirmada (ex.: leitos obstétricos/habilitação)."
+  },
+  {
+    "cnes_id": "SUBSTITUIR_2",
+    "expected_has_maternity": false,
+    "notes": "Hospital sem obstetrícia/neonatal."
+  },
+  {
+    "cnes_id": "SUBSTITUIR_3",
+    "expected_has_maternity": true,
+    "min_score": 0.8,
+    "notes": "UTI Neonatal/CPN presente."
+  }
+]

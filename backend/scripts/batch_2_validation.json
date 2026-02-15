@@ -1,0 +1,146 @@
+{
+  "batch_num": 2,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0000671",
+      "name": "Us 153 Policlinica E Maternidade Arnaldo Marques",
+      "address": "AV DOIS RIOS, S/N, IBURA",
+      "city": "",
+      "state": "26",
+      "telefone": "33551815/1815/1820",
+      "search_queries": {
+        "maternidade": "Us 153 Policlinica E Maternidade Arnaldo Marques  26 maternidade",
+        "obstetricia": "Us 153 Policlinica E Maternidade Arnaldo Marques  26 obstetrícia",
+        "parto": "Us 153 Policlinica E Maternidade Arnaldo Marques  26 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000701",
+      "name": "Us 165 Maternidade Bandeira Filho",
+      "address": "RUA LONDRINA, S/N, AFOGADOS",
+      "city": "",
+      "state": "26",
+      "telefone": "8133552230/2205",
+      "search_queries": {
+        "maternidade": "Us 165 Maternidade Bandeira Filho  26 maternidade",
+        "obstetricia": "Us 165 Maternidade Bandeira Filho  26 obstetrícia",
+        "parto": "Us 165 Maternidade Bandeira Filho  26 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000809",
+      "name": "Fundacao Hemope",
+      "address": "RUA JOAQUIM NABUCO, 171, GRACAS",
+      "city": "",
+      "state": "26",
+      "telefone": "(81)3824695",
+      "search_queries": {
+        "maternidade": "Fundacao Hemope  26 maternidade",
+        "obstetricia": "Fundacao Hemope  26 obstetrícia",
+        "parto": "Fundacao Hemope  26 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000930",
+      "name": "Us 164 Centro De Reidratacao E Urg Ped M Cravo Gama",
+      "address": "AVENIDA RECIFE, 810, ESTANCIA",
+      "city": "",
+      "state": "26",
+      "telefone": "(81) 33556651/6652",
+      "search_queries": {
+        "maternidade": "Us 164 Centro De Reidratacao E Urg Ped M Cravo Gama  26 maternidade",
+        "obstetricia": "Us 164 Centro De Reidratacao E Urg Ped M Cravo Gama  26 obstetrícia",
+        "parto": "Us 164 Centro De Reidratacao E Urg Ped M Cravo Gama  26 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0000981",
+      "name": "Hospital Correia Picanco",
+      "address": "RUA PADRE ROMA, 149, TAMARINEIRA",
+      "city": "",
+      "state": "26",
+      "telefone": "(81)31843980",
+      "search_queries": {
+        "maternidade": "Hospital Correia Picanco  26 maternidade",
+        "obstetricia": "Hospital Correia Picanco  26 obstetrícia",
+        "parto": "Hospital Correia Picanco  26 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0001120",
+      "name": "Hospital Portugues",
+      "address": "AV GOVERNADOR AGAMENON MAGALHAES, 4760, PAISSANDU",
+      "city": "",
+      "state": "26",
+      "telefone": "(81)34161122",
+      "search_queries": {
+        "maternidade": "Hospital Portugues  26 maternidade",
+        "obstetricia": "Hospital Portugues  26 obstetrícia",
+        "parto": "Hospital Portugues  26 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0001465",
+      "name": "Nappe",
+      "address": "RUA CARLOS COELHO, 129, BOA VISTA",
+      "city": "",
+      "state": "26",
+      "telefone": "(81)34237062/7820",
+      "search_queries": {
+        "maternidade": "Nappe  26 maternidade",
+        "obstetricia": "Nappe  26 obstetrícia",
+        "parto": "Nappe  26 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0002232",
+      "name": "Hospital Santa Isabel",
+      "address": "SIMEAO SOBRAL, 1312, DEZOITO DO FORTE",
+      "city": "",
+      "state": "28",
+      "telefone": "79 32124900",
+      "search_queries": {
+        "maternidade": "Hospital Santa Isabel  28 maternidade",
+        "obstetricia": "Hospital Santa Isabel  28 obstetrícia",
+        "parto": "Hospital Santa Isabel  28 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0002275",
+      "name": "Hospital Sao Jose",
+      "address": "AV JOAO RIBEIRO, 846, SANTO ANTONIO",
+      "city": "",
+      "state": "28",
+      "telefone": "79 2105-1000",
+      "search_queries": {
+        "maternidade": "Hospital Sao Jose  28 maternidade",
+        "obstetricia": "Hospital Sao Jose  28 obstetrícia",
+        "parto": "Hospital Sao Jose  28 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0002372",
+      "name": "Hospital Municipal Zona Sul Des Fernando Franco",
+      "address": "AV TARCISIO DANIEL, 1, FAROLANDIA",
+      "city": "",
+      "state": "28",
+      "telefone": "(79) 32120503",
+      "search_queries": {
+        "maternidade": "Hospital Municipal Zona Sul Des Fernando Franco  28 maternidade",
+        "obstetricia": "Hospital Municipal Zona Sul Des Fernando Franco  28 obstetrícia",
+        "parto": "Hospital Municipal Zona Sul Des Fernando Franco  28 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

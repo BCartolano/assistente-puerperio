@@ -1,61 +1,27 @@
-version: '3.8'
-
+version: "3.8"
 services:
-  # Banco de Dados SQLite (via volume)
-  # Nota: SQLite não precisa de container separado, mas podemos adicionar PostgreSQL se necessário
-  
-  # Backend FastAPI
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: puerperio-backend
+  api:
+    build: .
+    container_name: maternity-api
+    env_file: env.example
     ports:
-      - "5000:5000"
+      - "${API_PORT:-8000}:8000"
     volumes:
+      - ./data:/app/data
+      - ./config:/app/config
       - ./backend:/app/backend
-      - ./backend/cnes_cache.db:/app/backend/cnes_cache.db
-    environment:
-      - PORT=5000
-      - DEBUG=True
-    command: uvicorn backend.api.main:app --host 0.0.0.0 --port 5000 --reload
-    depends_on:
-      - seed
-    networks:
-      - puerperio-network
-
-  # Script de Seed (executa uma vez)
-  seed:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: puerperio-seed
+      - ./reports:/app/reports
+    command: uvicorn backend.api.main:app --host 0.0.0.0 --port ${API_PORT:-8000}
+    restart: unless-stopped
+  orchestrator:
+    build: .
+    container_name: maternity-orchestrator
+    profiles: ["orchestrator"]
+    env_file: env.example
     volumes:
+      - ./data:/app/data
+      - ./config:/app/config
       - ./backend:/app/backend
-      - ./backend/cnes_cache.db:/app/backend/cnes_cache.db
-    command: python backend/etl/seed_data.py
-    networks:
-      - puerperio-network
-
-  # Frontend React
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: puerperio-frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - VITE_API_URL=http://localhost:5000
-    command: npm run dev -- --host 0.0.0.0
-    depends_on:
-      - backend
-    networks:
-      - puerperio-network
-
-networks:
-  puerperio-network:
-    driver: bridge
+      - ./reports:/app/reports
+    command: python scripts/run_orchestrator.py --snapshot ${SNAPSHOT:-202512}
+    restart: "no"

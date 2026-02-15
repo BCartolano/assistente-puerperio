@@ -1,0 +1,146 @@
+{
+  "batch_num": 7,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0007714",
+      "name": "Clinica De Acident Sao Francisco",
+      "address": "PRESIDENTE VARGAS, 4016, IANETAMA",
+      "city": "",
+      "state": "15",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Clinica De Acident Sao Francisco  15 maternidade",
+        "obstetricia": "Clinica De Acident Sao Francisco  15 obstetrícia",
+        "parto": "Clinica De Acident Sao Francisco  15 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0008028",
+      "name": "Hospital Municipal Antonio Giglio",
+      "address": "RUA PEDRO FIORETTI, 48, CENTRO",
+      "city": "",
+      "state": "35",
+      "telefone": "(11)2183-9333",
+      "search_queries": {
+        "maternidade": "Hospital Municipal Antonio Giglio  35 maternidade",
+        "obstetricia": "Hospital Municipal Antonio Giglio  35 obstetrícia",
+        "parto": "Hospital Municipal Antonio Giglio  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0008036",
+      "name": "Hospital Maternidade Amador Aguiar",
+      "address": "AV GETULIO VARGAS, 1260, JD PIRATININGA",
+      "city": "",
+      "state": "35",
+      "telefone": "(11)21833400",
+      "search_queries": {
+        "maternidade": "Hospital Maternidade Amador Aguiar  35 maternidade",
+        "obstetricia": "Hospital Maternidade Amador Aguiar  35 obstetrícia",
+        "parto": "Hospital Maternidade Amador Aguiar  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0008052",
+      "name": "Hospital Regional Dr Vivaldo Martins Simoes Osasco",
+      "address": "RUA ARI BARROSO, 355, PRESIDENTE ALTINO",
+      "city": "",
+      "state": "35",
+      "telefone": "(11) 3683-3077",
+      "search_queries": {
+        "maternidade": "Hospital Regional Dr Vivaldo Martins Simoes Osasco  35 maternidade",
+        "obstetricia": "Hospital Regional Dr Vivaldo Martins Simoes Osasco  35 obstetrícia",
+        "parto": "Hospital Regional Dr Vivaldo Martins Simoes Osasco  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0008087",
+      "name": "Pronto Socorro Conrado Cesarino Nuvolini",
+      "address": "AV JOAO DE ANDRADE, 958, JD STO ANTONIO",
+      "city": "",
+      "state": "35",
+      "telefone": "(11)3609-0283",
+      "search_queries": {
+        "maternidade": "Pronto Socorro Conrado Cesarino Nuvolini  35 maternidade",
+        "obstetricia": "Pronto Socorro Conrado Cesarino Nuvolini  35 obstetrícia",
+        "parto": "Pronto Socorro Conrado Cesarino Nuvolini  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0008141",
+      "name": "Pronto Socorro Dr Antonio Flavio Franca",
+      "address": "RUA AGUAS DA PRATA, S/N, ROCHDALE",
+      "city": "",
+      "state": "35",
+      "telefone": "(11)36866358",
+      "search_queries": {
+        "maternidade": "Pronto Socorro Dr Antonio Flavio Franca  35 maternidade",
+        "obstetricia": "Pronto Socorro Dr Antonio Flavio Franca  35 obstetrícia",
+        "parto": "Pronto Socorro Dr Antonio Flavio Franca  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0008478",
+      "name": "Lar Bussocaba Assistencia Vicentina",
+      "address": "RUA PEDRO FURLAN, 168, UMUARAMA",
+      "city": "",
+      "state": "35",
+      "telefone": "(11)21893999",
+      "search_queries": {
+        "maternidade": "Lar Bussocaba Assistencia Vicentina  35 maternidade",
+        "obstetricia": "Lar Bussocaba Assistencia Vicentina  35 obstetrícia",
+        "parto": "Lar Bussocaba Assistencia Vicentina  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0008923",
+      "name": "Centro Hospitalar De Santo Andre Dr Newton Da Costa Brandao",
+      "address": "AVENIDA JOAO RAMALHO, 326, VILA ASSUNCAO",
+      "city": "",
+      "state": "35",
+      "telefone": "(11) 4433-3600",
+      "search_queries": {
+        "maternidade": "Centro Hospitalar De Santo Andre Dr Newton Da Costa Brandao  35 maternidade",
+        "obstetricia": "Centro Hospitalar De Santo Andre Dr Newton Da Costa Brandao  35 obstetrícia",
+        "parto": "Centro Hospitalar De Santo Andre Dr Newton Da Costa Brandao  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0009601",
+      "name": "Hospital Pio Xii",
+      "address": "RUA PARAGUASSU, 51, SANTANA",
+      "city": "",
+      "state": "35",
+      "telefone": "12 39283344",
+      "search_queries": {
+        "maternidade": "Hospital Pio Xii  35 maternidade",
+        "obstetricia": "Hospital Pio Xii  35 obstetrícia",
+        "parto": "Hospital Pio Xii  35 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0009628",
+      "name": "Hospital Municipal Dr Jose De Carvalho Florence",
+      "address": "RUA SAIGIRO NAKAMURA, 800, VILA INDUSTRIAL",
+      "city": "",
+      "state": "35",
+      "telefone": "12 39013400",
+      "search_queries": {
+        "maternidade": "Hospital Municipal Dr Jose De Carvalho Florence  35 maternidade",
+        "obstetricia": "Hospital Municipal Dr Jose De Carvalho Florence  35 obstetrícia",
+        "parto": "Hospital Municipal Dr Jose De Carvalho Florence  35 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

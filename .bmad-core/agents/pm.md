@@ -73,6 +73,20 @@ health_data_audit:
       O CNES informa se o hospital é privado, mas NÃO informa aceitação de convênios 
       específicos (Unimed, Amil, Bradesco, etc). Esta informação muda contratualmente 
       e não está na API pública do governo.
+    obstetric_filter_kr: |
+      KR (Key Result): 0 resultados ambulatoriais em 3 UFs de validação.
+      Métrica: qa_ambulatorial_vazando = 0 (gate no orquestrador)
+      Validação: Teste E2E garante que "CLÍNICA DE PSICOLOGIA" nunca aparece em /emergency/search
+    override_dod: |
+      DoD release: cobertura de override >= 90% (override_coverage_pct >= 0.9).
+      WARNING se < 90%; bloquear release se < 90% na UF de release (gate no orquestrador).
+    frontend_payload_dod: |
+      DoD frontend: 0 defaults de "Privado"; 100% dos badges iguais aos do payload da API.
+      Validação: Teste E2E garante que card exibe "Público" quando API envia "Público"; falhar se encontrar "Privado" quando API envia "Público".
+    okr_chat: |
+      KR: Latência P95 < 800ms no /chat/intent (sem triagem).
+      KR: ≥ 95% das sessões sem erro no log; triagem aciona em 100% dos casos de termos graves em teste.
+      Métricas: logs/chat_events.jsonl com ts, intent, ok, text, ip, user_id; rotação automática (5MB x 5).
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

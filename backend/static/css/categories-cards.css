@@ -1,0 +1,71 @@
+/* === Categorias da Home (Guias / Gestação / Pós‑Parto / Vacinação) === */
+:root {
+    --cat-card-min: 200px;
+    --cat-card-gap: 12px;
+    --cat-card-radius: 16px;
+    --cat-card-pad: 16px;
+}
+
+.categories-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(var(--cat-card-min), 1fr));
+    gap: var(--cat-card-gap);
+    align-items: stretch;
+}
+
+@media (min-width: 768px) {
+    .categories-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (min-width: 1200px) {
+    .categories-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+.category-card {
+    background: linear-gradient(180deg, #fff, #fff8);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: var(--cat-card-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    padding: var(--cat-card-pad);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    aspect-ratio: 16 / 11;
+    min-height: 140px;
+    transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.category-card .category-title {
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 700;
+    color: #6b4a3f;
+}
+
+.category-card .category-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    background: radial-gradient(circle at 35% 35%, #ff89c5, #ff6fb1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.category-card a {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}

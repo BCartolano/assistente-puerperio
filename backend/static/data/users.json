@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "id": "1fe76605-5269-4765-b159-bdd79c7a677b",
+      "name": "Bruno Cartolano",
+      "email": "cartolanobruno32@gmail.com",
+      "password_hash": "scrypt:32768:8:1$MyhJHVT5TE7OqsMH$9c8cb91ccde1f5832be52eaf7d90362af38c024cadd35908cec1f32df9c97c7166b77805ca83b5540bc2c127ca30136d7420b57df3ea6d21036737b29dd6f4bf",
+      "verified": false,
+      "created_at": 1770301279
+    },
+    {
+      "id": "9b75cf90-01ad-4056-8f4b-49bae6dfbf65",
+      "name": "Bruno Cartolano",
+      "email": "brunocartolanodossantos@gmail.com",
+      "password_hash": "scrypt:32768:8:1$PBT6scgYbFKzonWD$c8000f6bad2e8e9234f3078639fe8a915e3937d01438ab7331d90de9c516fee53ca886b5f6fb23eec6e491adfa7cdad93a6a3e9289323da1f1162ebc1e2b81d1",
+      "verified": false,
+      "created_at": 1770316810
+    },
+    {
+      "id": "e407c1a1-3165-42ff-8243-744a20cd887d",
+      "name": "Bruno Cartolano dos Santos",
+      "email": "cartuchoantigasso@gmail.com",
+      "password_hash": "scrypt:32768:8:1$mRR5uFJm9qVGF4bt$7b1b9ccc99c7305e7772b9a66d962d4cdaad73a53c15580e91aab1da4b31118a9872f2d0802f8b9b735b8cb0bc976a1624be5eec1987662e0daa5ad2684b18c4",
+      "verified": false,
+      "created_at": 1770320409
+    },
+    {
+      "id": "89bbee14-6935-4446-882a-4cd43bab3864",
+      "name": "CU DE MULA",
+      "email": "cartuchocartolano@gmail.com",
+      "password_hash": "scrypt:32768:8:1$8ceCuIu3ts77H3ge$92d15fc2da9ac08ca5d5bd61d3b36bacb81bd4b2452120a77b0467628e7c5e45e6f49d8176055e638a3131dd0af76daa43d9673cc5272f34e5002825c7b0f935",
+      "verified": false,
+      "created_at": 1770383157
+    }
+  ]
+}

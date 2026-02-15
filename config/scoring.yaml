@@ -1,0 +1,31 @@
+# Pesos para classificação "Ala de Maternidade" (emergência obstétrica)
+# Fonte: config/cnes_codes.json + docs/data_dictionary.md
+# Definições: has_maternity = true se ≥1 sinal forte; "Provável" se 0.4–0.59 + keyword
+
+version: "1.0"
+data_version_ref: "config/cnes_codes.json → data_version"
+
+weights:
+  # Sinal forte (qualquer um = has_maternity true)
+  leito_obst_neonatal: 0.6   # Leito obstétrico ou neonatal (bed_types_obst, bed_types_neonatal)
+  servico_classif_obst: 0.5  # Serviço ou classificação obstétrica (services_obst, classif_obst)
+  habilitacao_obst: 0.5      # Habilitação obstétrica/neonatal (habilitacoes_obst)
+  tipo_maternidade: 0.3      # Tipo de estabelecimento "maternidade" (tipos_estab_maternidade)
+  keyword_nome_fantasia: 0.2 # Keyword em nome fantasia (sinal fraco → "Provável")
+
+rules:
+  has_maternity_true:
+    description: "Pelo menos 1 sinal forte (leito OU serviço/classificação OU habilitação OU tipo maternidade)"
+    condition: "any_strong_signal"
+  has_maternity_provavel:
+    description: "Score entre 0.4 e 0.59 E keyword no nome fantasia"
+    score_min: 0.4
+    score_max: 0.59
+    require_keyword: true
+  has_maternity_false:
+    description: "Caso contrário"
+    default: false
+
+evidence:
+  persist_per_cnes: true
+  format: "tipo, código, fonte"

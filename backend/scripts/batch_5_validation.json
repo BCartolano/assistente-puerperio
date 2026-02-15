@@ -1,0 +1,146 @@
+{
+  "batch_num": 5,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0004081",
+      "name": "Maternidade Maria Da Conceicao De Jesus",
+      "address": "AV AFRANIO PEIXOTO, 1492, COUTOS",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3307-8601",
+      "search_queries": {
+        "maternidade": "Maternidade Maria Da Conceicao De Jesus  29 maternidade",
+        "obstetricia": "Maternidade Maria Da Conceicao De Jesus  29 obstetrícia",
+        "parto": "Maternidade Maria Da Conceicao De Jesus  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004170",
+      "name": "Maternidade Tsylla Balbino",
+      "address": "LADEIRA DE QUINTAS, S/N, QUINTAS",
+      "city": "",
+      "state": "29",
+      "telefone": "31162096",
+      "search_queries": {
+        "maternidade": "Maternidade Tsylla Balbino  29 maternidade",
+        "obstetricia": "Maternidade Tsylla Balbino  29 obstetrícia",
+        "parto": "Maternidade Tsylla Balbino  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004251",
+      "name": "Hospital Portugues",
+      "address": "AV PRINCESA ISABEL, 914, BARRA AVENIDA",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3203-5555",
+      "search_queries": {
+        "maternidade": "Hospital Portugues  29 maternidade",
+        "obstetricia": "Hospital Portugues  29 obstetrícia",
+        "parto": "Hospital Portugues  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004278",
+      "name": "Hospital Martagao Gesteira",
+      "address": "RUA JOSE DUARTE, 114, TORORO",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3032-3752/3815",
+      "search_queries": {
+        "maternidade": "Hospital Martagao Gesteira  29 maternidade",
+        "obstetricia": "Hospital Martagao Gesteira  29 obstetrícia",
+        "parto": "Hospital Martagao Gesteira  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004286",
+      "name": "Hospital Juliano Moreira",
+      "address": "AV EDGAR SANTOS, S/N, NARANDIBA",
+      "city": "",
+      "state": "29",
+      "telefone": "(71)3103-3905",
+      "search_queries": {
+        "maternidade": "Hospital Juliano Moreira  29 maternidade",
+        "obstetricia": "Hospital Juliano Moreira  29 obstetrícia",
+        "parto": "Hospital Juliano Moreira  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004294",
+      "name": "Hospital Geral Do Estado",
+      "address": "AV VASCO DA GAMA, S/N, VASCO DA GAMA",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 31175959",
+      "search_queries": {
+        "maternidade": "Hospital Geral Do Estado  29 maternidade",
+        "obstetricia": "Hospital Geral Do Estado  29 obstetrícia",
+        "parto": "Hospital Geral Do Estado  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004456",
+      "name": "Unidade De Emergencia Prof Hosanah D Oliveira",
+      "address": "VIA LOCAL SETOR A, S/N, CAJAZEIRAS",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3117-2166",
+      "search_queries": {
+        "maternidade": "Unidade De Emergencia Prof Hosanah D Oliveira  29 maternidade",
+        "obstetricia": "Unidade De Emergencia Prof Hosanah D Oliveira  29 obstetrícia",
+        "parto": "Unidade De Emergencia Prof Hosanah D Oliveira  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004472",
+      "name": "Espaco Nelson Pires",
+      "address": "LADEIRA AQUIDABAN, 91, SANTO ANTONIO",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3418-7444/17/14",
+      "search_queries": {
+        "maternidade": "Espaco Nelson Pires  29 maternidade",
+        "obstetricia": "Espaco Nelson Pires  29 obstetrícia",
+        "parto": "Espaco Nelson Pires  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004502",
+      "name": "Insbot Barbalho",
+      "address": "RUA BR FREITAS GUIMARAES, S/N, BARBALHO",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3111-1000",
+      "search_queries": {
+        "maternidade": "Insbot Barbalho  29 maternidade",
+        "obstetricia": "Insbot Barbalho  29 obstetrícia",
+        "parto": "Insbot Barbalho  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004731",
+      "name": "Maternidade Climerio De Oliveira",
+      "address": "RUA DO LIMOEIRO, 137, NAZARE",
+      "city": "",
+      "state": "29",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Maternidade Climerio De Oliveira  29 maternidade",
+        "obstetricia": "Maternidade Climerio De Oliveira  29 obstetrícia",
+        "parto": "Maternidade Climerio De Oliveira  29 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

@@ -70,6 +70,38 @@ health_data_audit:
     insurance_handling: |
       NUNCA confirme aceitação de convênio específico sem API direta da seguradora.
       Sempre exibir: "Hospital Privado (Verificar Plano)" e fornecer link/telefone para confirmação.
+    strict_obstetric_filter: |
+      Filtro estrito obstétrico (runtime + ETL):
+      - routes.py: STRICT_OBST (on por default), EXCLUDE_NAME_RE/INCLUDE_MATERN_RE, _filter_obstetric
+      - Aplicar em grupos A e B no geo_v2_search_core
+      - cnes_codes.json: remover "Materno Infantil/Materno-Infantil" de keywords_nome_fantasia
+      - Adicionar extra_exclude_keywords (psicologia, fono, fisio, nutrição, consultório, ambulatorial)
+      - prepare_geo_v2.py: alinhar is_probable com novas regras (opcional, próximo build)
+      - Aceite: Zero cartões de psicologia/fono/fisio/terapia/nutri/consultório/ambulat como "Provável maternidade"
+    override_in_production: |
+      Garantir override em produção:
+      - Boot dos overrides deve logar snapshot e paths dos CSVs usados ([CNES/OVR] usando {path})
+      - SNAPSHOT vem do .env; se não encontrar, tenta detectar automaticamente (tbEstabelecimento disponível mais recente)
+      - Em /emergency/search?debug=true, incluir override_hit e override_reason por item; debug.override_coverage_pct
+      - has_cnes(cnes_id) em cnes_overrides.py para conferir se CNES existe no mapa (override_reason: applied | no_match | not_applied)
+      - Aceite: Log "[CNES/OVR] overrides prontos: N CNES (snapshot=YYYYMM)"; debug payload mostra override_hit e override_reason
+    payload_canonical: |
+      Frontend usa esfera/sus_badge/convênios exclusivamente do payload da API:
+      - NUNCA força "Privado" como fallback se a API enviar "Público" ou "Filantrópico"
+      - mapEsfera() só é usado se API não enviar esfera (casos legados sem override)
+      - No header do card, classe de esfera vem diretamente de facility.esfera (Público/Filantrópico/Privado)
+      - sus_badge vem diretamente da API; mapSusBadge() só ajusta formato se necessário
+      - Remover qualquer default "Privado" em convertFacilitiesToHospitals
+      - Log de diagnóstico: console.table dos primeiros 3 itens mostrando nome, esfera, sus_badge do payload
+      - Aceite: 0 defaults de "Privado"; 100% dos badges iguais aos do payload da API
+    router_chat: |
+      Objetivo: expor /api/v1/chat (ping, intents, intent), triagem 192 antes do roteamento, rate limit leve, logging JSONL com rotação.
+      Tarefas:
+      - Implementar router Flask (backend/chat/router.py) e FastAPI opcional (backend/chat/router_fastapi.py)
+      - Triagem: TRIAGE_ON/TERMS; skip via ?triage_skip=1
+      - Rate limit por IP (CHAT_RATE_MAX por minuto, default 60)
+      - Logs JSONL com RotatingFileHandler (max 5MB x 5 arquivos) em logs/chat_events.jsonl
+      - Aceite: curl /chat/ping ok; triagem retorna 192; logs gravando e rotacionando
   validation_logic_example: |
     # Lógica de Validação Rigorosa (Python Pseudocode)
     def validar_hospital(google_place_id, user_filters):

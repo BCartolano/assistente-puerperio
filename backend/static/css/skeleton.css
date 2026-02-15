@@ -1,0 +1,137 @@
+/* Skeleton / shimmer para cards educativos */
+:root {
+  --skeleton-inset: 12px;
+  --skeleton-radius: var(--edu-card-radius, 16px);
+  --sk-gap: 10px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,.06) 25%,
+    rgba(0,0,0,.12) 37%,
+    rgba(0,0,0,.06) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Acessibilidade: reduzir movimento quando o SO pedir */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none !important;
+    background: rgba(0,0,0,.06) !important;
+    background-size: auto !important;
+  }
+}
+
+/* Estado de carregamento no card educativo */
+.conteudo-card-carousel.is-loading {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.conteudo-card-carousel.is-loading > *:not(.skeleton-wrap) {
+  visibility: hidden !important;
+}
+
+.conteudo-card-carousel .skeleton-wrap {
+  position: absolute;
+  inset: var(--skeleton-inset);
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  border-radius: var(--skeleton-radius);
+}
+
+/* blocos padrão */
+.skeleton-figure { height: 48%; border-radius: 12px; }
+.skeleton-title { height: 16px; width: 70%; border-radius: 8px; }
+.skeleton-subtitle { height: 12px; width: 52%; border-radius: 8px; }
+.skeleton-badge { height: 18px; width: 120px; border-radius: 999px; }
+.skeleton-button { height: 34px; width: 180px; border-radius: 12px; }
+
+.skeleton-figure.skeleton-shimmer,
+.skeleton-title.skeleton-shimmer,
+.skeleton-subtitle.skeleton-shimmer,
+.skeleton-badge.skeleton-shimmer,
+.skeleton-button.skeleton-shimmer {
+  background-color: rgba(0,0,0,.06);
+}
+
+/* === Skeleton para Categorias (Guias / Gestação / Pós‑Parto / Vacinação) === */
+.categories-grid.is-loading {
+  position: relative;
+}
+
+.skeleton-cats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--cat-card-min, 200px), 1fr));
+  gap: var(--cat-card-gap, 12px);
+}
+
+.skeleton-cat-card {
+  aspect-ratio: var(--cat-aspect, 16 / 11);
+  min-height: 120px;
+  border-radius: var(--cat-card-radius, 16px);
+  border: 1px solid rgba(0,0,0,.06);
+  background: linear-gradient(180deg, #fff, #fff8);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.7);
+  padding: var(--cat-card-pad, 16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-cat-card .sk-block {
+  width: 60%;
+  height: 16px;
+  border-radius: 10px;
+}
+
+.skeleton-cat-card .sk-block.skeleton-shimmer {
+  background-color: rgba(0,0,0,.06);
+}
+
+/* === Skeleton para "Perto de você" (geolocalização) === */
+.nearby-list.is-loading { position: relative; }
+
+.skeleton-nearby {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .skeleton-nearby { grid-template-columns: 1fr 1fr; }
+}
+
+.skeleton-hosp-card {
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,.06);
+  background: linear-gradient(180deg, #fff, #fff8);
+  box-shadow: 0 8px 24px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.7);
+  padding: 12px;
+}
+
+.skeleton-hosp-title { height: 18px; width: 70%; border-radius: 10px; }
+.skeleton-hosp-sub { height: 12px; width: 55%; border-radius: 8px; margin-top: 6px; }
+.skeleton-hosp-badges { display: flex; gap: 6px; margin-top: 10px; }
+.skeleton-hosp-badge { height: 14px; width: 70px; border-radius: 999px; }
+.skeleton-hosp-line { height: 12px; width: 60%; border-radius: 8px; margin-top: 8px; }
+
+.skeleton-hosp-title.skeleton-shimmer,
+.skeleton-hosp-sub.skeleton-shimmer,
+.skeleton-hosp-badge.skeleton-shimmer,
+.skeleton-hosp-line.skeleton-shimmer {
+  background-color: rgba(0,0,0,.06);
+}

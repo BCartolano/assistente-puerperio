@@ -1,0 +1,38 @@
+name: Snapshot CNES (mensal)
+
+on:
+  schedule:
+    - cron: "0 3 3 * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run orchestrator
+        run: python scripts/run_orchestrator.py --snapshot 202512
+        env:
+          SNAPSHOT: "202512"
+      - name: Analyze search events (if log exists)
+        if: hashFiles('logs/search_events.jsonl') != ''
+        run: python scripts/analyze_search_events.py
+      - name: Geo healthcheck
+        run: python scripts/check_geo_parquet.py --municipios --export-missing
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ github.run_id }}
+          path: reports/
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ github.run_id }}
+          path: logs/

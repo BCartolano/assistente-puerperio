@@ -1,0 +1,146 @@
+{
+  "batch_num": 8,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0009709",
+      "name": "Ebserh Hosp Univ Maria Aparecida Pedrossian",
+      "address": "SENADOR FILINTO MULLER, 355, VILA IPIRANGA",
+      "city": "",
+      "state": "50",
+      "telefone": "61 32558365",
+      "search_queries": {
+        "maternidade": "Ebserh Hosp Univ Maria Aparecida Pedrossian  50 maternidade",
+        "obstetricia": "Ebserh Hosp Univ Maria Aparecida Pedrossian  50 obstetrícia",
+        "parto": "Ebserh Hosp Univ Maria Aparecida Pedrossian  50 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0009717",
+      "name": "Santa Casa",
+      "address": "EDUARDO SANTOS PEREIRA, 88, CENTRO",
+      "city": "",
+      "state": "50",
+      "telefone": "67 33224249",
+      "search_queries": {
+        "maternidade": "Santa Casa  50 maternidade",
+        "obstetricia": "Santa Casa  50 obstetrícia",
+        "parto": "Santa Casa  50 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0009733",
+      "name": "Hospital Sao Juliao",
+      "address": "LINO VILLACHA, 1250, SAO JULIAO",
+      "city": "",
+      "state": "50",
+      "telefone": "67 33581500",
+      "search_queries": {
+        "maternidade": "Hospital Sao Juliao  50 maternidade",
+        "obstetricia": "Hospital Sao Juliao  50 obstetrícia",
+        "parto": "Hospital Sao Juliao  50 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0009768",
+      "name": "Associacao De Amparo A Maternidade E A Infancia Aami",
+      "address": "MAL RONDOM, 2644, CENTRO",
+      "city": "",
+      "state": "50",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Associacao De Amparo A Maternidade E A Infancia Aami  50 maternidade",
+        "obstetricia": "Associacao De Amparo A Maternidade E A Infancia Aami  50 obstetrícia",
+        "parto": "Associacao De Amparo A Maternidade E A Infancia Aami  50 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010456",
+      "name": "Hospital De Base Do Distrito Federal",
+      "address": "SMHS QUADRA 101 AREA ESPECIAL, 001, ASA SUL",
+      "city": "",
+      "state": "53",
+      "telefone": "6133151450",
+      "search_queries": {
+        "maternidade": "Hospital De Base Do Distrito Federal  53 maternidade",
+        "obstetricia": "Hospital De Base Do Distrito Federal  53 obstetrícia",
+        "parto": "Hospital De Base Do Distrito Federal  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010464",
+      "name": "Hran",
+      "address": "SMHN QUADRA, 101, PLANO PILOTO",
+      "city": "",
+      "state": "53",
+      "telefone": "61 3254300",
+      "search_queries": {
+        "maternidade": "Hran  53 maternidade",
+        "obstetricia": "Hran  53 obstetrícia",
+        "parto": "Hran  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010472",
+      "name": "Hrg",
+      "address": "AREA ESPECIAL, S/N, GAMA",
+      "city": "",
+      "state": "53",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Hrg  53 maternidade",
+        "obstetricia": "Hrg  53 obstetrícia",
+        "parto": "Hrg  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010480",
+      "name": "Hospital Regional De Ceilandia",
+      "address": "AREA ESPECIAL, 1, CEILANDIA SUL",
+      "city": "",
+      "state": "53",
+      "telefone": "20172000",
+      "search_queries": {
+        "maternidade": "Hospital Regional De Ceilandia  53 maternidade",
+        "obstetricia": "Hospital Regional De Ceilandia  53 obstetrícia",
+        "parto": "Hospital Regional De Ceilandia  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010499",
+      "name": "Hrt Hospital Regional De Taguatinga",
+      "address": "SETOR C NORTE, 024, TAGUATINGA",
+      "city": "",
+      "state": "53",
+      "telefone": "(61)20171700",
+      "search_queries": {
+        "maternidade": "Hrt Hospital Regional De Taguatinga  53 maternidade",
+        "obstetricia": "Hrt Hospital Regional De Taguatinga  53 obstetrícia",
+        "parto": "Hrt Hospital Regional De Taguatinga  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010502",
+      "name": "Hrs",
+      "address": "QUADRA 12 AREA RESERVADA, 01, SOBRADINHO",
+      "city": "",
+      "state": "53",
+      "telefone": "(61)34879200",
+      "search_queries": {
+        "maternidade": "Hrs  53 maternidade",
+        "obstetricia": "Hrs  53 obstetrícia",
+        "parto": "Hrs  53 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

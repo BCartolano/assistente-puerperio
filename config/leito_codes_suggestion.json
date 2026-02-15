@@ -1,0 +1,10 @@
+{
+  "leito_codes_obst": [
+    "4"
+  ],
+  "leito_codes_neonatal": [
+    "2",
+    "3"
+  ],
+  "notes": "Cole os arrays em config/cnes_codes.json se fizer sentido; revise os TOP valores impressos acima."
+}

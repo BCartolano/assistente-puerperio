@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-01-22T01:37:53.407344",
+  "stats": {
+    "total_analyzed": 605,
+    "valid": 605,
+    "removed_invalid": 0,
+    "removed_ghost": 0,
+    "removed_duplicate": 0,
+    "removed_no_pattern": 0
+  },
+  "final_count": 605,
+  "elapsed_seconds": 0.029154539108276367,
+  "removed_samples": []
+}

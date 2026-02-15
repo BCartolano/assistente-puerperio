@@ -1,0 +1,146 @@
+{
+  "batch_num": 4,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0003832",
+      "name": "Hospital Santa Izabel",
+      "address": "PRACA CONSELHEIRO ALMEIDA COUTO, 500, NAZARE",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 2203-8444",
+      "search_queries": {
+        "maternidade": "Hospital Santa Izabel  29 maternidade",
+        "obstetricia": "Hospital Santa Izabel  29 obstetrícia",
+        "parto": "Hospital Santa Izabel  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003840",
+      "name": "Maternidade Albert Sabin",
+      "address": "ESTRADA DO COQUEIRO GRANDE, S/N, CAJAZEIRAS",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 32535353",
+      "search_queries": {
+        "maternidade": "Maternidade Albert Sabin  29 maternidade",
+        "obstetricia": "Maternidade Albert Sabin  29 obstetrícia",
+        "parto": "Maternidade Albert Sabin  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003859",
+      "name": "Hospital Geral Roberto Santos",
+      "address": "ESTRADA SABOEIRO, S/N, SABOEIRO",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3117-7500",
+      "search_queries": {
+        "maternidade": "Hospital Geral Roberto Santos  29 maternidade",
+        "obstetricia": "Hospital Geral Roberto Santos  29 obstetrícia",
+        "parto": "Hospital Geral Roberto Santos  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003875",
+      "name": "Hospital Ana Nery",
+      "address": "RUA SALDANHA MARINHO, S/N, CAIXA D AGUA",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3117-1800",
+      "search_queries": {
+        "maternidade": "Hospital Ana Nery  29 maternidade",
+        "obstetricia": "Hospital Ana Nery  29 obstetrícia",
+        "parto": "Hospital Ana Nery  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003921",
+      "name": "Cican",
+      "address": "AV VASCO DA GAMA, S/N, RIO VERMELHO",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 32776866",
+      "search_queries": {
+        "maternidade": "Cican  29 maternidade",
+        "obstetricia": "Cican  29 obstetrícia",
+        "parto": "Cican  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003972",
+      "name": "Centro De Parto Humanizado Joao Batista Caribe",
+      "address": "RUA ANTONIO BALBINO, S/N, PLATAFORMA",
+      "city": "",
+      "state": "29",
+      "telefone": "3117-2607",
+      "search_queries": {
+        "maternidade": "Centro De Parto Humanizado Joao Batista Caribe  29 maternidade",
+        "obstetricia": "Centro De Parto Humanizado Joao Batista Caribe  29 obstetrícia",
+        "parto": "Centro De Parto Humanizado Joao Batista Caribe  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003980",
+      "name": "Hospital Eladio Lasserre",
+      "address": "RUA CORONEL AZEVEDO, S/N, CAJAZEIRAS II",
+      "city": "",
+      "state": "29",
+      "telefone": "7133955719",
+      "search_queries": {
+        "maternidade": "Hospital Eladio Lasserre  29 maternidade",
+        "obstetricia": "Hospital Eladio Lasserre  29 obstetrícia",
+        "parto": "Hospital Eladio Lasserre  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004057",
+      "name": "Hospital Espanhol",
+      "address": "AV SETE DE SETEMBRO, 4161, BARRA",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3264-1800/1500",
+      "search_queries": {
+        "maternidade": "Hospital Espanhol  29 maternidade",
+        "obstetricia": "Hospital Espanhol  29 obstetrícia",
+        "parto": "Hospital Espanhol  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004065",
+      "name": "Hospital Especializado Octavio Mangabeira",
+      "address": "PRACA CONSELHEIRO JOAO ALFREDO, S/N, PAU MIUDO",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3117-1609",
+      "search_queries": {
+        "maternidade": "Hospital Especializado Octavio Mangabeira  29 maternidade",
+        "obstetricia": "Hospital Especializado Octavio Mangabeira  29 obstetrícia",
+        "parto": "Hospital Especializado Octavio Mangabeira  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0004073",
+      "name": "Hospital Geral Ernesto Simoes Filho",
+      "address": "DO PAU MIUDO, S/N, PAU MIUDO",
+      "city": "",
+      "state": "29",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Hospital Geral Ernesto Simoes Filho  29 maternidade",
+        "obstetricia": "Hospital Geral Ernesto Simoes Filho  29 obstetrícia",
+        "parto": "Hospital Geral Ernesto Simoes Filho  29 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

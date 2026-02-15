@@ -163,11 +163,18 @@
     min-width: 0;
 }
 
-/* Lista: 1 coluna no mobile, 2 no desktop (grid explícito) */
+/* Lista: 1 coluna no mobile, 2 no desktop (grid explícito); blocos ocupam toda a largura */
 .conteudos-educativos-list .conteudos-carousel-track {
     display: grid !important;
     grid-template-columns: 1fr !important;
     gap: var(--edu-card-gap) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.conteudos-educativos-list .conteudos-carousel-track > .conteudo-card-carousel {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
 }
 @media (min-width: 769px) {
     .conteudos-educativos-list .conteudos-carousel-track {

@@ -1,0 +1,62 @@
+/* === Toolbar de filtros para as categorias (chips + "Ver todos") === */
+:root {
+    --cat-chip-gap: 8px;
+}
+
+.categories-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 8px 0 12px 0;
+}
+
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--cat-chip-gap);
+}
+
+.filter-chips .chip {
+    appearance: none;
+    border-radius: 999px;
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: linear-gradient(180deg, #fff, #fff6);
+    color: #6b4a3f;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.filter-chips .chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.filter-chips .chip:active {
+    transform: translateY(0);
+}
+
+.filter-chips .chip.active {
+    background: #ffe6f2;
+    color: #c44569;
+    border-color: rgba(196, 69, 105, 0.3);
+    box-shadow: 0 6px 16px rgba(196, 69, 105, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.categories-toolbar .view-all {
+    color: #c44569;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(196, 69, 105, 0.35);
+    padding-bottom: 1px;
+}
+
+.categories-toolbar .view-all:hover {
+    color: #a83455;
+    border-color: rgba(196, 69, 105, 0.6);
+}

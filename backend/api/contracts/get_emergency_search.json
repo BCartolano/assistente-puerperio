@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GET /v1/emergency/search",
+  "description": "Busca de estabelecimentos para emergência obstétrica (top N por proximidade e maternidade)",
+  "type": "object",
+  "required": ["meta", "results"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["legal_disclaimer", "total_results"],
+      "properties": {
+        "legal_disclaimer": { "type": "string" },
+        "total_results": { "type": "integer", "minimum": 0 },
+        "data_source_date": { "type": ["string", "null"] },
+        "is_cache_fallback": { "type": "boolean" }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "tags", "badges"],
+        "properties": {
+          "id": { "type": "string", "description": "CNES ID" },
+          "cnes_id": { "type": ["string", "null"] },
+          "name": { "type": "string" },
+          "nome": { "type": "string", "description": "Nome canônico (display)" },
+          "display_name": { "type": ["string", "null"] },
+          "type": { "type": "string", "enum": ["HOSPITAL", "UPA", "UBS", "OUTROS"] },
+          "esfera": { "type": "string", "description": "Público | Privado | Filantrópico (payload + override CNES)" },
+          "sus_badge": { "type": "string", "description": "Aceita Cartão SUS | Não atende SUS" },
+          "has_convenios": { "type": "boolean", "description": "Possui convênios no CNES (excl. SUS)" },
+          "convenios": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Lista de convênios no CNES (até 3, opcional)"
+          },
+          "tags": {
+            "type": "object",
+            "properties": {
+              "sus": { "type": "boolean" },
+              "private": { "type": "boolean" },
+              "maternity": { "type": "boolean" },
+              "emergency_only": { "type": "boolean" }
+            }
+          },
+          "badges": { "type": "array", "items": { "type": "string" } },
+          "address": { "type": ["string", "null"] },
+          "endereco": { "type": ["string", "null"] },
+          "city": { "type": ["string", "null"] },
+          "state": { "type": ["string", "null"] },
+          "distance_km": { "type": ["number", "null"], "minimum": 0 },
+          "distancia_km": { "type": ["number", "null"] },
+          "tempo_estimado_seg": { "type": ["number", "null"] },
+          "lat": { "type": ["number", "null"] },
+          "lon": { "type": ["number", "null"] },
+          "long": { "type": ["number", "null"] },
+          "phone": { "type": ["string", "null"] },
+          "telefone": { "type": ["string", "null"] },
+          "telefone_formatado": { "type": ["string", "null"] },
+          "google_search_term": { "type": "string" },
+          "warning_message": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "meta": {
+        "legal_disclaimer": "Em emergência, ligue 192 (SAMU). Informações do CNES. Confirme convênios por telefone.",
+        "total_results": 3,
+        "data_source_date": "2025-02",
+        "is_cache_fallback": false
+      },
+      "results": [
+        {
+          "id": "1234567",
+          "cnes_id": "1234567",
+          "nome": "Hospital da Mulher",
+          "name": "Hospital da Mulher",
+          "display_name": "Hospital da Mulher",
+          "type": "HOSPITAL",
+          "esfera": "Público",
+          "sus_badge": "Aceita Cartão SUS",
+          "has_convenios": true,
+          "convenios": ["Unimed", "Bradesco Saúde"],
+          "tags": { "sus": true, "private": false, "maternity": true, "emergency_only": false },
+          "badges": ["Ala de Maternidade", "Aceita Cartão SUS", "Público"],
+          "address": "Rua Exemplo, 100",
+          "endereco": "Rua Exemplo, 100",
+          "city": "São Paulo",
+          "state": "SP",
+          "distance_km": 2.5,
+          "distancia_km": 2.5,
+          "tempo_estimado_seg": 300,
+          "lat": -23.55,
+          "lon": -46.63,
+          "long": -46.63,
+          "phone": "(11) 1234-5678",
+          "telefone": "(11) 1234-5678",
+          "telefone_formatado": "(11) 1234-5678",
+          "google_search_term": "Hospital da Mulher São Paulo",
+          "warning_message": null
+        }
+      ]
+    }
+  ]
+}

@@ -38,6 +38,10 @@ if sys.platform == 'win32':
         # Se não conseguir, continua com a configuração padrão
         pass
 
+# Suprime avisos Pydantic V2 que poluem o log (opcional: remover em debug)
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic.*")
+
 # Carrega .env o mais cedo possível (antes de qualquer cliente/chaves)
 from dotenv import load_dotenv
 _bd = os.path.dirname(os.path.abspath(__file__))
@@ -63,15 +67,17 @@ import string
 import logging
 from logging.handlers import RotatingFileHandler
 import unicodedata
-from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, render_template, session, url_for, redirect, Response, g
+from datetime import datetime, timedelta, date
+from flask import Flask, request, jsonify, render_template, session, url_for, redirect, Response, g, make_response, abort, current_app
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict, Counter
+from threading import Lock
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import atexit
+from itertools import islice
 
 # Tenta importar NLTK para stemming (opcional)
 NLTK_AVAILABLE = False
@@ -132,20 +138,28 @@ if not logger.handlers:  # Evita reconfigurar se já foi configurado
         datefmt='%Y-%m-%d %H:%M:%S'
     ))
     
-    # Handler para console (manter para desenvolvimento)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(_log_level)
-    console_handler.setFormatter(logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    ))
+    # Handler para console: opcional via LOG_CONSOLE (1=on). Se 0, só arquivo (reduz buffer do terminal/Cursor)
+    _log_console = os.getenv("LOG_CONSOLE", "1").strip().lower() in ("1", "true", "on", "yes")
+    if _log_console:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(_log_level)
+        console_handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        ))
+        logger.addHandler(console_handler)
     
-    # Adiciona handlers ao logger
     logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
     
     # Previne propagação para o logger root (evita duplicação)
     logger.propagate = False
+    
+    # Se LOG_CONSOLE=0, remove handler de console do root (reduz buffer do terminal/Cursor)
+    if not _log_console:
+        _root = logging.getLogger()
+        for _h in list(_root.handlers):
+            if isinstance(_h, logging.StreamHandler):
+                _root.removeHandler(_h)
 
 # Agora pode usar logger para NLTK
 if NLTK_AVAILABLE:
@@ -169,12 +183,19 @@ from backend.llm_clients import (
     OPENAI_ASSISTANT_ID,
 )
 
-# Pull do geo do Azure Blob no start (se não existir local; opcional)
-try:
-    from backend.startup.download_geo import ensure_geo
-    ensure_geo()
-except Exception as e:
-    logger.info(f"[GEO] Download opcional falhou: {e}")
+# Geo: não carrega no import; inicia em thread após o site abrir (evita travar startup)
+def _start_geo_lazy():
+    import threading
+    def _run():
+        import time
+        time.sleep(2.0)  # dá tempo do site abrir
+        try:
+            from backend.startup.download_geo import ensure_geo
+            ensure_geo()
+        except Exception as e:
+            logger.info("[GEO] Download opcional (lazy) falhou: %s", e)
+    threading.Thread(target=_run, daemon=True).start()
+_start_geo_lazy()
 
 # CNES Overrides: lazy boot (carrega na primeira rota que precisar; use ensure_boot() ou get_overrides())
 # Não chama boot() na importação para start rápido; cache .pkl acelera cargas subsequentes.
@@ -182,22 +203,195 @@ except Exception as e:
 # Verifica se as variáveis de email foram carregadas (após load_dotenv)
 mail_username_env = os.getenv('MAIL_USERNAME')
 mail_password_env = os.getenv('MAIL_PASSWORD')
-mail_server_env = os.getenv('MAIL_SERVER')
+resend_key_env = os.getenv('RESEND_API_KEY', '').strip()
 
-if mail_username_env and mail_password_env:
+if resend_key_env:
+    logger.info("[ENV] ✅ Email configurado via Resend (RESEND_API_KEY)")
+    print("[ENV] ✅ Email configurado via Resend (3.000/mês grátis)")
+elif mail_username_env and mail_password_env:
     logger.info(f"[ENV] ✅ Variáveis de email carregadas: MAIL_USERNAME={mail_username_env[:5]}...")
     print(f"[ENV] ✅ Variáveis de email carregadas: MAIL_USERNAME={mail_username_env}")
 else:
-    logger.warning("[ENV] ⚠️ MAIL_USERNAME ou MAIL_PASSWORD não encontrados no .env")
-    print("[ENV] ⚠️ MAIL_USERNAME ou MAIL_PASSWORD não encontrados no .env")
-    print("[ENV]    - Verifique se o arquivo .env existe e contém essas variáveis")
-    print("[ENV]    - Em desenvolvimento, emails serão apenas logados no console")
+    logger.warning("[ENV] ⚠️ Email não configurado. Use RESEND_API_KEY ou MAIL_USERNAME/MAIL_PASSWORD no .env")
+    print("[ENV] ⚠️ Email não configurado. Use RESEND_API_KEY (Resend) ou MAIL_USERNAME/MAIL_PASSWORD (Gmail) no .env")
+
+# Blueprint de geolocalização /api/nearby (tolerante a falhas)
+try:
+    from backend.geo.nearby import geo_bp
+except Exception as _geo_err:
+    geo_bp = None
+
+try:
+    from backend.blueprints.auth_routes import auth_bp
+except Exception as _auth_err:
+    auth_bp = None
+
+try:
+    from backend.seo import seo_bp
+except Exception as _seo_err:
+    seo_bp = None
 
 # Inicializa o Flask com os caminhos corretos
 app = Flask(__name__, 
             template_folder=os.path.join(os.path.dirname(__file__), 'templates'),
             static_folder=os.path.join(os.path.dirname(__file__), 'static'),
             static_url_path='/static')
+
+# Cookies de sessão (segurança) – seguros em prod, flex em dev
+try:
+    is_prod = (os.environ.get("FLASK_ENV", "").lower() == "production") or (
+        os.environ.get("SESSION_SECURE", "1").lower() in ("1", "true", "yes")
+    )
+    same = os.environ.get("SESSION_SAMESITE", "Lax")
+    ttl_days = int(os.environ.get("SESSION_TTL_DAYS", "30"))
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE=same,
+        SESSION_COOKIE_SECURE=is_prod,
+        REMEMBER_COOKIE_HTTPONLY=True,
+        REMEMBER_COOKIE_SAMESITE=same,
+        REMEMBER_COOKIE_SECURE=is_prod,
+        PERMANENT_SESSION_LIFETIME=timedelta(days=ttl_days)
+    )
+except Exception:
+    pass
+
+
+@app.context_processor
+def inject_config():
+    """Expõe app.config no Jinja (ex.: {% if config.DEBUG %} para skeleton-toggle)."""
+    return dict(config=app.config)
+
+
+# CORS opcional por FRONT_ORIGIN
+try:
+    from flask_cors import CORS  # pyright: ignore[reportMissingModuleSource]
+    _front = os.environ.get("FRONT_ORIGIN")
+    if _front:
+        CORS(app, resources={r"/api/*": {"origins": [_front], "supports_credentials": True}})
+        try:
+            app.logger.info("[CORS] Habilitado para %s", _front)
+        except Exception:
+            pass
+except Exception:
+    pass
+
+
+# Monitoring (opcional)
+try:
+    from backend.monitoring.appinsights import init_appinsights
+    init_appinsights(app)
+except Exception:
+    pass
+
+
+if geo_bp is not None:
+    try:
+        app.register_blueprint(geo_bp)
+        app.logger.info("[GEO] Blueprint /api/nearby registrado")
+    except Exception as _e:
+        try:
+            app.logger.warning("[GEO] Falha ao registrar blueprint: %s", _e)
+        except Exception:
+            pass
+
+# Blueprint de hospitais com PostgreSQL + PostGIS (tolerante a falhas)
+try:
+    from backend.api.routes_hospitais import hospitais_bp
+    app.register_blueprint(hospitais_bp)
+    app.logger.info("[HOSPITAIS] Blueprint /api/hospitais-proximos registrado")
+except Exception as _e:
+    try:
+        app.logger.warning("[HOSPITAIS] Falha ao registrar blueprint: %s", _e)
+    except Exception:
+        pass
+
+
+@app.context_processor
+def inject_static_version():
+    """Injeta timestamp (cache busting) em todos os templates. Usa get_build_version() para que cada deploy gere URLs novas."""
+    try:
+        return {"timestamp": get_build_version()}
+    except Exception:
+        return {"timestamp": "1"}
+
+
+@app.errorhandler(404)
+def _not_found(e):
+    try:
+        return render_template("errors/404.html"), 404
+    except Exception:
+        return "Not found", 404
+
+
+@app.errorhandler(500)
+def _server_error(e):
+    try:
+        return render_template("errors/500.html"), 500
+    except Exception:
+        return "Server error", 500
+
+
+if auth_bp is not None:
+    try:
+        app.register_blueprint(auth_bp, url_prefix="")
+        app.logger.info("[AUTH] Blueprint auth_bp registrado (/api/login, /api/register, /api/user, /api/logout, /forgot-password, etc.)")
+    except Exception as _e:
+        try:
+            app.logger.warning("[AUTH] Falha ao registrar blueprint: %s", _e)
+        except Exception:
+            pass
+
+if seo_bp is not None:
+    try:
+        app.register_blueprint(seo_bp)
+        app.logger.info("[SEO] Blueprint robots/sitemap registrado")
+    except Exception:
+        pass
+
+# Blueprints modulares (arquitetura "Mansão") – edu ativo; auth/health/chat em migração gradual
+try:
+    from backend.blueprints import edu_bp
+    app.register_blueprint(edu_bp, url_prefix="")
+    app.logger.info("[BLUEPRINTS] edu_bp registrado (/conteudos, /api/educational)")
+except Exception as _e:
+    app.logger.warning("[BLUEPRINTS] edu_bp falhou: %s", _e)
+try:
+    from backend.blueprints import health_bp
+    app.register_blueprint(health_bp, url_prefix="")
+    app.logger.info("[BLUEPRINTS] health_bp registrado (/api/v1/emergency, /api/v1/health, /api/vacinas, /api/baby_profile, /api/vaccination)")
+except Exception as _e:
+    app.logger.warning("[BLUEPRINTS] health_bp falhou: %s", _e)
+try:
+    from backend.blueprints import chat_bp
+    app.register_blueprint(chat_bp, url_prefix="")
+    app.logger.info("[BLUEPRINTS] chat_bp registrado (/api/chat, /api/historico, /api/categorias, /api/alertas, /api/guias, /api/cuidados, /api/triagem-emocional, /api/limpar-memoria-ia)")
+except Exception as _e:
+    app.logger.warning("[BLUEPRINTS] chat_bp falhou: %s", _e)
+
+
+# Rate limit login: máx 10 tentativas por IP a cada 15 min (evita brute force)
+_LOGIN_RATE_LIMIT = {}  # {ip: {"count": int, "window_start": float}}
+_LOGIN_RATE_LIMIT_LOCK = Lock()
+LOGIN_RATE_LIMIT_MAX = 10
+LOGIN_RATE_LIMIT_WINDOW_SEC = 900  # 15 min
+
+def _login_rate_limit_check(ip):
+    """Retorna True se dentro do limite; False se excedeu (deve retornar 429)."""
+    with _LOGIN_RATE_LIMIT_LOCK:
+        now = time.time()
+        if ip not in _LOGIN_RATE_LIMIT:
+            _LOGIN_RATE_LIMIT[ip] = {"count": 0, "window_start": now}
+        rec = _LOGIN_RATE_LIMIT[ip]
+        if now - rec["window_start"] > LOGIN_RATE_LIMIT_WINDOW_SEC:
+            rec["count"] = 0
+            rec["window_start"] = now
+        rec["count"] += 1
+        return rec["count"] <= LOGIN_RATE_LIMIT_MAX
+
+def _login_rate_limit_clear(ip):
+    with _LOGIN_RATE_LIMIT_LOCK:
+        _LOGIN_RATE_LIMIT.pop(ip, None)
 
 # PERF: log e exposição no /health (PERF_LOG=on, PERF_EXPOSE=on no .env)
 PERF_LOG = os.getenv("PERF_LOG", "").lower() in ("1", "true", "on", "yes")
@@ -216,7 +410,7 @@ _PERF_OVR_BOOT_AT = None
 # OVERRIDES_BOOT=background: pré-aquece overrides em thread (não bloqueia o start)
 if os.getenv("OVERRIDES_BOOT", "lazy").lower() in ("bg", "background"):
     import threading
-    def _bg_boot():
+    def _bg_boot(app_ref):
         global _PERF_OVR_BOOT_MS, _PERF_OVR_BOOT_AT, _PERF_BOOT_DONE
         try:
             from backend.startup.cnes_overrides import ensure_boot, get_snapshot_used, get_overrides_count
@@ -226,13 +420,31 @@ if os.getenv("OVERRIDES_BOOT", "lazy").lower() in ("bg", "background"):
             _PERF_OVR_BOOT_MS = round(dt, 0)
             _PERF_OVR_BOOT_AT = (datetime.utcnow().isoformat() + "Z")
             _PERF_BOOT_DONE = True
+            if app_ref is not None:
+                app_ref._perf_ovr_boot_ms = _PERF_OVR_BOOT_MS
+                app_ref._perf_ovr_boot_at = _PERF_OVR_BOOT_AT
             _perf_logger.info(
                 "[PERF] overrides boot (bg) ok: %.0f ms snapshot=%s count=%s",
                 dt, get_snapshot_used(), get_overrides_count(),
             )
         except Exception as e:
             _perf_logger.warning("[PERF] overrides boot (bg) fail: %s", e)
-    threading.Thread(target=_bg_boot, daemon=True).start()
+    threading.Thread(target=_bg_boot, args=(app,), daemon=True).start()
+
+# GEO_PREWARM=1: pré-aquece cache do parquet de hospitais em background (evita timeout na 1ª busca)
+if os.getenv("GEO_PREWARM", "0").strip() in ("1", "true", "on", "yes"):
+    import threading
+    def _bg_geo_prewarm():
+        try:
+            from backend.api.routes import load_geo_df
+            t0 = time.perf_counter()
+            df = load_geo_df()
+            dt = (time.perf_counter() - t0) * 1000
+            rows = len(df) if df is not None else 0
+            _perf_logger.info("[GEO] prewarm ok: %d linhas em %.0f ms", rows, dt)
+        except Exception as e:
+            _perf_logger.warning("[GEO] prewarm fail: %s", e)
+    threading.Thread(target=_bg_geo_prewarm, daemon=True).start()
 
 # Admin /debug/*: token e/ou IP (produção: ADMIN_DEBUG=off)
 ADMIN_DEBUG = os.getenv("ADMIN_DEBUG", "on").lower() in ("1", "true", "on", "yes")
@@ -264,6 +476,10 @@ api_logger = logging.getLogger("sophia.api")
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'sua-chave-secreta-super-segura-mude-isso-em-producao')
 BASE_PATH = os.path.join(os.path.dirname(__file__), "..", "dados")
 DB_PATH = os.path.join(os.path.dirname(__file__), "users.db")
+DB_PATH_ABS = os.path.abspath(DB_PATH)
+app.config["DB_PATH"] = DB_PATH  # Para blueprints acessarem via current_app.config["DB_PATH"]
+logger.info(f"[DB] Banco de usuários: {DB_PATH_ABS}")
+print(f"[DB] Banco de usuários: {DB_PATH_ABS}")
 # Flag para controlar uso de IA (permite desabilitar completamente)
 USE_AI = os.getenv("USE_AI", "true").lower() == "true"
 AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").lower()  # openai, gemini ou groq
@@ -337,23 +553,20 @@ def handle_preflight():
         response.headers['Access-Control-Allow-Credentials'] = 'false'
     return response
 
+# REQUEST_DEBUG=1 no .env para logar cada requisição no console (desativado por padrão para não travar o Cursor)
+_REQUEST_DEBUG = os.getenv("REQUEST_DEBUG", "0").strip() in ("1", "true", "on", "yes")
+
 @app.before_request
 def log_all_requests():
-    """Loga TODAS as requisições para debug"""
+    """Loga requisições no console apenas se REQUEST_DEBUG=1 (evita excesso no terminal)."""
+    if not _REQUEST_DEBUG:
+        return
     try:
-        # Força flush para garantir que aparece no terminal
         import sys
-        print(f"[REQUEST DEBUG] ════════════════════════════════════", flush=True)
-        print(f"[REQUEST DEBUG] {request.method} {request.path}", flush=True)
-        print(f"[REQUEST DEBUG] Remote: {request.remote_addr}", flush=True)
-        print(f"[REQUEST DEBUG] Endpoint: {request.endpoint or 'N/A'}", flush=True)
-        print(f"[REQUEST DEBUG] URL: {request.url}", flush=True)
-        print(f"[REQUEST DEBUG] ════════════════════════════════════", flush=True)
+        print(f"[REQUEST DEBUG] {request.method} {request.path} | {request.remote_addr}", flush=True)
         sys.stdout.flush()
     except Exception as e:
-        print(f"[REQUEST DEBUG] ERRO ao logar requisição: {e}", flush=True)
-        import traceback
-        traceback.print_exc()
+        logger.debug("log_all_requests: %s", e)
 
 
 @app.before_request
@@ -365,25 +578,10 @@ def _req_log():
 
 @app.before_request
 def _perf_boot_and_start():
-    """Lazy boot dos overrides no primeiro request; marca início do request para PERF."""
-    global _PERF_BOOT_DONE, _PERF_OVR_BOOT_MS, _PERF_OVR_BOOT_AT
+    """Marca início do request para PERF. CNES overrides NÃO são carregados aqui (só na 1ª busca por hospital)."""
+    global _PERF_FIRST_REQ_LOGGED
     if PERF_LOG or PERF_EXPOSE:
         g._perf_started = time.perf_counter()
-    if (PERF_LOG or PERF_EXPOSE) and not _PERF_BOOT_DONE:
-        try:
-            from backend.startup.cnes_overrides import ensure_boot, get_overrides_count, get_snapshot_used
-            t0 = time.perf_counter()
-            ensure_boot()
-            dt = (time.perf_counter() - t0) * 1000
-            _PERF_OVR_BOOT_MS = round(dt, 0)
-            _PERF_OVR_BOOT_AT = (datetime.utcnow().isoformat() + "Z")
-            _perf_logger.info(
-                "[PERF] overrides boot: %.0f ms (snapshot=%s, count=%d)",
-                dt, get_snapshot_used(), get_overrides_count()
-            )
-        except Exception as e:
-            _perf_logger.warning("[PERF] overrides boot failed: %s", e)
-        _PERF_BOOT_DONE = True
 
 
 @app.after_request
@@ -394,6 +592,11 @@ def _perf_first_req(resp):
         dt = (time.perf_counter() - g._perf_started) * 1000
         _PERF_FIRST_REQ_MS = round(dt, 0)
         _PERF_FIRST_REQ_AT = (datetime.utcnow().isoformat() + "Z")
+        try:
+            app._perf_first_req_ms = _PERF_FIRST_REQ_MS
+            app._perf_first_req_at = _PERF_FIRST_REQ_AT
+        except Exception:
+            pass
         _perf_logger.info(
             "[PERF] first request %s %s -> %s in %.0f ms",
             request.method, request.path, resp.status_code, dt
@@ -487,7 +690,9 @@ def add_cors_headers(response):
             response.headers['Access-Control-Allow-Credentials'] = 'true'
         else:
             response.headers['Access-Control-Allow-Credentials'] = 'false'
-        response.headers['Access-Control-Expose-Headers'] = 'Content-Length, Content-Type'
+        expose = set(h.strip() for h in response.headers.get('Access-Control-Expose-Headers', '').split(',') if h.strip())
+        expose.update(['Content-Length', 'Content-Type'])
+        response.headers['Access-Control-Expose-Headers'] = ', '.join(sorted(expose))
     except Exception as e:
         logger.warning("[CORS] Erro: %s", e, exc_info=True)
         response.headers['Access-Control-Allow-Origin'] = '*'
@@ -515,18 +720,46 @@ def add_cache_headers(response):
             response.cache_control.must_revalidate = True
             response.headers['Pragma'] = 'no-cache'
             response.headers['Expires'] = '0'
+        # HTML (index e demais páginas): no-store para evitar shell velha
+        elif response.content_type and 'text/html' in (response.content_type or ''):
+            response.cache_control.no_store = True
+            response.cache_control.no_cache = True
+            response.cache_control.must_revalidate = True
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+        # Modo estrito: no-store para /static/ quando STRICT_NO_CACHE=1 (depurar produção)
+        if os.environ.get("STRICT_NO_CACHE", "0").lower() in ("1", "true", "yes"):
+            try:
+                if request.path.startswith("/static/"):
+                    response.cache_control.no_store = True
+                    response.cache_control.no_cache = True
+                    response.cache_control.must_revalidate = True
+                    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+                    response.headers['Pragma'] = 'no-cache'
+                    response.headers['Expires'] = '0'
+            except Exception:
+                pass
         # Cache para recursos estáticos (CSS, JS, imagens)
         elif request.endpoint == 'static' or request.path.startswith('/static/'):
-            # Cache de 1 ano para recursos estáticos com versionamento
-            if '?v=' in request.path or request.path.endswith(('.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2')):
-                response.cache_control.max_age = 31536000  # 1 ano
+            # STATIC_CACHE_MAX_AGE em segundos (dev: 60–300; prod: 3600 ou 31536000)
+            _static_max_age = int(os.environ.get("STATIC_CACHE_MAX_AGE", "3600"))
+            if _static_max_age <= 0:
+                response.cache_control.no_store = True
+                response.cache_control.max_age = 0
+            elif '?v=' in request.path or request.path.endswith(('.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2')):
+                response.cache_control.max_age = min(_static_max_age, 31536000)
                 response.cache_control.public = True
-                response.cache_control.immutable = True
+                if _static_max_age >= 86400:
+                    response.cache_control.immutable = True
             else:
-                # Cache menor para outros recursos
-                response.cache_control.max_age = 3600  # 1 hora
+                response.cache_control.max_age = min(_static_max_age, 3600)
                 response.cache_control.public = True
         
+        # Build version em todas as respostas (diagnóstico rápido)
+        try:
+            response.headers['X-Build-Version'] = get_build_version()
+        except Exception:
+            pass
         # Headers de segurança e performance
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
@@ -558,6 +791,66 @@ def add_cache_headers(response):
         logger.debug(f"[BROKEN_PIPE] Conexão fechada pelo cliente: {request.path} - {str(e)}")
         # Retorna resposta vazia para evitar erro no servidor
         return Response(status=499, mimetype='application/json')  # 499 = Client Closed Request
+
+
+@app.after_request
+def ensure_emergency_headers(resp):
+    """Garante headers completos e Access-Control-Expose-Headers em /api/v1/emergency/search e /api/nearby (0090/0095)."""
+    try:
+        path = request.path or ''
+        if re.search(r'^/api/v1/emergency/search', path, re.I) or re.search(r'^/api/nearby', path, re.I):
+            expose_set = set([h.strip() for h in resp.headers.get('Access-Control-Expose-Headers', '').split(',') if h.strip()])
+            for h in ('X-Data-Source', 'X-Data-Mtime', 'X-Data-Count', 'X-Query-Lat', 'X-Query-Lon', 'X-Query-Radius'):
+                expose_set.add(h)
+            resp.headers['Access-Control-Expose-Headers'] = ', '.join(sorted(expose_set))
+            if request.args.get('lat'):
+                resp.headers.setdefault('X-Query-Lat', request.args.get('lat'))
+            if request.args.get('lon'):
+                resp.headers.setdefault('X-Query-Lon', request.args.get('lon'))
+            if request.args.get('radius_km'):
+                resp.headers.setdefault('X-Query-Radius', request.args.get('radius_km'))
+            if not resp.headers.get('X-Data-Source') or not resp.headers.get('X-Data-Mtime'):
+                try:
+                    details = _emergency_health_details()
+                    if details.get('source') and not resp.headers.get('X-Data-Source'):
+                        resp.headers['X-Data-Source'] = details['source']
+                    if details.get('mtime') and not resp.headers.get('X-Data-Mtime'):
+                        resp.headers['X-Data-Mtime'] = str(details['mtime'])
+                except Exception:
+                    pass
+            if not resp.headers.get('X-Data-Count') and 'application/json' in (resp.headers.get('Content-Type') or ''):
+                try:
+                    body = resp.get_data(as_text=True) or ''
+                    j = json.loads(body)
+                    count = j.get('count')
+                    if count is None and isinstance(j.get('results'), list):
+                        count = len(j['results'])
+                    if count is None and isinstance(j.get('items'), list):
+                        count = len(j['items'])
+                    if isinstance(count, int):
+                        resp.headers['X-Data-Count'] = str(count)
+                except Exception:
+                    pass
+            try:
+                if log_emergency_search:
+                    props = {
+                        "count": int(resp.headers.get('X-Data-Count')) if resp.headers.get('X-Data-Count') else None,
+                        "source": resp.headers.get('X-Data-Source'),
+                        "mtime": int(resp.headers.get('X-Data-Mtime')) if resp.headers.get('X-Data-Mtime') and str(resp.headers.get('X-Data-Mtime')).isdigit() else resp.headers.get('X-Data-Mtime'),
+                        "lat": resp.headers.get('X-Query-Lat'),
+                        "lon": resp.headers.get('X-Query-Lon'),
+                        "radius_km": resp.headers.get('X-Query-Radius'),
+                        "endpoint": "/api/nearby" if re.search(r'^/api/nearby', path, re.I) else "/api/v1/emergency/search"
+                    }
+                    props = {k: v for k, v in props.items() if v is not None}
+                    if props:
+                        log_emergency_search(props)
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return resp
+
 
 # Configurações de Email
 # Carrega configurações de email do .env
@@ -616,13 +909,8 @@ print("ℹ️ FastAPI desabilitado neste processo. Apenas Flask responde em /api
 # ========================================================================
 # Clientes de IA vêm de backend.llm_clients (inicializados só se houver chave).
 
-# Classe User para Flask-Login
-class User(UserMixin):
-    def __init__(self, user_id, name, email, baby_name=None):
-        self.id = str(user_id)
-        self.name = name
-        self.email = email
-        self.baby_name = baby_name
+# Classe User para Flask-Login (definida em backend.auth.user_model para uso também no blueprint auth)
+from backend.auth.user_model import User
 
 # Função para inicializar banco de dados
 def init_db():
@@ -762,28 +1050,69 @@ def _populate_vaccine_reference(cursor):
 init_db()
 
 # Funções auxiliares
+def _normalize_email(s):
+    """Única fonte de verdade: strip + lower para e-mail. Usar ao salvar e ao buscar."""
+    if s is None:
+        return ''
+    return str(s).strip().lower()
+
 def generate_token(length=32):
     """Gera um token seguro"""
     return secrets.token_urlsafe(length)
 
+def _email_configured():
+    """Retorna True se Resend ou SMTP (MAIL_*) estiver configurado."""
+    return bool(os.environ.get("RESEND_API_KEY", "").strip()) or bool(
+        app.config.get("MAIL_USERNAME") and app.config.get("MAIL_PASSWORD")
+    )
+
 def send_email(to, subject, body, sender=None):
-    """Envia um email (fallback se não configurado)"""
+    """Envia um email. Prioridade: Resend > Flask-Mail (Gmail/SMTP)."""
     try:
-        # Log detalhado ANTES de tentar enviar
+        # 1. Resend (3.000/mês grátis) - prioridade quando RESEND_API_KEY está definido
+        resend_key = os.environ.get("RESEND_API_KEY", "").strip()
+        if resend_key:
+            try:
+                import requests as _req
+                from_addr = sender or os.environ.get("RESEND_FROM") or os.environ.get("MAIL_DEFAULT_SENDER") or "Sophia <onboarding@resend.dev>"
+                if "@" in str(from_addr) and "<" not in str(from_addr):
+                    from_addr = f"Sophia <{from_addr}>"
+                payload = {
+                    "from": from_addr,
+                    "to": [to],
+                    "subject": subject,
+                    "html": body.replace("\n", "<br>") if body else subject,
+                }
+                r = _req.post(
+                    "https://api.resend.com/emails",
+                    headers={"Authorization": f"Bearer {resend_key}", "Content-Type": "application/json"},
+                    json=payload,
+                    timeout=15,
+                )
+                if 200 <= r.status_code < 300:
+                    logger.info(f"[EMAIL] ✅ Enviado via Resend | Para: {to} | Assunto: {subject}")
+                    print(f"[EMAIL] ✅ Enviado via Resend | Para: {to}")
+                    return True
+                err = r.json() if r.text else {}
+                err_msg = err.get('message', err.get('name', str(err)))
+                logger.warning(f"[EMAIL] Resend retornou {r.status_code}: {err}")
+                print(f"[EMAIL] ⚠️ Resend retornou {r.status_code}: {err_msg}")
+                if r.status_code in (403, 422, 429):
+                    print(f"[EMAIL]    Dica: Com onboarding@resend.dev você só pode enviar para o email da sua conta Resend.")
+                    print(f"[EMAIL]    Para enviar para qualquer email: verifique um domínio em resend.com/domains ou use MAIL_USERNAME/MAIL_PASSWORD (Gmail) no .env")
+            except Exception as e:
+                logger.warning(f"[EMAIL] Resend falhou, tentando SMTP: {e}")
+                print(f"[EMAIL] ⚠️ Resend falhou: {e}")
+
+        # 2. Flask-Mail (Gmail/SMTP) - fallback
         logger.info(f"[EMAIL] 🔍 Iniciando envio de email...")
         logger.info(f"[EMAIL] 🔍 MAIL_USERNAME configurado: {bool(app.config.get('MAIL_USERNAME'))}")
         logger.info(f"[EMAIL] 🔍 MAIL_PASSWORD configurado: {bool(app.config.get('MAIL_PASSWORD'))}")
-        logger.info(f"[EMAIL] 🔍 MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
-        logger.info(f"[EMAIL] 🔍 MAIL_PORT: {app.config.get('MAIL_PORT')}")
-        logger.info(f"[EMAIL] 🔍 MAIL_USE_TLS: {app.config.get('MAIL_USE_TLS')}")
         print(f"[EMAIL] 🔍 Iniciando envio de email...")
         print(f"[EMAIL] 🔍 MAIL_USERNAME configurado: {bool(app.config.get('MAIL_USERNAME'))}")
         print(f"[EMAIL] 🔍 MAIL_PASSWORD configurado: {bool(app.config.get('MAIL_PASSWORD'))}")
-        print(f"[EMAIL] 🔍 MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
-        print(f"[EMAIL] 🔍 MAIL_PORT: {app.config.get('MAIL_PORT')}")
-        print(f"[EMAIL] 🔍 MAIL_USE_TLS: {app.config.get('MAIL_USE_TLS')}")
         
-        if app.config['MAIL_USERNAME'] and app.config['MAIL_PASSWORD']:
+        if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
             # Para Gmail, usa o MAIL_USERNAME como sender (domínio verificado)
             # Para outros provedores, usa o sender fornecido ou o padrão
             mail_username = app.config['MAIL_USERNAME']
@@ -831,17 +1160,12 @@ def send_email(to, subject, body, sender=None):
                 print(f"[EMAIL] ❌ Erro ao chamar mail.send(): {send_error}")
                 raise  # Re-levanta a exceção para ser capturada pelo except externo
         else:
-            # Se email não estiver configurado, apenas loga
-            from_email = sender or app.config['MAIL_DEFAULT_SENDER']
-            logger.warning(f"[EMAIL] ⚠️ EMAIL NÃO CONFIGURADO - Email seria enviado (apenas logado no console)")
-            logger.warning(f"[EMAIL] Para: {to}")
-            logger.warning(f"[EMAIL] Assunto: {subject}")
-            logger.warning(f"[EMAIL] Configure MAIL_USERNAME e MAIL_PASSWORD no arquivo .env para enviar emails reais")
-            print(f"[EMAIL] ⚠️ (Console - Email não configurado) De: {from_email} | Para: {to}")
-            print(f"[EMAIL] Assunto: {subject}")
-            print(f"[EMAIL] Mensagem: {body}")
-            print(f"[EMAIL] ⚠️ Configure MAIL_USERNAME e MAIL_PASSWORD no arquivo .env para enviar emails reais")
-            return True
+            # Nenhum provedor configurado
+            logger.warning(f"[EMAIL] EMAIL NÃO CONFIGURADO - nenhum email enviado. Para: {to}, Assunto: {subject}")
+            print(f"[EMAIL] ⚠️ Nenhum email enviado.")
+            print(f"[EMAIL]    Configure RESEND_API_KEY (Resend - 3.000/mês grátis) ou MAIL_USERNAME/MAIL_PASSWORD (Gmail) no .env")
+            print(f"[EMAIL]    Para: {to} | Assunto: {subject}")
+            return False
     except Exception as e:
         error_msg = str(e)
         logger.error(f"[EMAIL] ❌ Erro ao enviar email: {error_msg}", exc_info=True)
@@ -889,20 +1213,22 @@ def send_verification_email(email, name, token):
     
     verification_url = f"{base_url}/api/verify-email?token={token}"
     
-    subject = "Verifique seu email - Assistente Puerpério 💕"
+    subject = "Ó, verificação de email da sua conta – Sophia 💕"
     body = f"""
 Olá {name}! 💕
 
-Bem-vinda ao Assistente Puerpério! Para ativar sua conta, clique no link abaixo:
+Boas-vindas à Sophia – sua companheira no puerpério! 🤱
+
+Para ativar sua conta e começar a usar o app, é só clicar no link abaixo:
 
 {verification_url}
 
-Este link é válido por 24 horas.
+Este link vale por 24 horas.
 
-Se você não criou esta conta, pode ignorar este email.
+Se não foi você quem criou esta conta, pode ignorar este email.
 
 Com carinho,
-Equipe Assistente Puerpério 🤱
+Equipe Sophia 💕
 """
     # Chama send_email e verifica se realmente foi enviado
     result = send_email(email, subject, body)
@@ -916,31 +1242,32 @@ Equipe Assistente Puerpério 🤱
     return result
 
 def send_password_reset_email(email, name, token):
-    """Envia email de recuperação de senha"""
+    """Envia email de recuperação de senha. Retorna True se enviado, False caso contrário."""
     base_url = os.getenv('BASE_URL', request.host_url.rstrip('/'))
     reset_url = f"{base_url}/reset-password?token={token}"
     
-    subject = "Recuperação de Senha - Assistente Puerpério 🔐"
+    subject = "Ó, email de recuperação de senha – Sophia 🔐"
     body = f"""
 Olá {name}! 💕
 
-Você solicitou a recuperação de senha. Clique no link abaixo para redefinir sua senha:
+Você pediu para redefinir sua senha. Clica no link abaixo para criar uma nova senha:
 
 {reset_url}
 
-Este link é válido por 1 hora.
+Este link vale por 1 hora.
 
-Se você não solicitou esta recuperação, pode ignorar este email.
+Se não foi você quem pediu, pode ignorar este email.
 
 Com carinho,
-Equipe Assistente Puerpério 🤱
+Equipe Sophia 💕
 """
-    send_email(email, subject, body)
+    return send_email(email, subject, body)
 
-# User loader para Flask-Login
+# User loader para Flask-Login (usa current_app.config para compatibilidade com blueprints)
 @login_manager.user_loader
 def load_user(user_id):
-    conn = sqlite3.connect(DB_PATH)
+    db_path = current_app.config.get("DB_PATH", DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user_data = cursor.fetchone()
@@ -1118,9 +1445,31 @@ BASE_CONHECIMENTO = {
 logger.info(f"[OK] ✅ BASE_CONHECIMENTO criado com {len(BASE_CONHECIMENTO)} categorias")
 print(f"[OK] ✅ BASE_CONHECIMENTO criado com {len(BASE_CONHECIMENTO)} categorias")
 
+# Expõe dados e helpers para blueprints (health_bp: vacinas, admin, perf; auth_bp: email, tokens)
+app.vacinas_mae = vacinas_mae
+app.vacinas_bebe = vacinas_bebe
+app._admin_allowed = _admin_allowed
+app._perf_ovr_boot_ms = None
+app._perf_ovr_boot_at = None
+app._normalize_email = _normalize_email
+app.generate_token = generate_token
+app._email_configured = _email_configured
+app.send_verification_email = send_verification_email
+app.send_password_reset_email = send_password_reset_email
+app._login_rate_limit_check = _login_rate_limit_check
+app._login_rate_limit_clear = _login_rate_limit_clear
+# Chat/IA: expõe para backend.blueprints.chat_routes (chat_bp)
+app.base_conhecimento = base_conhecimento
+app.alertas = alertas
+app.telefones_uteis = telefones_uteis
+app.guias_praticos = guias_praticos
+app.cuidados_gestacao = cuidados_gestacao
+app.cuidados_pos_parto = cuidados_pos_parto
+
 # Histórico de conversas em memória (cache para performance)
 # As conversas também são salvas no banco de dados para persistência
 conversas = {}
+app.conversas = conversas
 
 # Instância global do chatbot será criada após a definição da classe ChatbotPuerperio
 
@@ -1173,6 +1522,9 @@ def carregar_historico_db(user_id, limit=50):
     except Exception as e:
         logger.error(f"[DB] ❌ Erro ao carregar histórico do banco: {e}")
         return []
+
+app.carregar_historico_db = carregar_historico_db
+app.salvar_conversa_db = salvar_conversa_db
 
 def extrair_informacoes_pessoais(pergunta, resposta, user_id, historico=None):
     """Extrai informações pessoais das conversas usando padrões melhorados"""
@@ -1979,6 +2331,8 @@ def detectar_triagem_ansiedade(mensagem, user_id=None):
         "palavras_encontradas": palavras_encontradas[:5],  # Limita a 5 para não sobrecarregar
         "frases_encontradas": frases_encontradas
     }
+
+app.detectar_triagem_ansiedade = detectar_triagem_ansiedade
 
 # ============================================================================
 # CLASSE: StemmerPortugues - Normalização de palavras em português
@@ -2799,7 +3153,7 @@ DIRECIONAMENTO NATURAL:
                         top_p=0.9,
                         frequency_penalty=0.6,
                         presence_penalty=0.2,
-                        max_tokens=600,
+                        max_tokens=1024,
                     )
                     elapsed = time.time() - started
                     if chat_completion and chat_completion.choices and len(chat_completion.choices) > 0:
@@ -2839,9 +3193,9 @@ DIRECIONAMENTO NATURAL:
         if not resposta_local:
             return resposta_local
         
-        # ⚠️ LIMITE DE TAMANHO: Trunca respostas muito grandes antes de humanizar (máximo 800 caracteres)
-        # Isso evita respostas enormes da base local
-        TAMANHO_MAXIMO_RESPOSTA_LOCAL = 800
+        # ⚠️ LIMITE DE TAMANHO: Trunca respostas muito grandes antes de humanizar (máximo 1500 caracteres)
+        # Permite conversas mais profundas mantendo legibilidade
+        TAMANHO_MAXIMO_RESPOSTA_LOCAL = 1500
         resposta_original_tamanho = len(resposta_local)
         if resposta_original_tamanho > TAMANHO_MAXIMO_RESPOSTA_LOCAL:
             # Tenta encontrar um ponto de corte natural (final de frase)
@@ -3401,18 +3755,38 @@ DIRECIONAMENTO NATURAL:
                 elif tipo == 'comida':
                     comidas.append(valor)
             
-            # Monta contexto formatado
+            # Monta contexto formatado (preserva ordem, unicidade, limita a 5; evita set não indexável)
+            def _uniq_preserving_order(seq, stop_words=None):
+                seen = set()
+                stop = stop_words or set()
+                for x in (seq or []):
+                    if not isinstance(x, str):
+                        continue
+                    n = x.strip()
+                    if not n or n in seen or n in stop:
+                        continue
+                    if stop and not any(ch.isalpha() for ch in n):
+                        continue
+                    seen.add(n)
+                    yield n
+            STOP_NOMES = {
+                'Dicas', 'Lembre', 'Sempre', 'Então', 'Posso', 'Além', 'Cuidados',
+                'Artificial', 'Por', 'Preparação', 'Inteligencia', 'Mudanças', 'Vacinação'
+            }
+            nomes_unicos = list(islice(_uniq_preserving_order(nomes, STOP_NOMES), 5))
+            lugares_unicos = list(islice(_uniq_preserving_order(lugares), 5))
+            comidas_unicos = list(islice(_uniq_preserving_order(comidas), 5))
             contexto_parts = []
-            if nomes:
-                contexto_parts.append(f"Nomes mencionados anteriormente: {', '.join(set(nomes)[:5])}")
-            if lugares:
-                contexto_parts.append(f"Lugares mencionados anteriormente: {', '.join(set(lugares)[:5])}")
-            if comidas:
-                contexto_parts.append(f"Comidas/preferências mencionadas anteriormente: {', '.join(set(comidas)[:5])}")
+            if nomes_unicos:
+                contexto_parts.append(f"Nomes mencionados anteriormente: {', '.join(nomes_unicos)}")
+            if lugares_unicos:
+                contexto_parts.append(f"Lugares mencionados anteriormente: {', '.join(lugares_unicos)}")
+            if comidas_unicos:
+                contexto_parts.append(f"Comidas/preferências mencionadas anteriormente: {', '.join(comidas_unicos)}")
             
             if contexto_parts:
                 contexto = "Dados memorizados da conversa anterior:\n" + "\n".join(contexto_parts)
-                logger.info(f"[MEMORIA] Dados carregados para user_id {user_id}: {len(nomes)} nomes, {len(lugares)} lugares, {len(comidas)} comidas")
+                logger.info(f"[MEMORIA] Dados carregados para user_id {user_id}: {len(nomes_unicos)} nomes, {len(lugares_unicos)} lugares, {len(comidas_unicos)} comidas")
                 return contexto
             
             return ""
@@ -4161,8 +4535,41 @@ Pode compartilhar o que quiser, no seu tempo. Estou aqui para te ouvir e apoiar!
 
 # Inicializa instância global do chatbot (após definição da classe)
 chatbot = ChatbotPuerperio()
+app.chatbot = chatbot
 logger.info("[CHATBOT] ✅ Instância global do chatbot criada com sucesso")
 print("[CHATBOT] ✅ Instância global do chatbot criada com sucesso")
+
+try:
+    from backend.version import get_build_version
+except Exception:
+    def get_build_version():
+        return "dev"
+
+try:
+    from backend.monitoring.appinsights import log_emergency_search
+except Exception:
+    log_emergency_search = None
+
+
+@app.route("/version.json")
+def version_json():
+    resp = make_response(jsonify({"version": get_build_version()}), 200)
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Vary"] = "Cookie"
+    return resp
+
+
+# Feature flags (SUS/esfera) expostas como JSON
+@app.route("/flags.json")
+def flags_json():
+    show_sus = os.environ.get("SHOW_SUS_BADGES", "0").lower() in ("1", "true", "yes")
+    show_own = os.environ.get("SHOW_OWNERSHIP_BADGES", "0").lower() in ("1", "true", "yes")
+    resp = make_response(jsonify({"show_sus_badges": show_sus, "show_ownership_badges": show_own}), 200)
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
+
 
 # Service Worker em /sw.js (escopo raiz; boot.js só registra quando page != login)
 @app.route('/sw.js')
@@ -4173,14 +4580,19 @@ def sw_js():
     return r
 
 # Rota raiz - renderiza a página principal
+@app.route('/emergencia')
+def emergencia():
+    """
+    Página de emergência obstétrica - Encontra maternidades próximas
+    """
+    return render_template('emergencia.html')
+
 @app.route('/')
 def index():
     """Rota principal que renderiza a interface do chatbot"""
-    # Gera timestamp para cache busting baseado na última modificação do CSS
-    css_path = os.path.join(app.static_folder, 'css', 'style.css')
-    timestamp = None
-    if os.path.exists(css_path):
-        timestamp = str(int(os.path.getmtime(css_path)))
+    # Cache busting: usa get_build_version() para garantir que cada deploy gere URLs novas.
+    # Evita que o usuário precise apagar o cache manualmente para ver melhorias.
+    timestamp = get_build_version()
     
     # Verifica se arquivos minificados existem
     css_min_path = os.path.join(app.static_folder, 'css', 'style.min.css')
@@ -4194,123 +4606,27 @@ def index():
     login_error = request.args.get('login_error')
     return render_template('index.html', timestamp=timestamp, has_minified=has_minified, page=page, login_error=login_error)
 
+
+# /conteudos e /api/educational migrados para backend.blueprints.edu_routes (edu_bp)
+
+
+@app.route("/privacidade")
+def page_privacidade():
+    return render_template("legal_privacidade.html")
+
+
+@app.route("/termos")
+def page_termos():
+    return render_template("legal_termos.html")
+
+
+# /api/educational migrado para backend.blueprints.edu_routes (edu_bp)
+
 # NOTA: A integração do FastAPI está DESABILITADA
 # O Flask responde diretamente em todas as rotas (/api/* e /)
 # Se precisar do FastAPI, rode-o em processo/porta separados (ex.: uvicorn backend.api.main:app --port 8000)
 
-@app.route('/api/v1/facilities/search', methods=['POST', 'OPTIONS'])
-def api_search_facilities():
-    """
-    Busca facilidades de saúde puerperal (hospitais/UPAs/UBS)
-    
-    Payload esperado:
-    {
-        "latitude": -23.5505,
-        "longitude": -46.6333,
-        "radius_km": 10.0,
-        "filter_type": "ALL",  # ALL, SUS, PRIVATE, EMERGENCY_ONLY, MATERNITY
-        "is_emergency": false
-    }
-    """
-    try:
-        # Verifica se é requisição OPTIONS (preflight CORS)
-        if request.method == 'OPTIONS':
-            response = Response()
-            response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
-            response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-            return response
-        
-        # Parse do payload
-        data = request.get_json()
-        if not data:
-            return jsonify({
-                'error': 'Dados não fornecidos',
-                'message': 'Corpo da requisição deve ser JSON válido'
-            }), 400
-        
-        # Validação básica
-        latitude = float(data.get('latitude', 0))
-        longitude = float(data.get('longitude', 0))
-        radius_km = float(data.get('radius_km', 10.0))
-        filter_type = data.get('filter_type', 'ALL')
-        is_emergency = bool(data.get('is_emergency', False))
-        
-        # Valida coordenadas
-        if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
-            return jsonify({
-                'error': 'Coordenadas inválidas',
-                'message': 'Latitude deve estar entre -90 e 90, Longitude entre -180 e 180'
-            }), 400
-        
-        # Importa e usa FacilityService
-        try:
-            from services.facility_service import FacilityService
-        except ImportError:
-            from backend.services.facility_service import FacilityService
-        
-        facility_service = FacilityService()
-        
-        # Busca facilidades
-        results, data_source_date, is_cache_fallback = facility_service.search_facilities(
-            latitude=latitude,
-            longitude=longitude,
-            radius_km=radius_km,
-            filter_type=filter_type,
-            is_emergency=is_emergency
-        )
-        
-        # Aviso legal obrigatório (UX Expert + PM)
-        legal_disclaimer = (
-            "⚠️ Aviso de Emergência: Em caso de risco imediato à vida da mãe ou do bebê "
-            "(sangramento intenso, perda de consciência, convulsão), dirija-se ao Pronto Socorro "
-            "mais próximo, seja ele público ou privado. A Lei Federal obriga o atendimento de "
-            "emergência para estabilização, independente de convênio ou capacidade de pagamento. "
-            "Não aguarde validação do aplicativo em situações críticas."
-        )
-        
-        # Adiciona aviso de cache se aplicável
-        if is_cache_fallback and data_source_date:
-            additional_warning = (
-                f"\n\n⚠️ Dados baseados no registro oficial de {data_source_date}. "
-                "API CNES está offline. Confirme informações por telefone."
-            )
-            legal_disclaimer += additional_warning
-        
-        # Construir resposta
-        response_data = {
-            'meta': {
-                'legal_disclaimer': legal_disclaimer,
-                'total_results': len(results),
-                'data_source_date': data_source_date,
-                'is_cache_fallback': is_cache_fallback
-            },
-            'results': results
-        }
-        
-        return jsonify(response_data), 200
-        
-    except FileNotFoundError as e:
-        logger.error(f"[FACILITIES] Banco de dados não encontrado: {e}")
-        return jsonify({
-            'error': 'Serviço temporariamente indisponível',
-            'message': 'Banco de dados CNES não foi inicializado. Execute o script de ingestão primeiro.'
-        }), 503
-    except ValueError as e:
-        logger.warning(f"[FACILITIES] Erro de validação: {e}")
-        return jsonify({
-            'error': 'Erro de validação',
-            'message': str(e)
-        }), 400
-    except Exception as e:
-        logger.error(f"[FACILITIES] Erro ao buscar facilidades: {e}", exc_info=True)
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'error': 'Erro interno do servidor',
-            'message': 'Ocorreu um erro ao processar a busca. Tente novamente ou ligue 192 em caso de emergência.'
-        }), 500
+# Rotas /api/v1/facilities, /api/v1/emergency, /api/v1/health, /api/v1/debug/* → backend.blueprints.health_routes (health_bp)
 
 @app.route('/__debug/routes', methods=['GET'])
 def __debug_routes():
@@ -4325,370 +4641,6 @@ def __debug_routes():
     ])
     return jsonify(routes)
 
-
-def _parse_bool_emergency(s):
-    """Converte query string em bool para expand/sus. None mantém neutro."""
-    if s is None:
-        return None
-    s = str(s).strip().lower()
-    if s in ('true', '1', 'sim', 'yes', 'y'):
-        return True
-    if s in ('false', '0', 'nao', 'não', 'no', 'n'):
-        return False
-    return None
-
-
-def _sanitize_json_nan(obj):
-    """Substitui float('nan') por None em dicts/listas para JSON válido (RFC 8259 não permite NaN)."""
-    if isinstance(obj, dict):
-        return {k: _sanitize_json_nan(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_sanitize_json_nan(v) for v in obj]
-    if isinstance(obj, float) and obj != obj:  # nan != nan
-        return None
-    return obj
-
-
-@app.route('/api/v1/emergency/search', methods=['GET', 'OPTIONS'])
-def api_emergency_search():
-    """
-    GET – Busca obstétrica em 3 camadas (confirmados/prováveis/outros).
-    Usa o mesmo core do FastAPI (load_geo_df + geo_v2_search_core).
-    Query: lat, lon, radius_km=25, expand=true, limit=10, min_results=3, sus (opcional).
-    Requer data/geo/hospitals_geo.parquet (prepare_geo_v2 + geocode_ready).
-    """
-    if request.method == 'OPTIONS':
-        r = Response()
-        r.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
-        r.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-        r.headers['Access-Control-Allow-Headers'] = 'Accept'
-        return r
-    try:
-        try:
-            lat = float(request.args.get('lat'))
-            lon = float(request.args.get('lon'))
-        except (TypeError, ValueError):
-            return jsonify({'error': 'missing_or_invalid_lat_lon'}), 400
-        if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-            return jsonify({'error': 'Coordenadas inválidas'}), 400
-
-        radius_km = float(request.args.get('radius_km', 25))
-        expand = _parse_bool_emergency(request.args.get('expand'))
-        expand = True if expand is None else bool(expand)
-        limit = int(request.args.get('limit', 10))
-        min_results = int(request.args.get('min_results', 3))
-        sus = _parse_bool_emergency(request.args.get('sus'))
-        debug = _parse_bool_emergency(request.args.get('debug')) is True
-
-        try:
-            from backend.api.routes import load_geo_df, geo_v2_search_core
-        except ImportError:
-            from api.routes import load_geo_df, geo_v2_search_core
-        import pandas as pd
-
-        df = load_geo_df()
-        if df is None:
-            return jsonify({
-                'results': [],
-                'banner_192': False,
-                'generated_at': pd.Timestamp.utcnow().isoformat(),
-                'error': 'dataset_geografico_indisponivel'
-            }), 503
-
-        out = geo_v2_search_core(df, lat, lon, sus, radius_km, expand, limit, min_results)
-        results = out[0] if len(out) > 0 else []
-        banner = out[1] if len(out) > 1 else False
-        meta = out[2] if len(out) > 2 else None
-        nearby_confirmed = out[3] if len(out) > 3 else []
-        
-        # Guard final: garantir que nenhum resultado tenha "Desconhecido" em esfera
-        try:
-            from backend.api.routes import _normalize_esfera
-        except ImportError:
-            from api.routes import _normalize_esfera
-        
-        # Normaliza TODOS os valores de esfera (não só "Desconhecido") para garantir canonicidade
-        for r in results:
-            esfera_val = r.get("esfera")
-            if esfera_val:
-                esfera_str = str(esfera_val).strip()
-                if esfera_str.lower() == "desconhecido" or esfera_str not in ("Público", "Privado", "Filantrópico"):
-                    # Normaliza qualquer valor inválido
-                    r["esfera"] = _normalize_esfera(esfera_str, r.get("nome")) or "Privado"
-        for r in nearby_confirmed:
-            esfera_val = r.get("esfera")
-            if esfera_val:
-                esfera_str = str(esfera_val).strip()
-                if esfera_str.lower() == "desconhecido" or esfera_str not in ("Público", "Privado", "Filantrópico"):
-                    # Normaliza qualquer valor inválido
-                    r["esfera"] = _normalize_esfera(esfera_str, r.get("nome")) or "Privado"
-        
-        body = {
-            'results': results[:limit] if results else [],
-            'nearby_confirmed': nearby_confirmed if nearby_confirmed else [],
-            'banner_192': bool(banner),
-            'generated_at': pd.Timestamp.utcnow().isoformat()
-        }
-        if debug and meta:
-            body['debug'] = meta
-
-        # JSON válido: NaN não é permitido em RFC 8259; substituir por None
-        body = _sanitize_json_nan(body)
-
-        # Observabilidade: log de buscas para calibrar UFs e radius/min_results
-        try:
-            from pathlib import Path
-            logs_dir = Path(__file__).resolve().parent.parent / "logs"
-            logs_dir.mkdir(parents=True, exist_ok=True)
-            event = {
-                "ts": pd.Timestamp.utcnow().isoformat(),
-                "lat": lat,
-                "lon": lon,
-                "radius_requested": radius_km,
-                "radius_used": meta.get("radius_used") if meta else None,
-                "expanded": meta.get("expanded") if meta else False,
-                "found_A": meta.get("found_A", 0) if meta else 0,
-                "found_B": meta.get("found_B", 0) if meta else 0,
-                "banner_192": bool(banner),
-                "sus": sus,
-            }
-            with open(logs_dir / "search_events.jsonl", "a", encoding="utf-8") as f:
-                f.write(json.dumps(event, ensure_ascii=False) + "\n")
-        except Exception as log_err:
-            logger.debug("[EMERGENCY] log search_events: %s", log_err)
-
-        return jsonify(body), 200
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
-    except Exception as e:
-        logger.error(f"[EMERGENCY] Erro: {e}", exc_info=True)
-        return jsonify({'error': 'Erro ao processar busca. Ligue 192 em caso de emergência.'}), 500
-
-
-def _read_run_summary_json():
-    """Lê reports/run_summary.json (raiz do projeto)."""
-    backend_dir = os.path.dirname(os.path.abspath(__file__))
-    project_dir = os.path.dirname(backend_dir) if backend_dir else os.getcwd()
-    p = os.path.join(project_dir, "reports", "run_summary.json")
-    if not os.path.isfile(p):
-        return None
-    try:
-        with open(p, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return None
-
-
-def _dataset_info_health():
-    """Info do dataset geo (hospitals_geo ou hospitals_ready) para /api/v1/health."""
-    backend_dir = os.path.dirname(os.path.abspath(__file__))
-    project_dir = os.path.dirname(backend_dir) if backend_dir else os.getcwd()
-    geo_path = os.path.join(project_dir, "data", "geo", "hospitals_geo.parquet")
-    ready_path = os.path.join(project_dir, "data", "geo", "hospitals_ready.parquet")
-    p = geo_path if os.path.isfile(geo_path) else ready_path
-    if not os.path.isfile(p):
-        return {"present": False}
-    try:
-        mtime = os.path.getmtime(p)
-        from backend.api.routes import load_geo_df
-        df = load_geo_df()
-        rows = len(df) if df is not None else None
-        return {"present": True, "rows": rows, "path": p, "mtime": mtime}
-    except Exception:
-        return {"present": False}
-
-
-@app.route('/api/v1/health', methods=['GET'])
-def api_v1_health():
-    """Health: dataset, geo_health, search_metrics e perf (se PERF_EXPOSE=on)."""
-    rs = _read_run_summary_json() or {}
-    meta = {
-        "status": "ok",
-        "generated_at": datetime.utcnow().isoformat() + "Z",
-        "dataset": _dataset_info_health(),
-        "geo_health": rs.get("geo_health"),
-        "search_metrics": rs.get("search_metrics"),
-        "version": "sophia-emergency-v2",
-    }
-    if PERF_EXPOSE:
-        ovr = {}
-        try:
-            from backend.startup.cnes_overrides import get_overrides_count, get_snapshot_used
-            ovr = {
-                "boot_ms": _PERF_OVR_BOOT_MS,
-                "boot_at": _PERF_OVR_BOOT_AT,
-                "snapshot": get_snapshot_used(),
-                "count": get_overrides_count(),
-                "mode": os.getenv("OVERRIDES_BOOT", "lazy"),
-            }
-        except Exception:
-            ovr = {"mode": os.getenv("OVERRIDES_BOOT", "lazy")}
-        meta["perf"] = {
-            "startup_ms": _PERF_IMPORT_MS,
-            "first_request_ms": _PERF_FIRST_REQ_MS,
-            "first_request_at": _PERF_FIRST_REQ_AT,
-            "overrides": ovr,
-        }
-    return jsonify(meta), 200
-
-
-@app.route('/api/v1/health/short', methods=['GET'])
-def api_v1_health_short():
-    """Health curto para LB/probe (sem perf; dataset.present)."""
-    try:
-        info = _dataset_info_health()
-    except Exception:
-        info = {"present": False}
-    return jsonify({
-        "status": "ok",
-        "dataset": {"present": bool(info.get("present"))},
-        "version": "sophia-emergency-v2",
-    }), 200
-
-
-@app.route('/api/v1/debug/overrides/coverage', methods=['GET'])
-def api_v1_debug_overrides_coverage():
-    """Cobertura dos overrides CNES (total_loaded, snapshot_usado). Protegido por _admin_allowed."""
-    ok, err = _admin_allowed()
-    if not ok:
-        msg, code = err if err else ("disabled", 404)
-        return jsonify({"ok": False, "error": msg}), code
-    try:
-        from backend.startup.cnes_overrides import get_snapshot_used, get_overrides_count
-        return jsonify({
-            "total_loaded": get_overrides_count(),
-            "snapshot_usado": get_snapshot_used(),
-        }), 200
-    except Exception as e:
-        return jsonify({"total_loaded": 0, "snapshot_usado": None, "error": str(e)}), 200
-
-
-@app.route('/api/v1/debug/overrides/refresh', methods=['POST'])
-def api_v1_debug_overrides_refresh():
-    """Recarrega overrides do CNES sem reiniciar o servidor. Protegido por _admin_allowed."""
-    ok, err = _admin_allowed()
-    if not ok:
-        msg, code = err if err else ("disabled", 404)
-        return jsonify({"ok": False, "error": msg}), code
-    try:
-        from backend.startup.cnes_overrides import boot as ovr_boot, get_snapshot_used, get_overrides_count
-        snap = os.getenv("SNAPSHOT", "202512")
-        ovr_boot(snap, force=True)
-        return jsonify({"ok": True, "snapshot": get_snapshot_used(), "count": get_overrides_count()}), 200
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-
-@app.route('/api/v1/debug/geo/refresh', methods=['POST'])
-def api_v1_debug_geo_refresh():
-    """Limpa cache geo e força re-load do Parquet. Protegido por _admin_allowed."""
-    ok, err = _admin_allowed()
-    if not ok:
-        msg, code = err if err else ("disabled", 404)
-        return jsonify({"ok": False, "error": msg}), code
-    try:
-        from backend.api.routes import refresh_geo_cache
-        ok, rows, error = refresh_geo_cache()
-        if ok:
-            return jsonify({"ok": True, "rows": rows}), 200
-        else:
-            return jsonify({"ok": False, "error": error}), 500
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-
-@app.route('/api/v1/debug/overrides/quick_check', methods=['GET'])
-def api_v1_debug_overrides_quick_check():
-    """Quick-check: cobertura de override na área (lat, lon, radius_km). Protegido por _admin_allowed."""
-    ok, err = _admin_allowed()
-    if not ok:
-        msg, code = err if err else ("disabled", 404)
-        return jsonify({"ok": False, "error": msg}), code
-    try:
-        lat = float(request.args.get("lat"))
-        lon = float(request.args.get("lon"))
-        radius_km = float(request.args.get("radius_km", 25))
-    except (TypeError, ValueError):
-        return jsonify({"ok": False, "error": "lat/lon inválidos"}), 400
-    try:
-        from backend.api.routes import load_geo_df, haversine_km
-        from backend.startup.cnes_overrides import has_cnes
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 503
-    df = load_geo_df()
-    if df is None:
-        return jsonify({"ok": False, "error": "dataset indisponível"}), 503
-    df = df[(df["lat"].notna()) & (df["lon"].notna())].copy()
-    if "cnes_id" not in df.columns and "CNES" in df.columns:
-        df = df.rename(columns={"CNES": "cnes_id"})
-    if "cnes_id" not in df.columns:
-        return jsonify({"ok": False, "error": "coluna cnes_id não encontrada"}), 503
-    df["dist_km"] = df.apply(
-        lambda r: haversine_km(lat, lon, float(r["lat"]), float(r["lon"])),
-        axis=1,
-    )
-    pool = df[df["dist_km"] <= radius_km].head(30)
-    total = len(pool)
-    hits = sum(1 for _, r in pool.iterrows() if has_cnes(str(r.get("cnes_id", ""))))
-    coverage_pct = (hits / total) if total else None
-    return jsonify({
-        "ok": True,
-        "total": total,
-        "override_hits": hits,
-        "coverage_pct": round(coverage_pct, 4) if coverage_pct is not None else None,
-    }), 200
-
-
-# QA CSVs (protegido por _admin_allowed)
-_backend_dir = os.path.dirname(os.path.abspath(__file__))
-_project_dir = os.path.dirname(_backend_dir) if _backend_dir else os.getcwd()
-REPORTS_DIR = os.path.join(_project_dir, "reports")
-QA_ALLOWED = frozenset({
-    "qa_publico_vs_privado.csv",
-    "qa_ambulatorial_vazando.csv",
-    "qa_maternidade_nao_marcada.csv",
-})
-
-
-@app.route('/api/v1/debug/qa/list', methods=['GET'])
-def api_v1_debug_qa_list():
-    """Lista CSVs de QA em reports/. Protegido por _admin_allowed."""
-    ok, err = _admin_allowed()
-    if not ok:
-        msg, code = err if err else ("disabled", 404)
-        return jsonify({"ok": False, "error": msg}), code
-    files = []
-    for name in sorted(QA_ALLOWED):
-        p = os.path.join(REPORTS_DIR, name)
-        if os.path.isfile(p):
-            try:
-                st = os.stat(p)
-                files.append({
-                    "name": name,
-                    "size": st.st_size,
-                    "mtime": int(st.st_mtime),
-                    "url": f"/api/v1/debug/qa/download?name={name}",
-                })
-            except Exception:
-                pass
-    return jsonify({"ok": True, "files": files}), 200
-
-
-@app.route('/api/v1/debug/qa/download', methods=['GET'])
-def api_v1_debug_qa_download():
-    """Download de CSV de QA. Protegido por _admin_allowed."""
-    ok, err = _admin_allowed()
-    if not ok:
-        msg, code = err if err else ("disabled", 404)
-        return jsonify({"ok": False, "error": msg}), code
-    name = (request.args.get("name") or "").strip()
-    if name not in QA_ALLOWED:
-        return jsonify({"ok": False, "error": "arquivo inválido"}), 400
-    p = os.path.join(REPORTS_DIR, name)
-    if not os.path.isfile(p):
-        return jsonify({"ok": False, "error": "não encontrado"}), 404
-    from flask import send_from_directory
-    return send_from_directory(REPORTS_DIR, name, as_attachment=True)
 
 
 @app.route('/api/test', methods=['GET'])
@@ -4727,265 +4679,114 @@ def static_favicon():
     response.headers['Cache-Control'] = 'public, max-age=31536000'  # Cache por 1 ano
     return response
 
-@app.route('/forgot-password')
-def forgot_password():
-    """Rota para página de recuperação de senha"""
-    # Gera timestamp para cache busting
-    css_path = os.path.join(app.static_folder, 'css', 'style.css')
-    timestamp = None
-    if os.path.exists(css_path):
-        timestamp = str(int(os.path.getmtime(css_path)))
-    
-    return render_template('forgot_password.html', timestamp=timestamp)
+@app.route('/manifest.json', methods=['GET', 'HEAD'])
+def manifest_json():
+    """Serve manifest PWA - evita 404 que alguns navegadores solicitam ao ver meta mobile-web-app-capable"""
+    return app.send_static_file('manifest.json')
 
-@app.route('/api/chat', methods=['POST'])
-@login_required
-def api_chat():
-    data = request.get_json()
-    pergunta = data.get('pergunta', '')
-    user_id = data.get('user_id', 'default')
-    
-    # Se user_id for 'default', usa ID do usuário logado
-    if user_id == 'default' and current_user.is_authenticated:
-        user_id = str(current_user.id)
-    
-    if not pergunta.strip():
-        return jsonify({"erro": "Pergunta não pode estar vazia"}), 400
-    
-    # Busca contexto do usuário (baby_profile e próxima vacina)
-    contexto_usuario = get_user_context(current_user.id if current_user.is_authenticated else None)
-    
-    # Log de diagnóstico
-    logger.info(f"[API_CHAT] Recebida pergunta: {pergunta[:50]}...")
-    logger.info(f"[API_CHAT] chatbot.openai_client disponível: {chatbot.openai_client is not None}")
-    if contexto_usuario:
-        logger.info(f"[API_CHAT] Contexto: Bebê={contexto_usuario.get('baby_name')}, Próxima vacina={contexto_usuario.get('next_vaccine')}")
-    
-    resposta = chatbot.chat(pergunta, user_id, contexto_usuario=contexto_usuario)
-    
-    # Log da resposta
-    logger.info(f"[API_CHAT] ✅ Resposta gerada - fonte: {resposta.get('fonte', 'desconhecida')}")
-    
-    return jsonify(resposta)
+@app.route('/static/img/edu/cancer-mama.png', methods=['GET', 'HEAD'])
+def edu_cancer_mama_png():
+    """Serve imagem Câncer de Mama de forma persistente."""
+    from flask import send_from_directory, abort
+    path = os.path.join(app.static_folder, 'img', 'edu')
+    filename = 'cancer-mama.png'
+    file_path = os.path.join(path, filename)
+    if not os.path.exists(file_path):
+        # Fallback: tenta variações do nome
+        for alt_name in ['Cancer de Mama.png', 'Câncer de Mama.png', 'cancer-mama.jpg']:
+            alt_path = os.path.join(path, alt_name)
+            if os.path.exists(alt_path):
+                return send_from_directory(path, alt_name, mimetype='image/png')
+        abort(404)
+    return send_from_directory(path, filename, mimetype='image/png')
 
+@app.route('/static/img/edu/doacao-leite-materno.png', methods=['GET', 'HEAD'])
+def edu_doacao_leite_png():
+    """Serve imagem Doação de Leite via URL sem acentos (evita 404 em alguns navegadores/proxies)."""
+    from flask import send_from_directory, abort
+    path = os.path.join(app.static_folder, 'img', 'edu')
+    # Lista todos os arquivos na pasta e procura por arquivos relacionados a "leite" ou "doacao"
+    try:
+        all_files = os.listdir(path)
+        # Procura arquivo que contenha "leite" ou "doacao" no nome (case-insensitive)
+        for filename in all_files:
+            filename_lower = filename.lower()
+            if ('leite' in filename_lower or 'doacao' in filename_lower) and filename_lower.endswith('.png'):
+                file_path = os.path.join(path, filename)
+                if os.path.exists(file_path):
+                    return send_from_directory(path, filename, mimetype='image/png')
+    except Exception as e:
+        logger.warning(f"[EDU] Erro ao listar arquivos: {e}")
+    
+    # Fallback: tenta nomes conhecidos
+    candidates = ['Doação de Leite Materno.png', 'doacao-leite-materno.png', 
+                  'Doacao de Leite Materno.png', 'doacao-de-leite.png']
+    for filename in candidates:
+        file_path = os.path.join(path, filename)
+        if os.path.exists(file_path):
+            return send_from_directory(path, filename, mimetype='image/png')
+    abort(404)
+
+@app.route('/static/img/edu/aleitamento.png', methods=['GET', 'HEAD'])
+def edu_aleitamento_png():
+    """Serve imagem Aleitamento de forma persistente."""
+    from flask import send_from_directory, abort
+    path = os.path.join(app.static_folder, 'img', 'edu')
+    filename = 'aleitamento.png'
+    file_path = os.path.join(path, filename)
+    if not os.path.exists(file_path):
+        # Fallback: tenta variações do nome
+        for alt_name in ['Aleitamento.png', 'Aleitamento Materno.png', 'Amamentação.png', 
+                        'aleitamento.jpg', 'breastfeeding.png']:
+            alt_path = os.path.join(path, alt_name)
+            if os.path.exists(alt_path):
+                return send_from_directory(path, alt_name, mimetype='image/png')
+        abort(404)
+    return send_from_directory(path, filename, mimetype='image/png')
+
+# Rota /forgot-password → backend.blueprints.auth_routes (auth_bp)
+# Rotas /api/chat, /api/historico, /api/categorias, /api/alertas, /api/guias, /api/cuidados, /api/triagem-emocional, /api/limpar-memoria-ia → backend.blueprints.chat_routes (chat_bp)
+
+# get_user_context: usado pelo chat_bp para contexto do usuário (baby_profile, próxima vacina)
 def get_user_context(user_id):
-    """
-    Busca contexto do usuário: dados do baby_profile e próxima vacina
-    
-    Returns:
-        dict: {
-            'baby_name': str,
-            'baby_age_days': int,
-            'baby_age_months': int,
-            'next_vaccine_name': str,
-            'next_vaccine_date': str (YYYY-MM-DD),
-            'next_vaccine_days_until': int
-        } ou None
-    """
+    """Busca contexto do usuário: baby_profile e próxima vacina. Usado por chat_bp."""
     if not user_id:
         return None
-    
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
-        # Busca perfil do bebê
-        cursor.execute('''
-            SELECT id, name, birth_date
-            FROM baby_profiles
-            WHERE user_id = ?
-            LIMIT 1
-        ''', (user_id,))
-        
+        cursor.execute('SELECT id, name, birth_date FROM baby_profiles WHERE user_id = ? LIMIT 1', (user_id,))
         baby_row = cursor.fetchone()
         if not baby_row:
             conn.close()
             return None
-        
         baby = dict(baby_row)
-        
-        # Calcula idade
-        from dateutil.relativedelta import relativedelta
         birth_date = datetime.strptime(baby['birth_date'], '%Y-%m-%d').date()
         today = date.today()
         age_delta = relativedelta(today, birth_date)
         age_days = (today - birth_date).days
         age_months = age_delta.months + (age_delta.years * 12)
-        
-        # Busca próxima vacina pendente
         cursor.execute('''
-            SELECT vaccine_name, recommended_date
-            FROM vaccination_schedule
-            WHERE baby_profile_id = ?
-              AND status = 'pending'
-              AND recommended_date IS NOT NULL
-            ORDER BY recommended_date ASC
-            LIMIT 1
+            SELECT vaccine_name, recommended_date FROM vaccination_schedule
+            WHERE baby_profile_id = ? AND status = 'pending' AND recommended_date IS NOT NULL
+            ORDER BY recommended_date ASC LIMIT 1
         ''', (baby['id'],))
-        
         next_vaccine_row = cursor.fetchone()
         conn.close()
-        
-        contexto = {
-            'baby_name': baby['name'],
-            'baby_age_days': age_days,
-            'baby_age_months': age_months,
-        }
-        
+        contexto = {'baby_name': baby['name'], 'baby_age_days': age_days, 'baby_age_months': age_months}
         if next_vaccine_row:
             next_vaccine = dict(next_vaccine_row)
             recommended_date = datetime.strptime(next_vaccine['recommended_date'], '%Y-%m-%d').date()
-            days_until = (recommended_date - today).days
-            
             contexto['next_vaccine_name'] = next_vaccine['vaccine_name']
             contexto['next_vaccine_date'] = next_vaccine['recommended_date']
-            contexto['next_vaccine_days_until'] = days_until
-        
+            contexto['next_vaccine_days_until'] = (recommended_date - today).days
         return contexto
-        
     except Exception as e:
-        logger.error(f"Erro ao buscar contexto do usuário: {e}", exc_info=True)
+        logger.error("Erro ao buscar contexto do usuário: %s", e, exc_info=True)
         return None
 
-@app.route('/api/triagem-emocional', methods=['POST'])
-def api_triagem_emocional():
-    """
-    RF.EMO.009 - API de Triagem Emocional para Mãe Ansiosa
-    Integração com BMad Core
-    """
-    data = request.get_json()
-    mensagem = data.get('mensagem', '')
-    user_id = data.get('user_id', 'default')
-    
-    if not mensagem.strip():
-        return jsonify({"erro": "Mensagem não pode estar vazia"}), 400
-    
-    logger.info(f"[TRIAGEM_API] Analisando mensagem para triagem emocional")
-    
-    resultado = detectar_triagem_ansiedade(mensagem, user_id=user_id)
-    
-    return jsonify({
-        "codigo_requisito": "RF.EMO.009",
-        "integracao_bmad": True,
-        **resultado
-    })
-
-@app.route('/api/limpar-memoria-ia', methods=['POST'])
-@login_required
-def limpar_memoria_ia():
-    """Limpa TODA a memória da Sophia: conversas, informações pessoais e dados memorizados (nomes, lugares, comidas)"""
-    try:
-        user_id = session.get('user_id') or current_user.id if current_user.is_authenticated else 'default'
-        
-        # Limpa apenas da memória em tempo de execução (NÃO limpa do banco, pois não salva mais conversas lá)
-        global conversas
-        conversas_count = sum(len(conv) for conv in conversas.values())
-        conversas.clear()
-        
-        # Limpa informações pessoais do banco (user_info)
-        info_apagadas = 0
-        memoria_sophia_apagadas = 0
-        
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            
-            # Limpa user_info (informações pessoais gerais)
-            cursor.execute('DELETE FROM user_info WHERE user_id = ?', (str(user_id),))
-            info_apagadas = cursor.rowcount
-            
-            # Limpa memoria_sophia (dados memorizados: nomes, lugares, comidas)
-            cursor.execute('DELETE FROM memoria_sophia WHERE user_id = ?', (str(user_id),))
-            memoria_sophia_apagadas = cursor.rowcount
-            
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            logger.warning(f"[LIMPAR_MEMORIA] ⚠️ Erro ao limpar dados do banco: {e}")
-        
-        # Limpa threads do OpenAI para o usuário (se existir)
-        if chatbot and hasattr(chatbot, 'user_threads') and user_id in chatbot.user_threads:
-            del chatbot.user_threads[user_id]
-            logger.info(f"[LIMPAR_MEMORIA] Thread OpenAI removida para user_id {user_id}")
-        
-        # Limpa últimas respostas do controle de repetição
-        if chatbot and hasattr(chatbot, 'ultimas_respostas') and user_id in chatbot.ultimas_respostas:
-            del chatbot.ultimas_respostas[user_id]
-        
-        # NÃO limpa conversas do banco (desabilitado conforme solicitado)
-        # cursor.execute('DELETE FROM conversas')
-        # conversas_apagadas = cursor.rowcount
-        
-        total_apagado = conversas_count + info_apagadas + memoria_sophia_apagadas
-        logger.info(f"[LIMPAR_MEMORIA] ✅ Memória da Sophia limpa para user_id {user_id}: {conversas_count} conversas da memória, {info_apagadas} informações pessoais e {memoria_sophia_apagadas} dados memorizados apagados")
-        print(f"[LIMPAR_MEMORIA] ✅ Memória da Sophia limpa: {conversas_count} conversas da memória, {info_apagadas} informações pessoais e {memoria_sophia_apagadas} dados memorizados apagados")
-        
-        return jsonify({
-            "sucesso": True,
-            "mensagem": f"Memória da Sophia limpa com sucesso! {total_apagado} item(ns) removido(s): {conversas_count} conversas da memória, {info_apagadas} informações pessoais e {memoria_sophia_apagadas} dados memorizados (nomes, lugares, comidas).",
-            "conversas_apagadas": conversas_count,
-            "info_apagadas": info_apagadas,
-            "memoria_sophia_apagadas": memoria_sophia_apagadas,
-            "total_apagado": total_apagado
-        }), 200
-    except Exception as e:
-        logger.error(f"[LIMPAR_MEMORIA] ❌ Erro ao limpar memória: {e}", exc_info=True)
-        return jsonify({
-            "sucesso": False,
-            "erro": f"Erro ao limpar memória: {str(e)}"
-        }), 500
-
-@app.route('/api/historico/<user_id>', methods=['GET', 'DELETE'])
-def api_historico(user_id):
-    """Retorna ou limpa histórico de conversas do usuário"""
-    try:
-        print(f"[HISTORICO] Rota chamada: {request.method} /api/historico/{user_id}")
-        
-        if request.method == 'DELETE':
-            # Limpa apenas da memória (NÃO limpa do banco, pois não salva mais lá)
-            try:
-                # Limpa da memória
-                if user_id in conversas:
-                    conversas[user_id] = []
-                
-                logger.info(f"[MEMORIA] ✅ Histórico limpo da memória para user_id: {user_id}")
-                print(f"[HISTORICO] ✅ Histórico limpo com sucesso")
-                return jsonify({"success": True, "message": "Histórico limpo com sucesso"})
-            except Exception as e:
-                logger.error(f"[MEMORIA] ❌ Erro ao limpar histórico: {e}")
-                print(f"[HISTORICO] ❌ Erro ao limpar: {e}")
-                import traceback
-                traceback.print_exc()
-                return jsonify({"success": False, "error": str(e)}), 500
-        
-        # GET: Retorna histórico apenas da memória (NÃO carrega do banco)
-        historico = conversas.get(user_id, [])
-        print(f"[HISTORICO] ✅ Retornando {len(historico)} mensagens")
-        return jsonify(historico)
-    except Exception as e:
-        logger.error(f"[HISTORICO] ❌ Erro ao processar histórico: {e}")
-        print(f"[HISTORICO] ❌ Erro inesperado: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"historico": [], "erro": str(e)}), 500
-
-@app.route('/api/categorias')
-def api_categorias():
-    categorias = list(base_conhecimento.keys())
-    return jsonify(categorias)
-
-@app.route('/api/alertas')
-def api_alertas():
-    return jsonify(alertas)
-
-@app.route('/api/telefones')
-def api_telefones():
-    return jsonify(telefones_uteis)
-
-@app.route('/api/guias')
-def api_guias():
-    return jsonify(guias_praticos)
+app.get_user_context = get_user_context
 
 # ENDPOINT DESATIVADO: Funcionalidade de vídeos removida temporariamente
 # @app.route('/api/youtube-search', methods=['POST'])
@@ -5153,1212 +4954,8 @@ def api_youtube_search_disabled():
             "erro": "Erro inesperado ao buscar vídeos",
             "fallback": True
         }), 500
-
-@app.route('/api/guias/<guia_id>')
-def api_guia_especifico(guia_id):
-    guia = guias_praticos.get(guia_id)
-    if guia:
-        return jsonify(guia)
-    return jsonify({"erro": "Guia não encontrado"}), 404
-
-@app.route('/api/cuidados/gestacao')
-def api_cuidados_gestacao():
-    return jsonify(cuidados_gestacao)
-
-@app.route('/api/cuidados/gestacao/<trimestre>')
-def api_trimestre_especifico(trimestre):
-    trimestre_data = cuidados_gestacao.get(trimestre)
-    if trimestre_data:
-        return jsonify(trimestre_data)
-    return jsonify({"erro": "Trimestre não encontrado"}), 404
-
-@app.route('/api/cuidados/puerperio')
-def api_cuidados_puerperio():
-    return jsonify(cuidados_pos_parto)
-
-@app.route('/api/cuidados/puerperio/<periodo>')
-def api_periodo_especifico(periodo):
-    periodo_data = cuidados_pos_parto.get(periodo)
-    if periodo_data:
-        return jsonify(periodo_data)
-    return jsonify({"erro": "Período não encontrado"}), 404
-
-@app.route('/api/vacinas/mae')
-def api_vacinas_mae():
-    return jsonify(vacinas_mae)
-
-@app.route('/api/vacinas/bebe')
-def api_vacinas_bebe():
-    return jsonify(vacinas_bebe)
-
-# Auth routes
-@app.route('/api/register', methods=['POST'])
-def api_register():
-    data = request.get_json()
-    logger.info(f"[REGISTER] Tentativa de cadastro recebida: {data}")
-    print(f"[REGISTER] Dados recebidos: {data}")
-    
-    name = data.get('name', '').strip()
-    email = data.get('email', '').strip().lower()
-    password = data.get('password', '')
-    baby_name = data.get('baby_name', '').strip()
-    
-    logger.info(f"[REGISTER] Campos processados - name: {name[:3]}..., email: {email}, password length: {len(password) if password else 0}")
-    print(f"[REGISTER] Campos processados - name: {name}, email: {email}, password length: {len(password) if password else 0}")
-    
-    if not name or not email or not password:
-        erro_msg = "Todos os campos obrigatórios devem ser preenchidos"
-        logger.warning(f"[REGISTER] {erro_msg} - name: {bool(name)}, email: {bool(email)}, password: {bool(password)}")
-        print(f"[REGISTER] ❌ {erro_msg}")
-        return jsonify({"erro": erro_msg}), 400
-    
-    if len(password) < 6:
-        erro_msg = "A senha deve ter no mínimo 6 caracteres"
-        logger.warning(f"[REGISTER] {erro_msg} - password length: {len(password)}")
-        print(f"[REGISTER] ❌ {erro_msg}")
-        return jsonify({"erro": erro_msg}), 400
-    
-    # Validação básica de email
-    if '@' not in email or '.' not in email.split('@')[1]:
-        erro_msg = "Email inválido"
-        logger.warning(f"[REGISTER] {erro_msg} - email: {email}")
-        print(f"[REGISTER] ❌ {erro_msg}")
-        return jsonify({"erro": erro_msg}), 400
-    
-    # Usa transação para garantir atomicidade
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    try:
-        # Verifica se email já existe (dentro da transação)
-        cursor.execute('SELECT id, email_verified FROM users WHERE email = ?', (email,))
-        existing = cursor.fetchone()
-        
-        if existing:
-            conn.rollback()
-            conn.close()
-            if existing[1] == 1:
-                erro_msg = "Este email já está cadastrado e verificado"
-                logger.warning(f"[REGISTER] {erro_msg} - email: {email}")
-                print(f"[REGISTER] ❌ {erro_msg}")
-                return jsonify({"erro": erro_msg}), 400
-            else:
-                erro_msg = "Este email já está cadastrado. Verifique seu email ou use 'Esqueci minha senha'"
-                logger.warning(f"[REGISTER] {erro_msg} - email: {email}")
-                print(f"[REGISTER] ❌ {erro_msg}")
-                return jsonify({"erro": erro_msg}), 400
-        
-        # Hash da senha - salva como string base64 para preservar bytes
-        password_hash_bytes = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        password_hash = base64.b64encode(password_hash_bytes).decode('utf-8')
-        
-        # Gera token de verificação
-        verification_token = generate_token()
-        
-        # Verifica se email está configurado (modo desenvolvimento vs produção)
-        email_configurado = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
-        
-        # Em desenvolvimento (sem email configurado), marca como verificado automaticamente
-        email_verified_value = 1 if not email_configurado else 0
-        
-        # Insere usuário
-        cursor.execute('''
-            INSERT INTO users (name, email, password_hash, baby_name, email_verified, email_verification_token)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (name, email, password_hash, baby_name if baby_name else None, email_verified_value, verification_token))
-        
-        user_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
-        
-        # Envia email de verificação apenas se estiver configurado
-        mensagem = ""
-        verification_sent = False
-        
-        if email_configurado:
-            try:
-                logger.info(f"[REGISTER] Enviando email de verificação para: {email}")
-                print(f"[REGISTER] Tentando enviar email de verificação para: {email}")
-                
-                # Chama a função e verifica se realmente foi enviado
-                email_sent = send_verification_email(email, name, verification_token)
-                
-                if email_sent:
-                    mensagem = "Cadastro realizado! Verifique seu email para ativar sua conta. 💕"
-                    verification_sent = True
-                    logger.info(f"[REGISTER] ✅ Email de verificação enviado com sucesso para: {email}")
-                    print(f"[REGISTER] ✅ Email de verificação enviado com sucesso para: {email}")
-                else:
-                    # Se retornou False, houve erro silencioso
-                    raise Exception("send_email retornou False - verifique os logs acima")
-                    
-            except Exception as e:
-                logger.error(f"[REGISTER] ❌ Erro ao enviar email de verificação: {e}", exc_info=True)
-                print(f"[REGISTER] ❌ Erro ao enviar email de verificação: {e}")
-                print(f"[REGISTER] Verifique os logs acima para detalhes do erro")
-                import traceback
-                traceback.print_exc()
-                # Se falhar ao enviar, marca como verificado para não bloquear o usuário
-                conn_update = sqlite3.connect(DB_PATH)
-                cursor_update = conn_update.cursor()
-                cursor_update.execute('UPDATE users SET email_verified = 1 WHERE id = ?', (user_id,))
-                conn_update.commit()
-                conn_update.close()
-                mensagem = "Cadastro realizado! (O email de verificação não pôde ser enviado, mas sua conta foi ativada automaticamente. Você já pode fazer login!) 💕"
-                verification_sent = False
-        else:
-            # Modo desenvolvimento: conta já está verificada
-            logger.warning(f"[REGISTER] ⚠️ EMAIL NÃO CONFIGURADO - Conta marcada como verificada automaticamente (modo desenvolvimento)")
-            logger.warning(f"[REGISTER] Para ativar envio de emails, configure MAIL_USERNAME e MAIL_PASSWORD no arquivo .env")
-            print(f"[REGISTER] ⚠️ EMAIL NÃO CONFIGURADO - conta marcada como verificada automaticamente (modo desenvolvimento)")
-            print(f"[REGISTER] Para ativar envio de emails, configure MAIL_USERNAME e MAIL_PASSWORD no arquivo .env")
-            mensagem = "Cadastro realizado com sucesso! Você já pode fazer login. 💕"
-            verification_sent = False
-        
-        return jsonify({
-            "sucesso": True, 
-            "mensagem": mensagem,
-            "user_id": user_id,
-            "verification_sent": verification_sent,
-            "email_verified": email_verified_value == 1
-        }), 201
-        
-    except sqlite3.IntegrityError as e:
-        # Rollback e fecha a conexão em caso de IntegrityError
-        conn.rollback()
-        conn.close()
-        
-        # Verifica novamente para dar mensagem mais específica
-        conn_check = sqlite3.connect(DB_PATH)
-        cursor_check = conn_check.cursor()
-        cursor_check.execute('SELECT id, email_verified FROM users WHERE email = ?', (email,))
-        existing_check = cursor_check.fetchone()
-        conn_check.close()
-        
-        if existing_check:
-            if existing_check[1] == 1:
-                erro_msg = "Este email já está cadastrado e verificado"
-            else:
-                erro_msg = "Este email já está cadastrado. Verifique seu email ou use 'Esqueci minha senha'"
-        else:
-            erro_msg = "Este email já está cadastrado"
-        
-        logger.warning(f"[REGISTER] IntegrityError - {erro_msg} - email: {email} - erro: {e}")
-        print(f"[REGISTER] ❌ IntegrityError - {erro_msg} - email: {email}")
-        return jsonify({"erro": erro_msg}), 400
-        
-    except Exception as e:
-        # Rollback e fecha a conexão em caso de qualquer outro erro
-        conn.rollback()
-        conn.close()
-        logger.error(f"[REGISTER] ❌ Erro inesperado no cadastro: {e}", exc_info=True)
-        print(f"[REGISTER] ❌ Erro inesperado no cadastro: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"erro": "Erro ao processar cadastro. Tente novamente."}), 500
-
-@app.route('/api/login', methods=['POST'])
-def api_login():
-    """Rota de login"""
-    # Inicializa variável fora do try para evitar NameError
-    password_correct = False
-    
-    try:
-        print("[LOGIN DEBUG] ════════════════════════════════════")
-        print("[LOGIN DEBUG] Rota /api/login foi CHAMADA!")
-        print("[LOGIN DEBUG] ════════════════════════════════════")
-        
-        print("[LOGIN DEBUG] 1. Tentando obter JSON do request...")
-        data = request.get_json()
-        print(f"[LOGIN DEBUG] 2. JSON recebido: {data}")
-        
-        if not data:
-            print("[LOGIN DEBUG] 3. ERRO: Sem dados JSON")
-            return jsonify({"erro": "Dados de login não fornecidos"}), 400
-        
-        # Normaliza email e senha (remove espaços, converte email para lowercase)
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '').strip()  # Remove espaços da senha também
-        remember_me = data.get('remember_me', False)  # Se deve lembrar o usuário
-
-        if not email or not password:
-            return jsonify({"erro": "Email e senha são obrigatórios"}), 400
-
-        # Log detalhado para debug (inclui informações do dispositivo)
-        user_agent = request.headers.get('User-Agent', 'Desconhecido')
-        client_ip = request.remote_addr
-        logger.info(f"[LOGIN] Tentativa de login - Email: {email}, Password length: {len(password)}, IP: {client_ip}, User-Agent: {user_agent[:100]}")
-        print(f"[LOGIN] Tentativa de login - Email: {email}, Password length: {len(password)}, IP: {client_ip}")
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        # Seleciona campos específicos para garantir ordem correta
-        # Email já foi normalizado (lowercase e trim) no Python acima
-        cursor.execute('''
-            SELECT id, name, email, password_hash, baby_name, email_verified
-            FROM users
-            WHERE email = ?
-        ''', (email,))
-        user_data = cursor.fetchone()
-        conn.close()
-
-        if not user_data:
-            logger.warning(f"[LOGIN] Email não encontrado: {email} (IP: {client_ip})")
-            print(f"[LOGIN] Email não encontrado: {email}")
-            return jsonify({"erro": "Email ou senha incorretos"}), 401
-
-        # Extrai dados (ordem: id, name, email, password_hash, baby_name, email_verified)
-        user_id = user_data[0]
-        user_name = user_data[1]
-        user_email = user_data[2]
-        stored_hash_str = user_data[3]  # password_hash
-        baby_name = user_data[4]
-        email_verified = user_data[5] if len(user_data) > 5 else 1  # email_verified (default 1 para compatibilidade)
-
-        print(f"[LOGIN] Usuário encontrado: {user_email}, email_verified: {email_verified}")
-
-        if not stored_hash_str:
-            print(f"[LOGIN] Hash de senha não encontrado para usuário: {email}")
-            return jsonify({"erro": "Conta com problema. Use 'Esqueci minha senha' para corrigir."}), 401
-
-        stored_hash = None
-        hash_format = "desconhecido"
-
-        # Tenta diferentes formatos de hash
-        try:
-            # Formato novo: base64 (mais comum em registros recentes)
-            try:
-                stored_hash = base64.b64decode(stored_hash_str.encode('utf-8'))
-                hash_format = "base64"
-                print(f"[LOGIN DEBUG] Hash decodificado como base64")
-            except Exception:
-                # Se não for base64 válido, tenta outros formatos
-                # Formato antigo: string bcrypt direta
-                if isinstance(stored_hash_str, str) and stored_hash_str.startswith('$2'):
-                    stored_hash = stored_hash_str.encode('utf-8')
-                    hash_format = "string bcrypt"
-                    print(f"[LOGIN DEBUG] Hash processado como string bcrypt")
-                elif isinstance(stored_hash_str, bytes):
-                    stored_hash = stored_hash_str
-                    hash_format = "bytes diretos"
-                    print(f"[LOGIN DEBUG] Hash processado como bytes diretos")
-                else:
-                    # Hash corrompido ou formato desconhecido
-                    print(f"[LOGIN DEBUG] Hash em formato desconhecido. Tipo: {type(stored_hash_str)}, Início: {str(stored_hash_str)[:50] if stored_hash_str else 'N/A'}...")
-                    return jsonify({"erro": "Conta com problema. Use 'Esqueci minha senha' para corrigir."}), 401
-        except Exception as e:
-            print(f"[LOGIN DEBUG] Erro ao processar hash: {e}")
-            import traceback
-            traceback.print_exc()
-            return jsonify({"erro": "Erro ao verificar senha. Use 'Esqueci minha senha'."}), 401
-
-        # Verifica senha
-        if stored_hash:
-            try:
-                # Garante que a senha está em bytes
-                password_bytes = password.encode('utf-8')
-                password_correct = bcrypt.checkpw(password_bytes, stored_hash)
-                logger.debug(f"[LOGIN DEBUG] Verificação de senha: {'CORRETA' if password_correct else 'INCORRETA'}")
-                print(f"[LOGIN DEBUG] Hash formato: {hash_format}")
-                print(f"[LOGIN DEBUG] Hash length: {len(stored_hash)} bytes")
-                print(f"[LOGIN DEBUG] Password length: {len(password_bytes)} bytes")
-            except Exception as e:
-                print(f"[LOGIN DEBUG] Erro ao verificar senha: {e}")
-                import traceback
-                traceback.print_exc()
-                password_correct = False
-        else:
-            print(f"[LOGIN DEBUG] stored_hash é None, não é possível verificar senha")
-    except Exception as e:
-        print(f"[LOGIN] Erro inesperado no login: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"erro": "Erro interno ao processar login. Tente novamente."}), 500
-    
-    if password_correct:
-        # Log para debug
-        logger.info(f"[LOGIN] Senha correta para: {email}, email_verified: {email_verified}")
-        print(f"[LOGIN] Tentativa de login: {email}, email_verified: {email_verified}")
-        
-        # Verifica se email foi verificado
-        # PERMITE login para contas antigas (criadas antes da verificação obrigatória)
-        # Mas ainda mostra aviso se não verificado
-        if email_verified == 0:
-            logger.warning(f"[LOGIN] Tentativa de login com email não verificado: {email}")
-            print(f"[LOGIN] Tentativa de login com email não verificado: {email}")
-            # Para desenvolvimento: permite login mas avisa
-            # Em produção, pode ser descomentado para bloquear:
-            # return jsonify({
-            #     "erro": "Email não verificado",
-            #     "mensagem": f"Por favor, verifique seu email ({email}) antes de fazer login. Procure por um email da Sophia com o assunto 'Verifique seu email'. Se não recebeu, verifique a pasta de spam ou clique em 'Esqueci minha senha'.",
-            #     "pode_login": False,
-            #     "email": email
-            # }), 403
-            print(f"[LOGIN] AVISO: Email não verificado, mas permitindo login (modo desenvolvimento)")
-        
-        # Cria usuário e faz login
-        try:
-            user = User(user_id, user_name, user_email, baby_name)
-            # Usa remember_me do frontend para criar sessão persistente
-            result = login_user(user, remember=remember_me)
-            logger.info(f"[LOGIN] Usuário logado com sucesso: {user_name} (ID: {user_id}), Sessão criada: {result}, Remember me: {remember_me}, IP: {client_ip}")
-            print(f"[LOGIN] Usuário logado: {user_name}, ID: {user_id}, Sessão criada: {result}, Remember me: {remember_me}")
-            
-            # Log de cookies/sessão para debug em mobile
-            session_id = session.get('_id', 'N/A')
-            logger.debug(f"[LOGIN] Session ID: {session_id}, Cookies enviados: {request.cookies}")
-        except Exception as e:
-            logger.error(f"[LOGIN] Erro ao fazer login_user: {e}", exc_info=True)
-            print(f"[LOGIN] Erro ao fazer login_user: {e}")
-            import traceback
-            traceback.print_exc()
-            return jsonify({"erro": "Erro interno ao criar sessão"}), 500
-        
-        return jsonify({
-            "sucesso": True, 
-            "mensagem": "Login realizado com sucesso! Bem-vinda de volta 💕",
-            "user": {
-                "id": user_id,
-                "name": user_name,
-                "email": user_email,
-                "baby_name": baby_name
-            }
-        })
-    else:
-        logger.warning(f"[LOGIN] Senha incorreta para: {email} (IP: {client_ip})")
-        print(f"[LOGIN] Senha incorreta para: {email}")
-        print(f"[LOGIN DEBUG] stored_hash disponível: {stored_hash is not None}")
-        print(f"[LOGIN DEBUG] hash_format usado: {hash_format}")
-        if stored_hash_str:
-            print(f"[LOGIN DEBUG] Hash string (primeiros 50 chars): {stored_hash_str[:50]}...")
-        print(f"[LOGIN DEBUG] Password recebido (primeiros 10 chars): {password[:10]}... (length: {len(password)})")
-        return jsonify({"erro": "Email ou senha incorretos"}), 401
-
-
-@app.route('/auth/login', methods=['POST'])
-def auth_login_form():
-    """Login por form POST (fallback sem JS). Redireciona para / em sucesso ou /?login_error=1 em falha."""
-    email = (request.form.get('email') or '').strip().lower()
-    password = (request.form.get('password') or '').strip()
-    remember_me = request.form.get('remember_me') in ('1', 'on', 'true', 'yes')
-    if not email or not password:
-        return redirect(url_for('index', login_error=1))
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT id, name, email, password_hash, baby_name FROM users WHERE email = ?', (email,)
-        )
-        row = cursor.fetchone()
-        conn.close()
-        if not row:
-            return redirect(url_for('index', login_error=1))
-        user_id, user_name, user_email, stored_hash_str, baby_name = row
-        if not stored_hash_str:
-            return redirect(url_for('index', login_error=1))
-        try:
-            stored_hash = base64.b64decode(stored_hash_str.encode('utf-8'))
-        except Exception:
-            stored_hash = stored_hash_str.encode('utf-8') if isinstance(stored_hash_str, str) else stored_hash_str
-        if not stored_hash:
-            return redirect(url_for('index', login_error=1))
-        password_correct = bcrypt.checkpw(password.encode('utf-8'), stored_hash)
-        if not password_correct:
-            return redirect(url_for('index', login_error=1))
-        user = User(user_id, user_name, user_email, baby_name)
-        login_user(user, remember=remember_me)
-        return redirect(url_for('index'))
-    except Exception as e:
-        logger.exception("auth_login_form: %s", e)
-        return redirect(url_for('index', login_error=1))
-
-
-@app.route('/api/forgot-password', methods=['POST'])
-def api_forgot_password():
-    """Solicita recuperação de senha - envia email com token"""
-    data = request.get_json()
-    email = data.get('email', '').strip().lower()
-    
-    if not email:
-        return jsonify({"erro": "Email é obrigatório"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, name FROM users WHERE email = ?', (email,))
-    user = cursor.fetchone()
-    
-    if not user:
-        # Por segurança, não revela se email existe ou não
-        conn.close()
-        return jsonify({
-            "sucesso": True,
-            "mensagem": "Se o email existir, um link de recuperação foi enviado."
-        }), 200
-    
-    user_id, name = user
-    
-    # Gera token de recuperação
-    reset_token = generate_token()
-    expires = datetime.now() + timedelta(hours=1)
-    
-    # Salva token no banco
-    cursor.execute('''
-        UPDATE users 
-        SET reset_password_token = ?, reset_password_expires = ?
-        WHERE id = ?
-    ''', (reset_token, expires.isoformat(), user_id))
-    
-    conn.commit()
-    conn.close()
-    
-    # Envia email
-    try:
-        send_password_reset_email(email, name, reset_token)
-        return jsonify({
-            "sucesso": True,
-            "mensagem": "Email de recuperação enviado! Verifique sua caixa de entrada. 💕"
-        }), 200
-    except Exception as e:
-        print(f"Erro ao enviar email: {e}")
-        return jsonify({
-            "sucesso": True,
-            "mensagem": "Token gerado. Em desenvolvimento, verifique os logs do servidor."
-        }), 200
-
-@app.route('/reset-password')
-def reset_password():
-    """Rota para página de redefinição de senha com token"""
-    token = request.args.get('token', '')
-    
-    if not token:
-        # Se não tem token, redireciona para forgot-password
-        return redirect(url_for('forgot_password'))
-    
-    # Gera timestamp para cache busting
-    css_path = os.path.join(app.static_folder, 'css', 'style.css')
-    timestamp = None
-    if os.path.exists(css_path):
-        timestamp = str(int(os.path.getmtime(css_path)))
-    
-    # Verifica se token é válido (não expirado)
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT id, email, reset_password_expires 
-        FROM users 
-        WHERE reset_password_token = ?
-    ''', (token,))
-    user = cursor.fetchone()
-    conn.close()
-    
-    token_valid = False
-    if user:
-        user_id, email, expires_str = user
-        if expires_str:
-            try:
-                expires = datetime.fromisoformat(expires_str)
-                if datetime.now() <= expires:
-                    token_valid = True
-            except:
-                pass
-    
-    # Usa o mesmo template, mas passa informações do token
-    return render_template('forgot_password.html', timestamp=timestamp, token=token, token_valid=token_valid)
-
-@app.route('/api/reset-password', methods=['POST'])
-def api_reset_password():
-    """Redefine a senha usando token"""
-    data = request.get_json()
-    token = data.get('token', '').strip()
-    new_password = data.get('password', '')
-    
-    if not token or not new_password:
-        return jsonify({"erro": "Token e nova senha são obrigatórios"}), 400
-    
-    if len(new_password) < 6:
-        return jsonify({"erro": "A senha deve ter no mínimo 6 caracteres"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT id, email, reset_password_expires 
-        FROM users 
-        WHERE reset_password_token = ?
-    ''', (token,))
-    user = cursor.fetchone()
-    
-    if not user:
-        conn.close()
-        return jsonify({"erro": "Token inválido ou expirado"}), 400
-    
-    user_id, email, expires_str = user
-    
-    # Verifica se token não expirou
-    if expires_str:
-        try:
-            expires = datetime.fromisoformat(expires_str)
-            if datetime.now() > expires:
-                conn.close()
-                return jsonify({"erro": "Token expirado. Solicite uma nova recuperação."}), 400
-        except:
-            pass
-    
-    # Gera novo hash com formato correto
-    password_hash_bytes = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-    password_hash = base64.b64encode(password_hash_bytes).decode('utf-8')
-    
-    # Atualiza a senha e limpa token
-    cursor.execute('''
-        UPDATE users 
-        SET password_hash = ?, reset_password_token = NULL, reset_password_expires = NULL, email_verified = 1
-        WHERE id = ?
-    ''', (password_hash, user_id))
-    
-    conn.commit()
-    conn.close()
-    
-    return jsonify({
-        "sucesso": True,
-        "mensagem": "Senha redefinida com sucesso! Agora você pode fazer login. 💕"
-    }), 200
-
-@app.route('/api/resend-verification', methods=['POST'])
-def api_resend_verification():
-    """Reenvia email de verificação"""
-    data = request.get_json()
-    email = data.get('email', '').strip().lower()
-    
-    if not email:
-        return jsonify({"erro": "Email é obrigatório"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT id, name, email_verified, email_verification_token 
-        FROM users 
-        WHERE email = ?
-    ''', (email,))
-    user = cursor.fetchone()
-    conn.close()
-    
-    if not user:
-        return jsonify({"erro": "Email não encontrado"}), 404
-    
-    user_id, name, email_verified, token = user
-    
-    if email_verified == 1:
-        return jsonify({
-            "sucesso": True,
-            "mensagem": "Seu email já está verificado! Você pode fazer login normalmente."
-        }), 200
-    
-    # Gera novo token se não existir
-    if not token:
-        token = generate_token()
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('''
-            UPDATE users 
-            SET email_verification_token = ?
-            WHERE id = ?
-        ''', (token, user_id))
-        conn.commit()
-        conn.close()
-    
-    # Verifica se email está configurado
-    email_configurado = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
-    
-    if not email_configurado:
-        # Se email não estiver configurado, marca como verificado automaticamente
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('UPDATE users SET email_verified = 1 WHERE email = ?', (email,))
-        conn.commit()
-        conn.close()
-        return jsonify({
-            "sucesso": True,
-            "mensagem": f"Email não configurado no servidor. Sua conta foi ativada automaticamente. Você pode fazer login agora! 💕"
-        }), 200
-    
-    # Reenvia email
-    try:
-        logger.info(f"[RESEND] Tentando reenviar email de verificação para: {email}")
-        email_sent = send_verification_email(email, name, token)
-        
-        if email_sent:
-            logger.info(f"[RESEND] ✅ Email de verificação reenviado com sucesso para: {email}")
-            return jsonify({
-                "sucesso": True,
-                "mensagem": f"Email de verificação reenviado para {email}! Verifique sua caixa de entrada e também a pasta de spam/lixo eletrônico. 💕"
-            }), 200
-        else:
-            raise Exception("send_email retornou False - verifique os logs acima")
-            
-    except Exception as e:
-        logger.error(f"[RESEND] ❌ Erro ao reenviar email: {e}", exc_info=True)
-        print(f"[RESEND] ❌ Erro ao reenviar email: {e}")
-        print(f"[RESEND] Verifique os logs acima para detalhes do erro")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            "sucesso": False,
-            "erro": f"Não foi possível reenviar o email. Erro: {str(e)}. Verifique se o email está configurado corretamente no servidor."
-        }), 500
-
-@app.route('/api/verify-email', methods=['GET'])
-def api_verify_email():
-    """Verifica email através do token"""
-    token = request.args.get('token', '')
-    
-    if not token:
-        logger.warning("[VERIFY] Tentativa de verificação sem token")
-        # Retorna página de erro amigável
-        base_url = os.getenv('BASE_URL', request.host_url.rstrip('/'))
-        return render_template('email_verified.html',
-                             base_url=base_url,
-                             error=True,
-                             message="Token não fornecido"), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT id, email, name 
-        FROM users 
-        WHERE email_verification_token = ?
-    ''', (token,))
-    user = cursor.fetchone()
-    
-    if not user:
-        conn.close()
-        logger.warning(f"[VERIFY] Token inválido: {token[:20]}...")
-        # Retorna página de erro amigável
-        base_url = os.getenv('BASE_URL', request.host_url.rstrip('/'))
-        return render_template('email_verified.html',
-                             base_url=base_url,
-                             error=True,
-                             message="Token inválido ou expirado"), 400
-    
-    user_id, email, name = user
-    
-    # Verifica se já estava verificado
-    cursor.execute('SELECT email_verified FROM users WHERE id = ?', (user_id,))
-    already_verified_result = cursor.fetchone()
-    already_verified = already_verified_result[0] if already_verified_result else 0
-    
-    # Marca email como verificado (PERMANENTEMENTE no banco de dados)
-    cursor.execute('''
-        UPDATE users 
-        SET email_verified = 1, email_verification_token = NULL
-        WHERE id = ?
-    ''', (user_id,))
-    
-    conn.commit()
-    
-    # Verifica se foi salvo corretamente
-    cursor.execute('SELECT email_verified FROM users WHERE id = ?', (user_id,))
-    verification_status = cursor.fetchone()[0]
-    
-    conn.close()
-    
-    if verification_status == 1:
-        logger.info(f"[VERIFY] ✅ Email verificado e SALVO PERMANENTEMENTE no banco: {email} (ID: {user_id})")
-        logger.info(f"[VERIFY] ✅ Status de verificação persistido: email_verified = {verification_status}")
-    else:
-        logger.error(f"[VERIFY] ❌ ERRO: Email não foi salvo como verificado! {email} (ID: {user_id})")
-    
-    # Retorna página de confirmação com o mesmo estilo do menu inicial
-    base_url = os.getenv('BASE_URL', request.host_url.rstrip('/'))
-    return render_template('email_verified.html',
-                         base_url=base_url,
-                         error=False,
-                         email=email,
-                         name=name)
-
-@app.route('/api/auto-verify', methods=['POST'])
-def api_auto_verify():
-    """Marca automaticamente a conta como verificada se o email não estiver configurado (modo desenvolvimento)"""
-    data = request.get_json()
-    email = data.get('email', '').strip().lower()
-    
-    if not email:
-        return jsonify({"erro": "Email é obrigatório"}), 400
-    
-    # Verifica se email está configurado
-    email_configurado = bool(app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'))
-    
-    if email_configurado:
-        return jsonify({
-            "erro": "Email está configurado. Use a verificação normal por email."
-        }), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, email_verified FROM users WHERE email = ?', (email,))
-    user = cursor.fetchone()
-    
-    if not user:
-        conn.close()
-        return jsonify({"erro": "Email não encontrado"}), 404
-    
-    user_id, email_verified = user
-    
-    if email_verified == 1:
-        conn.close()
-        return jsonify({
-            "sucesso": True,
-            "mensagem": "Conta já está verificada!"
-        }), 200
-    
-    # Marca como verificado
-    cursor.execute('UPDATE users SET email_verified = 1 WHERE id = ?', (user_id,))
-    conn.commit()
-    conn.close()
-    
-    return jsonify({
-        "sucesso": True,
-        "mensagem": "Conta marcada como verificada! Agora você pode fazer login. 💕"
-    }), 200
-
-@app.route('/api/delete-user', methods=['POST'])
-def api_delete_user():
-    """Deleta um usuário do banco de dados (para permitir novo cadastro)"""
-    data = request.get_json()
-    email = data.get('email', '').strip().lower()
-    
-    if not email:
-        return jsonify({"erro": "Email é obrigatório"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT id FROM users WHERE email = ?', (email,))
-    user = cursor.fetchone()
-    
-    if not user:
-        conn.close()
-        return jsonify({"sucesso": True, "mensagem": "Usuário não encontrado (pode fazer novo cadastro)"}), 200
-    
-    user_id = user[0]
-    
-    # Deleta vacinas associadas
-    cursor.execute('DELETE FROM vacinas_tomadas WHERE user_id = ?', (user_id,))
-    # Deleta usuário
-    cursor.execute('DELETE FROM users WHERE email = ?', (email,))
-    
-    conn.commit()
-    conn.close()
-    
-    return jsonify({"sucesso": True, "mensagem": "Conta deletada com sucesso! Agora você pode fazer um novo cadastro. 💕"}), 200
-
-@app.route('/api/logout', methods=['POST'])
-def api_logout():
-    """Realiza logout do usuário"""
-    try:
-        logout_user()
-        session.clear()  # Limpa a sessão completamente
-        print(f"[LOGOUT] Logout realizado com sucesso")
-    except Exception as e:
-        print(f"[LOGOUT] Erro (mas continua): {e}")
-        session.clear()  # Limpa mesmo com erro
-    return jsonify({"sucesso": True, "mensagem": "Logout realizado com sucesso"})
-
-@app.route('/api/user', methods=['GET'])
-def api_user():
-    """Verifica se o usuário está logado"""
-    try:
-        # Verifica se current_user está disponível de forma segura
-        from flask_login import current_user
-        if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-            return jsonify({
-                "id": current_user.id,
-                "name": current_user.name,
-                "email": current_user.email,
-                "baby_name": getattr(current_user, 'baby_name', None)
-            }), 200
-        else:
-            return jsonify({"erro": "Não autenticado"}), 401
-    except AttributeError as e:
-        print(f"[AUTH] Erro de atributo ao verificar usuário: {e}")
-        logger.error(f"[AUTH] Erro de atributo: {e}", exc_info=True)
-        return jsonify({"erro": "Não autenticado"}), 401
-    except Exception as e:
-        print(f"[AUTH] Erro ao verificar usuário: {e}")
-        logger.error(f"[AUTH] Erro inesperado: {e}", exc_info=True)
-        import traceback
-        traceback.print_exc()
-        return jsonify({"erro": "Não autenticado"}), 401  # Retorna 401 em vez de 500 para não quebrar o frontend
-
-@app.route('/api/verificacao', methods=['POST'])
-def api_verificacao():
-    """Verificação: verifica se o email existe e se o hash está correto"""
-    data = request.get_json()
-    email = data.get('email', '').strip().lower()
-    
-    if not email:
-        return jsonify({"erro": "Email é obrigatório"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, name, email, password_hash FROM users WHERE email = ?', (email,))
-    user_data = cursor.fetchone()
-    conn.close()
-    
-    if not user_data:
-        return jsonify({
-            "encontrado": False,
-            "mensagem": "Email não encontrado no banco de dados. Você pode fazer um novo cadastro."
-        })
-    
-    stored_hash_str = user_data[3]
-    hash_valido = False
-    formato_hash = "desconhecido"
-    
-    # Verifica o formato do hash
-    try:
-        # Tenta decodificar como base64
-        base64.b64decode(stored_hash_str.encode('utf-8'))
-        formato_hash = "base64 (correto)"
-        hash_valido = True
-    except:
-        if isinstance(stored_hash_str, bytes):
-            formato_hash = "bytes"
-            hash_valido = True
-        elif stored_hash_str.startswith('$2'):
-            formato_hash = "string bcrypt (pode estar corrompido)"
-        else:
-            formato_hash = "corrompido ou inválido"
-    
-    return jsonify({
-        "encontrado": True,
-        "nome": user_data[1],
-        "email": user_data[2],
-        "formato_hash": formato_hash,
-        "hash_valido": hash_valido,
-        "mensagem": "Usuário encontrado. " + (
-            "Hash parece estar correto." if hash_valido 
-            else "Hash pode estar corrompido. Use 'Redefinir Senha' ou delete a conta."
-        )
-    })
-
-@app.route('/api/vacinas/status', methods=['GET'])
-@login_required
-def api_vacinas_status():
-    """Retorna o status das vacinas tomadas pelo usuário"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT tipo, vacina_nome, data_tomada FROM vacinas_tomadas WHERE user_id = ?', (current_user.id,))
-    vacinas = cursor.fetchall()
-    conn.close()
-    
-    status = {}
-    for vacina in vacinas:
-        tipo = vacina[0]
-        if tipo not in status:
-            status[tipo] = []
-        status[tipo].append({
-            "nome": vacina[1],
-            "data": vacina[2]
-        })
-    
-    return jsonify(status)
-
-@app.route('/api/vacinas/marcar', methods=['POST'])
-@login_required
-def api_vacinas_marcar():
-    """Marca uma vacina como tomada"""
-    data = request.get_json()
-    tipo = data.get('tipo', '').strip()  # 'mae' ou 'bebe'
-    vacina_nome = data.get('vacina_nome', '').strip()
-    
-    if not tipo or not vacina_nome:
-        return jsonify({"erro": "Tipo e nome da vacina são obrigatórios"}), 400
-    
-    if tipo not in ['mae', 'bebe']:
-        return jsonify({"erro": "Tipo deve ser 'mae' ou 'bebe'"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    # Verifica se já foi marcada
-    cursor.execute('SELECT id FROM vacinas_tomadas WHERE user_id = ? AND tipo = ? AND vacina_nome = ?', 
-                   (current_user.id, tipo, vacina_nome))
-    if cursor.fetchone():
-        conn.close()
-        return jsonify({"erro": "Esta vacina já foi marcada"}), 400
-    
-    # Busca informações do usuário (incluindo nome do bebê)
-    cursor.execute('SELECT name, baby_name FROM users WHERE id = ?', (current_user.id,))
-    user_data = cursor.fetchone()
-    user_name = user_data[0] if user_data else current_user.name
-    baby_name = user_data[1] if user_data and user_data[1] else None
-    
-    # Insere a vacina
-    cursor.execute('INSERT INTO vacinas_tomadas (user_id, tipo, vacina_nome) VALUES (?, ?, ?)',
-                   (current_user.id, tipo, vacina_nome))
-    conn.commit()
-    vacina_id = cursor.lastrowid
-    conn.close()
-    
-    # Mensagem personalizada
-    if tipo == 'bebe' and baby_name:
-        mensagem = f"Vacina marcada com sucesso! Parabéns, {baby_name}! E parabéns para você também, {user_name}! 💉✨🎉"
-    elif tipo == 'bebe':
-        mensagem = f"Vacina marcada com sucesso! Parabéns para você e seu bebê! 💉✨🎉"
-    else:
-        mensagem = f"Vacina marcada com sucesso! Parabéns, {user_name}! 💉✨"
-    
-    return jsonify({
-        "sucesso": True, 
-        "mensagem": mensagem,
-        "vacina_id": vacina_id,
-        "tipo": tipo,
-        "baby_name": baby_name,
-        "user_name": user_name
-    }), 201
-
-# ========================================
-# ROTAS DA AGENDA DE VACINAÇÃO INTERATIVA
-# ========================================
-
-@app.route('/api/baby_profile', methods=['POST'])
-@login_required
-def api_create_baby_profile():
-    """Cria perfil do bebê e gera calendário de vacinação automaticamente"""
-    try:
-        # Importa VaccinationService com fallback
-        try:
-            from services.vaccination_service import VaccinationService
-        except ImportError:
-            try:
-                from backend.services.vaccination_service import VaccinationService
-            except ImportError as import_err:
-                logger.error(f"[BABY_PROFILE] Erro ao importar VaccinationService: {import_err}", exc_info=True)
-                return jsonify({
-                    'error': 'Erro ao carregar serviço de vacinação',
-                    'message': 'Serviço não disponível. Verifique os logs do servidor.'
-                }), 500
-        
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'Dados não fornecidos'}), 400
-        
-        name = data.get('name', '').strip()
-        birth_date = data.get('birth_date', '').strip()
-        gender = data.get('gender', None)  # Opcional
-        
-        # Validações
-        if not name:
-            return jsonify({'error': 'Nome do bebê é obrigatório'}), 400
-        
-        if not birth_date:
-            return jsonify({'error': 'Data de nascimento é obrigatória'}), 400
-        
-        # Valida formato da data (YYYY-MM-DD)
-        try:
-            from datetime import datetime
-            datetime.strptime(birth_date, '%Y-%m-%d')
-        except ValueError:
-            return jsonify({'error': 'Data de nascimento inválida. Use o formato YYYY-MM-DD'}), 400
-        
-        # Verifica se já existe perfil de bebê para este usuário
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('SELECT id FROM baby_profiles WHERE user_id = ? LIMIT 1', (int(current_user.id),))
-        existing_profile = cursor.fetchone()
-        conn.close()
-        
-        if existing_profile:
-            return jsonify({
-                'error': 'Você já possui um perfil de bebê cadastrado',
-                'message': 'Cada usuário pode ter apenas um perfil de bebê por enquanto.'
-            }), 400
-        
-        # Cria perfil do bebê usando o serviço (gera calendário automaticamente)
-        try:
-            vaccination_service = VaccinationService(DB_PATH)
-            baby_profile_id = vaccination_service.create_baby_profile(
-                user_id=int(current_user.id),
-                name=name,
-                birth_date=birth_date,
-                gender=gender
-            )
-            
-            logger.info(f"[BABY_PROFILE] Perfil criado com sucesso: ID={baby_profile_id}, Nome={name}, User={current_user.id}")
-            
-            return jsonify({
-                'success': True,
-                'message': 'Perfil do bebê criado com sucesso! O calendário de vacinação foi gerado automaticamente.',
-                'baby_profile_id': baby_profile_id
-            }), 201
-            
-        except ValueError as ve:
-            # Erro de validação (ex: bebê duplicado)
-            logger.warning(f"[BABY_PROFILE] Erro de validação: {ve}")
-            return jsonify({'error': str(ve)}), 400
-        except Exception as service_err:
-            logger.error(f"[BABY_PROFILE] Erro ao criar perfil: {service_err}", exc_info=True)
-            import traceback
-            traceback.print_exc()
-            return jsonify({
-                'error': 'Erro ao criar perfil do bebê',
-                'message': str(service_err)
-            }), 500
-        
-    except Exception as e:
-        logger.error(f"[BABY_PROFILE] Erro inesperado: {e}", exc_info=True)
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'error': 'Erro inesperado',
-            'message': str(e)
-        }), 500
-
-@app.route('/api/baby_profile', methods=['GET'])
-def api_get_baby_profile():
-    """Retorna o perfil do bebê do usuário (se existir)"""
-    try:
-        # Verifica autenticação manualmente para evitar erro 500 em AJAX
-        from flask_login import current_user
-        if not (hasattr(current_user, 'is_authenticated') and current_user.is_authenticated):
-            return jsonify({
-                'exists': False,
-                'message': 'Usuário não autenticado'
-            }), 200  # Retorna 200 com exists=False para não quebrar o frontend
-        
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute('''
-                SELECT id, name, birth_date, gender, created_at
-                FROM baby_profiles 
-                WHERE user_id = ? 
-                LIMIT 1
-            ''', (int(current_user.id),))
-            baby_profile = cursor.fetchone()
-            conn.close()
-            
-            if not baby_profile:
-                return jsonify({'exists': False}), 200  # Retorna 200 ao invés de 404
-            
-            return jsonify({
-                'exists': True,
-                'id': baby_profile[0],
-                'name': baby_profile[1],
-                'birth_date': baby_profile[2],
-                'gender': baby_profile[3],
-                'created_at': baby_profile[4]
-            }), 200
-        except Exception as db_err:
-            logger.error(f"[BABY_PROFILE] Erro ao acessar banco de dados: {db_err}", exc_info=True)
-            return jsonify({
-                'exists': False,
-                'error': 'Erro ao buscar perfil do bebê',
-                'message': str(db_err)
-            }), 200  # Retorna 200 para não quebrar o frontend
-        
-    except Exception as e:
-        logger.error(f"[BABY_PROFILE] Erro ao buscar perfil: {e}", exc_info=True)
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'exists': False,
-            'error': 'Erro ao buscar perfil do bebê',
-            'message': str(e)
-        }), 200  # Retorna 200 para não quebrar o frontend
-
-@app.route('/api/vaccination/status', methods=['GET'])
-def api_vaccination_status():
-    """Retorna status completo da vacinação do bebê do usuário"""
-    try:
-        # Verifica autenticação manualmente para evitar erro 500 em AJAX
-        from flask_login import current_user
-        if not (hasattr(current_user, 'is_authenticated') and current_user.is_authenticated):
-            return jsonify({
-                'status': 'ok',
-                'message': 'Usuário não autenticado',
-                'vaccines': [],
-                'baby_profile_exists': False
-            }), 200  # Retorna 200 com dados vazios para não quebrar o frontend
-        
-        # Importa VaccinationService com fallback
-        try:
-            from services.vaccination_service import VaccinationService
-        except ImportError:
-            try:
-                from backend.services.vaccination_service import VaccinationService
-            except ImportError:
-                # Se não conseguir importar, retorna resposta vazia em vez de erro 500
-                return jsonify({
-                    'status': 'ok',
-                    'message': 'Serviço de vacinação não disponível',
-                    'vaccines': [],
-                    'baby_profile_exists': False
-                }), 200
-        
-        # Busca perfil do bebê do usuário (assumindo um bebê por usuário por enquanto)
-        conn = None
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute('SELECT id FROM baby_profiles WHERE user_id = ? LIMIT 1', (int(current_user.id),))
-            baby_profile = cursor.fetchone()
-        except Exception as db_err:
-            logger.error(f"[VACCINATION] Erro ao buscar perfil do bebê: {db_err}", exc_info=True)
-            return jsonify({
-                'status': 'ok',
-                'message': 'Erro ao buscar perfil do bebê',
-                'vaccines': [],
-                'baby_profile_exists': False
-            }), 200  # Retorna 200 para não quebrar o frontend
-        finally:
-            if conn:
-                conn.close()
-        
-        if not baby_profile:
-            return jsonify({
-                'status': 'ok',
-                'message': 'Nenhum perfil de bebê encontrado',
-                'vaccines': [],
-                'baby_profile_exists': False
-            }), 200  # Retorna 200 para não quebrar o frontend
-        
-        baby_profile_id = baby_profile[0]
-        
-        # Busca status usando o serviço
-        try:
-            vaccination_service = VaccinationService(DB_PATH)
-            status = vaccination_service.get_vaccination_status(baby_profile_id)
-            
-            if not status:
-                logger.warning(f"[VACCINATION] get_vaccination_status retornou None para baby_profile_id={baby_profile_id}")
-                return jsonify({
-                    'status': 'ok',
-                    'message': 'Erro ao buscar status de vacinação',
-                    'vaccines': [],
-                    'baby_profile_exists': True
-                }), 200  # Retorna 200 para não quebrar o frontend
-            
-            return jsonify(status), 200
-        except Exception as service_err:
-            logger.error(f"[VACCINATION] Erro ao buscar status de vacinação (service): {service_err}", exc_info=True)
-            import traceback
-            traceback.print_exc()
-            return jsonify({
-                'status': 'ok',
-                'message': 'Erro ao processar dados de vacinação',
-                'vaccines': [],
-                'baby_profile_exists': True
-            }), 200  # Retorna 200 para não quebrar o frontend
-        
-    except Exception as e:
-        logger.error(f"[VACCINATION] Erro inesperado ao buscar status de vacinação: {e}", exc_info=True)
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'status': 'ok',
-            'message': 'Erro inesperado',
-            'vaccines': [],
-            'baby_profile_exists': False
-        }), 200  # Retorna 200 para não quebrar o frontend
+# Rotas /api/vacinas/*, /api/baby_profile, /api/vaccination/* → backend.blueprints.health_routes (health_bp)
+# Rotas de auth (login, cadastro, user, logout, forgot-password, reset, verify-email) → backend.blueprints.auth_routes (auth_bp)
 
 @app.route('/api/feedback', methods=['POST'])
 @login_required
@@ -6433,85 +5030,6 @@ Comentário: {comment}
         logger.error(f"Erro ao processar feedback: {e}", exc_info=True)
         return jsonify({'error': f'Erro ao processar feedback: {str(e)}'}), 500
 
-@app.route('/api/vaccination/mark-done', methods=['POST'])
-@login_required
-def api_vaccination_mark_done():
-    """Marca uma vacina como aplicada"""
-    try:
-        try:
-            from services.vaccination_service import VaccinationService
-        except ImportError:
-            from backend.services.vaccination_service import VaccinationService
-        
-        data = request.get_json()
-        schedule_id = data.get('schedule_id')
-        administered_date = data.get('administered_date')  # Opcional: formato 'YYYY-MM-DD'
-        administered_location = data.get('administered_location')  # Opcional
-        administered_by = data.get('administered_by')  # Opcional
-        lot_number = data.get('lot_number')  # Opcional
-        notes = data.get('notes')  # Opcional
-        
-        if not schedule_id:
-            return jsonify({'error': 'schedule_id é obrigatório'}), 400
-        
-        # Verifica se o agendamento pertence ao usuário
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT vs.id FROM vaccination_schedule vs
-            JOIN baby_profiles bp ON vs.baby_profile_id = bp.id
-            WHERE vs.id = ? AND bp.user_id = ?
-        ''', (schedule_id, int(current_user.id)))
-        
-        if not cursor.fetchone():
-            conn.close()
-            return jsonify({'error': 'Agendamento não encontrado ou não pertence ao usuário'}), 404
-        
-        conn.close()
-        
-        # Marca como aplicada usando o serviço
-        vaccination_service = VaccinationService(DB_PATH)
-        success = vaccination_service.mark_vaccine_done(
-            schedule_id=schedule_id,
-            administered_date=administered_date,
-            administered_location=administered_location,
-            administered_by=administered_by,
-            lot_number=lot_number,
-            notes=notes
-        )
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'message': 'Vacina marcada como aplicada com sucesso! 💉✨'
-            }), 200
-        else:
-            return jsonify({'error': 'Erro ao marcar vacina como aplicada'}), 500
-        
-    except Exception as e:
-        logger.error(f"Erro ao marcar vacina como aplicada: {e}", exc_info=True)
-        return jsonify({'error': f'Erro: {str(e)}'}), 500
-
-@app.route('/api/vacinas/desmarcar', methods=['POST'])
-@login_required
-def api_vacinas_desmarcar():
-    """Remove uma vacina das vacinas tomadas"""
-    data = request.get_json()
-    tipo = data.get('tipo', '').strip()
-    vacina_nome = data.get('vacina_nome', '').strip()
-    
-    if not tipo or not vacina_nome:
-        return jsonify({"erro": "Tipo e nome da vacina são obrigatórios"}), 400
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM vacinas_tomadas WHERE user_id = ? AND tipo = ? AND vacina_nome = ?',
-                   (current_user.id, tipo, vacina_nome))
-    conn.commit()
-    conn.close()
-    
-    return jsonify({"sucesso": True, "mensagem": "Vacina removida"})
-
 # Rota para teste
 @app.route('/teste')
 def teste():
@@ -6530,6 +5048,9 @@ def teste():
 
 if PERF_LOG or PERF_EXPOSE:
     _PERF_IMPORT_MS = round((time.perf_counter() - _T_IMPORT_START) * 1000, 0)
+    app._perf_import_ms = _PERF_IMPORT_MS
+    app._perf_first_req_ms = getattr(app, "_perf_first_req_ms", None)
+    app._perf_first_req_at = getattr(app, "_perf_first_req_at", None)
     _perf_logger.info("[PERF] import backend.app: %.0f ms", _PERF_IMPORT_MS)
 
 if __name__ == "__main__":

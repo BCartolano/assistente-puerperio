@@ -1,3 +1,6 @@
+# Índice de geolocalização (gerado)
+backend/static/data/hospitais_index.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -220,3 +223,43 @@ BMAD-*.md
 IMAGENS_*.md
 task.md
 tasks.md
+
+# Observabilidade de busca (evitar commit de logs)
+logs/search_events.jsonl
+
+# --- Limpeza repo: dumps e dados crus (produção usa só hospitals_geo.parquet + configs) ---
+BASE_DE_DADOS_CNES_*/
+data/raw/
+data/*.dbc
+data/*.dbf
+data/*.db
+data/*.sqlite
+data/*202*.csv
+data/geo/
+!data/geo/hospitals_geo.min.parquet
+data/geo/*.tmp.parquet
+
+# reports/logs (rotate e CI artifacts)
+reports/
+!reports/.gitkeep
+logs/
+!logs/.gitkeep
+
+# caches e ambientes
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+node_modules/
+.DS_Store
+
+# ferramentas de purga e rascunhos locais
+.purge/
+ai-sandbox/
+ideas/
+notes/
+drafts/
+tmp/
+*.bak
+*.orig
+*.rej

@@ -71,6 +71,30 @@ health_data_audit:
   deployment_blocker: |
     Se qualquer um desses testes falhar, BLOQUEIE o deploy.
     A segurança é o nosso MVP.
+  obstetric_filter_qa: |
+    Check automático - garantir que não vaza ambulatorial:
+    - scripts/qa_mismatches.py: garantir qa_ambulatorial_vazando=0 (fail no gate se >0)
+    - Teste E2E: nome "CLÍNICA DE PSICOLOGIA …" nunca aparece no /emergency/search
+    - Gate no orquestrador: WARNING se houver público→privado; fail se >0.5% na UF de release
+  override_coverage_gate: |
+    Gate de cobertura de overrides:
+    - Em modo debug, calcular % de itens com override_hit=true numa amostra; WARNING se override_coverage_pct < 0.9
+    - Bloquear release se override_coverage_pct < 0.9 na UF de release (RELEASE_UF)
+    - Aceite: run_summary.qa_hints.override_coverage_pct >= 0.9 quando integrado ao orquestrador
+    - GET /api/v1/debug/overrides/coverage retorna total_loaded, snapshot_usado para diagnóstico
+    - override_reason por item (applied | no_match | not_applied) para diagnosticar CNES sem match
+  chat_e2e: |
+    Objetivo: cobrir intents principais e triagem.
+    Tarefas:
+    - pytest e2e: ping, intents, triage (on/off), público/privado/rotas com LAT/LON reais
+    - Gate no CI: falha se triagem não disparar com termos definidos (sangramento intenso, convulsão, etc)
+    - Aceite: 100% e2e verde; triagem aciona em 100% dos casos de termos graves em teste
+  frontend_payload_gate: |
+    Gate no frontend - validação E2E:
+    - Cypress/Playwright: e2e que valida o primeiro card com "Hospital Municipal …" exibindo "Público" e "Aceita Cartão SUS" quando a API manda isso
+    - Falhar se encontrar "Privado" quando a API envia "Público" no payload
+    - Verificar que esfera/sus_badge do card são idênticos aos do payload (sem transformação local)
+    - Aceite: 0 casos de "Privado" exibido quando API envia "Público"
 story-file-permissions:
   - CRITICAL: When reviewing stories, you are ONLY authorized to update the "QA Results" section of story files
   - CRITICAL: DO NOT modify any other sections including Status, Story, Acceptance Criteria, Tasks/Subtasks, Dev Notes, Testing, Dev Agent Record, Change Log, or any other sections

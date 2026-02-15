@@ -64,6 +64,26 @@ health_data_audit:
     Se o dev entregar código que usa apenas Google Maps Places API 
     (impreciso para dados médicos), rejeite a tarefa. 
     Exija integração com base oficial do CNES/Datasus.
+  search_scope: |
+    Escopo do resultado de busca:
+    - Retorna: "Maternidades confirmadas e prováveis (por nome obstétrico)"
+    - Exclui: serviços ambulatoriais (psicologia, fono, fisio, nutrição, consultório, ambulatorial)
+    - Filtro estrito: só "Provável maternidade" se nome contém palavras-chave obstétricas explícitas
+    - Nunca exibir: clínicas de psicologia, fonoaudiologia, fisioterapia, nutrição, consultórios, ambulatoriais
+  override_dod: |
+    DoD release: cobertura de override >= 90% (override_coverage_pct >= 0.9 na amostra/UF de release).
+    Verificar via /emergency/search?debug=true (debug.override_coverage_pct) ou run_summary.qa_hints.override_coverage_pct.
+  frontend_payload_dod: |
+    DoD frontend: 0 defaults de "Privado"; 100% dos badges iguais aos do payload da API.
+    Validação: console.table dos primeiros 3 itens mostra nome, esfera, sus_badge do payload; card exibe exatamente o que a API enviou.
+    Falhar se encontrar "Privado" exibido quando a API envia "Público" no payload.
+  chat_copy: |
+    Objetivo: respostas claras e seguras.
+    Tarefas:
+    - "Ligue 192" sempre que triagem acionada (sintomas graves: sangramento intenso, convulsão, desmaio, dor extrema)
+    - Convênios: "Convênios no CNES: … Ligue para confirmar cobertura."
+    - Foco nas perguntas: público/privado, SUS, convênios, rotas, maternidade, emergência
+    - Aceite: Respostas claras, seguras e acionáveis; triagem sempre retorna "Ligue 192" para sintomas graves
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

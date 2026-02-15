@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Deploy - Azure Web App (OIDC)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: deploy-oidc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      SMOKE_LAT: "-23.55"
+      SMOKE_LON: "-46.63"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write VERSION (commit short SHA)
+        shell: bash
+        run: |
+          echo "${GITHUB_SHA}" | cut -c1-12 > VERSION
+          echo "VERSION=$(cat VERSION)"
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create zip artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip -r site.zip . -x "**/.git/**" "**/.venv/**" "**/node_modules/**" "**/*.log"
+          ls -lh site.zip
+
+      - name: Deploy (config-zip)
+        shell: bash
+        run: |
+          set -euo pipefail
+          az webapp deployment source config-zip -g "${AZURE_RESOURCE_GROUP}" -n "${AZURE_WEBAPP_NAME}" --src site.zip
+
+      - name: Post-deploy smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://${AZURE_WEBAPP_NAME}.azurewebsites.net"
+          echo "Base: $BASE"
+          for i in {1..12}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          [ "$code" = "200" ] || (echo "Smoke / failed with $code" && exit 1)
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/educational")
+          [ "$code" = "200" ] || (echo "Smoke /api/educational failed with $code" && exit 1)
+          NEAR="$BASE/api/nearby?lat=${SMOKE_LAT}&lon=${SMOKE_LON}&radius_km=10&limit=1"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$NEAR")
+          [ "$code" = "200" ] || (echo "Smoke /api/nearby failed with $code" && exit 1)
+          echo "Smoke OK"
+
+      - name: Smoke emergency health
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://${AZURE_WEBAPP_NAME}.azurewebsites.net"
+          curl -sf "$BASE/api/v1/emergency/health" | grep -q '"status":"ok"' || (echo "Health endpoint not OK" && exit 1)
+
+      - name: Print emergency health details
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://${AZURE_WEBAPP_NAME}.azurewebsites.net"
+          curl -sf "$BASE/api/v1/emergency/health/details" || true
+
+      - name: Notify on failure (optional)
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
+        run: |
+          MSG="Deploy failed (${{ github.workflow }} #${{ github.run_number }}) – ${{ github.repository }}@${{ github.ref }}"
+          MSG="${MSG}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"text\":\"${MSG}\"}" "$SLACK_WEBHOOK_URL" || true
+          fi
+          if [ -n "${TEAMS_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"@type\":\"MessageCard\",\"@context\":\"https://schema.org/extensions\",\"summary\":\"Deploy failed\",\"themeColor\":\"ff0000\",\"title\":\"Deploy failed\",\"text\":\"${MSG}\"}" "$TEAMS_WEBHOOK_URL" || true
+          fi
+          if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"content\":\"${MSG}\"}" "$DISCORD_WEBHOOK_URL" || true
+          fi

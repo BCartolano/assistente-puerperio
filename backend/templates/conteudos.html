@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include '_perf_head_links.html' %}
+  {% include '_csp_meta.html' %}
+  <!-- Namespacing automático do localStorage (carregar antes dos demais scripts) -->
+  <script src="/static/js/storage-namespace.js" defer></script>
+  <script src="/static/js/version-watchdog.js" defer></script>
+  <title>Conteúdos Educativos</title>
+  <link rel="stylesheet" href="/static/css/theme-polish.css">
+  <link rel="stylesheet" href="/static/css/a11y-polish.css">
+  <link rel="stylesheet" href="/static/css/educational-cards.css">
+  <style>
+    body { background: linear-gradient(180deg, #ffeef6, #fff); min-height: 100vh; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .back-link { color: #c44569; text-decoration: none; border-bottom: 1px dashed rgba(196,69,105,.35); padding-bottom: 1px; }
+    .back-link:hover { color: #a83455; border-color: rgba(196,69,105,.6); }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="edu-title-line">
+      <h2>Conteúdos Educativos</h2>
+      <a class="back-link" href="/">Voltar</a>
+    </div>
+    <section class="conteudos-carousel" data-viewall-href="/conteudos">
+      <div class="conteudos-carousel-track">
+        {% for it in items %}
+        <div id="{{ it.id }}" class="conteudo-card-carousel" data-read-min="{{ it.read_min|int }}">
+          <div class="conteudo-card-figure">
+            {% if it.icon == 'ribbon' %}
+            <svg viewBox="0 0 64 64" class="edu-icon edu-icon--ribbon" aria-hidden="true">
+              <path d="M32 6c-10 0-18 8-18 18 0 12 18 28 18 28s18-16 18-28c0-10-8-18-18-18z" fill="none" stroke="#ff7ab8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M32 30 L18 56" stroke="#ff7ab8" stroke-width="4" stroke-linecap="round"></path>
+              <path d="M32 30 L46 56" stroke="#ff7ab8" stroke-width="4" stroke-linecap="round"></path>
+            </svg>
+            {% else %}
+            <svg viewBox="0 0 96 64" class="edu-icon edu-icon--bottles" aria-hidden="true">
+              <g fill="none" stroke="#6aa8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="12" y="20" width="24" height="36" rx="6"></rect>
+                <rect x="60" y="14" width="24" height="42" rx="6"></rect>
+                <rect x="16" y="12" width="16" height="8" rx="3"></rect>
+                <rect x="64" y="8" width="16" height="8" rx="3"></rect>
+              </g>
+              <g fill="#d8ebff">
+                <rect x="12" y="38" width="24" height="18" rx="6"></rect>
+                <rect x="60" y="34" width="24" height="22" rx="6"></rect>
+              </g>
+            </svg>
+            {% endif %}
+          </div>
+          <div class="conteudo-card-title">{{ it.title }}</div>
+          <div class="conteudo-card-subtitle">{{ it.subtitle }}</div>
+          <div class="edu-meta">
+            <span class="badge-read">Leitura {{ it.read_min|int }} min</span>
+          </div>
+          <a class="conteudo-card-cta btn-soft" href="{{ it.url }}" target="_blank" rel="noopener">Ministério da Saúde</a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.conteudo-card-carousel').forEach(function (card) {
+        var a = card.querySelector('a[href]');
+        if (!a) return;
+        var titleEl = card.querySelector('.conteudo-card-title');
+        var label = (titleEl && titleEl.textContent && titleEl.textContent.trim()) || 'Abrir conteúdo oficial';
+        card.setAttribute('role', 'link');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', label + ' — abre link do gov.br em nova aba');
+        card.addEventListener('click', function (e) {
+          if (e.target.closest('a,button')) return;
+          window.open(a.href, '_blank', 'noopener');
+        });
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            window.open(a.href, '_blank', 'noopener');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -61,7 +61,7 @@
          */
         getScreenSize() {
             const width = this.width;
-            const deviceType = this.getDeviceType();
+            const _deviceType = this.getDeviceType();
 
             if (width > 1024) {
                 return 'desktop-md';

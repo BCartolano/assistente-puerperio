@@ -1,0 +1,346 @@
+/* Cards de Hospitais para Emergência Obstétrica */
+/* Otimizado para situações de emergência - Design de Alto Contraste e Ações Rápidas */
+
+.card-emergencia,
+.hospital-card-emergency {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-left: 8px solid #e74c3c; /* Vermelho para indicar urgência */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    transition: all 0.3s ease;
+}
+
+.card-emergencia:hover,
+.hospital-card-emergency:hover {
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.2);
+    transform: translateY(-2px);
+}
+
+.hospital-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.hospital-nome {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #7a4a4a;
+    margin: 0;
+    flex: 1;
+}
+
+.hospital-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge-publico,
+.badge-privado,
+.badge-uti {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-publico {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge-privado {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.badge-uti {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.hospital-card-body {
+    margin-bottom: 1.5rem;
+}
+
+.hospital-info {
+    margin-bottom: 1rem;
+}
+
+.hospital-info p,
+.hospital-endereco {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin: 0 0 15px 0;
+    line-height: 1.5;
+}
+
+.hospital-info p {
+    margin: 0.5rem 0;
+    color: #666;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.hospital-info i {
+    color: #ff8fa3;
+    width: 20px;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+}
+
+.hospital-endereco {
+    font-weight: 500;
+    color: #333 !important;
+}
+
+/* Info de Pagamento */
+.info-pagamento {
+    margin-bottom: 15px;
+}
+
+.tag-pagamento {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #495057;
+}
+
+.hospital-distancia {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: #fff5f5;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.distancia-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #7a4a4a;
+    font-weight: 600;
+}
+
+.distancia-item i {
+    color: #ff8fa3;
+}
+
+.hospital-card-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Container de Ações */
+.acoes-container,
+.hospital-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* BOTÃO DE PÂNICO - DESTAQUE MÁXIMO PARA EMERGÊNCIA */
+.btn-ligar,
+.btn-emergency-ligar {
+    background: #e74c3c;
+    color: white !important;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    min-height: 56px; /* Tamanho mínimo para touch (thumb-friendly) */
+}
+
+.btn-ligar:hover,
+.btn-emergency-ligar:hover {
+    background: #c0392b;
+    transform: scale(1.01);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
+}
+
+.btn-ligar:active,
+.btn-emergency-ligar:active {
+    background: #a93226;
+    transform: scale(0.98);
+}
+
+.btn-ligar.disabled,
+.btn-emergency-ligar.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-ligar.disabled:hover,
+.btn-emergency-ligar.disabled:hover {
+    transform: none;
+}
+
+.phone-icon {
+    font-size: 1.3rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.btn-ligar i,
+.btn-emergency-ligar i {
+    font-size: 1.3rem;
+}
+
+/* Grid de Rotas */
+.rotas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* Botões de Rota */
+.btn-rota,
+.btn-emergency-rota {
+    text-decoration: none;
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    color: white;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    min-height: 44px; /* Tamanho mínimo para touch */
+}
+
+.btn-rota.google,
+.btn-emergency-rota:not(.btn-waze) {
+    background: #4285F4;
+}
+
+.btn-rota.google:hover,
+.btn-emergency-rota:not(.btn-waze):hover {
+    background: #357ae8;
+    transform: translateY(-1px);
+}
+
+.btn-rota.waze,
+.btn-emergency-rota.btn-waze {
+    background: #33CCFF;
+}
+
+.btn-rota.waze:hover,
+.btn-emergency-rota.btn-waze:hover {
+    background: #1ab7ea;
+    transform: translateY(-1px);
+}
+
+.hospital-empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #999;
+}
+
+.hospital-empty i {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 1rem;
+}
+
+.hospital-empty p {
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+}
+
+.hospital-empty-hint {
+    font-size: 0.9rem !important;
+    color: #bbb !important;
+}
+
+/* Mobile - Ajustes para telas pequenas */
+@media (max-width: 768px) {
+    .hospital-card-emergency {
+        padding: 1.2rem;
+        margin-bottom: 1.2rem;
+    }
+    
+    .hospital-card-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .hospital-nome {
+        font-size: 1.1rem;
+    }
+    
+    .hospital-card-actions {
+        flex-direction: column;
+    }
+    
+    .btn-emergency-ligar,
+    .btn-emergency-rota {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .btn-emergency-ligar {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+    
+    .hospital-distancia {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+
+/* Aviso de emergência no topo da lista */
+.hospitais-emergency-header {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+    border-left: 4px solid #e74c3c;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+}
+
+.hospitais-emergency-header h2 {
+    color: #c0392b;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+}
+
+.hospitais-emergency-header p {
+    margin: 0;
+    color: #7a4a4a;
+    font-size: 0.95rem;
+}

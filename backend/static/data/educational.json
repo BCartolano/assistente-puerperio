@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "id": "card-cancer-mama-welcome",
+      "title": "Saúde Preventiva",
+      "subtitle": "Câncer de Mama",
+      "url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/c/cancer-de-mama",
+      "read_min": 4,
+      "icon": "ribbon"
+    },
+    {
+      "id": "card-doacao-leite-welcome",
+      "title": "Rede de Apoio",
+      "subtitle": "Doação de Leite",
+      "url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/d/doacao-de-leite",
+      "read_min": 3,
+      "icon": "bottles"
+    },
+    {
+      "id": "card-aleitamento",
+      "title": "Amamentação",
+      "subtitle": "Aleitamento materno",
+      "url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/a/aleitamento-materno",
+      "read_min": 5,
+      "icon": "bottles"
+    },
+    {
+      "id": "card-recem-nascido",
+      "title": "Primeiros dias",
+      "subtitle": "Cuidados com o recém-nascido",
+      "url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/r/recem-nascido",
+      "read_min": 4,
+      "icon": "ribbon"
+    },
+    {
+      "id": "card-puerperio",
+      "title": "Pós-parto",
+      "subtitle": "Saúde da mulher no puerpério",
+      "url": "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/p/puerperio",
+      "read_min": 4,
+      "icon": "ribbon"
+    }
+  ]
+}

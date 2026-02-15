@@ -1,0 +1,174 @@
+{
+  "total_analyzed": 500,
+  "valid": 479,
+  "suspicious": [
+    {
+      "cnes_id": "0000396",
+      "name": "Hospital Das Clinicas",
+      "address": "AV PROFESSOR MORAES REGO, 1235, CIDADE UNIVERSITARIA",
+      "city": null,
+      "state": "26",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0000671",
+      "name": "Us 153 Policlinica E Maternidade Arnaldo Marques",
+      "address": "AV DOIS RIOS, S/N, IBURA",
+      "city": null,
+      "state": "26",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0002593",
+      "name": "Clinica Santa Helena Suissa",
+      "address": "FREI PAULO, 331, BAIRRO SAO JOSE",
+      "city": null,
+      "state": "28",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0003085",
+      "name": "Clinica De Repouso Sao Marcello Ltda",
+      "address": "VISCONDE DE MARACAJU, 490, CIDADE NOVA",
+      "city": null,
+      "state": "28",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0007714",
+      "name": "Clinica De Acident Sao Francisco",
+      "address": "PRESIDENTE VARGAS, 4016, IANETAMA",
+      "city": null,
+      "state": "15",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0014125",
+      "name": "Center Clinicas",
+      "address": "AV MANOEL MENDES DE CAMARGO, 851, CENTRO",
+      "city": null,
+      "state": "41",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0016292",
+      "name": "Clinica Dr Helio Rotenberg",
+      "address": "PCA JOAQUIM MENELAU DE ALMEIDA TORRES, 70, HAUER",
+      "city": null,
+      "state": "41",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0017868",
+      "name": "Hospital Filantropico Policlinica",
+      "address": "RUA PEDRO RAMIRES DE MELLO, 361, CENTRO",
+      "city": null,
+      "state": "41",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0020516",
+      "name": "Us 167 Policlinica E Maternidade Professor Barros Lima",
+      "address": "AV NORTE MIGUEL ARRAES DE ALENCAR, 6465, CASA AMARELA",
+      "city": null,
+      "state": "26",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0026417",
+      "name": "Hospital De Clinicas Sul",
+      "address": "PRACA NATAL, 55, PARQUE INDUSTRIAL",
+      "city": null,
+      "state": "35",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0027049",
+      "name": "Hosp Das Clinicas Da Univ Fed De Minas Gerais Ebserh",
+      "address": "AV ALFREDO BALENA, 110, STA EFIGENIA",
+      "city": null,
+      "state": "31",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0027707",
+      "name": "Clinica Pinel",
+      "address": "ALAMEDA DO IPE BRANCO, 165, SAO LUIZ",
+      "city": null,
+      "state": "31",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0104884",
+      "name": "Hospital Das Clinicas De Sao Goncalo",
+      "address": "ESTRADA DE GUANDUBA, S/N, CENTRO",
+      "city": null,
+      "state": "24",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0106518",
+      "name": "Clinica Terapeutica Virtude",
+      "address": "JUDITH MARTINS, 200, BAIXA GRANDE",
+      "city": null,
+      "state": "23",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0115509",
+      "name": "Hospital De Clinicas Anjo Gabriel",
+      "address": "RUA SAO JUDAS TADEU, 200, CAPOAVINHA",
+      "city": null,
+      "state": "35",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0175277",
+      "name": "Hospital Das Clinicas Bauru",
+      "address": "RUA SILVIO MARCHIONE 20 QUADRA 3, 320, VILA NOVA CIDADE UNI",
+      "city": null,
+      "state": "35",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0219622",
+      "name": "Policlinica Municipal Geomarco Coelho De Sousa",
+      "address": "RUA JOSE CLEMENTINO RODRIGUES COELHO, S/N, CENTRO",
+      "city": null,
+      "state": "26",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0220337",
+      "name": "Hospital De Clinicas De Campina Grande",
+      "address": "SIQUEIRA CAMPOS, 605, SAO JOSE",
+      "city": null,
+      "state": "25",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0228494",
+      "name": "Serenity Clinica De Desospitalizacao Ltda",
+      "address": "2 B, 81, CIVIT II",
+      "city": null,
+      "state": "32",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0235385",
+      "name": "Clinica Terapeutica Sonho De Vida",
+      "address": "ESTRADA SIMAO PORTELA, 634, RIO GRANDE",
+      "city": null,
+      "state": "35",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    },
+    {
+      "cnes_id": "0262862",
+      "name": "Hospital Das Clinicas Covid 19 Hcc",
+      "address": "PRIMEIRA AV C RUA 235, 545, LESTE UNIVERSITARIO",
+      "city": null,
+      "state": "52",
+      "reason": "Contém termo não-maternidade: CLINICA"
+    }
+  ]
+}

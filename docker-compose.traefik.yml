@@ -1,0 +1,68 @@
+# Traefik v2 + HTTPS automático (Let's Encrypt HTTP-01)
+# Subir: docker compose -f docker-compose.traefik.yml up -d --build
+version: "3.8"
+networks:
+  traefik-web:
+    driver: bridge
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=${CERTBOT_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --accesslog=true
+      - --log.level=INFO
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    restart: unless-stopped
+    networks: [traefik-web]
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: sophia-app
+    env_file: .env
+    expose:
+      - "5000"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./reports:/app/reports
+      - ./backend:/app/backend
+    restart: unless-stopped
+    networks: [traefik-web]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-web
+      - traefik.http.middlewares.redirect-https.redirectscheme.scheme=https
+      - traefik.http.routers.app-web.entrypoints=web
+      - traefik.http.routers.app-web.rule=Host(`${DOMAIN_PRIMARY}`)
+      - traefik.http.routers.app-web.middlewares=redirect-https
+      - traefik.http.routers.app.entrypoints=websecure
+      - traefik.http.routers.app.rule=Host(`${DOMAIN_PRIMARY}`)
+      - traefik.http.routers.app.tls=true
+      - traefik.http.routers.app.tls.certresolver=le
+      - traefik.http.routers.app.service=app
+      - traefik.http.routers.app.middlewares=app-compress
+      - traefik.http.services.app.loadbalancer.server.port=5000
+      - traefik.http.middlewares.app-compress.compress=true
+      - traefik.http.routers.app-static.entrypoints=websecure
+      - traefik.http.routers.app-static.rule=Host(`${DOMAIN_PRIMARY}`) && PathPrefix(`/static/`)
+      - traefik.http.routers.app-static.tls=true
+      - traefik.http.routers.app-static.tls.certresolver=le
+      - traefik.http.routers.app-static.service=app
+      - traefik.http.routers.app-static.middlewares=static-headers,app-compress
+      - traefik.http.middlewares.static-headers.headers.customResponseHeaders.Cache-Control=public,max-age=604800,immutable

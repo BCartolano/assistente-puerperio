@@ -1,0 +1,29 @@
+/* A11y: foco visível consistente e ativação por teclado nos cards */
+:root {
+    --a11y-ring: var(--ring, #8cc6ff);
+}
+
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+[tabindex]:focus-visible,
+.category-card:focus-visible,
+.conteudo-card-carousel:focus-visible {
+    outline: 3px solid var(--a11y-ring);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 2px rgba(140, 198, 255, 0.25);
+}
+
+.category-card[role="link"],
+.conteudo-card-carousel[role="link"] {
+    cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .category-card:hover,
+    .conteudo-card-carousel:hover,
+    .btn:hover {
+        transform: none !important;
+        transition: none !important;
+    }
+}

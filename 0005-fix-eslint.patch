@@ -1,0 +1,179 @@
+diff --git a/backend/static/js/api-client.js b/backend/static/js/api-client.js
+--- a/backend/static/js/api-client.js
++++ b/backend/static/js/api-client.js
+@@ -136,4 +136,4 @@
+         // Retry logic com backoff exponencial
+         let lastError;
+-        let lastResponse;
++        let _lastResponse;
+         
+@@ -164,3 +164,4 @@
+                 // Para erros 5xx (server error) ou timeout (408), retenta
+                 if (!response.ok && (response.status >= 500 || response.status === 408)) {
+-                    lastResponse = response;
++                    _lastResponse = response;
++
+diff --git a/backend/static/js/chat.js b/backend/static/js/chat.js
+--- a/backend/static/js/chat.js
++++ b/backend/static/js/chat.js
+@@ -2548,4 +2548,4 @@
+     }
+ 
+-    /** Carrega histórico do servidor (fetch) e reseta UI; não confundir com loadChatHistory() que retorna array do localStorage */
+-    async loadChatHistory() {
++    /** Carrega histórico do servidor (fetch) e reseta UI; não confundir com loadChatHistory() que retorna array do localStorage */
++    async loadChatHistoryFromServer() {
+         try {
+@@ -229,8 +229,8 @@
+               if (this.categoriesContainer) {
+                   this.loadCategories();
+               }
+               // Não exibe aviso se não encontrado - é opcional
+ 
+-              this.loadChatHistory();
++              this.loadChatHistoryFromServer();
+               this.requestNotificationPermission();
+               this.optimizeForDevice();
+@@ -785,3 +785,3 @@
+         try {
+-            const response = await fetch('/api/logout', {
++            const _response = await fetch('/api/logout', {
+                 method: 'POST',
+@@ -1889,3 +1889,3 @@
+                     const content = msgEl.querySelector('.message-text')?.textContent || '';
+-                    const time = msgEl.querySelector('.message-time')?.textContent || '';
++                    const _time = msgEl.querySelector('.message-time')?.textContent || '';
+                     const categoria = msgEl.querySelector('.message-category')?.textContent.replace('📁 ', '').trim() || null;
+@@ -2399,3 +2399,3 @@
+         const intervalMs = 5000;
+         const fadeDuration = 450;
+-        let rotationTimeout;
++        let _rotationTimeout;
+ 
+         const rotateMessage = () => {
+@@ -2424,3 +2424,3 @@
+                     });
+ 
+-                    rotationTimeout = setTimeout(rotateMessage, intervalMs);
++                    _rotationTimeout = setTimeout(rotateMessage, intervalMs);
+                 }, fadeDuration);
+@@ -2431,3 +2431,3 @@
+             }
+         };
+ 
+-        rotationTimeout = setTimeout(rotateMessage, intervalMs);
++        _rotationTimeout = setTimeout(rotateMessage, intervalMs);
+     }
+@@ -2446,3 +2446,3 @@
+         callButtons.forEach(btn => {
+-            btn.addEventListener('click', (e) => {
++            btn.addEventListener('click', (_e) => {
+                 // Feedback visual imediato
+@@ -2723,3 +2723,3 @@
+         avisoRisco.setAttribute('data-nivel', nivelRisco);
+         
+-        const nivelTexto = nivelRisco === 'alto' ? 'alto' : 'leve';
++        const _nivelTexto = nivelRisco === 'alto' ? 'alto' : 'leve';
+         const corFundo = nivelRisco === 'alto' ? '#fff3cd' : '#fff9e6'; // Amarelo claro, mais intenso para alto
+@@ -3076,5 +3076,5 @@
+     detectDevice() {
+         const width = window.innerWidth;
+-        const height = window.innerHeight;
+-        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
++        const _height = window.innerHeight;
++        const _isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+         
+@@ -3714,3 +3714,3 @@
+             </div>`;
+             
+-            for (const [key, trimestre] of Object.entries(gestacao)) {
++            for (const [_key, trimestre] of Object.entries(gestacao)) {
+                 html += `
+@@ -3780,3 +3780,3 @@
+             </div>`;
+             
+-            for (const [key, periodo] of Object.entries(posparto)) {
++            for (const [_key, periodo] of Object.entries(posparto)) {
+                 html += `
+@@ -4610,3 +4610,3 @@
+      * @returns {Array} - Array de hospitais no formato esperado
+      */
+-    convertFacilitiesToHospitals(facilities, userLat, userLon) {
++    convertFacilitiesToHospitals(facilities, _userLat, _userLon) {
+         return facilities.map(facility => {
+@@ -4882,1 +4882,1 @@
+                                          element.tags?.['short_name'] || '';
+                         
+-                        const specialty = (element.tags?.['healthcare:speciality'] || '').toLowerCase();
++                        const _specialty = (element.tags?.['healthcare:speciality'] || '').toLowerCase();
+                         const healthcare = (element.tags?.['healthcare'] || '').toLowerCase();
+@@ -5423,3 +5423,3 @@
+ 
+         // CRÍTICO: Flag para identificar busca de maternidades (não exibir bloco amarelo)
+-        const isMaternitySearch = true;
++        const _isMaternitySearch = true;
+ 
+         // Filtro: nome + coordenadas
+@@ -6216,3 +6216,3 @@
+         callButtons.forEach(btn => {
+-            btn.addEventListener('click', (e) => {
++            btn.addEventListener('click', (_e) => {
+                 // Feedback visual imediato
+diff --git a/backend/static/js/mobile-navigation.js b/backend/static/js/mobile-navigation.js
+--- a/backend/static/js/mobile-navigation.js
++++ b/backend/static/js/mobile-navigation.js
+@@ -264,3 +264,4 @@
+     }
+     
+     loadVideosLazy() {
++        const dicasContainer = document.getElementById('mobile-dicas-container') || document.querySelector('[data-dicas-container]');
+         // Verifica se a sidebar direita (desktop) tem vídeos renderizados
+@@ -271,4 +272,4 @@
+             // Aguarda um pouco e tenta novamente
+             setTimeout(() => {
+-                if (!dicasContainer.hasAttribute('data-videos-loaded')) {
++                if (!dicasContainer || !dicasContainer.hasAttribute('data-videos-loaded')) {
+                     this.loadVideosLazy();
+                 }
+@@ -279,6 +280,6 @@
+         
+         const videosCard = document.getElementById('mobile-videos-card');
+         if (!videosCard) {
+-            // Cria card de vídeos se não existe
+-            const dicasContainer = document.getElementById('mobile-dicas-container') || document.querySelector('[data-dicas-container]');
++            // Cria card de vídeos se não existe
++            if (!dicasContainer) return;
+             const section = dicasContainer.querySelector('.mobile-dicas-section');
+             if (section) {
+diff --git a/backend/static/js/device-detector.js b/backend/static/js/device-detector.js
+--- a/backend/static/js/device-detector.js
++++ b/backend/static/js/device-detector.js
+@@ -61,3 +61,3 @@
+         getScreenSize() {
+             const width = this.width;
+-            const deviceType = this.getDeviceType();
++            const _deviceType = this.getDeviceType();
+ 
+             if (width > 1024) {
+diff --git a/backend/static/js/vaccination-timeline.js b/backend/static/js/vaccination-timeline.js
+--- a/backend/static/js/vaccination-timeline.js
++++ b/backend/static/js/vaccination-timeline.js
+@@ -213,3 +213,3 @@
+                 const vaccineStatus = vaccine?.status || vaccine?.state || '';
+-                const vaccineDate = vaccine?.date || vaccine?.applied_at || vaccine?.recommended_date || '';
++                const _vaccineDate = vaccine?.date || vaccine?.applied_at || vaccine?.recommended_date || '';
+                 const isNext = nextVaccine && (nextVaccine.id === vaccine.id || nextVaccine.vaccine_name === vaccineName);
+@@ -351,3 +351,3 @@
+         findNextVaccine(schedule) {
+-            const today = new Date();
++            const _today = new Date();
+             const pending = schedule.filter(v => v.status === 'pending' && v.recommended_date);
+diff --git a/.eslintrc.cjs b/.eslintrc.cjs
+--- a/.eslintrc.cjs
++++ b/.eslintrc.cjs
+@@ -20,3 +20,3 @@
+   rules: {
+-    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
++    'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+     'no-empty': ['warn', { allowEmptyCatch: true }]
+   },

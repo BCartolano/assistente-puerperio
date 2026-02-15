@@ -1,0 +1,72 @@
+# Dados dos sintomas – Camada de dados (não contém regras de decisão)
+# Níveis: critico | alerta | monitoramento
+
+sintomas:
+  - id: dor_cabeca_forte
+    titulo: Dor de cabeça forte
+    pergunta: Está com dor de cabeça muito forte que não passa com analgésicos?
+    categoria: Pré-eclâmpsia
+
+  - id: visao_embacada
+    titulo: Visão embaçada ou pontos brilhantes
+    pergunta: Está vendo pontos brilhantes, luzes piscando ou visão embaçada?
+    categoria: Pré-eclâmpsia
+
+  - id: dor_abdominal_intensa
+    titulo: Dor abdominal intensa
+    pergunta: Está com dor muito forte na barriga que não melhora?
+    categoria: Infecção/Hemorragia
+
+  - id: sangramento_excessivo
+    titulo: Sangramento excessivo
+    pergunta: O sangramento está muito intenso (encharcando mais de 1 absorvente por hora)?
+    categoria: Hemorragia
+
+  - id: febre_alta
+    titulo: Febre alta (acima de 38°C)
+    pergunta: Está com febre acima de 38 graus?
+    categoria: Infecção
+
+  - id: dificuldade_respirar
+    titulo: Dificuldade para respirar
+    pergunta: Está com falta de ar ou dificuldade para respirar?
+    categoria: Emergência
+
+  - id: dor_peito
+    titulo: Dor no peito
+    pergunta: Está sentindo dor ou pressão no peito?
+    categoria: Emergência
+
+  - id: inchaco_face_maos
+    titulo: Inchaço no rosto ou mãos
+    pergunta: Notou inchaço repentino no rosto ou nas mãos?
+    categoria: Pré-eclâmpsia
+
+  - id: dor_perineal_intensa
+    titulo: Dor intensa no períneo
+    pergunta: A dor na região do períneo está muito forte e não melhora?
+    categoria: Infecção
+
+  - id: secrecao_mal_cheiro
+    titulo: Secreção com mau cheiro
+    pergunta: A secreção vaginal tem cheiro forte e desagradável?
+    categoria: Infecção
+
+  - id: dor_mama_vermelha
+    titulo: Mama vermelha, quente e dolorida
+    pergunta: Alguma mama está muito vermelha, quente ao toque e dolorida?
+    categoria: Mastite
+
+  - id: tristeza_intensa
+    titulo: Tristeza ou ansiedade intensa
+    pergunta: Está se sentindo muito triste, ansiosa ou com dificuldade de cuidar do bebê?
+    categoria: Saúde Mental
+
+  - id: cansaco_extremo
+    titulo: Cansaço extremo
+    pergunta: Está se sentindo extremamente cansada, mesmo após descansar?
+    categoria: Normal
+    sinais_piora:
+      - falta de ar
+      - tontura forte
+      - desmaio

@@ -51,3 +51,12 @@ desktop.ini
 *.csv
 *.json.bak
 *.xml.bak
+
+backend/venv/
+**/__pycache__/
+data/cache/
+data/golden/
+*.pkl
+*.parquet
+db/
+logs/

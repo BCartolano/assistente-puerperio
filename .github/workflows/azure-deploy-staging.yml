@@ -1,0 +1,146 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Deploy - Azure Staging Slot
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+      PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+      SLOT_NAME: staging
+      STAGING_HOST: https://${{ secrets.AZURE_WEBAPP_NAME }}-staging.azurewebsites.net
+      PROD_HOST: https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net
+      SMOKE_LAT: "-23.55"
+      SMOKE_LON: "-46.63"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write VERSION (commit short SHA)
+        shell: bash
+        run: |
+          echo "${GITHUB_SHA}" | cut -c1-12 > VERSION
+          echo "VERSION=$(cat VERSION)"
+
+      - name: Deploy to staging slot
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: ${{ env.SLOT_NAME }}
+          publish-profile: ${{ env.PUBLISH_PROFILE }}
+          package: .
+
+      - name: Smoke on staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${STAGING_HOST}"
+          echo "Staging base: $BASE"
+          # warmup (até 60s)
+          for i in {1..12}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          [ "$code" = "200" ] || (echo "Staging / failed with $code" && exit 1)
+          # end-pontos
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/educational")
+          [ "$code" = "200" ] || (echo "Staging /api/educational failed with $code" && exit 1)
+          NEAR="$BASE/api/nearby?lat=${SMOKE_LAT}&lon=${SMOKE_LON}&radius_km=10&limit=1"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$NEAR")
+          [ "$code" = "200" ] || (echo "Staging /api/nearby failed with $code" && exit 1)
+          echo "Staging smoke OK"
+
+      - name: Smoke emergency health (staging)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${STAGING_HOST}"
+          curl -sf "$BASE/api/v1/emergency/health" | grep -q '"status":"ok"' || (echo "Staging health not OK" && exit 1)
+
+      - name: Print emergency health details (staging)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sf "${STAGING_HOST}/api/v1/emergency/health/details" || true
+
+      - name: Optional swap to production (requires AZURE_CREDENTIALS)
+        if: ${{ vars.SWAP_AFTER_STAGING == 'true' || vars.SWAP_AFTER_STAGING == '1' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Swap staging -> production
+        if: ${{ vars.SWAP_AFTER_STAGING == 'true' || vars.SWAP_AFTER_STAGING == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RG=$(az webapp show -n "${AZURE_WEBAPP_NAME}" --query resourceGroup -o tsv)
+          echo "Resource Group: $RG"
+          az webapp deployment slot swap -g "$RG" -n "${AZURE_WEBAPP_NAME}" --slot "${SLOT_NAME}" --target-slot production
+          echo "Swap done"
+
+      - name: Post-swap smoke on production
+        if: ${{ vars.SWAP_AFTER_STAGING == 'true' || vars.SWAP_AFTER_STAGING == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${PROD_HOST}"
+          echo "Prod base: $BASE"
+          for i in {1..12}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          [ "$code" = "200" ] || (echo "Prod / failed with $code" && exit 1)
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/educational")
+          [ "$code" = "200" ] || (echo "Prod /api/educational failed with $code" && exit 1)
+          NEAR="$BASE/api/nearby?lat=${SMOKE_LAT}&lon=${SMOKE_LON}&radius_km=10&limit=1"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$NEAR")
+          [ "$code" = "200" ] || (echo "Prod /api/nearby failed with $code" && exit 1)
+          echo "Production smoke OK"
+
+      - name: Smoke emergency health (production)
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sf "${PROD_HOST}/api/v1/emergency/health" | grep -q '"status":"ok"' || (echo "Prod health not OK" && exit 1)
+
+      - name: Print emergency health details (production)
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sf "${PROD_HOST}/api/v1/emergency/health/details" || true
+
+      - name: Notify on failure (optional)
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
+        run: |
+          MSG="Deploy failed (${{ github.workflow }} #${{ github.run_number }}) – ${{ github.repository }}@${{ github.ref }}"
+          MSG="${MSG}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"text\":\"${MSG}\"}" "$SLACK_WEBHOOK_URL" || true
+          fi
+          if [ -n "${TEAMS_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"@type\":\"MessageCard\",\"@context\":\"https://schema.org/extensions\",\"summary\":\"Deploy failed\",\"themeColor\":\"ff0000\",\"title\":\"Deploy failed\",\"text\":\"${MSG}\"}" "$TEAMS_WEBHOOK_URL" || true
+          fi
+          if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"content\":\"${MSG}\"}" "$DISCORD_WEBHOOK_URL" || true
+          fi

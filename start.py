@@ -35,6 +35,12 @@ if sys.platform == 'win32':
         # Se não conseguir, continua com a configuração padrão
         pass
 
+# Reduz saída no terminal por padrão (evita lentidão do Cursor). Sobrescreva no .env se precisar.
+if os.getenv("LOG_CONSOLE") is None:
+    os.environ["LOG_CONSOLE"] = "0"
+if os.getenv("REQUEST_DEBUG") is None:
+    os.environ["REQUEST_DEBUG"] = "0"
+
 # Suprime erros de shutdown do Python (não críticos)
 # Esses erros são comuns quando threads daemon tentam escrever durante o shutdown
 import sys
@@ -66,6 +72,12 @@ def check_python_version():
     if sys.version_info < (3, 8):
         print("ERRO: Python 3.8 ou superior é necessário!")
         print(f"Versão atual: {sys.version}")
+        return False
+    if sys.version_info >= (3, 14):
+        print("ERRO: Python 3.14 tem problemas conhecidos (stdlib incompleta, pacotes quebrados).")
+        print(f"Versão atual: {sys.version.split()[0]}")
+        print("Use Python 3.11 ou 3.12: https://www.python.org/downloads/")
+        print("Depois: py -3.12 -m venv .venv  e  .venv\\Scripts\\Activate.ps1")
         return False
     print(f"OK: Python {sys.version.split()[0]} detectado")
     return True
@@ -155,10 +167,30 @@ def check_env_file():
             print("AVISO: Arquivo env_example.txt não encontrado")
         return True
 
+def _ensure_stdlib_in_path():
+    """Garante que a biblioteca padrão do Python está no sys.path (evita 'No module named tempfile' em alguns ambientes)."""
+    try:
+        import tempfile  # noqa: F401
+        return  # tempfile já importável
+    except ImportError:
+        pass
+    # Adiciona o diretório da stdlib (Windows: base_prefix/Lib; Unix: base_prefix/lib/pythonX.Y)
+    base = getattr(sys, "base_prefix", sys.prefix)
+    if sys.platform == "win32":
+        stdlib_dir = os.path.join(base, "Lib")
+    else:
+        stdlib_dir = os.path.join(base, "lib", "python{}.{}".format(*sys.version_info[:2]))
+    if os.path.isdir(stdlib_dir) and stdlib_dir not in sys.path:
+        sys.path.append(stdlib_dir)
+
+
 def start_server():
     """Inicia o servidor Flask"""
     print("\nIniciando o Assistente Puerperio...")
     print("=" * 50)
+    
+    # Garante que a biblioteca padrão está acessível antes de qualquer import
+    _ensure_stdlib_in_path()
     
     # Adiciona o diretório backend ao Python path
     backend_dir = os.path.join(os.path.dirname(__file__), "backend")

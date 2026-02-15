@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GetEvidenceResponse",
+  "type": "object",
+  "required": ["cnes_id", "has_maternity", "score", "evidence"],
+  "properties": {
+    "cnes_id": { "type": "string" },
+    "has_maternity": { "type": "boolean" },
+    "score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "code", "source"],
+        "properties": {
+          "type": { "type": "string" },
+          "code": { "type": "string" },
+          "source": {
+            "type": "string",
+            "enum": ["leito", "servico", "classificacao", "habilitacao", "tipo_estabelecimento", "keyword"]
+          }
+        }
+      }
+    }
+  },
+  "example": {
+    "cnes_id": "1234567",
+    "has_maternity": true,
+    "score": 0.9,
+    "evidence": [
+      { "type": "leito", "code": "OBSTETRICO", "source": "leito" },
+      { "type": "servico", "code": "OBSTETRICIA", "source": "servico" }
+    ]
+  }
+}

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Sophia • Chat Playground</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0b1020;--panel:#0f172a;--muted:#94a3b8;--text:#e2e8f0;--ok:#16a34a;--warn:#eab308;--err:#ef4444;--accent:#2563eb}
+html,body{height:100%;margin:0;background:#0b1020;color:var(--text);font:14px/1.4 system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial}
+.wrap{max-width:1000px;margin:32px auto;padding:0 16px}
+h1{margin:0 0 8px;font-size:18px}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.panel{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+input,select,textarea{width:100%;background:#0b1228;color:var(--text);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px;outline:none}
+textarea{min-height:140px;resize:vertical}
+button{background:var(--accent);border:0;color:#fff;border-radius:8px;padding:10px 12px;cursor:pointer}
+button.secondary{background:#334155}
+button.ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--text)}
+.out{white-space:pre-wrap;background:#0a0f22;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px;min-height:120px;font-family:monospace;font-size:12px}
+.kvs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.kv{background:#0a0f22;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:6px 8px;font-size:12px}
+.ok{color:var(--ok)}
+.warn{color:var(--warn)}
+.err{color:var(--err)}
+.footer{margin-top:16px;font-size:12px;color:var(--muted)}
+.help{font-size:12px;color:var(--muted);margin-top:4px}
+@media (max-width:880px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Sophia • Chat Playground</h1>
+<div class="muted">Teste rápido do endpoint /api/v1/chat/intent</div>
+<div class="panel">
+<div class="grid">
+<div>
+<label>Base URL</label>
+<input id="baseUrl" placeholder="http://localhost:5000">
+</div>
+<div>
+<label>Timeout (s)</label>
+<input id="timeout" type="number" min="1" value="8">
+</div>
+</div>
+<div class="grid" style="margin-top:10px">
+<div>
+<label>Intent</label>
+<select id="intent">
+<option value="publico_privado">publico_privado</option>
+<option value="atende_sus">atende_sus</option>
+<option value="convenios">convenios</option>
+<option value="rotas">rotas</option>
+<option value="tem_maternidade">tem_maternidade</option>
+<option value="emergencia">emergencia</option>
+<option value="buscar_hospitais">buscar_hospitais</option>
+<option value="fallback">fallback</option>
+</select>
+<div class="row" style="margin-top:8px">
+<button class="secondary" id="btnSample">Exemplo para intent</button>
+<button class="ghost" id="btnGPS">Usar meu GPS</button>
+<label class="row" style="gap:6px;margin-left:auto">
+<input id="triageSkip" type="checkbox"> pular triagem (triage_skip=1)
+</label>
+</div>
+</div>
+<div>
+<label>Slots (JSON)</label>
+<textarea id="slots" spellcheck="false" placeholder='{"hospital":"Hospital Municipal", "lat":-23.19, "lon":-45.79}'></textarea>
+<div class="help">Dica: para emergência, use {"sintomas_graves": true} ou texto com "sangramento intenso".</div>
+</div>
+</div>
+<div class="row" style="margin-top:10px">
+<button id="btnSend">Enviar</button>
+<button class="ghost" id="btnClear">Limpar</button>
+<div id="latency" class="kv"></div>
+</div>
+</div>
+<div class="grid" style="margin-top:12px">
+<div class="panel">
+<label>Request</label>
+<div id="reqOut" class="out"></div>
+</div>
+<div class="panel">
+<label>Response</label>
+<div id="resOut" class="out"></div>
+</div>
+</div>
+<div class="panel" style="margin-top:12px">
+<label>Diagnóstico</label>
+<div class="kvs" id="diag"></div>
+</div>
+<div class="footer">Em produção, mantenha ADMIN_DEBUG=off e teste esse playground apenas em bastidor.</div>
+</div>
+<script>
+(function(){
+const $ = (id)=>document.getElementById(id);
+const baseUrl = $('baseUrl');
+const timeout = $('timeout');
+const intent = $('intent');
+const slots = $('slots');
+const btnSend = $('btnSend');
+const btnClear = $('btnClear');
+const btnGPS = $('btnGPS');
+const btnSample = $('btnSample');
+const triageSkip = $('triageSkip');
+const reqOut = $('reqOut');
+const resOut = $('resOut');
+const diagEl = $('diag');
+const latency = $('latency');
+baseUrl.value = window.location.origin;
+function setSlotsForIntent(i){
+const samples = {
+publico_privado: {"hospital":"Hospital Municipal","lat":-23.19,"lon":-45.79},
+atende_sus: {"hospital":"Hospital Municipal","lat":-23.19,"lon":-45.79},
+convenios: {"hospital":"Hospital Municipal","lat":-23.19,"lon":-45.79},
+rotas: {"hospital":"Hospital Municipal","lat":-23.19,"lon":-45.79},
+tem_maternidade: {"hospital":"Hospital Municipal","lat":-23.19,"lon":-45.79},
+emergencia: {"sintomas_graves": true},
+buscar_hospitais: {"lat":-23.19,"lon":-45.79},
+fallback: {}
+};
+slots.value = JSON.stringify(samples[i] || {}, null, 2);
+}
+btnSample.onclick = ()=> setSlotsForIntent(intent.value);
+btnClear.onclick = ()=> {
+slots.value = "";
+reqOut.textContent = "";
+resOut.textContent = "";
+diagEl.innerHTML = "";
+latency.textContent="";
+};
+btnGPS.onclick = ()=>{
+if (!navigator.geolocation) {
+alert('Geolocalização não suportada');
+return;
+}
+navigator.geolocation.getCurrentPosition((pos)=>{
+let s = {};
+try{ s = JSON.parse(slots.value || "{}"); } catch { s = {}; }
+s.lat = +pos.coords.latitude.toFixed(6);
+s.lon = +pos.coords.longitude.toFixed(6);
+slots.value = JSON.stringify(s, null, 2);
+if (window.sophiaAdminBadgeUpdatePos) window.sophiaAdminBadgeUpdatePos(s.lat, s.lon);
+}, (err)=>{ alert('GPS falhou: '+err.message); }, {enableHighAccuracy:true, timeout:8000, maximumAge:0});
+};
+async function send(){
+let s = {};
+try{ s = JSON.parse(slots.value || "{}"); } catch(e){ alert('Slots inválidos (JSON)'); return; }
+const payload = { intent: intent.value, slots: s };
+const url = baseUrl.value.replace(/\/$/,'') + '/api/v1/chat/intent' + (triageSkip.checked ? '?triage_skip=1' : '');
+reqOut.textContent = JSON.stringify({url, payload}, null, 2);
+const t0 = performance.now();
+try{
+const ctl = new AbortController();
+const tid = setTimeout(()=>ctl.abort(), (+timeout.value||8)*1000);
+const r = await fetch(url, {
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body: JSON.stringify(payload),
+signal: ctl.signal
+});
+clearTimeout(tid);
+const data = await r.json().catch(()=>({}));
+const dt = Math.round(performance.now()-t0);
+latency.textContent = 'latência '+dt+' ms';
+resOut.textContent = JSON.stringify(data, null, 2);
+diagEl.innerHTML = "";
+const kv = (k,v)=>{
+const e=document.createElement('div');
+e.className='kv';
+e.textContent=k+': '+v;
+diagEl.appendChild(e);
+};
+kv('HTTP', r.status);
+kv('intent', data.intent || '?');
+if (data.triage) kv('triage', 'true');
+if (data.ok) kv('ok', 'true');
+else kv('error', data.error || '?');
+}catch(e){
+const dt = Math.round(performance.now()-t0);
+latency.textContent = 'latência '+dt+' ms';
+resOut.textContent = JSON.stringify({ok:false, error: e.message || String(e)}, null, 2);
+diagEl.innerHTML = '<div class="kv err">Erro: '+(e.message || String(e))+'</div>';
+}
+}
+btnSend.onclick = send;
+})();
+</script>
+</body>
+</html>

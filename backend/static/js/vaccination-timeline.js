@@ -39,14 +39,17 @@
                     if (response.message && !response.message.includes('Nenhum perfil de bebê encontrado')) {
                         this.showErrorMessage(response.message || 'Erro ao carregar calendário de vacinação');
                     }
+                    this.renderEmpty();
                     return;
                 }
 
-                this.babyData = response.baby;
+                // Aceita formatos diferentes: {timeline:[...]}, {vaccines:[...]}, ou objeto com baby/vaccination_schedule
+                this.babyData = response.baby || response.babyData || null;
                 this.vaccinationData = response;
                 
                 this.renderTimeline();
                 this.updateNextVaccineWidget();
+                this.checkVaccineTodayAndShowAlert();
                 this.log('Dados de vacinação carregados:', response);
                 
             } catch (error) {
@@ -72,15 +75,32 @@
          */
         renderTimeline() {
             const container = document.getElementById('vaccination-timeline-container');
-            if (!container || !this.vaccinationData) return;
+            if (!container || !this.vaccinationData) {
+                this.renderEmpty();
+                return;
+            }
 
-            const { baby, vaccination_schedule, statistics } = this.vaccinationData;
+            // Aceita formatos diferentes: {timeline:[...]}, {vaccines:[...]}, ou array direto
+            const data = this.vaccinationData;
+            const baby = data.baby || data.babyData || null;
+            const vaccination_schedule = Array.isArray(data.timeline) ? data.timeline
+                : Array.isArray(data.vaccines) ? data.vaccines
+                : Array.isArray(data.vaccination_schedule) ? data.vaccination_schedule
+                : Array.isArray(data) ? data
+                : [];
+            const statistics = data.statistics || { completed: 0, pending: 0, completion_percentage: 0 };
+
+            if (!baby || !vaccination_schedule.length) {
+                this.renderEmpty();
+                return;
+            }
 
             // Cria estrutura HTML
+            const babyName = baby?.name || baby?.nome || 'Bebê';
             let html = `
                 <div class="vaccination-timeline">
                     <div class="vaccination-header">
-                        <h2>💉 Jornada de Proteção - ${baby.name}</h2>
+                        <h2>💉 Jornada de Proteção - ${babyName}</h2>
                         <div class="vaccination-stats">
                             <div class="stat-item">
                                 <span class="stat-number">${statistics.completed}</span>
@@ -191,8 +211,12 @@
             `;
 
             vaccines.forEach(vaccine => {
-                const isNext = nextVaccine && nextVaccine.id === vaccine.id;
-                html += this.renderVaccineCard(vaccine, isNext);
+                // Render com optional chaining e fallback
+                const vaccineName = vaccine?.name || vaccine?.vaccine || vaccine?.vaccine_name || 'Vacina';
+                const vaccineStatus = vaccine?.status || vaccine?.state || '';
+                const _vaccineDate = vaccine?.date || vaccine?.applied_at || vaccine?.recommended_date || '';
+                const isNext = nextVaccine && (nextVaccine.id === vaccine.id || nextVaccine.vaccine_name === vaccineName);
+                html += this.renderVaccineCard({ ...vaccine, vaccine_name: vaccineName, status: vaccineStatus }, isNext);
             });
 
             html += `
@@ -207,13 +231,17 @@
          * Renderiza card de vacina individual
          */
         renderVaccineCard(vaccine, isNext) {
-            const status = vaccine.status;
+            // Aceita formatos diferentes com fallback
+            const vaccineName = vaccine?.vaccine_name || vaccine?.name || vaccine?.vaccine || 'Vacina';
+            const status = vaccine?.status || vaccine?.state || '';
+            const vaccineId = vaccine?.id || vaccine?.schedule_id || '';
+            const doseNumber = vaccine?.dose_number || vaccine?.dose || 0;
             const today = new Date();
             let recommendedDate = null;
             let daysUntil = null;
 
-            if (vaccine.recommended_date) {
-                recommendedDate = new Date(vaccine.recommended_date);
+            if (vaccine?.recommended_date || vaccine?.date) {
+                recommendedDate = new Date(vaccine.recommended_date || vaccine.date);
                 daysUntil = Math.ceil((recommendedDate - today) / (1000 * 60 * 60 * 24));
             }
 
@@ -227,23 +255,26 @@
             ].filter(c => c).join(' ');
 
             let html = `
-                <div class="${cardClasses}" data-vaccine-id="${vaccine.id}">
+                <div class="${cardClasses}" data-vaccine-id="${vaccineId}">
                     <div class="vaccine-card-header">
                         <div class="vaccine-icon">
                             ${status === 'completed' ? '✓' : isNext ? '⭐' : isOverdue ? '⚠️' : '⏳'}
                         </div>
                         <div class="vaccine-info">
-                            <h4>${vaccine.vaccine_name}</h4>
-                            ${vaccine.dose_number > 0 ? `<span class="dose-badge">${vaccine.dose_number}ª dose</span>` : ''}
+                            <h4>${vaccineName}</h4>
+                            ${doseNumber > 0 ? `<span class="dose-badge">${doseNumber}ª dose</span>` : ''}
                         </div>
                     </div>
             `;
 
-            if (status === 'completed' && vaccine.administered_date) {
+            const administeredDate = vaccine?.administered_date || vaccine?.applied_at || null;
+            const administeredLocation = vaccine?.administered_location || vaccine?.location || null;
+            
+            if (status === 'completed' && administeredDate) {
                 html += `
                     <div class="vaccine-card-body">
-                        <p class="vaccine-status-completed">✓ Aplicada em ${this.formatDate(new Date(vaccine.administered_date))}</p>
-                        ${vaccine.administered_location ? `<p class="vaccine-location">📍 ${vaccine.administered_location}</p>` : ''}
+                        <p class="vaccine-status-completed">✓ Aplicada em ${this.formatDate(new Date(administeredDate))}</p>
+                        ${administeredLocation ? `<p class="vaccine-location">📍 ${administeredLocation}</p>` : ''}
                     </div>
                 `;
             } else {
@@ -251,7 +282,7 @@
                     <div class="vaccine-card-body">
                         <p class="vaccine-recommended-date">📅 Recomendada: ${recommendedDate ? this.formatDate(recommendedDate) : 'Em breve'}</p>
                         ${daysUntil !== null ? `<p class="vaccine-days-until">${daysUntil > 0 ? `⏰ Faltam ${daysUntil} dias` : daysUntil === 0 ? '⏰ Hoje!' : '⚠️ Atrasada, mas ainda pode ser aplicada'}</p>` : ''}
-                        ${isNext ? `<button class="btn btn-mark-vaccine" data-schedule-id="${vaccine.id}">Marcar como Aplicada 💉</button>` : ''}
+                        ${isNext ? `<button class="btn btn-mark-vaccine" data-schedule-id="${vaccineId}">Marcar como Aplicada 💉</button>` : ''}
                     </div>
                 `;
             }
@@ -321,7 +352,11 @@
          * Encontra próxima vacina pendente
          */
         findNextVaccine(schedule) {
-            const today = new Date();
+            if (!schedule || !Array.isArray(schedule)) {
+                return null;
+            }
+            
+            const _today = new Date();
             const pending = schedule.filter(v => v.status === 'pending' && v.recommended_date);
             
             if (pending.length === 0) return null;
@@ -337,42 +372,212 @@
         }
 
         /**
-         * Atualiza widget "Próxima Vacina" na sidebar esquerda
+         * Retorna "Mamãe" ou "Bebê" conforme o tipo da vacina
+         */
+        getParaQuem(vaccine) {
+            const name = (vaccine.vaccine_name || '').toLowerCase();
+            if (name.includes('gestante') || name.includes('puérpera') || name.includes('mãe')) {
+                return 'Mamãe';
+            }
+            return 'Bebê';
+        }
+
+        /**
+         * Atualiza card "Agenda de Vacinação" com vacinas pendentes
          */
         updateNextVaccineWidget() {
-            const widget = document.getElementById('next-vaccine-widget');
-            if (!widget || !this.vaccinationData) return;
-
-            const nextVaccine = this.findNextVaccine(this.vaccinationData.vaccination_schedule);
-            
-            if (!nextVaccine) {
-                widget.innerHTML = `
-                    <div class="sidebar-card next-vaccine-widget">
-                        <div class="card-icon">✅</div>
-                        <h3>Próxima Vacina</h3>
-                        <p>Todas as vacinas do primeiro ano foram aplicadas! 🎉</p>
-                    </div>
-                `;
+            const card = document.getElementById('agenda-de-vacinacao-card');
+            const contentEl = document.getElementById('agenda-content');
+            const textEl = document.getElementById('agenda-text');
+            if (!card || !contentEl || !textEl) return;
+            if (!this.vaccinationData) {
+                contentEl.innerHTML = '<p class="agenda-text">Carregando agenda...</p>';
                 return;
             }
 
-            const today = new Date();
-            const recommendedDate = new Date(nextVaccine.recommended_date);
-            const daysUntil = Math.ceil((recommendedDate - today) / (1000 * 60 * 60 * 24));
+            const babyExists = this.vaccinationData.baby_profile_exists !== false;
+            if (!babyExists) {
+                window.__agendaTomorrowFromPNI = false;
+                this.applyAgendaCardTomorrowAlert();
+                contentEl.innerHTML = '<p class="agenda-text">Cadastre o perfil do bebê para ver a agenda.</p>';
+                return;
+            }
 
-            widget.innerHTML = `
-                <div class="sidebar-card next-vaccine-widget">
-                    <div class="card-icon">🔜</div>
-                    <h3>Próxima Vacina</h3>
-                    <div class="next-vaccine-summary">
-                        <p class="next-vaccine-name">${nextVaccine.vaccine_name}</p>
-                        <p class="next-vaccine-countdown">
-                            ${daysUntil > 0 ? `<strong>${daysUntil}</strong> ${daysUntil === 1 ? 'dia' : 'dias'}` : daysUntil === 0 ? '<strong>Hoje!</strong>' : '<strong>Atrasada</strong>'}
-                        </p>
-                        <p class="next-vaccine-date">${this.formatDate(recommendedDate)}</p>
-                    </div>
+            const schedule = this.vaccinationData.vaccination_schedule || this.vaccinationData.timeline || this.vaccinationData.vaccines || [];
+            const nextVaccine = this.findNextVaccine(schedule);
+            
+            if (!nextVaccine) {
+                card?.classList.remove('card-alert-today');
+                window.__agendaTomorrowFromPNI = false;
+                this.applyAgendaCardTomorrowAlert();
+                contentEl.innerHTML = '<p class="agenda-success">Todas as vacinas aplicadas. 🎉</p>';
+                return;
+            }
+
+            const recommendedDate = new Date(nextVaccine.recommended_date);
+            const paraQuem = this.getParaQuem(nextVaccine);
+            const local = nextVaccine.administered_location || nextVaccine.scheduled_location || 'Consulte a UBS mais próxima';
+            const dataStr = this.formatDate(recommendedDate);
+            const isToday = this.isDateToday(nextVaccine.recommended_date);
+
+            if (isToday) {
+                card?.classList.add('card-alert-today');
+            } else {
+                card?.classList.remove('card-alert-today');
+            }
+            window.__agendaTomorrowFromPNI = this.isDateTomorrow(nextVaccine.recommended_date);
+            this.applyAgendaCardTomorrowAlert();
+
+            const reminderBtn = `
+                <button type="button" class="btn-agenda-reminder" id="btn-agenda-reminder" aria-label="Ativar lembretes de vacina no celular">
+                    🔔 Ativar lembretes no celular
+                </button>
+            `;
+
+            contentEl.innerHTML = `
+                <p class="agenda-vaccine-name"><strong>${this.escapeHtml(nextVaccine.vaccine_name)}</strong></p>
+                <p class="agenda-para-quem">Para: ${paraQuem}</p>
+                <p class="agenda-date">📅 ${dataStr}</p>
+                <p class="agenda-local">📍 ${this.escapeHtml(local)}</p>
+                <div class="agenda-actions">${reminderBtn}</div>
+            `;
+
+            this.attachAgendaReminderButton();
+        }
+
+        isDateToday(dateStr) {
+            if (!dateStr) return false;
+            const today = new Date();
+            const d = new Date(dateStr);
+            return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+        }
+
+        /**
+         * Verifica se a data é amanhã (para vigia: card em tom de alerta leve).
+         */
+        isDateTomorrow(dateStr) {
+            if (!dateStr) return false;
+            const today = new Date();
+            const d = new Date(dateStr);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return d.getFullYear() === tomorrow.getFullYear() && d.getMonth() === tomorrow.getMonth() && d.getDate() === tomorrow.getDate();
+        }
+
+        /**
+         * Aplica estado de alerta "amanhã" no card (vigia). Usa a função global para o script de lembretes também.
+         */
+        applyAgendaCardTomorrowAlert() {
+            if (typeof window.applyAgendaCardTomorrowAlert === 'function') {
+                window.applyAgendaCardTomorrowAlert();
+            }
+        }
+
+        /**
+         * Vacinas para hoje (pendentes)
+         */
+        getVaccinesForToday(schedule) {
+            if (!schedule || !Array.isArray(schedule)) return [];
+            const today = new Date().toISOString().slice(0, 10);
+            return schedule.filter(v => v.status === 'pending' && v.recommended_date && v.recommended_date.slice(0, 10) === today);
+        }
+
+        /**
+         * Verifica se há vacina hoje e exibe alerta (banner + toast).
+         * Não exibe se a usuária já fechou o banner hoje (persiste até novo login ou dia seguinte).
+         */
+        async checkVaccineTodayAndShowAlert() {
+            if (!this.vaccinationData || !this.vaccinationData.baby_profile_exists) return;
+            const schedule = this.vaccinationData.vaccination_schedule || this.vaccinationData.timeline || this.vaccinationData.vaccines || [];
+            const forToday = this.getVaccinesForToday(schedule);
+            if (forToday.length === 0) return;
+
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const dismissedDate = localStorage.getItem('sophia_vaccine_banner_dismissed');
+            if (dismissedDate === todayStr) return; // Já fechou hoje, não incomodar
+
+            const babyName = this.babyData?.name || this.babyData?.nome || 'seu bebê';
+            let userName = 'Mamãe';
+            try {
+                const r = await (window.apiClient?.get?.('/api/user') || Promise.resolve(null));
+                if (r && !r.erro && (r.user?.name || r.name)) {
+                    userName = r.user?.name || r.name;
+                }
+            } catch (_) {}
+
+            const vaccineNames = forToday.map(v => v.vaccine_name).join(', ');
+            const msg = `Atenção ${userName}: Hoje é dia de vacina para ${babyName}! 💉`;
+            const fullMsg = vaccineNames ? `${msg} ${vaccineNames}` : msg;
+
+            if (window.toast && typeof window.toast.show === 'function') {
+                window.toast.show(fullMsg, 'info', 8000);
+            } else if (window.toast?.success) {
+                window.toast.success(fullMsg, 8000);
+            }
+
+            this.showVaccineTodayBanner(userName, babyName, vaccineNames);
+        }
+
+        /**
+         * Exibe banner fixo no topo quando há vacina hoje
+         */
+        showVaccineTodayBanner(userName, babyName, vaccineNames) {
+            let banner = document.getElementById('vaccine-today-banner');
+            if (banner) banner.remove();
+            banner = document.createElement('div');
+            banner.id = 'vaccine-today-banner';
+            banner.className = 'vaccine-today-banner';
+            banner.innerHTML = `
+                <div class="vaccine-today-banner-inner">
+                    <span class="vaccine-today-icon">💉</span>
+                    <span class="vaccine-today-text">Atenção ${this.escapeHtml(userName)}: Hoje é dia de vacina para ${this.escapeHtml(babyName)}! ${vaccineNames ? this.escapeHtml(vaccineNames) : ''}</span>
+                    <a href="#" class="vaccine-today-link" id="vaccine-today-link-where">Ver onde vacinar</a>
+                    <button type="button" class="vaccine-today-close" aria-label="Fechar aviso">×</button>
                 </div>
             `;
+
+            document.body.insertBefore(banner, document.body.firstChild);
+
+            banner.querySelector('#vaccine-today-link-where').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.chatApp && typeof window.chatApp.findNearbyHospitals === 'function') {
+                    window.chatApp.findNearbyHospitals();
+                }
+            });
+            banner.querySelector('.vaccine-today-close').addEventListener('click', () => {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                localStorage.setItem('sophia_vaccine_banner_dismissed', todayStr);
+                banner.remove();
+            });
+        }
+
+        attachAgendaReminderButton() {
+            const btn = document.getElementById('btn-agenda-reminder');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                if (!('Notification' in window)) {
+                    if (window.toast?.warning) window.toast.warning('Seu navegador não suporta notificações.', 4000);
+                    return;
+                }
+                if (Notification.permission === 'granted') {
+                    if (window.toast?.success) window.toast.success('Lembretes já estão ativados! 💚', 3000);
+                    return;
+                }
+                Notification.requestPermission().then((perm) => {
+                    if (perm === 'granted') {
+                        if (window.toast?.success) window.toast.success('Lembretes ativados! Você receberá avisos de vacina. 💚', 4000);
+                    } else if (perm !== 'denied') {
+                        if (window.toast?.info) window.toast.show('Ative as notificações nas configurações do navegador para receber lembretes.', 'info', 5000);
+                    }
+                });
+            });
+        }
+
+        escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
 
         /**
@@ -424,11 +629,10 @@
                 });
 
                 if (response.success) {
-                    // Exibe modal de comemoração
+                    const userName = response.user_name || null;
                     if (vaccine) {
-                        this.showCelebrationModal(vaccine);
+                        this.showCelebrationModal(vaccine, userName);
                     }
-                    // Recarrega dados
                     await this.loadVaccinationData();
                 } else {
                     alert('Erro ao marcar vacina como aplicada: ' + (response.error || 'Erro desconhecido'));
@@ -440,21 +644,21 @@
         }
 
         /**
-         * Exibe modal de comemoração
+         * Exibe modal de comemoração (com nome personalizado da mamãe)
          */
-        showCelebrationModal(vaccine) {
+        showCelebrationModal(vaccine, userName = null) {
             const modal = document.getElementById('celebration-modal');
             if (!modal) {
-                // Cria modal se não existir
                 this.createCelebrationModal();
             }
 
             const modalElement = document.getElementById('celebration-modal');
             const babyName = this.babyData ? this.babyData.name : 'seu bebê';
             const vaccineName = vaccine ? vaccine.vaccine_name : 'vacina';
+            const user = userName || 'Mamãe';
 
-            document.getElementById('celebration-message').textContent = 
-                `Parabéns pela proteção do ${babyName}! 💕`;
+            const msgEl = document.getElementById('celebration-message');
+            msgEl.innerHTML = `Parabéns pela proteção do ${babyName}! 💕<br><span style="font-size:0.9em;margin-top:0.5rem;display:block;">E parabéns para você também, ${user}! 💕</span>`;
             document.getElementById('celebration-vaccine-name').textContent = vaccineName;
 
             modalElement.style.display = 'flex';
@@ -534,6 +738,16 @@
         }
 
         /**
+         * Renderiza estado vazio
+         */
+        renderEmpty() {
+            const container = document.getElementById('vaccination-timeline-container');
+            if (container) {
+                container.innerHTML = '<div class="vac-empty">Sem dados de vacinação.</div>';
+            }
+        }
+
+        /**
          * Exibe mensagem de erro
          */
         showErrorMessage(message) {
@@ -551,27 +765,31 @@
          * Inicializa componente
          */
         init() {
-            // Verifica se o container existe
-            const container = document.getElementById('vaccination-timeline-container');
-            if (!container) {
-                this.log('Container vaccination-timeline-container não encontrado - inicialização adiada');
-                // Não carrega dados automaticamente se o container não existir
-                // Os dados serão carregados quando o usuário clicar no botão de vacinação
+            const agendaCard = document.getElementById('agenda-de-vacinacao-card');
+            const timelineContainer = document.getElementById('vaccination-timeline-container');
+            if (!agendaCard && !timelineContainer) {
+                this.log('Agenda ou timeline não encontrados - inicialização adiada');
                 return;
             }
 
-            // Verifica se apiClient está disponível (usuário autenticado)
             if (!window.apiClient) {
                 this.log('apiClient não disponível - inicialização adiada até autenticação');
                 return;
             }
 
-            // Carrega dados automaticamente apenas se container existe e usuário está autenticado
             this.loadVaccinationData();
         }
     }
 
     // Inicializa quando DOM estiver pronto
+    window.__agendaTomorrowFromPNI = false;
+    window.__agendaTomorrowFromReminders = false;
+    window.applyAgendaCardTomorrowAlert = function() {
+        const card = document.getElementById('agenda-de-vacinacao-card');
+        if (!card) return;
+        card.classList.toggle('card-alert-tomorrow', !!(window.__agendaTomorrowFromPNI || window.__agendaTomorrowFromReminders));
+    };
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             window.vaccinationTimeline = new VaccinationTimeline();

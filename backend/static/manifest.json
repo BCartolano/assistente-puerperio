@@ -1,0 +1,11 @@
+{
+  "name": "Sophia - Sua Companheira no Puerpério",
+  "short_name": "Sophia",
+  "description": "Espaço acolhedor para o puerpério — apoio, acolhimento e conversas humanizadas com IA empática.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff5f9",
+  "theme_color": "#ff8fa3",
+  "orientation": "portrait-primary",
+  "icons": []
+}

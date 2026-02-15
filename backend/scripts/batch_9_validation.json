@@ -1,0 +1,146 @@
+{
+  "batch_num": 9,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0010510",
+      "name": "Hospital Universitario De Brasilia",
+      "address": "SGAN QUADRA 605, S/N, ASA NORTE",
+      "city": "",
+      "state": "53",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Hospital Universitario De Brasilia  53 maternidade",
+        "obstetricia": "Hospital Universitario De Brasilia  53 obstetrícia",
+        "parto": "Hospital Universitario De Brasilia  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010529",
+      "name": "Hrpl",
+      "address": "AVENIDA W L 04, S/N, PLANALTINA",
+      "city": "",
+      "state": "53",
+      "telefone": "(61) 33899169",
+      "search_queries": {
+        "maternidade": "Hrpl  53 maternidade",
+        "obstetricia": "Hrpl  53 obstetrícia",
+        "parto": "Hrpl  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010545",
+      "name": "Hrbz",
+      "address": "AREA ESPECIAL, 06, SETOR TRADICIONAL",
+      "city": "",
+      "state": "53",
+      "telefone": "(61) 3449-6392",
+      "search_queries": {
+        "maternidade": "Hrbz  53 maternidade",
+        "obstetricia": "Hrbz  53 obstetrícia",
+        "parto": "Hrbz  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010561",
+      "name": "Hfa",
+      "address": "SETOR SUDOESTE SUDOESTE CRUZEIRO OCTOGONAL, 00, CRUZEIRO",
+      "city": "",
+      "state": "53",
+      "telefone": "39662555",
+      "search_queries": {
+        "maternidade": "Hfa  53 maternidade",
+        "obstetricia": "Hfa  53 obstetrícia",
+        "parto": "Hfa  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0010618",
+      "name": "Hospital Sao Vicente De Paulo Hsvp",
+      "address": "ST C SUL QSC AE TAGUATINGA SUL, 01, TAGUATINGA CENTRO",
+      "city": "",
+      "state": "53",
+      "telefone": "(61)34519700",
+      "search_queries": {
+        "maternidade": "Hospital Sao Vicente De Paulo Hsvp  53 maternidade",
+        "obstetricia": "Hospital Sao Vicente De Paulo Hsvp  53 obstetrícia",
+        "parto": "Hospital Sao Vicente De Paulo Hsvp  53 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0011738",
+      "name": "Hospital Santa Rita De Cassia",
+      "address": "AVENIDA MARECHAL CAMPOS, 1579, SANTA CECILIA",
+      "city": "",
+      "state": "32",
+      "telefone": "(27)33348000",
+      "search_queries": {
+        "maternidade": "Hospital Santa Rita De Cassia  32 maternidade",
+        "obstetricia": "Hospital Santa Rita De Cassia  32 obstetrícia",
+        "parto": "Hospital Santa Rita De Cassia  32 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0011746",
+      "name": "Hospital Da Santa Casa De Misericordia De Vitoria",
+      "address": "RUA DR JOAO DOS SANTOS NEVES, 143, VILA RUBIM",
+      "city": "",
+      "state": "32",
+      "telefone": "(27)33220074",
+      "search_queries": {
+        "maternidade": "Hospital Da Santa Casa De Misericordia De Vitoria  32 maternidade",
+        "obstetricia": "Hospital Da Santa Casa De Misericordia De Vitoria  32 obstetrícia",
+        "parto": "Hospital Da Santa Casa De Misericordia De Vitoria  32 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0011843",
+      "name": "Santa Casa De Misericordia De Vitoria Unidade Pro Matre",
+      "address": "AV VITORIA, 1114, FORTE SAO JOAO",
+      "city": "",
+      "state": "32",
+      "telefone": "027 32233350",
+      "search_queries": {
+        "maternidade": "Santa Casa De Misericordia De Vitoria Unidade Pro Matre  32 maternidade",
+        "obstetricia": "Santa Casa De Misericordia De Vitoria Unidade Pro Matre  32 obstetrícia",
+        "parto": "Santa Casa De Misericordia De Vitoria Unidade Pro Matre  32 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0011991",
+      "name": "Afpes",
+      "address": "RUA PEDRO PALACIO, 155, CIDADE ALTA",
+      "city": "",
+      "state": "32",
+      "telefone": "(27) 3232-5708",
+      "search_queries": {
+        "maternidade": "Afpes  32 maternidade",
+        "obstetricia": "Afpes  32 obstetrícia",
+        "parto": "Afpes  32 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0012017",
+      "name": "Hospital Da Policia Militar Hpm",
+      "address": "AV JOUBERT DE BARROS, 555, BENTO FERREIRA",
+      "city": "",
+      "state": "32",
+      "telefone": "(27)31371753",
+      "search_queries": {
+        "maternidade": "Hospital Da Policia Militar Hpm  32 maternidade",
+        "obstetricia": "Hospital Da Policia Militar Hpm  32 obstetrícia",
+        "parto": "Hospital Da Policia Militar Hpm  32 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}

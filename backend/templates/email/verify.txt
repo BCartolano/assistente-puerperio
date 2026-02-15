@@ -1,0 +1,6 @@
+Olá, {{ name }}!
+
+Confirme seu cadastro acessando:
+{{ link }}
+
+Se não foi você, ignore este e-mail.

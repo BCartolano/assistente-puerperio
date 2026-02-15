@@ -1,0 +1,332 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# Variáveis obrigatórias (Settings > Secrets and variables > Actions):
+#   Secrets: AZURE_WEBAPP_NAME, AZURE_RESOURCE_GROUP, AZURE_CLIENT_ID, AZURE_TENANT_ID, 
+#            AZURE_SUBSCRIPTION_ID, AZURE_WEBAPP_PUBLISH_PROFILE, AZURE_CREDENTIALS
+#   Variables: USE_OIDC_DEPLOY (opcional), DEPLOY_SLOT (opcional), SWAP_AFTER_STAGING (opcional)
+name: "Deploy - Azure (Unificado: OIDC ou Publish Profile, com staging opcional)"
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-unified-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-oidc:
+    # Roda quando a variável USE_OIDC_DEPLOY for true/1 (Settings > Variables)
+    if: ${{ vars.USE_OIDC_DEPLOY == 'true' || vars.USE_OIDC_DEPLOY == '1' }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME || '' }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP || '' }}
+      SLOT_NAME: ${{ vars.DEPLOY_SLOT || '' }}
+      STAGING_HOST: https://${{ secrets.AZURE_WEBAPP_NAME || '' }}-staging.azurewebsites.net
+      PROD_HOST: https://${{ secrets.AZURE_WEBAPP_NAME || '' }}.azurewebsites.net
+      SMOKE_LAT: "-23.55"
+      SMOKE_LON: "-46.63"
+      SWAP_AFTER_STAGING: ${{ vars.SWAP_AFTER_STAGING || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write VERSION (commit short SHA)
+        shell: bash
+        run: |
+          echo "${GITHUB_SHA}" | cut -c1-12 > VERSION
+          echo "VERSION=$(cat VERSION)"
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID || '' }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID || '' }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID || '' }}
+
+      - name: Create zip artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip -r site.zip . -x "**/.git/**" "**/.venv/**" "**/node_modules/**" "**/*.log"
+          ls -lh site.zip
+
+      - name: Deploy (OIDC, config-zip) to slot if set
+        if: ${{ env.SLOT_NAME != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          az webapp deployment source config-zip \
+            -g "${AZURE_RESOURCE_GROUP}" \
+            -n "${AZURE_WEBAPP_NAME}" \
+            --slot "${SLOT_NAME}" \
+            --src site.zip
+
+      - name: Deploy (OIDC, config-zip) to production
+        if: ${{ env.SLOT_NAME == '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          az webapp deployment source config-zip \
+            -g "${AZURE_RESOURCE_GROUP}" \
+            -n "${AZURE_WEBAPP_NAME}" \
+            --src site.zip
+
+      - name: Smoke on target (slot or prod)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${SLOT_NAME}" ]; then
+            BASE="${STAGING_HOST}"
+          else
+            BASE="${PROD_HOST}"
+          fi
+          echo "Smoke base: $BASE"
+          for i in {1..12}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          [ "$code" = "200" ] || (echo "Smoke / failed with $code" && exit 1)
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/educational")
+          [ "$code" = "200" ] || (echo "Smoke /api/educational failed with $code" && exit 1)
+          NEAR="$BASE/api/nearby?lat=${SMOKE_LAT}&lon=${SMOKE_LON}&radius_km=10&limit=1"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$NEAR")
+          [ "$code" = "200" ] || (echo "Smoke /api/nearby failed with $code" && exit 1)
+          echo "Target smoke OK"
+
+      - name: Smoke emergency health (target)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ env.SLOT_NAME != '' && env.STAGING_HOST || env.PROD_HOST }}"
+          curl -sf "$BASE/api/v1/emergency/health" | grep -q '"status":"ok"' || (echo "Target health not OK" && exit 1)
+
+      - name: Print emergency health details (target)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ env.SLOT_NAME != '' && env.STAGING_HOST || env.PROD_HOST }}"
+          curl -sf "$BASE/api/v1/emergency/health/details" || true
+
+      - name: Swap STAGING -> PRODUCTION (only if slot set and SWAP_AFTER_STAGING=true)
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          az webapp deployment slot swap \
+            -g "${AZURE_RESOURCE_GROUP}" \
+            -n "${AZURE_WEBAPP_NAME}" \
+            --slot "${SLOT_NAME}" \
+            --target-slot production
+          echo "Swap done"
+
+      - name: Smoke on PRODUCTION after swap
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${PROD_HOST}"
+          echo "Prod base: $BASE"
+          for i in {1..12}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          [ "$code" = "200" ] || (echo "Prod / failed with $code" && exit 1)
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/educational")
+          [ "$code" = "200" ] || (echo "Prod /api/educational failed with $code" && exit 1)
+          NEAR="$BASE/api/nearby?lat=${SMOKE_LAT}&lon=${SMOKE_LON}&radius_km=10&limit=1"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$NEAR")
+          [ "$code" = "200" ] || (echo "Prod /api/nearby failed with $code" && exit 1)
+          echo "Production smoke OK"
+
+      - name: Smoke emergency health (production)
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sf "${PROD_HOST}/api/v1/emergency/health" | grep -q '"status":"ok"' || (echo "Prod health not OK" && exit 1)
+
+      - name: Print emergency health details (production)
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sf "${PROD_HOST}/api/v1/emergency/health/details" || true
+
+      - name: Notify on failure (optional)
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
+        run: |
+          MSG="Deploy failed (${{ github.workflow }} #${{ github.run_number }}) – ${{ github.repository }}@${{ github.ref }}"
+          MSG="${MSG}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"text\":\"${MSG}\"}" "$SLACK_WEBHOOK_URL" || true
+          fi
+          if [ -n "${TEAMS_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"@type\":\"MessageCard\",\"@context\":\"https://schema.org/extensions\",\"summary\":\"Deploy failed\",\"themeColor\":\"ff0000\",\"title\":\"Deploy failed\",\"text\":\"${MSG}\"}" "$TEAMS_WEBHOOK_URL" || true
+          fi
+          if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"content\":\"${MSG}\"}" "$DISCORD_WEBHOOK_URL" || true
+          fi
+
+  deploy-publish-profile:
+    # Roda quando USE_OIDC_DEPLOY não for true (deploy com Publish Profile)
+    if: ${{ vars.USE_OIDC_DEPLOY != 'true' && vars.USE_OIDC_DEPLOY != '1' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME || '' }}
+      PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE || '' }}
+      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP || '' }}
+      SLOT_NAME: ${{ vars.DEPLOY_SLOT || '' }}
+      STAGING_HOST: https://${{ secrets.AZURE_WEBAPP_NAME || '' }}-staging.azurewebsites.net
+      PROD_HOST: https://${{ secrets.AZURE_WEBAPP_NAME || '' }}.azurewebsites.net
+      SMOKE_LAT: "-23.55"
+      SMOKE_LON: "-46.63"
+      SWAP_AFTER_STAGING: ${{ vars.SWAP_AFTER_STAGING || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write VERSION (commit short SHA)
+        shell: bash
+        run: |
+          echo "${GITHUB_SHA}" | cut -c1-12 > VERSION
+          echo "VERSION=$(cat VERSION)"
+
+      - name: Deploy (Publish Profile) to slot
+        if: ${{ env.SLOT_NAME != '' }}
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: ${{ env.SLOT_NAME }}
+          publish-profile: ${{ env.PUBLISH_PROFILE }}
+          package: .
+
+      - name: Deploy (Publish Profile) to production
+        if: ${{ env.SLOT_NAME == '' }}
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ env.PUBLISH_PROFILE }}
+          package: .
+
+      - name: Smoke on target (slot or prod)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${SLOT_NAME}" ]; then
+            BASE="${STAGING_HOST}"
+          else
+            BASE="${PROD_HOST}"
+          fi
+          echo "Smoke base: $BASE"
+          for i in {1..12}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          [ "$code" = "200" ] || (echo "Smoke / failed with $code" && exit 1)
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/educational")
+          [ "$code" = "200" ] || (echo "Smoke /api/educational failed with $code" && exit 1)
+          NEAR="$BASE/api/nearby?lat=${SMOKE_LAT}&lon=${SMOKE_LON}&radius_km=10&limit=1"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$NEAR")
+          [ "$code" = "200" ] || (echo "Smoke /api/nearby failed with $code" && exit 1)
+          echo "Target smoke OK"
+
+      - name: Smoke emergency health (target)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ env.SLOT_NAME != '' && env.STAGING_HOST || env.PROD_HOST }}"
+          curl -sf "$BASE/api/v1/emergency/health" | grep -q '"status":"ok"' || (echo "Target health not OK" && exit 1)
+
+      - name: Print emergency health details (target)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ env.SLOT_NAME != '' && env.STAGING_HOST || env.PROD_HOST }}"
+          curl -sf "$BASE/api/v1/emergency/health/details" || true
+
+      - name: Azure Login (for swap) — optional
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS || '' }}
+
+      - name: Swap STAGING -> PRODUCTION (Publish Profile path)
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          az webapp deployment slot swap \
+            -g "${AZURE_RESOURCE_GROUP}" \
+            -n "${AZURE_WEBAPP_NAME}" \
+            --slot "${SLOT_NAME}" \
+            --target-slot production
+          echo "Swap done"
+
+      - name: Smoke on PRODUCTION after swap
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${PROD_HOST}"
+          echo "Prod base: $BASE"
+          for i in {1..12}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          [ "$code" = "200" ] || (echo "Prod / failed with $code" && exit 1)
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/educational")
+          [ "$code" = "200" ] || (echo "Prod /api/educational failed with $code" && exit 1)
+          NEAR="$BASE/api/nearby?lat=${SMOKE_LAT}&lon=${SMOKE_LON}&radius_km=10&limit=1"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$NEAR")
+          [ "$code" = "200" ] || (echo "Prod /api/nearby failed with $code" && exit 1)
+          echo "Production smoke OK"
+
+      - name: Smoke emergency health (production)
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') && secrets.AZURE_CREDENTIALS != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sf "${PROD_HOST}/api/v1/emergency/health" | grep -q '"status":"ok"' || (echo "Prod health not OK" && exit 1)
+
+      - name: Print emergency health details (production)
+        if: ${{ env.SLOT_NAME != '' && (env.SWAP_AFTER_STAGING == 'true' || env.SWAP_AFTER_STAGING == '1') && secrets.AZURE_CREDENTIALS != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sf "${PROD_HOST}/api/v1/emergency/health/details" || true
+
+      - name: Notify on failure (optional)
+        if: ${{ failure() }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        shell: bash
+        run: |
+          MSG="Deploy failed (${{ github.workflow }} #${{ github.run_number }}) – ${{ github.repository }}@${{ github.ref }}"
+          MSG="${MSG}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"text\":\"${MSG}\"}" "$SLACK_WEBHOOK_URL" || true
+          fi
+          if [ -n "${TEAMS_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"@type\":\"MessageCard\",\"@context\":\"https://schema.org/extensions\",\"summary\":\"Deploy failed\",\"themeColor\":\"ff0000\",\"title\":\"Deploy failed\",\"text\":\"${MSG}\"}" "$TEAMS_WEBHOOK_URL" || true
+          fi
+          if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+            curl -s -X POST -H "Content-Type: application/json" --data "{\"content\":\"${MSG}\"}" "$DISCORD_WEBHOOK_URL" || true
+          fi

@@ -672,7 +672,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         max-width: none !important;
         flex-basis: 100% !important;
     }
-    /* Tipografia reduzida: h2 máx 1.3rem, parágrafo 0.9rem */
+    /* Tipografia: títulos das seções menores (máx 1.1rem no mobile) */
     .welcome-content h1,
     .welcome-content h2,
     .welcome-hero-title,
@@ -680,7 +680,7 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
     .conteudos-title-modern,
     .welcome-content .feeling-box h2,
     .welcome-content .quick-questions h2 {
-        font-size: 1.3rem !important;
+        font-size: 1.1rem !important;
     }
     .welcome-content p,
     .welcome-hero-subtitle,
@@ -724,21 +724,21 @@ button, a, .quick-btn, .feature-btn, .sidebar-btn, .btn, input[type="submit"], .
         flex-direction: column !important;
         grid-template-columns: none !important;
         grid-template-rows: none !important;
-        gap: 0 !important;
+        gap: 12px !important; /* Respiro entre botões (evita blocos colados) */
         max-width: none !important;
         width: 100% !important;
     }
-    /* Cada botão 100% largura, margin-bottom 10px, sem cortar palavras */
+    /* Botões mais compactos, com respiro entre eles (não achatados/grandes) */
     .feeling-btn,
     .quick-btn.feeling-btn {
         width: 100% !important;
         min-width: 0 !important;
         max-width: none !important;
-        min-height: 48px !important;
-        font-size: 0.9rem !important;
-        padding: 12px 16px !important;
-        margin-bottom: 10px !important;
-        border-radius: 24px !important;
+        min-height: 42px !important;
+        font-size: 0.875rem !important;
+        padding: 10px 14px !important;
+        margin-bottom: 12px !important;
+        border-radius: 20px !important;
         white-space: normal !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
@@ -1228,26 +1228,31 @@ html {
         order: -1 !important; /* Garante que fica antes do logo */
     }
     
-    .logo {
+    /* Sophia ao lado do botão do menu (flex normal, não centralizado) */
+    .logo,
+    .header-logo {
         flex: 1 !important;
-        justify-content: center !important;
-        text-align: center !important;
-        margin: 0 auto !important;
-        position: absolute !important;
-        left: 50% !important;
-        top: 50% !important; /* Centralizado verticalmente */
-        transform: translate(-50%, -50%) !important; /* Centraliza perfeitamente */
-        width: auto !important;
-        max-width: calc(100% - 80px) !important; /* Mais espaço para o botão à esquerda (50px botão + 30px margem) */
-        pointer-events: none !important; /* Permite cliques no botão mesmo quando o logo está por cima */
+        justify-content: flex-start !important;
+        text-align: left !important;
+        margin: 0 !important;
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        max-width: none !important;
+        padding-left: 0.5rem !important;
     }
     
-    .logo * {
-        pointer-events: auto !important; /* Restaura cliques nos elementos internos do logo, se houver */
-    }
-    
+    /* Mostrar apenas perfil no header-right (lupa removida) */
     .header-right {
-        display: none !important; /* Remove o bloco branco (status-indicator) */
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    .header-right .status-indicator,
+    .header-right .welcome-message,
+    .header-right #welcome-user {
+        display: none !important;
     }
     
     /* Container do botão "Conversar com a Sophia" - mobile */
@@ -1400,29 +1405,35 @@ body.device-mobile .header-content {
     width: 100% !important;
 }
 
-body.device-mobile .logo {
+body.device-mobile .logo,
+body.device-mobile .header-logo {
     flex: 1 !important;
-    justify-content: center !important;
-    text-align: center !important;
-    margin: 0 auto !important;
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important; /* Centralizado verticalmente */
-    transform: translate(-50%, -50%) !important; /* Centraliza perfeitamente */
+    justify-content: flex-start !important;
+    text-align: left !important;
+    margin: 0 !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
     width: auto !important;
 }
 
 body.device-mobile .header-right {
-    display: none !important; /* Remove o bloco branco */
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
 }
 
-body.device-mobile .header-right .status-indicator {
-    display: none !important; /* Remove completamente o status-indicator */
+body.device-mobile .header-right .status-indicator,
+body.device-mobile .header-right .welcome-message,
+body.device-mobile .header-right #welcome-user {
+    display: none !important;
 }
 
 /* Logo texto e ícones no mobile */
-body.device-mobile .logo h1 {
-    font-size: 1rem !important; /* Reduzido ainda mais */
+body.device-mobile .logo h1,
+body.device-mobile .header-logo h1 {
+    font-size: 1rem !important;
 }
 
 body.device-mobile .logo i {
@@ -1927,7 +1938,7 @@ body.sidebar-open .header-modern-content {
     z-index: 0;
 }
 
-/* Welcome Message */
+/* Welcome Message – padding-bottom para não ficar atrás do .input-area fixo */
 .welcome-message {
     position: absolute !important;
     top: 0 !important;
@@ -1940,10 +1951,10 @@ body.sidebar-open .header-modern-content {
     justify-content: flex-start !important;
     background: linear-gradient(135deg, #fff5f9 0%, #ffeef5 25%, #ffe8f0 50%, #ffd6e6 75%, #ffccd5 100%) !important;
     z-index: 10 !important;
-    /* Animação removida para melhor performance */
-    overflow-y: auto !important; /* ÚNICO scroll permitido - apenas aqui */
+    overflow-y: auto !important;
     overflow-x: hidden !important;
-    padding: 1rem 0 !important; /* MOBILE FIRST: Padding reduzido */
+    padding: 1rem 0 !important;
+    padding-bottom: 100px !important; /* Espaço para o input fixo no final da página */
     box-sizing: border-box !important;
     -webkit-overflow-scrolling: touch !important;
     position: relative !important;
@@ -2080,7 +2091,7 @@ body.sidebar-open .header-modern-content {
 .welcome-content {
     text-align: center !important;
     padding: 1.5rem 1rem !important; /* MOBILE FIRST: Padding reduzido */
-    max-width: 90% !important; /* MOBILE FIRST: Ocupa 90% da largura */
+    max-width: 96% !important; /* MOBILE FIRST: blocos mais largos (era 90%) */
     margin: 0 auto !important;
     width: auto !important;
     animation: contentFadeIn 1s ease-out 0.3s backwards;
@@ -2103,8 +2114,8 @@ body.sidebar-open .header-modern-content {
 /* MOBILE FIRST: Ajustes adicionais para welcome-content */
 @media (max-width: 768px) {
     .welcome-content {
-        padding: 1rem 0.75rem !important; /* Padding ainda mais reduzido no mobile */
-        max-width: 90% !important; /* Ocupa 90% da largura para conforto */
+        padding: 1rem 0.5rem !important; /* Menos padding lateral = blocos mais largos */
+        max-width: 98% !important; /* Blocos ocupam quase toda a largura no mobile */
         margin-top: 10px !important;
     }
 }
@@ -2218,43 +2229,51 @@ body.sidebar-open .header-modern-content {
     background: rgba(255, 255, 255, 0.95);
     border: 2px solid rgba(244, 166, 166, 0.3);
     border-radius: 20px;
-    padding: 1.5rem 2rem; /* Aumentado padding lateral: 1.5rem → 2rem para mais respiração */
-    margin: 4rem auto 3rem; /* Espaço maior: 64px top para criar respiração após boas-vindas */
+    padding: 1.25rem 1.5rem;
+    margin: 3rem auto 2.5rem;
     max-width: 600px;
-    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05); /* Sombra mais pronunciada */
+    box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05);
     animation: textFadeIn 0.8s ease-out 0.75s backwards;
     contain: layout style paint;
 }
-/* Menu inicial: espaço entre seções (Como está seu coração / Não sabe por onde começar) */
+/* Menu inicial: espaço entre seções (evita seções coladas) */
+.welcome-content .feeling-box {
+    margin-bottom: 0.5rem;
+}
 .welcome-content .feeling-box + .feeling-box {
-    margin-top: 1.5rem;
+    margin-top: 3rem !important;
+}
+@media (max-width: 768px) {
+    .welcome-content .feeling-box + .feeling-box {
+        margin-top: 3.5rem !important;
+    }
 }
 
 .feeling-box h2,
 .feeling-box h3 {
-    font-size: 1.25rem; /* 20px - tamanho acolhedor, não compete com título principal */
-    color: #9a7a6a; /* Tom mais claro que títulos principais (#7a4a4a) - hierarquia visual correta */
+    font-size: 1.1rem;
+    color: #9a7a6a;
     margin-bottom: 0.5rem;
     text-align: center;
     font-family: 'Nunito', sans-serif;
-    font-weight: 500; /* Medium - menos pesado, mais acolhedor */
-    line-height: 1.5; /* Mais respiração entre linhas */
+    font-weight: 500;
+    line-height: 1.5;
 }
 
 .gentle-title {
     color: #8b5e66;
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     margin-bottom: 5px;
     font-weight: 500;
     font-family: 'Poppins', sans-serif;
 }
 
 @media (max-width: 1023px) {
-    .gentle-title { font-size: 1.2rem !important; }
+    .gentle-title { font-size: 1.1rem !important; }
 }
 
 body.device-mobile .gentle-title {
-    font-size: 1.2rem !important;
+    font-size: 1.05rem !important;
 }
 
 .gentle-subtitle {
@@ -2281,11 +2300,11 @@ body.device-mobile .gentle-title {
 .feeling-buttons-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 12px;
     max-width: 400px;
     width: 100%;
     margin: 0 auto;
-    padding: 10px;
+    padding: 8px 0;
 }
 
 @media (max-width: 1023px) {
@@ -2304,21 +2323,21 @@ body.device-mobile .feeling-buttons-grid {
     .quick-questions-grid.feeling-buttons-grid { gap: 15px !important; }
 }
 
-/* ===== FEELING BUTTONS - BOTÕES DE ESTADO EMOCIONAL ===== */
+/* ===== FEELING BUTTONS - BOTÕES DE ESTADO EMOCIONAL (proporção equilibrada) ===== */
 .feeling-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px 30px; /* Aumentado padding lateral para pill shape */
-    border: 1px solid #ffe4e8; /* Borda mais suave */
-    border-radius: 50px; /* Pill shape - totalmente arredondado */
+    padding: 10px 20px;
+    border: 1px solid #ffe4e8;
+    border-radius: 50px;
     background-color: #fff;
     color: #b36b7d;
     font-weight: 500;
-    font-size: 1rem;
-    font-family: 'Poppins', sans-serif; /* Fonte arredondada para acolhimento */
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Movimento orgânico */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -2840,8 +2859,8 @@ body.device-mobile .rotating-message {
 
 .quick-questions {
     max-width: 850px;
-    margin: 4rem auto 3rem !important; /* Aumentado: 64px top, 48px bottom - mais respiração após feeling-box */
-    margin-top: 40px !important; /* Espaçamento generoso acima da seção para separar do card anterior */
+    margin: 3rem auto 2.5rem !important;
+    margin-top: 2.5rem !important; /* Separação clara entre seções (não colados) */
     width: 100% !important;
     padding: 0 1rem;
     animation: buttonsSlideIn 0.8s ease-out 0.9s backwards;
@@ -2860,22 +2879,28 @@ body.device-mobile .rotating-message {
     background-color: rgba(255, 255, 255, 0.95) !important;
     border: 2px solid rgba(244, 166, 166, 0.3) !important;
     border-radius: 20px !important;
-    padding: 1.5rem 2rem !important;
-    margin: 4rem auto 3rem !important;
+    padding: 1.25rem 1.5rem !important;
+    margin: 3rem auto 2.5rem !important;
     box-shadow: 0 4px 20px rgba(244, 166, 166, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05) !important;
     contain: layout style paint;
 }
 
-/* "Não sabe por onde começar?" – preservar quick-questions-section-white com !important para separação visual. */
+/* "Não sabe por onde começar?" – fundo branco que envolve todo o conteúdo (nada fica de fora) */
 .quick-questions-section-white.quick-questions.feeling-box {
     background: #ffffff !important;
     background-color: #ffffff !important;
+    overflow: hidden !important;
+    padding: 1.5rem 1.5rem 1.75rem !important;
+    border-radius: 20px !important;
+}
+.quick-questions-section-white.quick-questions.feeling-box .quick-questions-grid {
+    margin-top: 0.25rem !important;
 }
 
 .quick-questions h2 {
     text-align: center;
     color: var(--text-warm-medium);
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     margin-bottom: 0.5rem;
     font-weight: 600;
 }
@@ -2896,18 +2921,18 @@ body.device-mobile .rotating-message {
     align-items: stretch !important;
 }
 
-/* Layout idêntico ao "Como está seu coração" quando usa feeling-buttons-grid */
+/* Layout alinhado ao "Como está seu coração" – gap para não colar */
 .quick-questions-grid.feeling-buttons-grid {
     grid-template-columns: 1fr 1fr !important;
-    gap: 20px !important;
+    gap: 12px !important;
     max-width: 400px !important;
     margin: 0 auto !important;
 }
 
-/* Botões de frase com mesmo estilo dos botões de emoção (pill, tamanho uniforme) */
+/* Botões de frase: proporção compacta, não achatados */
 .quick-questions .quick-btn.feeling-btn {
-    padding: 12px 20px !important;
-    border-radius: 50px !important;
+    padding: 10px 16px !important;
+    border-radius: 20px !important;
     border: 1px solid #ffe4e8 !important;
     background-color: #fff !important;
     color: #b36b7d !important;
@@ -2916,7 +2941,7 @@ body.device-mobile .rotating-message {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
     flex-direction: row !important;
     justify-content: center !important;
-    font-size: 1rem !important;
+    font-size: 0.9rem !important;
     white-space: normal !important;
     text-align: center !important;
 }
@@ -3088,11 +3113,12 @@ body.device-mobile .rotating-message {
     scroll-margin-top: calc(var(--chat-header-offset, 72px) + 8px);
 }
 
-/* Chat Messages */
+/* Chat Messages – padding-bottom para não ficar atrás do .input-area fixo */
 .chat-messages {
     flex: 1;
     padding: 0.75rem 0.5rem;
-    overflow-y: auto !important; /* ÚNICO scroll permitido - apenas aqui quando ativo */
+    padding-bottom: 100px !important; /* Espaço para o input fixo no final da página */
+    overflow-y: auto !important;
     overflow-x: hidden !important;
     display: none;
     position: absolute;
@@ -3107,13 +3133,9 @@ body.device-mobile .rotating-message {
     padding-top: 0.75rem;
     box-sizing: border-box;
     max-width: 100%;
-    z-index: 2; /* Acima dos elementos decorativos */
-    /* Otimizações de performance para scroll */
+    z-index: 2;
     contain: layout style paint;
-    /* transform: translateZ(0); */ /* Removido - otimização desnecessária */
-    /* will-change: scroll-position; */ /* Removido - otimização desnecessária */
     -webkit-overflow-scrolling: touch;
-    /* Garante que o scroll fique apenas aqui */
     overscroll-behavior: contain !important;
 }
 
@@ -3485,22 +3507,24 @@ body.device-mobile .rotating-message {
     }
 }
 
-/* Input Area */
+/* Input Area – sempre no final da página (fixo no rodapé da viewport) */
 .input-area {
-    background: rgba(255, 252, 248, 0.98); /* Mais opaco para não precisar de blur */
+    background: rgba(255, 252, 248, 0.98);
     border-top: 1px solid rgba(244, 166, 166, 0.2);
     padding: 1.2rem;
-    /* backdrop-filter removido para melhor performance */
-    position: relative;
-    /* CORREÇÃO CRÍTICA: Z-index MÍNIMO por padrão - SEMPRE abaixo da sidebar (2147483647) */
-    z-index: 50 !important; /* Abaixo do header (1000), MUITO abaixo da sidebar (2147483647) */
-    /* Otimizações de performance */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    z-index: 50 !important;
     contain: layout style paint;
 }
 
-/* Ajuste do typing indicator no input-area - já está definido acima, mas garante position relative */
+/* Typing indicator dentro do input-area */
 .input-area {
-    position: relative;
+    position: fixed !important;
 }
 
 /* Ajuste do typing indicator para desktop */
@@ -3510,47 +3534,34 @@ body.device-mobile .rotating-message {
     }
 }
 
-/* Mobile: Ajusta tamanho do input area e botões para diferentes tamanhos de tela */
+/* Mobile: input no final da página com safe-area */
 @media (max-width: 768px) {
     .input-area {
         padding: 1rem 0.75rem !important;
         padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
-        position: fixed !important; /* Fixo na parte inferior */
-        bottom: 64px !important; /* Acima da bottom navigation (64px) */
+        position: fixed !important;
+        bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        width: 100vw !important;
-        /* CORREÇÃO CRÍTICA: Z-index SEMPRE menor que sidebar (2147483647) - nunca sobrepor */
-        z-index: 50 !important; /* MUITO menor que sidebar (2147483647) - força abaixo sempre */
+        width: 100% !important;
+        z-index: 50 !important;
         box-shadow: 0 -4px 20px rgba(244, 166, 166, 0.3) !important;
-        transition: bottom 0.3s ease, z-index 0s !important; /* Transição suave mas z-index instantâneo */
         min-height: 70px !important;
-        transform: translateY(0); /* Posição normal */
     }
     
-    /* Quando teclado virtual abre, ajusta posição do input */
     .input-area.keyboard-open {
-        bottom: 64px !important; /* Mantém acima da bottom nav */
-        transform: translateY(-50vh); /* Move para cima quando teclado abre */
+        transform: translateY(-50vh);
     }
     
-    /* Ajuste adicional: quando bottom nav está presente, input fica acima dela */
     @media (max-width: 1023px) {
-        .input-area {
-            bottom: 64px !important; /* Acima da bottom navigation */
-        }
-        
-        /* Quando teclado abre em mobile */
         .input-area.keyboard-open {
-            bottom: 64px !important;
-            transform: translateY(-40vh); /* Move para cima, mas não tanto */
+            transform: translateY(-40vh);
         }
     }
     
-    /* Quando o footer CVV está visível, ajusta o input area para ficar acima dele */
     .cvv-disclaimer-footer[style*="display: block"] ~ * .input-area,
     body:has(.cvv-disclaimer-footer[style*="display: block"]) .input-area {
-        bottom: 2.8rem !important; /* Ajusta para ficar acima do footer CVV (~2.8rem de altura) */
+        bottom: 2.8rem !important;
     }
     
     .input-container {
@@ -9993,18 +10004,14 @@ body.device-mobile .welcome-message .welcome-content {
         display: none !important; /* Oculta subtítulo no mobile para economizar espaço */
     }
 
-    /* Container do bloco de boas-vindas do cabeçalho - OCULTO conforme regras acima */
+    /* Botões de pesquisa e perfil visíveis; só ocultar status/welcome */
     .header-right {
-        display: none !important; /* OCULTO conforme regras acima */
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
     }
-
-    /* Bloco de boas-vindas do cabeçalho - OCULTO */
     .header-right .welcome-message,
-    .header-right #welcome-user {
-        display: none !important;
-    }
-    
-    /* Status-indicator também oculto conforme regras acima */
+    .header-right #welcome-user,
     .header-right .status-indicator {
         display: none !important;
     }
@@ -14226,7 +14233,7 @@ button:hover, .btn:hover, .btn-sophia:hover, .sidebar-btn:hover,
 /* Força o container do carrossel a não esticar */
 .conteudos-educativos-section-modern {
     max-width: 100% !important;
-    padding: 24px 20px !important; /* Respiro vertical 24px, horizontal 20px base */
+    padding: 24px 12px !important; /* Menos padding lateral para blocos mais largos */
 }
 
 .conteudos-carousel {
@@ -14482,6 +14489,7 @@ body:has(#sidebar.open) .header-modern {
 
 /* Menu hambúrguer no lado esquerdo */
 /* Todos os botões de ícone do header - Tamanho fixo para consistência */
+/* Botões do header (menu, pesquisa, perfil) – clicáveis e acima de sobreposições */
 .header-icon-btn {
     display: flex !important;
     align-items: center !important;
@@ -14503,7 +14511,8 @@ body:has(#sidebar.open) .header-modern {
     transition: all 0.3s ease !important;
     flex-shrink: 0 !important;
     box-sizing: border-box !important;
-    /* Garantir que sobrescreve estilos inline */
+    position: relative !important;
+    z-index: 2 !important;
     line-height: 1 !important;
 }
 
@@ -14522,13 +14531,13 @@ body:has(#sidebar.open) .header-modern {
     margin: 0 !important;
     flex-shrink: 0 !important;
     position: relative !important;
+    z-index: 10 !important; /* Acima do logo para garantir que o clique abre o menu */
     left: auto !important;
     right: auto !important;
     top: auto !important;
     bottom: auto !important;
     box-sizing: border-box !important;
     line-height: 1 !important;
-    /* Garantir que sobrescreve estilos inline */
     background: rgba(244, 166, 166, 0.1) !important;
     border: 1px solid rgba(244, 166, 166, 0.2) !important;
     border-radius: 8px !important;
@@ -14576,7 +14585,7 @@ body:has(#sidebar.open) .header-modern {
 .conteudos-educativos-section-modern {
     max-width: 100% !important;
     margin: 0 auto !important;
-    padding: 24px 1.5rem !important; /* Respiro vertical e horizontal - evita cards colados nas bordas */
+    padding: 24px 0.75rem !important; /* Menos padding lateral no mobile = blocos mais largos */
 }
 
 @media (min-width: 1024px) {

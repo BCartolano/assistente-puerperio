@@ -568,18 +568,15 @@
             <div class="header-modern-content">
                 <!-- Lado Esquerdo: Menu Hambúrguer + Logo -->
                 <div class="header-left">
-                    <button class="header-icon-btn" id="menu-toggle-header" aria-label="Abrir menu">
+                    <button type="button" class="header-icon-btn" id="menu-toggle-header" aria-label="Abrir menu" onclick="if(window.chatApp)window.chatApp.toggleSidebar(); return false;">
                         <i class="fas fa-bars"></i>
                     </button>
                     <div class="header-logo">
                         <h1 class="header-logo-text">Sophia</h1>
                     </div>
                 </div>
-                <!-- Lado Direito: Ícones (Lupa, Perfil) -->
+                <!-- Lado Direito: Perfil -->
                 <div class="header-right">
-                    <button class="header-icon-btn" id="header-search-btn" aria-label="Buscar">
-                        <i class="fas fa-search"></i>
-                    </button>
                     <button class="header-icon-btn" id="header-profile-btn" aria-label="Perfil">
                         <i class="fas fa-user"></i>
                     </button>

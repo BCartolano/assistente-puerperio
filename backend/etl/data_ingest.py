@@ -23,7 +23,24 @@ if sys.platform == 'win32':
 # Caminhos
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DB_PATH = os.path.join(BASE_DIR, 'backend', 'cnes_cache.db')
-CSV_PATH = os.path.join(BASE_DIR, 'BASE_DE_DADOS_CNES_202512', 'tbEstabelecimento202512.csv.csv')
+
+# Tentar múltiplos caminhos possíveis (compatibilidade)
+CSV_PATHS = [
+    os.path.join(BASE_DIR, 'data', 'tbEstabelecimento202512.csv'),  # Caminho atual
+    os.path.join(BASE_DIR, 'BASE_DE_DADOS_CNES_202512', 'tbEstabelecimento202512.csv.csv'),  # Caminho antigo
+    os.path.join(BASE_DIR, 'BASE_DE_DADOS_CNES_202512', 'tbEstabelecimento202512.csv'),  # Variação
+    os.path.join(BASE_DIR, 'data', 'tbEstabelecimento202512.csv.csv'),  # Variação com extensão dupla
+]
+
+# Encontrar o primeiro caminho que existe
+CSV_PATH = None
+for path in CSV_PATHS:
+    if os.path.exists(path):
+        CSV_PATH = path
+        break
+
+if CSV_PATH is None:
+    CSV_PATH = CSV_PATHS[0]  # Usar o primeiro como padrão para mensagem de erro
 
 
 def create_schema(conn: sqlite3.Connection):
@@ -47,6 +64,7 @@ def create_schema(conn: sqlite3.Connection):
             is_sus INTEGER NOT NULL DEFAULT 0,
             management TEXT NOT NULL CHECK(management IN ('MUNICIPAL', 'ESTADUAL', 'FEDERAL', 'PRIVADO', 'DUPLA')),
             cnpj TEXT,
+            telefone TEXT,
             tipo_unidade TEXT,
             natureza_juridica TEXT,
             codigo_servicos TEXT,
@@ -70,6 +88,27 @@ def clean_name(name: str) -> str:
         return ""
     cleaned = " ".join(name.strip().split())
     return cleaned.title()
+
+
+def is_valid_brazil_coordinates(lat: float, long: float) -> bool:
+    """
+    Valida se coordenadas estão dentro do Brasil
+    
+    Brasil (aproximadamente):
+    - Latitude: -35.0 (Sul) a 5.0 (Norte)
+    - Longitude: -75.0 (Oeste) a -30.0 (Leste)
+    """
+    BRASIL_LAT_MIN = -35.0
+    BRASIL_LAT_MAX = 5.0
+    BRASIL_LON_MIN = -75.0
+    BRASIL_LON_MAX = -30.0
+    
+    return (
+        lat is not None and long is not None
+        and lat != 0 and long != 0
+        and BRASIL_LAT_MIN <= lat <= BRASIL_LAT_MAX
+        and BRASIL_LON_MIN <= long <= BRASIL_LON_MAX
+    )
 
 
 def parse_float(value: str) -> Optional[float]:
@@ -154,47 +193,119 @@ def is_upa(row: Dict[str, str], tipo_mapped: Optional[str] = None) -> bool:
 def has_maternity_heuristic(row: Dict[str, str]) -> bool:
     """
     Identifica maternidade por heurística (nome e tipo)
-    REGRA: Ser conservador - só marcar se houver evidência clara
+    
+    REGRA ATUALIZADA (Requisito do usuário):
+    - Se for Hospital (tipo 05 ou 07), ASSUMIR que tem maternidade por padrão
+    - Exceção: Se o nome indicar claramente que NÃO tem (ex: especialidades específicas)
+    - UPAs nunca têm maternidade
     """
     nome_fantasia = row.get('NO_FANTASIA', '').upper()
-    tipo_unidade = row.get('CO_TIPO_UNIDADE', '').strip()
+    nome_razao = row.get('NO_RAZAO_SOCIAL', '').upper()
+    tipo_unidade = row.get('TP_UNIDADE', '').strip() or row.get('CO_TIPO_UNIDADE', '').strip()
     
     # Se for UPA, nunca tem maternidade
     if is_upa(row):
         return False
     
-    # Buscar palavras-chave no nome
-    keywords_maternity = ['MATERNIDADE', 'MATERNO', 'OBSTETRICIA', 'OBSTETRICO']
-    if any(keyword in nome_fantasia for keyword in keywords_maternity):
+    # CRÍTICO: Termos que indicam que NÃO tem maternidade (exceções)
+    excluded_keywords = [
+        # Psiquiatria / Saúde Mental
+        'PSIQUIATRIA', 'PSIQUIATRICO', 'MENTAL', 'SAUDE MENTAL', 'SAÚDE MENTAL',
+        'CVV', 'CENTRO DE VALORIZACAO', 'CENTRO DE VALORIZAÇÃO', 'VALORIZACAO DA VIDA',
+        'DEPENDENCIA QUIMICA', 'DEPENDÊNCIA QUÍMICA', 'DEPENDENCIA', 'DEPENDÊNCIA',
+        'QUIMICA', 'QUÍMICA', 'ADICCAO', 'ADICÇÃO', 'ALCOOLISMO', 'ALCOOLISMO',
+        'DROGADICCAO', 'DROGADIÇÃO', 'TRATAMENTO DROGAS', 'TRATAMENTO DROGA',
+        'FRANCISCA JULIA', 'FRANCISCA JÚLIA', 'FRANCISCAJULIA',
+        # Ortopedia
+        'ORTOPEDIA', 'ORTODOXIA', 'TRAUMATOLOGIA', 'ORTOPEDICO', 'ORTOPEDISTA',
+        'ORTO', 'TRAUMATO', 'FRATURA', 'OSSO', 'OSSOS', 'COLUNA', 'JOELHO', 'QUADRIL', 'OMBRO',
+        'ORTHO', 'ORTHOPEDIC',
+        # Visão/Oftalmologia
+        'VISÃO', 'VISAO', 'VISUAL', 'OFTA', 'OFTALMO', 'OLHO', 'OLHOS',
+        'RETINA', 'CÓRNEA', 'CORNEA', 'CATARATA', 'GLAUCOMA',
+        # Cardiologia
+        'CARDIOLOGIA', 'CARDIACO', 'CARDIAC', 'CORAÇÃO', 'CORACAO',
+        'CIRURGIA CARDIACA',
+        # Oncologia
+        'ONCOLOGIA', 'ONCOLOGICO', 'CANCER', 'CÂNCER',
+        'TRATAMENTO CANCER', 'INSTITUTO DO CANCER',
+        # Pediatria/Hospitais Infantis
+        'INFANTIL', 'PEDIATRIA', 'PEDIATRICO', 'PEDIATRICA', 'PEDIATRIC',
+        'CRIANCA', 'CRIANÇA', 'BABY', 'BEBE', 'BEBÊ',
+        # Cirurgia plástica / estética (não maternidade)
+        'CIRURGIA PLASTICA', 'CIRURGIA PLÁSTICA', 'PLASTICA', 'PLÁSTICA',
+        'ESTETICA', 'ESTÉTICA', 'HOSPITAL DE CIRURGIA', 'CIRURGIA ESTETICA',
+        # Outras especialidades
+        'REABILITACAO', 'FISIOTERAPIA',
+        # Hospitais temporários / campanha
+        'CAMPANHA', 'HOSPITAL DE CAMPANHA', 'HOSPITAL CAMPANHA',
+        'RETAGUARDA', 'UNIDADE DE INTERNACAO', 'CENTRO DE INTERNACAO',
+    ]
+    
+    # Se contém termos que indicam especialidade específica (sem maternidade), excluir
+    nome_completo = f"{nome_fantasia} {nome_razao}".upper()
+    if any(keyword in nome_completo for keyword in excluded_keywords):
+        return False
+    
+    # Se for Hospital Geral (05) ou Hospital Especializado (07), ASSUMIR que tem maternidade
+    # REGRA: A maioria dos hospitais gerais no Brasil oferece atendimento obstétrico
+    # EXCEÇÃO: Se contém termos excluídos (já verificado acima), não tem maternidade
+    if tipo_unidade in ('05', '07'):
         return True
     
-    # Se for Hospital Especializado (07) ou Geral (05), verificar mais contexto
-    # MAS: Ser conservador - não assumir que Geral sempre tem maternidade
-    # Retornar False por padrão para evitar falsos positivos
+    # Verificar se o tipo mapeado é HOSPITAL
+    # (isso cobre casos onde o tipo foi mapeado para 'HOSPITAL')
+    tipo_mapped = map_tipo_unidade(tipo_unidade)
+    if tipo_mapped == 'HOSPITAL':
+        return True
+    
+    # Se o nome contém palavras-chave explícitas de maternidade, marcar
+    keywords_maternity = ['MATERNIDADE', 'MATERNO', 'OBSTETRICIA', 'OBSTETRICO']
+    if any(keyword in nome_fantasia or keyword in nome_razao for keyword in keywords_maternity):
+        return True
+    
+    # Por padrão, se chegou aqui e não foi excluído, não tem maternidade
     return False
 
 
 def determine_is_sus(natureza_jur: str) -> bool:
-    """Determina se hospital atende SUS pela Natureza Jurídica"""
+    """
+    Determina se hospital atende SUS pela Natureza Jurídica (CO_NATUREZA_JUR)
+    
+    CRÍTICO PARA RESPONSABILIDADE JURÍDICA:
+    Usa APENAS dados exatos do CSV (CO_NATUREZA_JUR) conforme classificação oficial do CNES.
+    
+    REGRAS BASEADAS NA DOCUMENTAÇÃO OFICIAL DO CNES:
+    - Códigos começando com '1': Administração Pública (SUS)
+    - Código '3999': Entidade Filantrópica sem fins lucrativos (geralmente aceita SUS)
+    - Códigos começando com '2': Empresarial (Privado, não aceita SUS por padrão)
+    
+    NOTA: Se natureza_jur for NULL/vazio, retorna False (conservador).
+    Não assumir SUS sem evidência clara no CSV para evitar responsabilidade jurídica.
+    """
     if not natureza_jur:
+        # Se não houver natureza jurídica no CSV, não assumir SUS (conservador)
         return False
     
     natureza_clean = natureza_jur.strip()
     
-    # Adm Pública (códigos que começam com 1)
+    # Administração Pública (códigos que começam com 1) - SEMPRE SUS
     if natureza_clean.startswith('1'):
         return True
     
-    # Associação Privada sem fins lucrativos / Santa Casa (3999)
+    # Entidade Filantrópica sem fins lucrativos (3999) - Geralmente aceita SUS
+    # Exemplos: Santa Casa, hospitais filantrópicos
     if natureza_clean == '3999':
         return True
     
-    # Empresarial (códigos que começam com 2) = Privado
+    # Empresarial (códigos que começam com 2) - PRIVADO, não aceita SUS
     if natureza_clean.startswith('2'):
         return False
     
-    # Por padrão, assumir SUS se não for claramente privado
-    return True
+    # Para outros códigos não mapeados explicitamente, ser conservador
+    # Se não está claramente definido como SUS no CSV, retornar False
+    # Isso evita responsabilidade jurídica por informações incorretas
+    return False
 
 
 def map_management(tp_gestao: str) -> str:
@@ -225,10 +336,12 @@ def process_row(row: Dict[str, str]) -> Optional[Dict]:
         return None
     
     # 2. Mapear tipo de unidade (FILTRO DE RELEVÂNCIA)
-    codigo_tipo = row.get('CO_TIPO_UNIDADE', '').strip()
+    # CRÍTICO: Usar TP_UNIDADE (que tem dados) ao invés de CO_TIPO_UNIDADE (que está vazio)
+    codigo_tipo = row.get('TP_UNIDADE', '').strip() or row.get('CO_TIPO_UNIDADE', '').strip()
     tipo_mapped = map_tipo_unidade(codigo_tipo)
     
-    # Se não mapear para tipo relevante, pode ser irrelevante (mas não descartar ainda)
+    # CRÍTICO: Se não mapear, usar o código original para não perder informação
+    # Isso permite buscar por códigos numéricos (05, 07, 73) mesmo sem mapeamento
     
     # 3. Validação obrigatória: Latitude e Longitude (FILTRO DE QUALIDADE)
     lat = parse_float(row.get('NU_LATITUDE', ''))
@@ -236,6 +349,11 @@ def process_row(row: Dict[str, str]) -> Optional[Dict]:
     
     if lat is None or long is None:
         return None  # PULA se não tiver coordenadas
+    
+    # CRÍTICO: Validar se coordenadas estão dentro do Brasil
+    if not is_valid_brazil_coordinates(lat, long):
+        # Coordenadas inválidas (fora do Brasil, 0,0, etc.) - PULAR
+        return None
     
     # 4. Nome (usar fantasia ou razão social)
     nome_fantasia = row.get('NO_FANTASIA', '').strip()
@@ -295,8 +413,17 @@ def process_row(row: Dict[str, str]) -> Optional[Dict]:
     # 12. CNPJ
     cnpj = row.get('NU_CNPJ', '').strip() or None
     
-    # 13. Tipo Unidade (SALVAR O TIPO MAPEADO, não o código)
-    tipo_unidade = tipo_mapped or codigo_tipo or None
+    # 12b. Telefone (CRÍTICO: Dados exatos do CSV para responsabilidade jurídica)
+    telefone = row.get('NU_TELEFONE', '').strip() or None
+    
+    # 13. Tipo Unidade (PRIORIZAR TIPO MAPEADO, mas salvar código original se não houver mapeamento)
+    # CRÍTICO: Sempre salvar algo (código ou tipo mapeado) para permitir buscas
+    if tipo_mapped:
+        tipo_unidade = tipo_mapped  # Usar tipo mapeado (HOSPITAL, UPA, UBS)
+    elif codigo_tipo:
+        tipo_unidade = codigo_tipo  # Usar código original (05, 07, 73, etc)
+    else:
+        tipo_unidade = None  # Apenas se ambos estiverem vazios
     
     # 13. Natureza Jurídica
     natureza_juridica = natureza_jur or None
@@ -319,6 +446,7 @@ def process_row(row: Dict[str, str]) -> Optional[Dict]:
         'has_maternity': 1 if has_maternity else 0,
         'is_emergency_only': 1 if is_emergency_only else 0,
         'cnpj': cnpj,
+        'telefone': telefone,  # Dados exatos do CSV (NU_TELEFONE)
         'tipo_unidade': tipo_unidade,
         'natureza_juridica': natureza_juridica,
         'codigo_servicos': None,  # Não temos ainda
@@ -334,10 +462,12 @@ def ingest_csv():
     print()
     
     # Verificar se arquivo existe
-    if not os.path.exists(CSV_PATH):
-        print(f"❌ Arquivo CSV não encontrado: {CSV_PATH}")
-        print(f"\n💡 Verifique se o arquivo está em:")
-        print(f"   BASE_DE_DADOS_CNES_202512/tbEstabelecimento202512.csv.csv")
+    if CSV_PATH is None or not os.path.exists(CSV_PATH):
+        print(f"❌ Arquivo CSV não encontrado!")
+        print(f"\n💡 Verifique se o arquivo está em um dos seguintes locais:")
+        for path in CSV_PATHS:
+            exists = "✓" if os.path.exists(path) else "✗"
+            print(f"   {exists} {path}")
         return
     
     print(f"📁 Arquivo CSV: {CSV_PATH}")
@@ -400,8 +530,8 @@ def ingest_csv():
                         INSERT INTO hospitals_cache 
                         (cnes_id, name, fantasy_name, lat, long, address, city, state, neighborhood,
                          management, is_sus, has_maternity, is_emergency_only, 
-                         cnpj, tipo_unidade, natureza_juridica, codigo_servicos, data_source_date)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                         cnpj, telefone, tipo_unidade, natureza_juridica, codigo_servicos, data_source_date)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ''', (
                         processed['cnes_id'],
                         processed['name'],
@@ -417,6 +547,7 @@ def ingest_csv():
                         processed['has_maternity'],
                         processed['is_emergency_only'],
                         processed['cnpj'],
+                        processed['telefone'],  # Dados exatos do CSV
                         processed['tipo_unidade'],
                         processed['natureza_juridica'],
                         processed['codigo_servicos'],

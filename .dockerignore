@@ -1,0 +1,17 @@
+# Imagem leve: sem dumps, raw, reports, logs
+BASE_DE_DADOS_CNES_*/
+data/raw/
+data/*202*.csv
+reports/
+logs/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.git
+.gitignore
+.env
+*.sqlite
+*.db
+node_modules

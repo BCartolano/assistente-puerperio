@@ -1,68 +1,45 @@
 /**
  * Sidebar Content Manager
- * Gerencia conteúdo das sidebars: Dicas do Dia, Afirmações e Vídeos
+ * Gerencia conteúdo das sidebars: Orientação, Afirmações e Vídeos
  */
 
 (function() {
     'use strict';
 
-    // Dicas do Dia (baseadas em evidências)
-    const tips = [
-        {
-            icon: '🌙',
-            text: 'Descanse sempre que puder. Estudos mostram que mães que descansam adequadamente nos primeiros 15 dias têm melhor recuperação física e emocional. O sono fragmentado é normal - aproveite os cochilos do bebê para descansar também.',
-            id: 'tip-1'
-        },
-        {
-            icon: '💧',
-            text: 'Mantenha-se hidratada e alimente-se bem. Se estiver amamentando, seu corpo precisa de 500-600 calorias extras por dia. Beba água sempre que amamentar e priorize alimentos nutritivos para sua recuperação.',
-            id: 'tip-2'
-        },
-        {
-            icon: '🤝',
-            text: 'Pedir ajuda não é sinal de fraqueza - é sabedoria. Pesquisas mostram que mães com rede de apoio adequada têm menor risco de depressão pós-parto. Aceite ajuda com tarefas domésticas, cuidados com o bebê e seu próprio descanso.',
-            id: 'tip-3'
-        },
-        {
-            icon: '💙',
-            text: 'Fique atenta aos seus sentimentos. Baby blues (tristeza leve) é comum nas primeiras 2 semanas. Se a tristeza persistir, for intensa ou vier acompanhada de pensamentos negativos sobre você ou o bebê, procure ajuda profissional.',
-            id: 'tip-4'
-        },
-        {
-            icon: '🚶‍♀️',
-            text: 'Movimente-se gradualmente conforme se sentir confortável. Caminhadas leves após liberação médica ajudam na recuperação física e bem-estar emocional. Evite exercícios intensos nas primeiras 6 semanas.',
-            id: 'tip-5'
-        }
-    ];
+    let orientacoes = [];
+    let afirmacoes = [];
 
-    // Frases de Afirmação Positiva
-    const affirmations = [
-        "Eu sou a melhor mãe para o meu filho.",
-        "Estou fazendo o melhor que posso, e isso é suficiente.",
-        "Aprendo e me torno uma mãe melhor a cada dia que passa.",
-        "Acredito em mim mesma e aceito que sou suficiente.",
-        "Sou uma mãe suficientemente boa.",
-        "Ao cuidar de mim, ensino aos meus filhos o valor do autocuidado.",
-        "Não só não há problema em pedir ajuda, como eu mereço ajuda.",
-        "Eu mereço descanso e momentos de paz.",
-        "Cuidar de mim não é egoísmo, é necessidade.",
-        "Meu bem-estar importa tanto quanto o do meu bebê.",
-        "Sou forte e resiliente diante dos desafios.",
-        "Ser mãe é superar desafios diários e se reinventar a cada momento.",
-        "Cada dia é uma nova oportunidade para aprender e crescer.",
-        "Eu confio no meu potencial para cuidar do meu bebê.",
-        "Estou fazendo o melhor que posso com as informações que tenho.",
-        "Estou grata pelos meus filhos, pelo meu companheiro e pela minha família.",
-        "Vivo uma vida repleta de amor.",
-        "Apesar dos desafios, meus filhos se sentem amados e seguros.",
-        "Hoje é um novo dia para a nossa família.",
-        "O amor de mãe é capaz de me dar força para superar qualquer dificuldade.",
-        "É normal sentir cansaço, dúvidas e emoções intensas.",
-        "Não preciso ser perfeita, apenas presente.",
-        "Cada mãe tem sua própria jornada, e a minha é única.",
-        "Está tudo bem não saber tudo - estou aprendendo.",
-        "Minhas emoções são válidas e merecem ser acolhidas."
-    ];
+    async function loadOrientacoes() {
+        try {
+            const r = await fetch('/static/data/orientacoes.json');
+            if (r.ok) {
+                const data = await r.json();
+                orientacoes = data.items || [];
+            }
+        } catch (e) {
+            console.warn('[SidebarContent] Erro ao carregar orientacoes.json:', e);
+        }
+        if (orientacoes.length === 0) {
+            orientacoes = ['Manter hidratação adequada ajuda na recuperação pós-parto.', 'O descanso fragmentado é normal, aproveite os cochilos do bebê.'];
+        }
+        return orientacoes;
+    }
+
+    async function loadAfirmacoes() {
+        try {
+            const r = await fetch('/static/data/afirmacoes.json');
+            if (r.ok) {
+                const data = await r.json();
+                afirmacoes = data.items || [];
+            }
+        } catch (e) {
+            console.warn('[SidebarContent] Erro ao carregar afirmacoes.json:', e);
+        }
+        if (afirmacoes.length === 0) {
+            afirmacoes = ['Você é luz, confie no universo.', 'O amor de mãe é capaz de me dar força para superar qualquer dificuldade.'];
+        }
+        return afirmacoes;
+    }
 
     // Vídeos (IDs reais do YouTube)
     // ⚠️ IMPORTANTE: Substitua os IDs abaixo pelos IDs reais encontrados no YouTube
@@ -99,23 +76,14 @@
         }
     ];
 
-    /**
-     * Obtém uma dica aleatória baseada na data do dia
-     * (garante que a mesma dica seja exibida durante o dia)
-     */
-    function getDailyTip() {
-        const today = new Date();
-        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-        const tipIndex = dayOfYear % tips.length;
-        return tips[tipIndex];
+    function getRandomOrientacao() {
+        if (orientacoes.length === 0) return 'Manter hidratação adequada ajuda na recuperação pós-parto.';
+        return orientacoes[Math.floor(Math.random() * orientacoes.length)];
     }
 
-    /**
-     * Obtém uma afirmação aleatória
-     */
     function getRandomAffirmation() {
-        const randomIndex = Math.floor(Math.random() * affirmations.length);
-        return affirmations[randomIndex];
+        if (afirmacoes.length === 0) return 'Você é luz, confie no universo.';
+        return afirmacoes[Math.floor(Math.random() * afirmacoes.length)];
     }
 
     /**
@@ -141,35 +109,33 @@
     }
 
     /**
-     * Inicializa Dica do Dia
+     * Inicializa card Orientação (sorteia frase no carregamento e no clique)
      */
-    function initTipOfTheDay() {
-        const tipCard = document.getElementById('tip-of-the-day-card');
-        const tipText = document.getElementById('tip-text');
-        
-        if (!tipCard || !tipText) return;
-
-        const tip = getDailyTip();
-        tipText.textContent = tip.text;
-        
-        // Atualiza ícone se necessário
-        const cardIcon = tipCard.querySelector('.card-icon');
-        if (cardIcon) {
-            cardIcon.textContent = tip.icon;
+    function initOrientacao() {
+        const card = document.getElementById('orientacao-card');
+        const textEl = document.getElementById('orientacao-text');
+        if (!card || !textEl) return;
+        function refresh() {
+            textEl.textContent = getRandomOrientacao();
         }
+        refresh();
+        card.addEventListener('click', refresh);
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); refresh(); } });
     }
 
     /**
-     * Inicializa Afirmação Positiva
+     * Inicializa card Afirmação (sorteia frase no carregamento e no clique)
      */
     function initAffirmation() {
-        const affirmationCard = document.getElementById('affirmation-card');
-        const affirmationText = document.getElementById('affirmation-text');
-        
-        if (!affirmationCard || !affirmationText) return;
-
-        const affirmation = getRandomAffirmation();
-        affirmationText.textContent = affirmation;
+        const card = document.getElementById('affirmation-card');
+        const textEl = document.getElementById('affirmation-text');
+        if (!card || !textEl) return;
+        function refresh() {
+            textEl.textContent = getRandomAffirmation();
+        }
+        refresh();
+        card.addEventListener('click', refresh);
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); refresh(); } });
     }
 
     /**
@@ -385,27 +351,27 @@
     /**
      * Inicializa tudo quando DOM estiver pronto
      */
-    function init() {
+    async function init() {
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
+            document.addEventListener('DOMContentLoaded', () => init());
             return;
         }
-
-        // Só inicializa se estiver em desktop (≥1024px)
+        await Promise.all([loadOrientacoes(), loadAfirmacoes()]);
         if (window.innerWidth >= 1024) {
-            initTipOfTheDay();
+            initOrientacao();
             initAffirmation();
             renderVideos();
             initVideoModal();
+        } else {
+            initOrientacao();
+            initAffirmation();
         }
-
-        // Re-inicializa se redimensionar para desktop
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 if (window.innerWidth >= 1024) {
-                    initTipOfTheDay();
+                    initOrientacao();
                     initAffirmation();
                     renderVideos();
                 }
@@ -413,7 +379,6 @@
         });
     }
 
-    // Exporta funções para uso externo (se necessário)
     window.sidebarContent = {
         updateVideos: function(newVideos) {
             if (Array.isArray(newVideos) && newVideos.length > 0) {
@@ -422,7 +387,7 @@
             }
         },
         refreshAffirmation: initAffirmation,
-        refreshTip: initTipOfTheDay
+        refreshOrientacao: initOrientacao
     };
 
     // Inicializa

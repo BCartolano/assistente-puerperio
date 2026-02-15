@@ -1,0 +1,7 @@
+feat(emergency): seção "Confirmados até 100 km" + backfill de UF e busca v2 estável
+
+API: nearby_confirmed quando não houver A no raio; debug/meta mantido
+ETL: backfill de UF via mapa CNES_ID→UF; CNES normalizado (zfill 7)
+Fallback: Serviço/Habilitação como sinal forte; zfill(7) para casar CNES entre fontes
+UI: chip "Ver tudo (100 km)" recarrega com radius_km=100; banner 192 e chip de raio
+Observabilidade: logs e relatórios já integrados ao orquestrador/CI

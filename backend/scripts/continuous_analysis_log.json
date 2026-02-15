@@ -1,0 +1,72 @@
+[
+  {
+    "timestamp": "2026-01-22T01:38:03.768180",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:39:03.814190",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:40:03.871049",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:41:03.921901",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:42:03.962911",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:43:03.992674",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:44:04.036681",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:45:04.096828",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:46:04.155433",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  },
+  {
+    "timestamp": "2026-01-22T01:47:04.213172",
+    "action": "error",
+    "details": {
+      "error": "tuple indices must be integers or slices, not str"
+    }
+  }
+]

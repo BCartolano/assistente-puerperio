@@ -41,6 +41,12 @@ class APIClient {
                 console.error('[APIClient]', ...args);
             }
         };
+        
+        /** Modo diagnóstico: loga causa real de falha de rede (CORS, timeout, offline, etc.) */
+        this.logNetworkError = function (context, err) {
+            var isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+            console.error('[NET] ' + context + ' offline=' + isOffline + ' name=' + (err && err.name) + ' code=' + (err && err.code) + ' message=' + (err && err.message));
+        };
     }
     
     /**
@@ -136,7 +142,7 @@ class APIClient {
         
         // Retry logic com backoff exponencial
         let lastError;
-        let lastResponse;
+        let _lastResponse;
         
         for (let attempt = 1; attempt <= retries; attempt++) {
             try {
@@ -164,7 +170,7 @@ class APIClient {
                 
                 // Para erros 5xx (server error) ou timeout (408), retenta
                 if (!response.ok && (response.status >= 500 || response.status === 408)) {
-                    lastResponse = response;
+                    _lastResponse = response;
                     
                     if (attempt < retries) {
                         const delay = this.getBackoffDelay(attempt);
@@ -206,7 +212,7 @@ class APIClient {
                 
             } catch (error) {
                 clearTimeout(timeoutId);
-                
+                this.logNetworkError(endpoint, error);
                 // Remove da lista de requisições ativas
                 if (cancelPrevious && this.activeRequests.has(endpoint)) {
                     this.activeRequests.delete(endpoint);
@@ -296,18 +302,6 @@ class APIClient {
     }
     
     /**
-     * Cancela todas as requisições ativas
-     */
-    cancelAll() {
-        this.log(`🛑 Cancelando ${this.activeRequests.size} requisição(ões) ativa(s)`);
-        this.activeRequests.forEach((controller, endpoint) => {
-            controller.abort();
-            this.log(`   - Cancelada: ${endpoint}`);
-        });
-        this.activeRequests.clear();
-    }
-    
-    /**
      * Cancela requisições ativas para um endpoint específico
      * @param {string} endpoint - Endpoint a cancelar
      */
@@ -341,7 +335,13 @@ class APIClient {
 
 // Exportar singleton global
 if (typeof window !== 'undefined') {
-    window.apiClient = new APIClient();
+    // Detecta a URL base automaticamente
+    // Se estiver rodando via Ngrok, usa a URL do Ngrok
+    // Se estiver rodando localmente, usa URLs relativas (mesmo domínio)
+    const baseUrl = window.location.hostname.includes('ngrok') 
+        ? `${window.location.protocol}//${window.location.hostname}` 
+        : ''; // URL vazia = mesma origem (localhost:5000)
+    window.apiClient = new APIClient(baseUrl);
     
     // Expor para debug (apenas em desenvolvimento)
     if (window.apiClient.isDevelopment) {

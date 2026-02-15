@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GET /v1/establishments/{cnes_id}",
+  "description": "Detalhe de um estabelecimento por CNES ID",
+  "type": "object",
+  "required": ["id", "name", "maternity_status", "atende_sus", "esfera"],
+  "properties": {
+    "id": { "type": "string", "description": "CNES ID" },
+    "name": { "type": "string" },
+    "fantasy_name": { "type": ["string", "null"] },
+    "address": { "type": ["string", "null"] },
+    "city": { "type": ["string", "null"] },
+    "state": { "type": ["string", "null"] },
+    "phone": { "type": ["string", "null"] },
+    "lat": { "type": ["number", "null"] },
+    "long": { "type": ["number", "null"] },
+    "maternity_status": {
+      "type": "string",
+      "enum": ["Sim", "Provável", "Não listado"],
+      "description": "Ala de Maternidade: Sim (evidência CNES), Provável (score 0.4-0.59 + keyword), Não listado"
+    },
+    "score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence": {
+      "type": ["array", "null"],
+      "items": { "type": "string" },
+      "description": "Lista de evidências (tipo, código, fonte)"
+    },
+    "atende_sus": {
+      "type": "string",
+      "enum": ["Sim", "Não", "Desc.", "Ligue para confirmar"]
+    },
+    "esfera": {
+      "type": "string",
+      "enum": ["Público", "Privado", "Filantrópico", "Desconhecido"]
+    },
+    "sus_badge": {
+      "type": "string",
+      "description": "Aceita Cartão SUS | Não atende SUS"
+    },
+    "has_convenios": { "type": "boolean" },
+    "convenios": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Lista de convênios no CNES (opcional)"
+    },
+    "data_version": { "type": ["string", "null"] }
+  },
+  "examples": [
+    {
+      "id": "1234567",
+      "name": "Hospital da Mulher",
+      "fantasy_name": "Hospital da Mulher",
+      "address": "Rua Exemplo, 100 - Centro",
+      "city": "São Paulo",
+      "state": "SP",
+      "phone": "(11) 1234-5678",
+      "lat": -23.55,
+      "long": -46.63,
+      "maternity_status": "Sim",
+      "score": 0.8,
+      "evidence": ["leito:01:rlEstabLeito", "servico:125:rlEstabServClass"],
+      "atende_sus": "Sim",
+      "esfera": "Público",
+      "sus_badge": "Aceita Cartão SUS",
+      "has_convenios": true,
+      "convenios": ["Unimed", "Bradesco Saúde"],
+      "data_version": "2025-02"
+    }
+  ]
+}

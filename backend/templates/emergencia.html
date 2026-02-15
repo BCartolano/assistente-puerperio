@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Encontre a maternidade mais próxima em caso de emergência obstétrica">
+    <title>Emergência Obstétrica - Encontre Maternidade</title>
+    
+    <!-- CSS de Emergência -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hospital-cards-emergency.css') }}">
+    
+    <style>
+        /* Estilos específicos da página de emergência */
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container-principal {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header-emergencia {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-emergencia h1 {
+            color: #e74c3c;
+            font-size: 24px;
+            margin: 0 0 10px 0;
+        }
+        
+        .header-emergencia p {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        /* Botão Principal de Emergência */
+        .btn-principal-emergencia {
+            width: 100%;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-principal-emergencia:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.5);
+        }
+        
+        .btn-principal-emergencia:active {
+            transform: translateY(0);
+        }
+        
+        .btn-principal-emergencia:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Status GPS */
+        #status-gps {
+            text-align: center;
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 16px;
+            margin: 15px 0;
+            min-height: 24px;
+        }
+        
+        #status-gps.loading {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Container de Hospitais */
+        #container-hospitais {
+            margin-top: 20px;
+        }
+        
+        /* Mensagem quando não há resultados */
+        .sem-resultados {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 15px;
+            color: #7f8c8d;
+        }
+        
+        .sem-resultados h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        /* Aviso de HTTPS */
+        .aviso-https {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #856404;
+        }
+        
+        .aviso-https strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* Footer */
+        .footer-emergencia {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header-emergencia h1 {
+                font-size: 20px;
+            }
+            
+            .btn-principal-emergencia {
+                font-size: 18px;
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-principal">
+        <!-- Header -->
+        <div class="header-emergencia">
+            <h1>🚨 Emergência Obstétrica</h1>
+            <p>Encontre a maternidade mais próxima com tempo de chegada real</p>
+        </div>
+        
+        <!-- Aviso HTTPS (oculto se já estiver em HTTPS) -->
+        <div id="aviso-https" class="aviso-https" style="display: none;">
+            <strong>⚠️ HTTPS Necessário</strong>
+            O GPS só funciona em sites seguros. Certifique-se de que o site está em HTTPS.
+        </div>
+        
+        <!-- Botão Principal -->
+        <button onclick="localizarMaternidade()" class="btn-principal-emergencia" id="btn-localizar">
+            🚨 ENCONTRAR MATERNIDADE AGORA
+        </button>
+        
+        <!-- Status GPS -->
+        <p id="status-gps"></p>
+        
+        <!-- Plano B: Busca Manual por CEP -->
+        <div class="plano-b" id="plano-b">
+            <p class="plano-b-title">📍 Não conseguiu usar o GPS?</p>
+            <p class="plano-b-subtitle">Digite seu CEP para buscar maternidades próximas</p>
+            <div class="plano-b-input-group">
+                <input 
+                    type="text" 
+                    id="cep-manual" 
+                    placeholder="00000-000" 
+                    maxlength="9"
+                    pattern="[0-9]{5}-?[0-9]{3}"
+                    oninput="formatarCEP(this)"
+                    onkeypress="if(event.key === 'Enter') buscarPorCEP()"
+                >
+                <button onclick="buscarPorCEP()" class="btn-buscar-cep" id="btn-buscar-cep">
+                    Buscar
+                </button>
+            </div>
+            <p class="plano-b-hint" id="hint-cep"></p>
+        </div>
+        
+        <!-- Container de Hospitais -->
+        <div id="container-hospitais"></div>
+        
+        <!-- Footer -->
+        <div class="footer-emergencia">
+            <p>Dados atualizados do CNES/DATASUS</p>
+            <p>Em caso de emergência grave, ligue 192 (SAMU)</p>
+        </div>
+    </div>
+    
+    <!-- JavaScript de Geolocalização -->
+    <script src="{{ url_for('static', filename='js/emergency-geolocation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/hospital-cards-emergency.js') }}"></script>
+    
+    <script>
+        // Foca no campo CEP quando plano B é exibido (após erro de GPS)
+        document.addEventListener('DOMContentLoaded', function() {
+            const cepInput = document.getElementById('cep-manual');
+            if (cepInput) {
+                // Foca automaticamente se GPS falhar (será chamado pelo error handler)
+                // Mas não foca imediatamente para não atrapalhar o fluxo principal
+            }
+        });
+    </script>
+</body>
+</html>

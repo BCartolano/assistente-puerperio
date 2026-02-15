@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "description": "Rótulos e microcopy para card de emergência obstétrica (docs/ux/cards_spec.md)",
+  "labels": {
+    "title": "Nome do estabelecimento",
+    "subtitle_esfera": "Público | Privado | Filantrópico",
+    "subtitle_sus": "Atende SUS: Sim | Não | Desc.",
+    "selo_maternidade_sim": "Ala de Maternidade",
+    "selo_maternidade_provavel": "Provável maternidade (ligue para confirmar)",
+    "selo_maternidade_nao": "Não listado",
+    "button_ligar": "Ligar",
+    "button_rotas": "Rotas",
+    "telefone_ausente": "Telefone não informado",
+    "atende_sus_sim": "Atende SUS: Sim",
+    "atende_sus_nao": "Atende SUS: Não",
+    "atende_sus_desc": "Atende SUS: Desc.",
+    "atende_sus_desconhecido": "Atende SUS: Desconhecido",
+    "convênio_confirmar": "Ligue para confirmar"
+  },
+  "microcopy": {
+    "toast_gps_off": "Ative o GPS para encontrar hospitais perto de você.",
+    "banner_192": "Sintomas graves detectados. Ligue 192 (SAMU) agora.",
+    "disclaimer": "Informações do CNES de {{data_version}}. Confirme convênios por telefone. Em emergência, ligue 192.",
+    "aria_ligar": "Ligar para {{name}}",
+    "aria_rotas": "Abrir rotas até {{name}}"
+  },
+  "badges": ["ACEITA SUS", "ALA DE MATERNIDADE", "PROVÁVEL MATERNIDADE", "NÃO LISTADO"]
+}

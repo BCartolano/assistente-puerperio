@@ -1,0 +1,188 @@
+{
+  "timestamp": "2026-01-22T01:39:01.089347",
+  "unused_files": [
+    {
+      "path": "logs\\error_debug.log",
+      "type": "temporary_file",
+      "size": 452342
+    },
+    {
+      "path": "backend\\scripts\\check_auto_status.py",
+      "type": "temporary_script",
+      "size": 2798
+    },
+    {
+      "path": "backend\\scripts\\check_csv_columns.py",
+      "type": "temporary_script",
+      "size": 1072
+    },
+    {
+      "path": "backend\\scripts\\check_database_coverage.py",
+      "type": "temporary_script",
+      "size": 6914
+    },
+    {
+      "path": "backend\\scripts\\check_hospital_coordinates.py",
+      "type": "temporary_script",
+      "size": 9357
+    },
+    {
+      "path": "backend\\scripts\\check_hospital_coverage.py",
+      "type": "temporary_script",
+      "size": 3750
+    },
+    {
+      "path": "backend\\scripts\\check_non_maternity_hospitals.py",
+      "type": "temporary_script",
+      "size": 3455
+    },
+    {
+      "path": "backend\\scripts\\check_other_mental_hospitals.py",
+      "type": "temporary_script",
+      "size": 2768
+    },
+    {
+      "path": "backend\\scripts\\check_policlin_hospitals.py",
+      "type": "temporary_script",
+      "size": 1533
+    },
+    {
+      "path": "backend\\scripts\\check_servicos_estabelecimento.py",
+      "type": "temporary_script",
+      "size": 3937
+    },
+    {
+      "path": "backend\\scripts\\check_specific_hospitals.py",
+      "type": "temporary_script",
+      "size": 4710
+    },
+    {
+      "path": "backend\\scripts\\check_torrao_ouro.py",
+      "type": "temporary_script",
+      "size": 2861
+    },
+    {
+      "path": "backend\\scripts\\check_torrao_ouro_specific.py",
+      "type": "temporary_script",
+      "size": 2907
+    },
+    {
+      "path": "backend\\scripts\\test_api_maternity.py",
+      "type": "temporary_script",
+      "size": 5411
+    },
+    {
+      "path": "backend\\scripts\\test_api_region.py",
+      "type": "temporary_script",
+      "size": 1155
+    },
+    {
+      "path": "backend\\scripts\\test_leito_service.py",
+      "type": "temporary_script",
+      "size": 1210
+    },
+    {
+      "path": "backend\\scripts\\test_maternity_filter.py",
+      "type": "temporary_script",
+      "size": 4424
+    },
+    {
+      "path": "backend\\scripts\\test_maternity_query.py",
+      "type": "temporary_script",
+      "size": 4253
+    },
+    {
+      "path": "backend\\scripts\\test_maternity_search.py",
+      "type": "temporary_script",
+      "size": 6710
+    }
+  ],
+  "large_data": [
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEquipeNasfEsf202512.csv",
+      "size_mb": 15.8,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabAtendPrestConv202512.csv",
+      "size_mb": 51.91,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabColetaSelRejeito202512.csv",
+      "size_mb": 39.89,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabEquipamento202512.csv",
+      "size_mb": 84.55,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabEquipeProf202512.csv",
+      "size_mb": 120.85,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabInstFisiAssist202512.csv",
+      "size_mb": 56.81,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabProgFundo202512.csv",
+      "size_mb": 32.23,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabServClass202512.csv",
+      "size_mb": 124.05,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\rlEstabServicoApoio202512.csv",
+      "size_mb": 27.12,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\tbCargaHorariaSus202512.csv",
+      "size_mb": 799.2,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\tbDadosProfissionalSus202512.csv",
+      "size_mb": 823.16,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\tbEquipe202512.csv",
+      "size_mb": 23.7,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\tbEstabAtivSecundaria202512.csv",
+      "size_mb": 34.64,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    },
+    {
+      "path": "BASE_DE_DADOS_CNES_202512\\tbEstabHorarioAtend202512.csv",
+      "size_mb": 167.36,
+      "type": "large_csv_data",
+      "note": "CSV já importado no banco - pode ser removido se espaço for necessário"
+    }
+  ],
+  "total_size_mb": 2401.27,
+  "note": "Arquivos identificados mas NÃO removidos automaticamente. Revisar manualmente antes de remover."
+}

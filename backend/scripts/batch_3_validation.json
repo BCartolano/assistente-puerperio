@@ -1,0 +1,146 @@
+{
+  "batch_num": 3,
+  "total_hospitals": 10,
+  "hospitals": [
+    {
+      "cnes_id": "0002534",
+      "name": "Hospital Universitario De Sergipe Huse",
+      "address": "CLAUDIO BATISTA, 505, PALESTINA",
+      "city": "",
+      "state": "28",
+      "telefone": "61 32558365",
+      "search_queries": {
+        "maternidade": "Hospital Universitario De Sergipe Huse  28 maternidade",
+        "obstetricia": "Hospital Universitario De Sergipe Huse  28 obstetrícia",
+        "parto": "Hospital Universitario De Sergipe Huse  28 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0002585",
+      "name": "Hospital Sao Lucas",
+      "address": "STANLEY SILVEIRA, 33, SAO JOSE",
+      "city": "",
+      "state": "28",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Hospital Sao Lucas  28 maternidade",
+        "obstetricia": "Hospital Sao Lucas  28 obstetrícia",
+        "parto": "Hospital Sao Lucas  28 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0002593",
+      "name": "Clinica Santa Helena Suissa",
+      "address": "FREI PAULO, 331, BAIRRO SAO JOSE",
+      "city": "",
+      "state": "28",
+      "telefone": "32161400",
+      "search_queries": {
+        "maternidade": "Clinica Santa Helena Suissa  28 maternidade",
+        "obstetricia": "Clinica Santa Helena Suissa  28 obstetrícia",
+        "parto": "Clinica Santa Helena Suissa  28 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003085",
+      "name": "Clinica De Repouso Sao Marcello Ltda",
+      "address": "VISCONDE DE MARACAJU, 490, CIDADE NOVA",
+      "city": "",
+      "state": "28",
+      "telefone": "79 32124400",
+      "search_queries": {
+        "maternidade": "Clinica De Repouso Sao Marcello Ltda  28 maternidade",
+        "obstetricia": "Clinica De Repouso Sao Marcello Ltda  28 obstetrícia",
+        "parto": "Clinica De Repouso Sao Marcello Ltda  28 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003417",
+      "name": "Fundacao Climedi",
+      "address": "AV BARAO DE MARUIM, 956, CENTRO",
+      "city": "",
+      "state": "28",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Fundacao Climedi  28 maternidade",
+        "obstetricia": "Fundacao Climedi  28 obstetrícia",
+        "parto": "Fundacao Climedi  28 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003778",
+      "name": "Hospital Estadual Da Mulher",
+      "address": "RUA BARAO DE COTEGIPE, 1153, ROMA",
+      "city": "",
+      "state": "29",
+      "telefone": "(7139950680",
+      "search_queries": {
+        "maternidade": "Hospital Estadual Da Mulher  29 maternidade",
+        "obstetricia": "Hospital Estadual Da Mulher  29 obstetrícia",
+        "parto": "Hospital Estadual Da Mulher  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003786",
+      "name": "Hospital Aristides Maltez",
+      "address": "AV D JOAO VI, 332, BROTAS",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 3357-6800",
+      "search_queries": {
+        "maternidade": "Hospital Aristides Maltez  29 maternidade",
+        "obstetricia": "Hospital Aristides Maltez  29 obstetrícia",
+        "parto": "Hospital Aristides Maltez  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003794",
+      "name": "Instituto De Perinatologia Da Bahia",
+      "address": "RUA TEIXEIRA DE BARROS, 72, BROTAS",
+      "city": "",
+      "state": "29",
+      "telefone": "(71) 31039316",
+      "search_queries": {
+        "maternidade": "Instituto De Perinatologia Da Bahia  29 maternidade",
+        "obstetricia": "Instituto De Perinatologia Da Bahia  29 obstetrícia",
+        "parto": "Instituto De Perinatologia Da Bahia  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003808",
+      "name": "Hospital Sao Rafael",
+      "address": "SAO RAFAEL, 2152, SAO MARCOS",
+      "city": "",
+      "state": "29",
+      "telefone": "71 32816151",
+      "search_queries": {
+        "maternidade": "Hospital Sao Rafael  29 maternidade",
+        "obstetricia": "Hospital Sao Rafael  29 obstetrícia",
+        "parto": "Hospital Sao Rafael  29 parto"
+      },
+      "validation_status": "pending"
+    },
+    {
+      "cnes_id": "0003816",
+      "name": "Hospital Universitario Professor Edgard Santos",
+      "address": "AUGUSTO VIANA, S/N, CANELA",
+      "city": "",
+      "state": "29",
+      "telefone": null,
+      "search_queries": {
+        "maternidade": "Hospital Universitario Professor Edgard Santos  29 maternidade",
+        "obstetricia": "Hospital Universitario Professor Edgard Santos  29 obstetrícia",
+        "parto": "Hospital Universitario Professor Edgard Santos  29 parto"
+      },
+      "validation_status": "pending"
+    }
+  ]
+}
