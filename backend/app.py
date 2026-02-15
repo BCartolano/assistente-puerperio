@@ -485,6 +485,21 @@ USE_AI = os.getenv("USE_AI", "true").lower() == "true"
 AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").lower()  # openai, gemini ou groq
 logger.info("[IA] USE_AI=%s AI_PROVIDER=%s", USE_AI, AI_PROVIDER)
 
+# Aviso claro quando o provider escolhido não tem chave (ex.: Render sem GROQ_API_KEY)
+if USE_AI:
+    if AI_PROVIDER == "groq" and not GROQ_AVAILABLE:
+        _msg = "[IA] AI_PROVIDER=groq mas GROQ_API_KEY não está definido. Defina GROQ_API_KEY no Render (Environment) para o chat com IA; senão o app usa respostas locais (fallback)."
+        logger.warning(_msg)
+        print(_msg)
+    elif AI_PROVIDER == "openai" and not OPENAI_AVAILABLE:
+        _msg = "[IA] AI_PROVIDER=openai mas OPENAI_API_KEY não está definido. Defina OPENAI_API_KEY no Render (Environment) para o chat com IA."
+        logger.warning(_msg)
+        print(_msg)
+    elif AI_PROVIDER == "gemini" and not GEMINI_AVAILABLE:
+        _msg = "[IA] AI_PROVIDER=gemini mas GEMINI_API_KEY não está definido. Defina GEMINI_API_KEY no Render (Environment) para o chat com IA."
+        logger.warning(_msg)
+        print(_msg)
+
 # Chaves e clientes vêm de llm_clients (já carregados com .env do topo)
 
 # YouTube API Key (opcional - para busca dinâmica de vídeos, independente de USE_AI)
@@ -914,6 +929,7 @@ from backend.auth.user_model import User
 
 # Função para inicializar banco de dados
 def init_db():
+    print("DEBUG - INIT_DB EXECUTANDO")
     conn = sqlite3.connect(DB_PATH, timeout=20.0)
     # Ativa WAL mode para melhor performance com múltiplas conexões simultâneas
     # Importante para Beta Fechado (10-20 usuárias simultâneas)
@@ -922,11 +938,7 @@ def init_db():
     conn.execute('PRAGMA cache_size=-64000;')  # 64MB cache (melhora performance)
     cursor = conn.cursor()
     
-    # Verifica se as colunas já existem (para migração)
-    cursor.execute("PRAGMA table_info(users)")
-    columns = [column[1] for column in cursor.fetchall()]
-    
-    # Cria tabela users com novos campos
+    # Cria tabela users com todos os campos (se não existir)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -941,16 +953,18 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
-    
-    # Adiciona novas colunas se não existirem (migração)
-    if 'email_verified' not in columns:
-        cursor.execute('ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0')
-    if 'email_verification_token' not in columns:
-        cursor.execute('ALTER TABLE users ADD COLUMN email_verification_token TEXT')
-    if 'reset_password_token' not in columns:
-        cursor.execute('ALTER TABLE users ADD COLUMN reset_password_token TEXT')
-    if 'reset_password_expires' not in columns:
-        cursor.execute('ALTER TABLE users ADD COLUMN reset_password_expires TIMESTAMP')
+    # Migração: adiciona colunas só se não existirem (evita duplicação/erro)
+    cursor.execute("PRAGMA table_info(users)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if "email_verified" not in columns:
+        print("DEBUG - TENTANDO ADICIONAR email_verified")
+        cursor.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0")
+    if "email_verification_token" not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN email_verification_token TEXT")
+    if "reset_password_token" not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN reset_password_token TEXT")
+    if "reset_password_expires" not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN reset_password_expires TIMESTAMP")
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS vacinas_tomadas (
@@ -4627,6 +4641,12 @@ def page_termos():
 # Se precisar do FastAPI, rode-o em processo/porta separados (ex.: uvicorn backend.api.main:app --port 8000)
 
 # Rotas /api/v1/facilities, /api/v1/emergency, /api/v1/health, /api/v1/debug/* → backend.blueprints.health_routes (health_bp)
+
+@app.route("/healthz", methods=["GET"])
+def health():
+    """Health check simples para load balancer / Render (path exato /healthz)."""
+    return "ok", 200
+
 
 @app.route('/__debug/routes', methods=['GET'])
 def __debug_routes():
