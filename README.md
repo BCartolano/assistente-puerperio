@@ -1,8 +1,8 @@
 # Sophia — Companheira no Puerpério
 
-> Assistente virtual de apoio educativo e acolhimento emocional para mães no puerpério, com conteúdo informativo baseado em fontes oficiais (Ministério da Saúde, OMS).
+> Assistente virtual de apoio educativo e acolhimento emocional para mães no puerpério, com conteúdo curado a partir de fontes oficiais (Ministério da Saúde, OMS, FEBRASGO).
 
-**Status:** Em desenvolvimento ativo · roda em ambiente local · planejado para deploy público.
+**Status:** em desenvolvimento ativo · deploy público planejado para Vercel + Turso.
 
 ---
 
@@ -11,6 +11,8 @@
 Sophia é uma aplicação web que combina **conversa acolhedora** com **biblioteca de conteúdo curado** sobre puerpério, gestação, parto, cuidados com o bebê e saúde emocional materna.
 
 A proposta é simples: o pós-parto é um período de muita vulnerabilidade, e a maioria das mães não tem onde tirar dúvidas no meio da madrugada sem cair em fórum desorganizado ou em conselho médico genérico de chatbot. A Sophia ocupa esse espaço — não substituindo profissional de saúde, mas oferecendo presença e informação confiável até o próximo encontro com a equipe que cuida da mãe.
+
+---
 
 ## Por que rule-based (e não LLM)?
 
@@ -28,17 +30,21 @@ Foi uma decisão de produto, não limitação técnica:
 3. **Custo zero por conversa.** Roda em qualquer hospedagem básica.
 4. **LGPD mais simples.** Conteúdo das mensagens não sai do servidor.
 
+---
+
 ## Stack
 
 | Camada | Tecnologia |
 |---|---|
 | Framework | Next.js 16 (App Router) + React 19 |
 | Linguagem | TypeScript |
-| Estilo | Tailwind CSS + design system próprio (paleta rosa/dourado, tipografia Inter + Playfair Display) |
-| Banco | Prisma ORM + SQLite (dev) |
+| Estilo | Tailwind CSS + design system próprio |
+| Banco | Prisma ORM (SQLite em dev · Turso/Postgres em prod) |
 | Auth | JWT em cookie httpOnly + bcrypt + verificação por código de e-mail |
 | E-mail | Resend |
 | Validação | Zod |
+
+---
 
 ## Funcionalidades
 
@@ -46,12 +52,12 @@ Foi uma decisão de produto, não limitação técnica:
 - Chat com Sophia, respostas curadas por intenção
 - Sugestões rápidas ("Estou cansada", "Tô feliz hoje", "Preciso desabafar"...)
 - Disclaimer médico permanente
-- Cards de conteúdo recomendado dentro da conversa
+- Cards de conteúdo recomendado dentro da própria conversa
 - Cartão de cuidado quando detecta queixa de saúde
-- Protocolo de crise com encaminhamento para CVV/SAMU
+- Protocolo de crise com encaminhamento direto para CVV/SAMU
 
-### Biblioteca de conteúdo
-- 30+ tópicos curados sobre puerpério, gestação, parto, cuidados do bebê, saúde emocional, dicas e guias práticos
+### Biblioteca de conteúdo curado
+- 30+ tópicos sobre puerpério, gestação, parto, cuidados do bebê, saúde emocional, dicas e guias práticos
 - Cada tópico com seções, dica da Sophia, tópicos relacionados e referências oficiais
 - Rotas: `/gestacao`, `/parto`, `/pos-parto`, `/cuidados-bebe`, `/saude-emocional`, `/dicas`, `/guias-praticos`, `/conteudo/[slug]`
 
@@ -67,70 +73,65 @@ Foi uma decisão de produto, não limitação técnica:
 - Onboarding de consentimento granular (lembretes, conteúdos, rotinas, alertas, info municipal)
 - Consentimento versionado (`sophia.consent.v1`) com data de aceite
 - Gestor de consentimento revisitável (`/consentimento`)
-- Página de privacidade, termos, aviso legal
-- **Exclusão da conta** com fluxo dedicado (`/excluir-meus-dados`) e cascade no banco
+- Páginas dedicadas de privacidade, termos e aviso legal
+- **Direito ao esquecimento** com fluxo de exclusão de conta (`/excluir-meus-dados`) e cascade no banco
 
-## Estrutura
+---
 
-```
-src/
-├── app/                        # App Router — 28 rotas
-│   ├── api/auth/               # 9 endpoints de autenticação
-│   ├── conversar/              # chat principal
-│   ├── conteudo/[slug]/        # biblioteca dinâmica
-│   ├── consentimento/          # gestão LGPD
-│   ├── excluir-meus-dados/     # direito ao esquecimento
-│   └── ...
-├── components/
-│   ├── ChatSophia.tsx          # motor de conversa
-│   ├── OnboardingConsent.tsx   # fluxo LGPD
-│   ├── DeleteAccountFlow.tsx
-│   └── ...
-└── lib/
-    ├── topicos.ts              # 1900+ linhas de conteúdo curado
-    ├── auth.ts                 # helpers JWT
-    ├── mailer.ts               # Resend wrapper
-    └── referencias.ts          # bibliografia oficial
-prisma/
-└── schema.prisma               # User, VerifyToken, PasswordResetToken
-```
+## Identidade visual
 
-## Como rodar localmente
+A Sophia foi desenhada para ser **acolhedora, calma e digna** — sem o visual hospitalar frio, sem o infantilizado pastel forçado.
 
-Pré-requisitos: Node 20+, npm.
+- **Tipografia:** Playfair Display (títulos, serif elegante) + Inter (corpo, sans-serif moderna)
+- **Detalhes:** linhas botânicas SVG sutis no fundo, sombras macias em rosa, cards com bordas arredondadas (até 28px)
 
-```bash
-git clone <repo>
-cd chatbot-puerperio
-npm install
+### Paleta
 
-cp .env.example .env
-# edite .env e preencha:
-#   DATABASE_URL="file:./dev.db"
-#   RESEND_API_KEY="<sua chave Resend>"
-#   APP_BASE_URL="http://localhost:3000"
-#   JWT_SECRET="<gere uma chave forte>"
+| Token | Cor | Uso |
+|---|---|---|
+| `--rosa` | `#f0b8c4` | Principal (botões, destaques) |
+| `--rosa-suave` | `#fbe5ea` | Fundos de hover |
+| `--rosa-deep` | `#a85975` | Títulos e estados ativos |
+| `--verde` | `#a9bda1` | Acento secundário (sálvia) |
+| `--verde-forte` | `#6f8a68` | Status positivo, mensagens da usuária |
+| `--dourado` | `#d4a574` | Avisos de transparência (banner IA, disclaimers) |
+| `--fundo` | `#fef7f3` | Fundo creme quente da app |
+| `--texto` | `#3d2c34` | Texto principal (alto contraste mas suave) |
 
-npm run prisma:generate
-npm run prisma:migrate
+### Componentes visuais característicos
+- **Hero da conversa:** avatar circular grande da Sophia, gradiente rosa-creme, frase introdutória
+- **Sidebar sticky** com logo redondo, nav rosada e seções tipográficas hierárquicas
+- **Cards de cuidado** (mood, conteúdo recomendado, lembretes) com hover suave que eleva
+- **Banner de transparência IA** dourado, com borda esquerda destacada
+- **Storybook de consentimento LGPD** em modal, com progress dots e ilustrações próprias
 
-npm run dev
-```
+---
 
-App em `http://localhost:3000` (redireciona para `/login`).
+## Compliance e segurança
 
-> Sem `RESEND_API_KEY` válida, o cadastro funciona mas o e-mail de verificação não chega — para testes, busque o token diretamente no banco.
+- **Lei do Ato Médico (Lei 12.842/2013):** Sophia nunca diagnostica, nunca prescreve, nunca substitui consulta. Linguagem reforçada em todas as superfícies sensíveis.
+- **LGPD:** consentimento granular versionado, gestor revisitável, direito ao esquecimento implementado de ponta a ponta.
+- **Senhas:** bcryptjs com sal automático.
+- **Sessões:** JWT em cookie `httpOnly` + `Secure` + `SameSite=Lax`.
+- **Validação:** todas as entradas de API passam por schemas Zod.
+- **Crise:** detecção determinística com encaminhamento imediato para CVV (188) e SAMU (192).
+
+---
 
 ## Roadmap
 
 - [x] Autenticação completa com verificação de e-mail
-- [x] Biblioteca de conteúdo curado
+- [x] Biblioteca de conteúdo curado (30+ tópicos)
 - [x] Motor de conversa rule-based com detecção de crise
 - [x] Fluxo LGPD (consentimento + exclusão)
+- [x] Design system próprio (rosa-pó + verde-sálvia + dourado)
 - [ ] Diário da jornada com persistência
 - [ ] Lembretes contextuais (vacinas do bebê, retornos pós-parto)
 - [ ] Modo offline para conteúdo
 - [ ] Deploy público (Vercel + Turso)
+- [ ] App mobile (Expo)
+
+---
 
 ## Disclaimer
 
@@ -139,6 +140,6 @@ Sophia é uma ferramenta de **apoio educativo e acolhimento**. Não substitui co
 - Emergência médica: **SAMU 192**
 - Apoio emocional 24h: **CVV 188**
 
-## Licença
+---
 
-Projeto pessoal em desenvolvimento. Direitos reservados.
+© 2026 Bruno Cartolano dos Santos. Projeto pessoal em desenvolvimento.
