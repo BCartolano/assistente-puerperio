@@ -2,7 +2,7 @@
 
 > Assistente virtual de apoio educativo e acolhimento emocional para mães no puerpério, com conteúdo curado a partir de fontes oficiais (Ministério da Saúde, OMS, FEBRASGO).
 
-**Status:** em desenvolvimento ativo · deploy público planejado para Vercel + Turso.
+**Status:** em desenvolvimento ativo · deploy público planejado para Vercel + Neon Postgres.
 
 ---
 
@@ -39,7 +39,7 @@ Foi uma decisão de produto, não limitação técnica:
 | Framework | Next.js 16 (App Router) + React 19 |
 | Linguagem | TypeScript |
 | Estilo | Tailwind CSS + design system próprio |
-| Banco | Prisma ORM (SQLite em dev · Turso/Postgres em prod) |
+| Banco | Prisma ORM + PostgreSQL (Docker em dev · Neon em prod) |
 | Auth | JWT em cookie httpOnly + bcrypt + verificação por código de e-mail |
 | E-mail | Resend |
 | Validação | Zod |
@@ -128,7 +128,7 @@ A Sophia foi desenhada para ser **acolhedora, calma e digna** — sem o visual h
 - [ ] Diário da jornada com persistência
 - [ ] Lembretes contextuais (vacinas do bebê, retornos pós-parto)
 - [ ] Modo offline para conteúdo
-- [ ] Deploy público (Vercel + Turso)
+- [ ] Deploy público (Vercel + Neon Postgres)
 - [ ] App mobile (Expo)
 
 ---

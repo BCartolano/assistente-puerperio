@@ -1,0 +1,31 @@
+# Postgres local para desenvolvimento da Sophia.
+# Uso:
+#   docker compose up -d        sobe o banco em background
+#   docker compose down         para o banco (mantem dados no volume)
+#   docker compose down -v      para o banco e APAGA todos os dados
+#
+# A connection string padrao para .env e:
+#   postgresql://sophia:sophia@localhost:5432/sophia_dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sophia-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: sophia
+      POSTGRES_PASSWORD: sophia
+      POSTGRES_DB: sophia_dev
+    volumes:
+      - sophia_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sophia -d sophia_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  sophia_postgres_data:
+    name: sophia_postgres_data
